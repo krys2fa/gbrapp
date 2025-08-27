@@ -79,7 +79,7 @@ function DashboardPage() {
                 Welcome back, {user?.name || "User"}!
               </h2>
               <p className="text-yellow-100 text-lg">
-                Here's what's happening today.
+                Here&apos;s what&apos;s happening today.
               </p>
             </div>
             <div className="mt-4 md:mt-0 flex items-center gap-4">

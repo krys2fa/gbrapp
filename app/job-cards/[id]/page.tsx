@@ -5,13 +5,26 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { formatDate } from "@/app/lib/utils";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
+
+interface JobCardData {
+  id: string;
+  referenceNumber: string;
+  status: string;
+  receivedDate: string;
+  createdAt: string;
+  updatedAt: string;
+  notes?: string;
+  exporter: { name: string };
+  shipmentType: { name: string };
+  assays?: Array<Record<string, unknown>>;
+  invoices?: Array<Record<string, unknown>>;
+}
 
 function JobCardDetailPage() {
   const params = useParams();
   const id = (params?.id as string) || "";
-  const router = useRouter();
-  const [jobCard, setJobCard] = useState<any>(null);
+  const [jobCard, setJobCard] = useState<JobCardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -203,6 +216,7 @@ function JobCardDetailPage() {
         {jobCard.assays && jobCard.assays.length > 0 ? (
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {jobCard.assays.map((assay: any) => (
                 <li key={assay.id}>
                   <Link href={`/job-cards/${id}/assays/${assay.id}`}>
@@ -259,6 +273,7 @@ function JobCardDetailPage() {
         {jobCard.invoices && jobCard.invoices.length > 0 ? (
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {jobCard.invoices.map((invoice: any) => (
                 <li key={invoice.id}>
                   <Link href={`/job-cards/${id}/invoices/${invoice.id}`}>

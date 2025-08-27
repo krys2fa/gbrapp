@@ -107,7 +107,7 @@ function EditJobCardPage() {
             setExporters(data);
             // Clear selected exporter if it doesn't belong to this type
             const exporterExists = data.some(
-              (exporter: any) => exporter.id === formData.exporterId
+              (exporter: { id: string }) => exporter.id === formData.exporterId
             );
             if (!exporterExists && formData.exporterId) {
               setFormData((prev) => ({ ...prev, exporterId: "" }));
@@ -120,7 +120,7 @@ function EditJobCardPage() {
 
       fetchFilteredExporters();
     }
-  }, [formData.exporterTypeId]);
+  }, [formData.exporterTypeId, formData.exporterId]);
 
   const handleChange = (
     e: React.ChangeEvent<

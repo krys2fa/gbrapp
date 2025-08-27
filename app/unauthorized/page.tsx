@@ -20,7 +20,7 @@ export default function UnauthorizedPage() {
             <div className="flex">
               <div className="mx-auto">
                 <h3 className="text-sm font-medium text-red-800">
-                  You don't have permission to access this page.
+                  You don&apos;t have permission to access this page.
                 </h3>
                 <p className="mt-2 text-sm text-red-700">
                   Please contact your administrator if you believe this is an error.

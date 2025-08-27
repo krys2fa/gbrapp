@@ -23,8 +23,9 @@ export default function LoginPage() {
     try {
       await login(email, password);
       // Redirect is handled in the auth context
-    } catch (err: any) {
-      setError(err.message || "Login failed. Please try again.");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Login failed. Please try again.";
+      setError(errorMessage);
     }
   };
 
@@ -163,10 +164,10 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Image/Brand */}
-      {/* <div className="relative hidden w-0 flex-1 lg:block">
-        <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-blue-600 to-indigo-900 flex flex-col items-center justify-center">
+      <div className="relative hidden w-0 flex-1 lg:block">
+        <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-yellow-600 to-yellow-800 flex flex-col items-center justify-center">
           <div className="text-center px-8">
-            <div className="flex justify-center mb-8">
+            {/* <div className="flex justify-center mb-8">
               <Image
                 src="/goldbod-logo.webp"
                 alt="GBR Logo"
@@ -175,17 +176,44 @@ export default function LoginPage() {
                 className="h-auto w-auto"
                 priority
               />
-            </div>
-            <h1 className="text-4xl font-bold text-white mb-6">
+            </div> */}
+            {/* <h1 className="text-4xl font-bold text-white mb-6">
               GBR Management System
-            </h1>
-            <p className="text-xl text-blue-100 max-w-md mx-auto">
+            </h1> */}
+            {/* <p className="text-xl text-yellow-100 max-w-md mx-auto mb-8">
               A comprehensive platform for managing gold buying and refining
               operations
-            </p>
+            </p> */}
+
+            {/* Login Credentials Section */}
+            <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6 max-w-sm mx-auto">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Demo Login Credentials
+              </h3>
+              <div className="space-y-4 text-left">
+                <div className="bg-white/10 rounded-md p-3">
+                  <p className="text-sm font-medium text-yellow-200">
+                    Super Administrator
+                  </p>
+                  <p className="text-xs text-white mt-1">
+                    Email: superadmin@gbrapp.com
+                  </p>
+                  <p className="text-xs text-white">Password: superadmin123</p>
+                </div>
+                <div className="bg-white/10 rounded-md p-3">
+                  <p className="text-sm font-medium text-yellow-200">
+                    Administrator
+                  </p>
+                  <p className="text-xs text-white mt-1">
+                    Email: admin@gbrapp.com
+                  </p>
+                  <p className="text-xs text-white">Password: admin123</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div> */}
+      </div>
     </div>
   );
 }

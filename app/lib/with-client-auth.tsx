@@ -50,7 +50,7 @@ export function withClientAuth<P extends object>(
       return () => {
         if (redirectTimeout) clearTimeout(redirectTimeout);
       };
-    }, [isLoading, isAuthenticated, router, user, requiredRoles]);
+    }, [isLoading, isAuthenticated, router, user]);
 
     // Show nothing while loading or redirecting
     if (isLoading || !isAuthenticated) {

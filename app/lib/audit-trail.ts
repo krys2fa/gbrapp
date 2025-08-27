@@ -6,10 +6,10 @@ interface AuditTrailParams {
   action: ActionType;
   entityType: string;
   entityId: string;
-  details?: any;
+  details?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 /**

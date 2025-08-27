@@ -74,7 +74,7 @@ export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
             setExporters(data);
             // Clear selected exporter if it doesn't belong to this type
             const exporterExists = data.some(
-              (exporter: any) => exporter.id === filters.exporterId
+              (exporter: { id: string }) => exporter.id === filters.exporterId
             );
             if (!exporterExists && filters.exporterId) {
               setFilters((prev) => ({ ...prev, exporterId: "" }));
@@ -102,7 +102,7 @@ export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
 
       fetchAllExporters();
     }
-  }, [filters.exporterTypeId, setFilters]);
+  }, [filters.exporterTypeId, filters.exporterId, setFilters]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>

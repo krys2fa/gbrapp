@@ -24,11 +24,11 @@ function NewJobCardPage() {
 
   // Custom styles for React Select to match other form inputs
   const customSelectStyles = {
-    container: (provided: any) => ({
+    container: (provided: Record<string, unknown>) => ({
       ...provided,
       height: "38px",
     }),
-    control: (provided: any) => ({
+    control: (provided: Record<string, unknown>) => ({
       ...provided,
       minHeight: "38px",
       height: "38px",
@@ -38,14 +38,14 @@ function NewJobCardPage() {
         borderColor: "#9CA3AF",
       },
     }),
-    valueContainer: (provided: any) => ({
+    valueContainer: (provided: Record<string, unknown>) => ({
       ...provided,
       height: "38px",
       padding: "0 6px",
       display: "flex",
       alignItems: "center",
     }),
-    input: (provided: any) => ({
+    input: (provided: Record<string, unknown>) => ({
       ...provided,
       margin: "0",
       padding: "0",
@@ -53,11 +53,11 @@ function NewJobCardPage() {
     indicatorSeparator: () => ({
       display: "none",
     }),
-    indicatorsContainer: (provided: any) => ({
+    indicatorsContainer: (provided: Record<string, unknown>) => ({
       ...provided,
       height: "38px",
     }),
-    option: (provided: any, state: any) => ({
+    option: (provided: Record<string, unknown>, state: { isSelected: boolean; isFocused: boolean }) => ({
       ...provided,
       backgroundColor: state.isSelected
         ? "#4F46E5"
@@ -140,7 +140,7 @@ function NewJobCardPage() {
   };
 
   // Handle country selection from react-select
-  const handleCountryChange = (selectedOption: any) => {
+  const handleCountryChange = (selectedOption: { value: string; label: string } | null) => {
     setFormData((prev) => ({
       ...prev,
       destinationCountry: selectedOption ? selectedOption.value : "",
@@ -373,7 +373,7 @@ function NewJobCardPage() {
                       <option value="TIN">TIN</option>
                       <option value="PASSPORT">Passport</option>
                       <option value="GHANA_CARD">Ghana Card</option>
-                      <option value="DRIVERS_LICENSE">Driver's License</option>
+                      <option value="DRIVERS_LICENSE">Driver&apos;s License</option>
                     </select>
                   </div>
 
@@ -502,7 +502,7 @@ function NewJobCardPage() {
                       value={
                         formData.destinationCountry
                           ? countryOptions.find(
-                              (option: any) =>
+                              (option: { value: string; label: string }) =>
                                 option.value === formData.destinationCountry
                             )
                           : null

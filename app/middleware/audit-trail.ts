@@ -105,7 +105,7 @@ export async function auditTrailMiddleware(request: NextRequest) {
   const entityId = extractEntityId(pathname) || "unknown";
 
   // For POST/PUT/PATCH requests, capture the request body
-  let details: any = null;
+  let details: Record<string, unknown> | undefined = undefined;
   if (["POST", "PUT", "PATCH"].includes(method)) {
     try {
       // Clone the request to read the body without consuming it
