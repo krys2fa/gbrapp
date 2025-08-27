@@ -1,10 +1,12 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import Select from "react-select";
+import countryList from "react-select-country-list";
 
 function NewJobCardPage() {
   const router = useRouter();
@@ -19,6 +21,9 @@ function NewJobCardPage() {
   const [shipmentTypes, setShipmentTypes] = useState<
     { id: string; name: string }[]
   >([]);
+  
+  // Get countries list for the dropdown
+  const countryOptions = useMemo(() => countryList().getData(), []);
 
   const [formData, setFormData] = useState({
     referenceNumber: "",
@@ -26,6 +31,27 @@ function NewJobCardPage() {
     exporterId: "",
     exporterTypeId: "", // Added exporter type ID
     shipmentTypeId: "",
+    // New fields
+    unitOfMeasure: "",
+    idType: "TIN", // Default to TIN
+    buyerIdNumber: "",
+    buyerName: "",
+    buyerPhone: "",
+    exporterPricePerOz: "",
+    teamLeader: "",
+    totalGrossWeight: "",
+    destinationCountry: "",
+    fineness: "",
+    sourceOfGold: "Ghana", // Default to Ghana
+    totalNetWeight: "",
+    totalNetWeightOz: "",
+    numberOfPersons: "",
+    exporterValueUsd: "",
+    exporterValueGhs: "",
+    graDeclarationNumber: "",
+    numberOfBoxes: "",
+    remittanceType: "",
+    // Original fields
     status: "pending",
     notes: "",
   });
@@ -116,6 +142,14 @@ function NewJobCardPage() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+  
+  // Handle country selection from react-select
+  const handleCountryChange = (selectedOption: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      destinationCountry: selectedOption ? selectedOption.value : "",
     }));
   };
 
@@ -295,6 +329,362 @@ function NewJobCardPage() {
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  {/* Unit of Measure */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="unitOfMeasure"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Unit of Measure
+                    </label>
+                    <input
+                      type="text"
+                      name="unitOfMeasure"
+                      id="unitOfMeasure"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.unitOfMeasure}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* ID Type */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="idType"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      ID Type
+                    </label>
+                    <select
+                      id="idType"
+                      name="idType"
+                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      value={formData.idType}
+                      onChange={handleChange}
+                    >
+                      <option value="TIN">TIN</option>
+                      <option value="PASSPORT">Passport</option>
+                      <option value="GHANA_CARD">Ghana Card</option>
+                      <option value="DRIVERS_LICENSE">Driver's License</option>
+                    </select>
+                  </div>
+
+                  {/* Buyer ID Number */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="buyerIdNumber"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Buyer ID Number
+                    </label>
+                    <input
+                      type="text"
+                      name="buyerIdNumber"
+                      id="buyerIdNumber"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.buyerIdNumber}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Buyer Name */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="buyerName"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Buyer Name
+                    </label>
+                    <input
+                      type="text"
+                      name="buyerName"
+                      id="buyerName"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.buyerName}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Buyer Phone Number */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="buyerPhone"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Buyer Phone Number
+                    </label>
+                    <input
+                      type="text"
+                      name="buyerPhone"
+                      id="buyerPhone"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.buyerPhone}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Exporter Price Per Oz */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="exporterPricePerOz"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Exporter Price/oz
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="exporterPricePerOz"
+                      id="exporterPricePerOz"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.exporterPricePerOz}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Team Leader */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="teamLeader"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Team Leader
+                    </label>
+                    <input
+                      type="text"
+                      name="teamLeader"
+                      id="teamLeader"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.teamLeader}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Total Gross Weight */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="totalGrossWeight"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Total Gross Weight (g)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="totalGrossWeight"
+                      id="totalGrossWeight"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.totalGrossWeight}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Destination Country */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="destinationCountry"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Destination Country
+                    </label>
+                    <Select
+                      inputId="destinationCountry"
+                      name="destinationCountry"
+                      options={countryOptions}
+                      value={countryOptions.find(option => option.value === formData.destinationCountry)}
+                      onChange={handleCountryChange}
+                      className="mt-1"
+                      placeholder="Select country..."
+                      isClearable
+                    />
+                  </div>
+
+                  {/* Fineness Percentage */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="fineness"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      % Fineness
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      max="100"
+                      name="fineness"
+                      id="fineness"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.fineness}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Source of Gold */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="sourceOfGold"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Source of Gold
+                    </label>
+                    <input
+                      type="text"
+                      name="sourceOfGold"
+                      id="sourceOfGold"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.sourceOfGold}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Total Net Weight (g) */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="totalNetWeight"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Total Net Weight (g)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="totalNetWeight"
+                      id="totalNetWeight"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.totalNetWeight}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Total Net Weight (oz) */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="totalNetWeightOz"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Total Net Weight (oz)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="totalNetWeightOz"
+                      id="totalNetWeightOz"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.totalNetWeightOz}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Number of Persons */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="numberOfPersons"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Number of Persons
+                    </label>
+                    <input
+                      type="number"
+                      name="numberOfPersons"
+                      id="numberOfPersons"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.numberOfPersons}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Exporter Value (USD) */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="exporterValueUsd"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Exporter Value (USD)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="exporterValueUsd"
+                      id="exporterValueUsd"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.exporterValueUsd}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Exporter Value (GHS) */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="exporterValueGhs"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Exporter Value (GHS)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="exporterValueGhs"
+                      id="exporterValueGhs"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.exporterValueGhs}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* GRA Declaration Number */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="graDeclarationNumber"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      GRA Declaration Number
+                    </label>
+                    <input
+                      type="text"
+                      name="graDeclarationNumber"
+                      id="graDeclarationNumber"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.graDeclarationNumber}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Number of Boxes */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="numberOfBoxes"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Number of Boxes
+                    </label>
+                    <input
+                      type="number"
+                      name="numberOfBoxes"
+                      id="numberOfBoxes"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.numberOfBoxes}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Remittance Type */}
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="remittanceType"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Remittance Type
+                    </label>
+                    <input
+                      type="text"
+                      name="remittanceType"
+                      id="remittanceType"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.remittanceType}
+                      onChange={handleChange}
+                    />
                   </div>
 
                   <div className="col-span-6">

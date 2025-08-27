@@ -39,6 +39,13 @@ enum ActionType {
   OTHER
 }
 
+enum IdType {
+  PASSPORT
+  GHANA_CARD
+  DRIVERS_LICENSE
+  TIN
+}
+
 // Define models for GBR App
 
 model JobCard {
@@ -59,6 +66,27 @@ model JobCard {
   assayOfficer    AssayOfficer? @relation(fields: [assayOfficerId], references: [id])
   technicalDirectorId String?
   technicalDirector TechnicalDirector? @relation(fields: [technicalDirectorId], references: [id])
+  // New fields
+  unitOfMeasure   String?
+  idType          IdType?     @default(TIN)  // passport, TIN, ghana card, drivers license
+  buyerIdNumber   String?
+  buyerName       String?
+  buyerPhone      String?
+  exporterPricePerOz Float?
+  teamLeader      String?
+  totalGrossWeight Float?
+  destinationCountry String?
+  fineness        Float?      // Percentage
+  sourceOfGold    String?     @default("Ghana")
+  totalNetWeight  Float?      // in grams
+  totalNetWeightOz Float?     // in oz
+  numberOfPersons Int?
+  exporterValueUsd Float?
+  exporterValueGhs Float?
+  graDeclarationNumber String?
+  numberOfBoxes   Int?
+  remittanceType  String?
+  // Original relations
   seals           Seal[]
   assays          Assay[]
   invoices        Invoice[]
