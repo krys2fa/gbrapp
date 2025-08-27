@@ -1,7 +1,7 @@
-import { PrismaClient } from '@/app/generated/prisma';
-import { withProtectedRoute } from '@/app/lib/with-protected-route';
-import { NextRequest, NextResponse } from 'next/server';
-import { Role } from '@/app/generated/prisma';
+import { PrismaClient } from "@/app/generated/prisma";
+import { withProtectedRoute } from "@/app/lib/with-protected-route";
+import { NextRequest, NextResponse } from "next/server";
+import { Role } from "@/app/generated/prisma";
 
 const prisma = new PrismaClient();
 
@@ -33,16 +33,16 @@ async function getJobCard(
 
     if (!jobCard) {
       return NextResponse.json(
-        { error: 'Job card not found' },
+        { error: "Job card not found" },
         { status: 404 }
       );
     }
 
     return NextResponse.json(jobCard);
   } catch (error) {
-    console.error('Error fetching job card:', error);
+    console.error("Error fetching job card:", error);
     return NextResponse.json(
-      { error: 'Error fetching job card' },
+      { error: "Error fetching job card" },
       { status: 500 }
     );
   }
@@ -57,7 +57,7 @@ async function updateJobCard(
 ) {
   try {
     const data = await req.json();
-    
+
     // Check if job card exists
     const existingJobCard = await prisma.jobCard.findUnique({
       where: { id: params.id },
@@ -65,7 +65,7 @@ async function updateJobCard(
 
     if (!existingJobCard) {
       return NextResponse.json(
-        { error: 'Job card not found' },
+        { error: "Job card not found" },
         { status: 404 }
       );
     }
@@ -87,9 +87,9 @@ async function updateJobCard(
 
     return NextResponse.json(updatedJobCard);
   } catch (error) {
-    console.error('Error updating job card:', error);
+    console.error("Error updating job card:", error);
     return NextResponse.json(
-      { error: 'Error updating job card' },
+      { error: "Error updating job card" },
       { status: 500 }
     );
   }
@@ -110,7 +110,7 @@ async function deleteJobCard(
 
     if (!existingJobCard) {
       return NextResponse.json(
-        { error: 'Job card not found' },
+        { error: "Job card not found" },
         { status: 404 }
       );
     }
@@ -121,30 +121,30 @@ async function deleteJobCard(
     });
 
     return NextResponse.json(
-      { message: 'Job card deleted successfully' },
+      { message: "Job card deleted successfully" },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error deleting job card:', error);
+    console.error("Error deleting job card:", error);
     return NextResponse.json(
-      { error: 'Error deleting job card' },
+      { error: "Error deleting job card" },
       { status: 500 }
     );
   }
 }
 
 // Wrap all handlers with auth and audit trail
-export const GET = withProtectedRoute(getJobCard, { 
-  entityType: 'JobCard',
-  requiredRoles: [Role.ADMIN, Role.USER, Role.SUPERADMIN]
+export const GET = withProtectedRoute(getJobCard, {
+  entityType: "JobCard",
+  requiredRoles: [Role.ADMIN, Role.USER, Role.SUPERADMIN],
 });
 
-export const PUT = withProtectedRoute(updateJobCard, { 
-  entityType: 'JobCard',
-  requiredRoles: [Role.ADMIN, Role.SUPERADMIN]
+export const PUT = withProtectedRoute(updateJobCard, {
+  entityType: "JobCard",
+  requiredRoles: [Role.ADMIN, Role.SUPERADMIN],
 });
 
-export const DELETE = withProtectedRoute(deleteJobCard, { 
-  entityType: 'JobCard',
-  requiredRoles: [Role.SUPERADMIN] 
+export const DELETE = withProtectedRoute(deleteJobCard, {
+  entityType: "JobCard",
+  requiredRoles: [Role.SUPERADMIN],
 });

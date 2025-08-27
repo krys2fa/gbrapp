@@ -1,6 +1,6 @@
-import { PrismaClient } from '@/app/generated/prisma';
-import { withAuditTrail } from '@/app/lib/with-audit-trail';
-import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from "@/app/generated/prisma";
+import { withAuditTrail } from "@/app/lib/with-audit-trail";
+import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
@@ -12,34 +12,34 @@ async function getAuditTrails(req: NextRequest) {
   try {
     // Extract query parameters for filtering
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
-    const entityType = searchParams.get('entityType');
-    const entityId = searchParams.get('entityId');
-    const action = searchParams.get('action');
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = parseInt(searchParams.get('pageSize') || '20');
-    
+    const userId = searchParams.get("userId");
+    const entityType = searchParams.get("entityType");
+    const entityId = searchParams.get("entityId");
+    const action = searchParams.get("action");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "20");
+
     // Build where clause based on filters
     const where: any = {};
-    
+
     if (userId) {
       where.userId = userId;
     }
-    
+
     if (entityType) {
       where.entityType = entityType;
     }
-    
+
     if (entityId) {
       where.entityId = entityId;
     }
-    
+
     if (action) {
       where.action = action;
     }
-    
+
     if (startDate && endDate) {
       where.timestamp = {
         gte: new Date(startDate),
@@ -54,10 +54,10 @@ async function getAuditTrails(req: NextRequest) {
         lte: new Date(endDate),
       };
     }
-    
+
     // Calculate pagination
     const skip = (page - 1) * pageSize;
-    
+
     // Get audit trails with pagination
     const [auditTrails, totalCount] = await Promise.all([
       prisma.auditTrail.findMany({
@@ -73,17 +73,17 @@ async function getAuditTrails(req: NextRequest) {
           },
         },
         orderBy: {
-          timestamp: 'desc',
+          timestamp: "desc",
         },
         skip,
         take: pageSize,
       }),
       prisma.auditTrail.count({ where }),
     ]);
-    
+
     // Calculate pagination metadata
     const totalPages = Math.ceil(totalCount / pageSize);
-    
+
     return NextResponse.json({
       data: auditTrails,
       pagination: {
@@ -96,13 +96,13 @@ async function getAuditTrails(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error fetching audit trails:', error);
+    console.error("Error fetching audit trails:", error);
     return NextResponse.json(
-      { error: 'Error fetching audit trails' },
+      { error: "Error fetching audit trails" },
       { status: 500 }
     );
   }
 }
 
 // Wrap handler with audit trail
-export const GET = withAuditTrail(getAuditTrails, { entityType: 'AuditTrail' });
+export const GET = withAuditTrail(getAuditTrails, { entityType: "AuditTrail" });

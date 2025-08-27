@@ -12,7 +12,7 @@ import { useAuth } from "@/app/context/auth-context";
 
 function DashboardPage() {
   const { user } = useAuth();
-  
+
   return (
     <>
       <Header title="Dashboard" />
@@ -22,7 +22,9 @@ function DashboardPage() {
         <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-6 text-white">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.name || 'User'}!</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                Welcome back, {user?.name || "User"}!
+              </h2>
               <p className="text-blue-100 text-lg">
                 Here's what's happening with your management system today.
               </p>

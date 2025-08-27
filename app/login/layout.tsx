@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import { AuthProvider } from "./context/auth-context";
-import { LayoutWrapper } from "./components/layout/layout-wrapper";
+import "../globals.css";
+import { AuthProvider } from "../context/auth-context";
 
 export const metadata: Metadata = {
-  title: "GBR Management System",
-  description: "Modern management system built",
+  title: "Sign In - GBR Management System",
+  description: "Sign in to access your GBR Management System account",
 };
 
-export default function RootLayout({
+export default function LoginLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -28,9 +27,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <AuthProvider>
-          <LayoutWrapper>{children}</LayoutWrapper>
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

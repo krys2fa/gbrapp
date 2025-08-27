@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import { AuthProvider } from "./context/auth-context";
-import { LayoutWrapper } from "./components/layout/layout-wrapper";
+import "../globals.css";
+import { AuthProvider } from "../context/auth-context";
 
 export const metadata: Metadata = {
-  title: "GBR Management System",
-  description: "Modern management system built",
+  title: "Unauthorized - GBR Management System",
+  description: "You don't have permission to access this page",
 };
 
-export default function RootLayout({
+export default function UnauthorizedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -28,9 +27,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <AuthProvider>
-          <LayoutWrapper>{children}</LayoutWrapper>
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

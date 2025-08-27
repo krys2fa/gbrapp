@@ -1,7 +1,7 @@
-import { PrismaClient, Role } from '@/app/generated/prisma';
-import { withAuditTrail } from '@/app/lib/with-audit-trail';
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+import { PrismaClient, Role } from "@/app/generated/prisma";
+import { withAuditTrail } from "@/app/lib/with-audit-trail";
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -13,39 +13,39 @@ const prisma = new PrismaClient();
 async function register(req: NextRequest) {
   try {
     const { email, password, name, role } = await req.json();
-    
+
     // Validate input
     if (!email || !password || !name) {
       return NextResponse.json(
-        { error: 'Email, password, and name are required' },
+        { error: "Email, password, and name are required" },
         { status: 400 }
       );
     }
-    
+
     // Validate role if provided
     if (role && !Object.values(Role).includes(role)) {
       return NextResponse.json(
-        { error: 'Invalid role provided' },
+        { error: "Invalid role provided" },
         { status: 400 }
       );
     }
-    
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
-    
+
     if (existingUser) {
       return NextResponse.json(
-        { error: 'A user with this email already exists' },
+        { error: "A user with this email already exists" },
         { status: 409 }
       );
     }
-    
+
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -56,7 +56,7 @@ async function register(req: NextRequest) {
         isActive: true,
       },
     });
-    
+
     // Create a clean user object without sensitive data
     const userResponse = {
       id: user.id,
@@ -64,19 +64,16 @@ async function register(req: NextRequest) {
       name: user.name,
       role: user.role,
     };
-    
+
     return NextResponse.json(
-      { user: userResponse, message: 'User registered successfully' },
+      { user: userResponse, message: "User registered successfully" },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Registration error:', error);
-    return NextResponse.json(
-      { error: 'Registration failed' },
-      { status: 500 }
-    );
+    console.error("Registration error:", error);
+    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }
 
 // Wrap handler with audit trail
-export const POST = withAuditTrail(register, { entityType: 'User' });
+export const POST = withAuditTrail(register, { entityType: "User" });
