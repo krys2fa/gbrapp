@@ -1,8 +1,7 @@
-import { PrismaClient, Role } from "@/app/generated/prisma";
+import { Role } from "@/app/generated/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { withProtectedRoute } from "@/app/lib/with-protected-route";
 import { NextRequest, NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
 
 /**
  * GET handler for fetching all job cards with optional filtering
@@ -12,6 +11,7 @@ async function getAllJobCards(req: NextRequest) {
     // Extract query parameters for filtering
     const { searchParams } = new URL(req.url);
     const exporterId = searchParams.get("exporterId");
+    const exporterTypeId = searchParams.get("exporterTypeId");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const status = searchParams.get("status");
@@ -24,6 +24,13 @@ async function getAllJobCards(req: NextRequest) {
 
     if (exporterId) {
       where.exporterId = exporterId;
+    }
+    
+    // For exporter type filtering, we need to filter by exporters that belong to this type
+    if (exporterTypeId) {
+      where.exporter = {
+        exporterTypeId: exporterTypeId
+      };
     }
 
     if (startDate && endDate) {
@@ -52,7 +59,11 @@ async function getAllJobCards(req: NextRequest) {
     const jobCards = await prisma.jobCard.findMany({
       where,
       include: {
-        exporter: true,
+        exporter: {
+          include: {
+            exporterType: true,
+          },
+        },
         shipmentType: true,
       },
       orderBy: {

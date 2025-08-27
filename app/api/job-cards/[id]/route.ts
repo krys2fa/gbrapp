@@ -1,9 +1,7 @@
-import { PrismaClient } from "@/app/generated/prisma";
+import { Role } from "@/app/generated/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { withProtectedRoute } from "@/app/lib/with-protected-route";
 import { NextRequest, NextResponse } from "next/server";
-import { Role } from "@/app/generated/prisma";
-
-const prisma = new PrismaClient();
 
 /**
  * GET handler for fetching a single job card
@@ -16,7 +14,11 @@ async function getJobCard(
     const jobCard = await prisma.jobCard.findUnique({
       where: { id: params.id },
       include: {
-        exporter: true,
+        exporter: {
+          include: {
+            exporterType: true,
+          },
+        },
         shipmentType: true,
         customsOfficer: true,
         nacobOfficer: true,

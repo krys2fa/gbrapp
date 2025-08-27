@@ -10,6 +10,7 @@ import Link from "next/link";
 function JobCardsPage() {
   const [filters, setFilters] = useState({
     exporterId: "",
+    exporterTypeId: "",
     startDate: "",
     endDate: "",
     status: "",

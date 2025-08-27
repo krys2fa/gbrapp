@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PrismaClient } from "@/app/generated/prisma";
 
 interface JobCardFiltersProps {
   filters: {
     exporterId: string;
+    exporterTypeId: string;
     startDate: string;
     endDate: string;
     status: string;
   };
   setFilters: React.Dispatch<React.SetStateAction<{
     exporterId: string;
+    exporterTypeId: string;
     startDate: string;
     endDate: string;
     status: string;
@@ -19,24 +20,73 @@ interface JobCardFiltersProps {
 }
 
 export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
-  const [exporters, setExporters] = useState<{ id: string; name: string }[]>([]);
+  const [exporters, setExporters] = useState<{ id: string; name: string; exporterType: { id: string; name: string } }[]>([]);
+  const [exporterTypes, setExporterTypes] = useState<{ id: string; name: string }[]>([]);
   const statusOptions = ["all", "pending", "in_progress", "completed", "rejected"];
 
   useEffect(() => {
-    async function fetchExporters() {
+    async function fetchData() {
       try {
-        const response = await fetch('/api/exporters');
-        if (response.ok) {
-          const data = await response.json();
-          setExporters(data);
+        const [exporterTypesResponse, exportersResponse] = await Promise.all([
+          fetch('/api/exporter-types'),
+          fetch('/api/exporters')
+        ]);
+        
+        if (exporterTypesResponse.ok) {
+          const exporterTypesData = await exporterTypesResponse.json();
+          setExporterTypes(exporterTypesData);
+        }
+        
+        if (exportersResponse.ok) {
+          const exportersData = await exportersResponse.json();
+          setExporters(exportersData);
         }
       } catch (error) {
-        console.error("Error fetching exporters:", error);
+        console.error("Error fetching filter data:", error);
       }
     }
 
-    fetchExporters();
+    fetchData();
   }, []);
+
+  // Fetch exporters filtered by exporter type when exporter type changes
+  useEffect(() => {
+    if (filters.exporterTypeId) {
+      async function fetchFilteredExporters() {
+        try {
+          const response = await fetch(`/api/exporters?exporterTypeId=${filters.exporterTypeId}`);
+          if (response.ok) {
+            const data = await response.json();
+            setExporters(data);
+            // Clear selected exporter if it doesn't belong to this type
+            const exporterExists = data.some((exporter: any) => exporter.id === filters.exporterId);
+            if (!exporterExists && filters.exporterId) {
+              setFilters(prev => ({ ...prev, exporterId: "" }));
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching exporters by type:", error);
+        }
+      }
+      
+      fetchFilteredExporters();
+    } else {
+      // If no exporter type is selected, fetch all exporters
+      async function fetchAllExporters() {
+        try {
+          const response = await fetch('/api/exporters');
+          if (response.ok) {
+            const data = await response.json();
+            setExporters(data);
+          }
+        } catch (error) {
+          console.error("Error fetching all exporters:", error);
+        }
+      }
+      
+      fetchAllExporters();
+    }
+  }, [filters.exporterTypeId, setFilters]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -49,6 +99,7 @@ export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
   const handleReset = () => {
     setFilters({
       exporterId: "",
+      exporterTypeId: "",
       startDate: "",
       endDate: "",
       status: "",
@@ -66,6 +117,26 @@ export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
         </div>
         <div className="mt-5 md:mt-0 md:col-span-3">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label htmlFor="exporterTypeId" className="block text-sm font-medium text-gray-700">
+                Exporter Type
+              </label>
+              <select
+                id="exporterTypeId"
+                name="exporterTypeId"
+                value={filters.exporterTypeId}
+                onChange={handleChange}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              >
+                <option value="">All Exporter Types</option>
+                {exporterTypes.map(type => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
             <div>
               <label htmlFor="exporterId" className="block text-sm font-medium text-gray-700">
                 Exporter

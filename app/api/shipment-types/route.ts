@@ -1,8 +1,6 @@
-import { PrismaClient } from "@/app/generated/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { withProtectedRoute } from "@/app/lib/with-protected-route";
 import { NextRequest, NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
 
 /**
  * GET handler for fetching all shipment types

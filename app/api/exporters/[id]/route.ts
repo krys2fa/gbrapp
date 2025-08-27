@@ -1,8 +1,6 @@
-import { PrismaClient } from "@/app/generated/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
 
 /**
  * GET handler for fetching a single exporter

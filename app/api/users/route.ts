@@ -1,9 +1,8 @@
-import { PrismaClient, Role } from "@/app/generated/prisma";
+import { Role } from "@/app/generated/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
 
 /**
  * GET handler for fetching all users

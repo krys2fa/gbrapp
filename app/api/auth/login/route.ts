@@ -1,10 +1,9 @@
-import { PrismaClient } from "@/app/generated/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import * as jose from 'jose';
 import { cookies } from "next/headers";
 
-const prisma = new PrismaClient();
 const JWT_SECRET =
   process.env.JWT_SECRET || "fallback-secret-for-development-only";
 

@@ -1,7 +1,5 @@
 import { ActionType } from "@/app/generated/prisma";
-import { PrismaClient } from "@/app/generated/prisma";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/app/lib/prisma";
 
 interface AuditTrailParams {
   userId: string;
@@ -49,18 +47,40 @@ export class AuditTrailService {
         : JSON.stringify(metadata)
       : null;
 
-    return prisma.auditTrail.create({
-      data: {
-        userId,
-        action,
-        entityType,
-        entityId,
-        details: formattedDetails,
-        ipAddress,
-        userAgent,
-        metadata: formattedMetadata,
-      },
-    });
+    try {
+      // First check if the user exists
+      const userExists = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true }
+      });
+
+      // If user doesn't exist or userId is "unknown", use a special system user ID or skip audit
+      if (!userExists && userId !== "unknown") {
+        console.warn(`Audit trail skipped: User ID ${userId} not found`);
+        return null;
+      }
+
+      // Only create the audit trail if user exists or if we're using a special system user
+      if (userExists || userId === "unknown") {
+        return await prisma.auditTrail.create({
+          data: {
+            userId: userExists ? userId : "00000000-0000-0000-0000-000000000000", // Use a system user ID for unknown
+            action,
+            entityType,
+            entityId,
+            details: formattedDetails,
+            ipAddress,
+            userAgent,
+            metadata: formattedMetadata,
+          },
+        });
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error creating audit trail:", error);
+      return null; // Don't let audit trail errors break the application
+    }
   }
 
   /**

@@ -10,26 +10,34 @@ function NewJobCardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [exporters, setExporters] = useState<{ id: string; name: string }[]>([]);
+  const [exporters, setExporters] = useState<{ id: string; name: string; exporterType: { id: string; name: string } }[]>([]);
+  const [exporterTypes, setExporterTypes] = useState<{ id: string; name: string }[]>([]);
   const [shipmentTypes, setShipmentTypes] = useState<{ id: string; name: string }[]>([]);
   
   const [formData, setFormData] = useState({
     referenceNumber: "",
     receivedDate: new Date().toISOString().split("T")[0], // Today's date as default
     exporterId: "",
+    exporterTypeId: "", // Added exporter type ID
     shipmentTypeId: "",
     status: "pending",
     notes: "",
   });
 
   useEffect(() => {
-    // Fetch exporters and shipment types
+    // Fetch exporters, exporter types, and shipment types
     const fetchData = async () => {
       try {
-        const [exportersRes, shipmentTypesRes] = await Promise.all([
+        const [exporterTypesRes, exportersRes, shipmentTypesRes] = await Promise.all([
+          fetch("/api/exporter-types"),
           fetch("/api/exporters"),
           fetch("/api/shipment-types"),
         ]);
+
+        if (exporterTypesRes.ok) {
+          const exporterTypesData = await exporterTypesRes.json();
+          setExporterTypes(exporterTypesData);
+        }
 
         if (exportersRes.ok) {
           const exportersData = await exportersRes.json();
@@ -48,6 +56,45 @@ function NewJobCardPage() {
 
     fetchData();
   }, []);
+
+  // Filter exporters when exporter type changes
+  useEffect(() => {
+    if (formData.exporterTypeId) {
+      const fetchFilteredExporters = async () => {
+        try {
+          const response = await fetch(`/api/exporters?exporterTypeId=${formData.exporterTypeId}`);
+          if (response.ok) {
+            const data = await response.json();
+            setExporters(data);
+            // Clear selected exporter if it doesn't belong to this type
+            const exporterExists = data.some((exporter: any) => exporter.id === formData.exporterId);
+            if (!exporterExists && formData.exporterId) {
+              setFormData(prev => ({ ...prev, exporterId: "" }));
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching exporters by type:", error);
+        }
+      };
+      
+      fetchFilteredExporters();
+    } else {
+      // If no exporter type is selected, fetch all exporters
+      const fetchAllExporters = async () => {
+        try {
+          const response = await fetch('/api/exporters');
+          if (response.ok) {
+            const data = await response.json();
+            setExporters(data);
+          }
+        } catch (error) {
+          console.error("Error fetching all exporters:", error);
+        }
+      };
+      
+      fetchAllExporters();
+    }
+  }, [formData.exporterTypeId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -160,6 +207,29 @@ function NewJobCardPage() {
                       value={formData.receivedDate}
                       onChange={handleChange}
                     />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="exporterTypeId"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Exporter Type
+                    </label>
+                    <select
+                      id="exporterTypeId"
+                      name="exporterTypeId"
+                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      value={formData.exporterTypeId}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select Exporter Type</option>
+                      {exporterTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="col-span-6 sm:col-span-3">

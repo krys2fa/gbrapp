@@ -1,15 +1,32 @@
-import { PrismaClient } from "@/app/generated/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
 
 /**
  * GET handler for fetching all exporters
  */
 async function getAllExporters(req: NextRequest) {
   try {
+    // Check if exporter type filter is provided
+    const { searchParams } = new URL(req.url);
+    const exporterTypeId = searchParams.get("exporterTypeId");
+    
+    // Build where clause for filtering
+    const where: any = {};
+    if (exporterTypeId) {
+      where.exporterTypeId = exporterTypeId;
+    }
+    
     const exporters = await prisma.exporter.findMany({
+      where,
+      include: {
+        exporterType: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
       orderBy: {
         name: "asc",
       },

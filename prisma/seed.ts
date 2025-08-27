@@ -10,8 +10,38 @@ async function main() {
   const adminPassword = await bcrypt.hash("admin123", 10);
   const userPassword = await bcrypt.hash("user123", 10);
 
-  const admin = await prisma.user.create({
-    data: {
+  // Create system user for audit trails with a fixed ID
+  const systemUserId = '00000000-0000-0000-0000-000000000000';
+  
+  const existingSystemUser = await prisma.user.findUnique({
+    where: { id: systemUserId },
+  });
+
+  if (!existingSystemUser) {
+    await prisma.user.create({
+      data: {
+        id: systemUserId,
+        name: "System",
+        email: "system@gbrapp.com",
+        password: await bcrypt.hash("not-a-real-password", 10),
+        role: Role.SUPERADMIN,
+        isActive: true,
+      },
+    });
+    console.log("Created system user for audit trails");
+  } else {
+    console.log("System user already exists");
+  }
+
+  // Check for existing admin user
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: "admin@gbrapp.com" },
+  });
+
+  const admin = existingAdmin || await prisma.user.upsert({
+    where: { email: "admin@gbrapp.com" },
+    update: {},
+    create: {
       name: "Admin User",
       email: "admin@gbrapp.com",
       password: adminPassword,
@@ -20,18 +50,38 @@ async function main() {
     },
   });
 
-  const superAdmin = await prisma.user.create({
-    data: {
+  if (!existingAdmin) console.log("Created admin user");
+  else console.log("Admin user already exists");
+
+  // Check for existing super admin
+  const existingSuperAdmin = await prisma.user.findUnique({
+    where: { email: "superadmin@gbrapp.com" },
+  });
+
+  const superAdmin = existingSuperAdmin || await prisma.user.upsert({
+    where: { email: "superadmin@gbrapp.com" },
+    update: {},
+    create: {
       name: "Super Admin",
-      email: "superadmin@gbrapp.com",
+      email: "superadmin@gbrapp.com", 
       password: adminPassword,
       role: Role.SUPERADMIN,
       isActive: true,
     },
   });
 
-  const regularUser = await prisma.user.create({
-    data: {
+  if (!existingSuperAdmin) console.log("Created super admin user");
+  else console.log("Super admin user already exists");
+
+  // Check for existing regular user
+  const existingRegularUser = await prisma.user.findUnique({
+    where: { email: "user@gbrapp.com" },
+  });
+
+  const regularUser = existingRegularUser || await prisma.user.upsert({
+    where: { email: "user@gbrapp.com" },
+    update: {},
+    create: {
       name: "Regular User",
       email: "user@gbrapp.com",
       password: userPassword,
@@ -40,19 +90,26 @@ async function main() {
     },
   });
 
+  if (!existingRegularUser) console.log("Created regular user");
+  else console.log("Regular user already exists");
+
   console.log("Created users");
 
   // Create currencies
-  const usd = await prisma.currency.create({
-    data: {
+  const usd = await prisma.currency.upsert({
+    where: { code: "USD" },
+    update: {},
+    create: {
       code: "USD",
       name: "US Dollar",
       symbol: "$",
     },
   });
 
-  const ghs = await prisma.currency.create({
-    data: {
+  const ghs = await prisma.currency.upsert({
+    where: { code: "GHS" },
+    update: {},
+    create: {
       code: "GHS",
       name: "Ghana Cedi",
       symbol: "₵",
@@ -62,15 +119,19 @@ async function main() {
   console.log("Created currencies");
 
   // Create price types
-  const goldPriceType = await prisma.priceType.create({
-    data: {
+  const goldPriceType = await prisma.priceType.upsert({
+    where: { name: "Gold" },
+    update: {},
+    create: {
       name: "Gold",
       description: "Gold price per troy ounce",
     },
   });
 
-  const silverPriceType = await prisma.priceType.create({
-    data: {
+  const silverPriceType = await prisma.priceType.upsert({
+    where: { name: "Silver" },
+    update: {},
+    create: {
       name: "Silver",
       description: "Silver price per troy ounce",
     },
