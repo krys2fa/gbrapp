@@ -289,14 +289,14 @@ function JobCardDetailPage({ params }: JobCardDetailProps) {
                         <div className="mt-2 sm:flex sm:justify-between">
                           <div className="sm:flex">
                             <p className="flex items-center text-sm text-gray-500">
-                              Amount: {invoice.currency.symbol}
-                              {invoice.amount.toLocaleString()}
+                              Amount: {invoice.currency?.symbol || '$'}
+                              {invoice.amount?.toLocaleString() || '0'}
                             </p>
                           </div>
                           <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                             <p>
                               Issue Date:{" "}
-                              {formatDate(new Date(invoice.issueDate))}
+                              {invoice.issueDate ? formatDate(new Date(invoice.issueDate)) : 'Not set'}
                             </p>
                           </div>
                         </div>

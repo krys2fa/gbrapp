@@ -16,6 +16,9 @@
 # next.js
 /.next/
 /out/
+/.swc/
+.next/
+next-env.d.ts
 
 # production
 /build
