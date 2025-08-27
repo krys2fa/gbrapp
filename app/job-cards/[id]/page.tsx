@@ -203,7 +203,7 @@ function JobCardDetailPage({ params }: JobCardDetailProps) {
             Add Assay
           </Link>
         </div>
-        
+
         {/* Display assays or "No assays" message */}
         {jobCard.assays && jobCard.assays.length > 0 ? (
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
@@ -219,14 +219,16 @@ function JobCardDetailPage({ params }: JobCardDetailProps) {
                           </p>
                           <div className="ml-2 flex-shrink-0 flex">
                             <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                              Gold: {assay.goldContent}% | Silver: {assay.silverContent}%
+                              Gold: {assay.goldContent}% | Silver:{" "}
+                              {assay.silverContent}%
                             </p>
                           </div>
                         </div>
                         <div className="mt-2 sm:flex sm:justify-between">
                           <div className="sm:flex">
                             <p className="flex items-center text-sm text-gray-500">
-                              Assay Date: {formatDate(new Date(assay.assayDate))}
+                              Assay Date:{" "}
+                              {formatDate(new Date(assay.assayDate))}
                             </p>
                           </div>
                         </div>
@@ -257,7 +259,7 @@ function JobCardDetailPage({ params }: JobCardDetailProps) {
             Create Invoice
           </Link>
         </div>
-        
+
         {/* Display invoices or "No invoices" message */}
         {jobCard.invoices && jobCard.invoices.length > 0 ? (
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
@@ -272,24 +274,29 @@ function JobCardDetailPage({ params }: JobCardDetailProps) {
                             Invoice #{invoice.invoiceNumber}
                           </p>
                           <div className="ml-2 flex-shrink-0 flex">
-                            <p className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              invoice.status === 'paid' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                            <p
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                invoice.status === "paid"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {invoice.status.charAt(0).toUpperCase() +
+                                invoice.status.slice(1)}
                             </p>
                           </div>
                         </div>
                         <div className="mt-2 sm:flex sm:justify-between">
                           <div className="sm:flex">
                             <p className="flex items-center text-sm text-gray-500">
-                              Amount: {invoice.currency.symbol}{invoice.amount.toLocaleString()}
+                              Amount: {invoice.currency.symbol}
+                              {invoice.amount.toLocaleString()}
                             </p>
                           </div>
                           <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                             <p>
-                              Issue Date: {formatDate(new Date(invoice.issueDate))}
+                              Issue Date:{" "}
+                              {formatDate(new Date(invoice.issueDate))}
                             </p>
                           </div>
                         </div>

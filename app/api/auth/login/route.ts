@@ -1,7 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import * as jose from 'jose';
+import * as jose from "jose";
 import { cookies } from "next/headers";
 
 const JWT_SECRET =
@@ -58,8 +58,8 @@ async function login(req: NextRequest) {
       role: user.role,
       name: user.name,
     })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('8h')
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("8h")
       .sign(secret);
 
     // Create a clean user object without sensitive data

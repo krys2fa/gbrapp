@@ -11,8 +11,8 @@ async function main() {
   const userPassword = await bcrypt.hash("user123", 10);
 
   // Create system user for audit trails with a fixed ID
-  const systemUserId = '00000000-0000-0000-0000-000000000000';
-  
+  const systemUserId = "00000000-0000-0000-0000-000000000000";
+
   const existingSystemUser = await prisma.user.findUnique({
     where: { id: systemUserId },
   });
@@ -38,17 +38,19 @@ async function main() {
     where: { email: "admin@gbrapp.com" },
   });
 
-  const admin = existingAdmin || await prisma.user.upsert({
-    where: { email: "admin@gbrapp.com" },
-    update: {},
-    create: {
-      name: "Admin User",
-      email: "admin@gbrapp.com",
-      password: adminPassword,
-      role: Role.ADMIN,
-      isActive: true,
-    },
-  });
+  const admin =
+    existingAdmin ||
+    (await prisma.user.upsert({
+      where: { email: "admin@gbrapp.com" },
+      update: {},
+      create: {
+        name: "Admin User",
+        email: "admin@gbrapp.com",
+        password: adminPassword,
+        role: Role.ADMIN,
+        isActive: true,
+      },
+    }));
 
   if (!existingAdmin) console.log("Created admin user");
   else console.log("Admin user already exists");
@@ -58,17 +60,19 @@ async function main() {
     where: { email: "superadmin@gbrapp.com" },
   });
 
-  const superAdmin = existingSuperAdmin || await prisma.user.upsert({
-    where: { email: "superadmin@gbrapp.com" },
-    update: {},
-    create: {
-      name: "Super Admin",
-      email: "superadmin@gbrapp.com", 
-      password: adminPassword,
-      role: Role.SUPERADMIN,
-      isActive: true,
-    },
-  });
+  const superAdmin =
+    existingSuperAdmin ||
+    (await prisma.user.upsert({
+      where: { email: "superadmin@gbrapp.com" },
+      update: {},
+      create: {
+        name: "Super Admin",
+        email: "superadmin@gbrapp.com",
+        password: adminPassword,
+        role: Role.SUPERADMIN,
+        isActive: true,
+      },
+    }));
 
   if (!existingSuperAdmin) console.log("Created super admin user");
   else console.log("Super admin user already exists");
@@ -78,17 +82,19 @@ async function main() {
     where: { email: "user@gbrapp.com" },
   });
 
-  const regularUser = existingRegularUser || await prisma.user.upsert({
-    where: { email: "user@gbrapp.com" },
-    update: {},
-    create: {
-      name: "Regular User",
-      email: "user@gbrapp.com",
-      password: userPassword,
-      role: Role.USER,
-      isActive: true,
-    },
-  });
+  const regularUser =
+    existingRegularUser ||
+    (await prisma.user.upsert({
+      where: { email: "user@gbrapp.com" },
+      update: {},
+      create: {
+        name: "Regular User",
+        email: "user@gbrapp.com",
+        password: userPassword,
+        role: Role.USER,
+        isActive: true,
+      },
+    }));
 
   if (!existingRegularUser) console.log("Created regular user");
   else console.log("Regular user already exists");

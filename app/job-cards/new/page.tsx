@@ -10,10 +10,16 @@ function NewJobCardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [exporters, setExporters] = useState<{ id: string; name: string; exporterType: { id: string; name: string } }[]>([]);
-  const [exporterTypes, setExporterTypes] = useState<{ id: string; name: string }[]>([]);
-  const [shipmentTypes, setShipmentTypes] = useState<{ id: string; name: string }[]>([]);
-  
+  const [exporters, setExporters] = useState<
+    { id: string; name: string; exporterType: { id: string; name: string } }[]
+  >([]);
+  const [exporterTypes, setExporterTypes] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [shipmentTypes, setShipmentTypes] = useState<
+    { id: string; name: string }[]
+  >([]);
+
   const [formData, setFormData] = useState({
     referenceNumber: "",
     receivedDate: new Date().toISOString().split("T")[0], // Today's date as default
@@ -28,11 +34,12 @@ function NewJobCardPage() {
     // Fetch exporters, exporter types, and shipment types
     const fetchData = async () => {
       try {
-        const [exporterTypesRes, exportersRes, shipmentTypesRes] = await Promise.all([
-          fetch("/api/exporter-types"),
-          fetch("/api/exporters"),
-          fetch("/api/shipment-types"),
-        ]);
+        const [exporterTypesRes, exportersRes, shipmentTypesRes] =
+          await Promise.all([
+            fetch("/api/exporter-types"),
+            fetch("/api/exporters"),
+            fetch("/api/shipment-types"),
+          ]);
 
         if (exporterTypesRes.ok) {
           const exporterTypesData = await exporterTypesRes.json();
@@ -62,27 +69,31 @@ function NewJobCardPage() {
     if (formData.exporterTypeId) {
       const fetchFilteredExporters = async () => {
         try {
-          const response = await fetch(`/api/exporters?exporterTypeId=${formData.exporterTypeId}`);
+          const response = await fetch(
+            `/api/exporters?exporterTypeId=${formData.exporterTypeId}`
+          );
           if (response.ok) {
             const data = await response.json();
             setExporters(data);
             // Clear selected exporter if it doesn't belong to this type
-            const exporterExists = data.some((exporter: any) => exporter.id === formData.exporterId);
+            const exporterExists = data.some(
+              (exporter: any) => exporter.id === formData.exporterId
+            );
             if (!exporterExists && formData.exporterId) {
-              setFormData(prev => ({ ...prev, exporterId: "" }));
+              setFormData((prev) => ({ ...prev, exporterId: "" }));
             }
           }
         } catch (error) {
           console.error("Error fetching exporters by type:", error);
         }
       };
-      
+
       fetchFilteredExporters();
     } else {
       // If no exporter type is selected, fetch all exporters
       const fetchAllExporters = async () => {
         try {
-          const response = await fetch('/api/exporters');
+          const response = await fetch("/api/exporters");
           if (response.ok) {
             const data = await response.json();
             setExporters(data);
@@ -91,12 +102,16 @@ function NewJobCardPage() {
           console.error("Error fetching all exporters:", error);
         }
       };
-      
+
       fetchAllExporters();
     }
   }, [formData.exporterTypeId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -148,7 +163,9 @@ function NewJobCardPage() {
       <div className="md:grid md:grid-cols-3 md:gap-6">
         <div className="md:col-span-1">
           <div className="px-4 sm:px-0">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Create New Job Card</h3>
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
+              Create New Job Card
+            </h3>
             <p className="mt-1 text-sm text-gray-600">
               Fill in the details to create a new job card in the system.
             </p>

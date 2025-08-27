@@ -240,16 +240,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
           <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
             <div className="w-10 h-10 bg-black border border-amber-500/40 rounded-full flex items-center justify-center">
               <span className="text-amber-500 font-medium text-sm">
-                {user?.name?.charAt(0) || 'U'}
+                {user?.name?.charAt(0) || "U"}
               </span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                <span className="text-amber-700 dark:text-amber-500">{user?.role || 'User'}</span>{" "}
-                {user?.name || 'Loading...'}
+                <span className="text-amber-700 dark:text-amber-500">
+                  {user?.role || "User"}
+                </span>{" "}
+                {user?.name || "Loading..."}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {user?.email || 'user@example.com'}
+                {user?.email || "user@example.com"}
               </p>
             </div>
             <LogoutButton />

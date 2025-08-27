@@ -10,13 +10,13 @@ async function getAllExporters(req: NextRequest) {
     // Check if exporter type filter is provided
     const { searchParams } = new URL(req.url);
     const exporterTypeId = searchParams.get("exporterTypeId");
-    
+
     // Build where clause for filtering
     const where: any = {};
     if (exporterTypeId) {
       where.exporterTypeId = exporterTypeId;
     }
-    
+
     const exporters = await prisma.exporter.findMany({
       where,
       include: {

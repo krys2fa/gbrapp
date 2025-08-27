@@ -51,7 +51,7 @@ export class AuditTrailService {
       // First check if the user exists
       const userExists = await prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true }
+        select: { id: true },
       });
 
       // If user doesn't exist or userId is "unknown", use a special system user ID or skip audit
@@ -64,7 +64,9 @@ export class AuditTrailService {
       if (userExists || userId === "unknown") {
         return await prisma.auditTrail.create({
           data: {
-            userId: userExists ? userId : "00000000-0000-0000-0000-000000000000", // Use a system user ID for unknown
+            userId: userExists
+              ? userId
+              : "00000000-0000-0000-0000-000000000000", // Use a system user ID for unknown
             action,
             entityType,
             entityId,
@@ -75,7 +77,7 @@ export class AuditTrailService {
           },
         });
       }
-      
+
       return null;
     } catch (error) {
       console.error("Error creating audit trail:", error);

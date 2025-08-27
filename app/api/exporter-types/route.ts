@@ -72,5 +72,7 @@ async function createExporterType(req: NextRequest) {
   }
 }
 
-export const GET = withProtectedRoute(getAllExporterTypes, { entityType: "ExporterType" });
-export const POST = withProtectedRoute(createExporterType, { entityType: "ExporterType" });
+export const GET = getAllExporterTypes;
+export const POST = withProtectedRoute(createExporterType, {
+  entityType: "ExporterType",
+});

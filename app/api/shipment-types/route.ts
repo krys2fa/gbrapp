@@ -72,5 +72,7 @@ async function createShipmentType(req: NextRequest) {
   }
 }
 
-export const GET = withProtectedRoute(getAllShipmentTypes, { entityType: "ShipmentType" });
-export const POST = withProtectedRoute(createShipmentType, { entityType: "ShipmentType" });
+export const GET = getAllShipmentTypes;
+export const POST = withProtectedRoute(createShipmentType, {
+  entityType: "ShipmentType",
+});

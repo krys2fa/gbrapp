@@ -25,11 +25,11 @@ async function getAllJobCards(req: NextRequest) {
     if (exporterId) {
       where.exporterId = exporterId;
     }
-    
+
     // For exporter type filtering, we need to filter by exporters that belong to this type
     if (exporterTypeId) {
       where.exporter = {
-        exporterTypeId: exporterTypeId
+        exporterTypeId: exporterTypeId,
       };
     }
 

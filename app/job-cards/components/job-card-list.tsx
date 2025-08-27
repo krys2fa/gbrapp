@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { 
-  ArrowPathIcon, 
-  EyeIcon, 
-  PencilSquareIcon 
+import {
+  ArrowPathIcon,
+  EyeIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { formatDate } from "@/app/lib/utils";
 
@@ -50,42 +50,42 @@ export function JobCardList({ filters }: JobCardListProps) {
     try {
       // Build query string from filters
       const queryParams = new URLSearchParams();
-      
+
       if (filters.exporterId) {
-        queryParams.append('exporterId', filters.exporterId);
+        queryParams.append("exporterId", filters.exporterId);
       }
-      
+
       if (filters.exporterTypeId) {
-        queryParams.append('exporterTypeId', filters.exporterTypeId);
+        queryParams.append("exporterTypeId", filters.exporterTypeId);
       }
-      
+
       if (filters.startDate) {
-        queryParams.append('startDate', filters.startDate);
+        queryParams.append("startDate", filters.startDate);
       }
-      
+
       if (filters.endDate) {
-        queryParams.append('endDate', filters.endDate);
+        queryParams.append("endDate", filters.endDate);
       }
-      
+
       if (filters.status) {
-        queryParams.append('status', filters.status);
+        queryParams.append("status", filters.status);
       }
-      
+
       // Add pagination
-      queryParams.append('page', currentPage.toString());
-      queryParams.append('limit', itemsPerPage.toString());
-      
+      queryParams.append("page", currentPage.toString());
+      queryParams.append("limit", itemsPerPage.toString());
+
       const response = await fetch(`/api/job-cards?${queryParams.toString()}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         setJobCards(data.jobCards || []);
         setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
       } else {
-        console.error('Failed to fetch job cards');
+        console.error("Failed to fetch job cards");
       }
     } catch (error) {
-      console.error('Error fetching job cards:', error);
+      console.error("Error fetching job cards:", error);
     } finally {
       setLoading(false);
     }
@@ -93,16 +93,16 @@ export function JobCardList({ filters }: JobCardListProps) {
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "in_progress":
+        return "bg-blue-100 text-blue-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -115,7 +115,9 @@ export function JobCardList({ filters }: JobCardListProps) {
         </div>
       ) : jobCards.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-gray-500">No job cards found matching the filters.</p>
+          <p className="text-gray-500">
+            No job cards found matching the filters.
+          </p>
         </div>
       ) : (
         <>
@@ -135,7 +137,7 @@ export function JobCardList({ filters }: JobCardListProps) {
                           )}`}
                         >
                           {jobCard.status.charAt(0).toUpperCase() +
-                            jobCard.status.slice(1).replace('_', ' ')}
+                            jobCard.status.slice(1).replace("_", " ")}
                         </span>
                       </div>
                       <div className="flex space-x-2">
@@ -181,42 +183,66 @@ export function JobCardList({ filters }: JobCardListProps) {
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                  Showing{" "}
                   <span className="font-medium">
-                    {Math.min(currentPage * itemsPerPage, (totalPages * itemsPerPage))}
-                  </span>{' '}
-                  of <span className="font-medium">{totalPages * itemsPerPage}</span> results
+                    {(currentPage - 1) * itemsPerPage + 1}
+                  </span>{" "}
+                  to{" "}
+                  <span className="font-medium">
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      totalPages * itemsPerPage
+                    )}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium">
+                    {totalPages * itemsPerPage}
+                  </span>{" "}
+                  results
                 </p>
               </div>
               <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
                   <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
                     disabled={currentPage === 1}
                     className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                      currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
+                      currentPage === 1
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     Previous
                   </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`relative inline-flex items-center px-4 py-2 border ${
-                        currentPage === page
-                          ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      } text-sm font-medium`}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`relative inline-flex items-center px-4 py-2 border ${
+                          currentPage === page
+                            ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                        } text-sm font-medium`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
                   <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
                     disabled={currentPage === totalPages}
                     className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                      currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
+                      currentPage === totalPages
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     Next

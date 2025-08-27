@@ -18,10 +18,16 @@ function EditJobCardPage({ params }: EditJobCardPageProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [exporters, setExporters] = useState<{ id: string; name: string; exporterType: { id: string; name: string } }[]>([]);
-  const [exporterTypes, setExporterTypes] = useState<{ id: string; name: string }[]>([]);
-  const [shipmentTypes, setShipmentTypes] = useState<{ id: string; name: string }[]>([]);
-  
+  const [exporters, setExporters] = useState<
+    { id: string; name: string; exporterType: { id: string; name: string } }[]
+  >([]);
+  const [exporterTypes, setExporterTypes] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [shipmentTypes, setShipmentTypes] = useState<
+    { id: string; name: string }[]
+  >([]);
+
   const [formData, setFormData] = useState({
     referenceNumber: "",
     receivedDate: "",
@@ -36,25 +42,28 @@ function EditJobCardPage({ params }: EditJobCardPageProps) {
     // Fetch job card data and reference data
     const fetchData = async () => {
       try {
-        const [jobCardRes, exporterTypesRes, exportersRes, shipmentTypesRes] = await Promise.all([
-          fetch(`/api/job-cards/${id}`),
-          fetch("/api/exporter-types"),
-          fetch("/api/exporters"),
-          fetch("/api/shipment-types"),
-        ]);
+        const [jobCardRes, exporterTypesRes, exportersRes, shipmentTypesRes] =
+          await Promise.all([
+            fetch(`/api/job-cards/${id}`),
+            fetch("/api/exporter-types"),
+            fetch("/api/exporters"),
+            fetch("/api/shipment-types"),
+          ]);
 
         if (jobCardRes.ok) {
           const jobCardData = await jobCardRes.json();
           // Get the exporter type ID from the exporter data
           let exporterTypeId = "";
-          
+
           if (jobCardData.exporter && jobCardData.exporter.exporterType) {
             exporterTypeId = jobCardData.exporter.exporterType.id;
           }
-          
+
           setFormData({
             referenceNumber: jobCardData.referenceNumber,
-            receivedDate: new Date(jobCardData.receivedDate).toISOString().split("T")[0],
+            receivedDate: new Date(jobCardData.receivedDate)
+              .toISOString()
+              .split("T")[0],
             exporterId: jobCardData.exporterId,
             exporterTypeId: exporterTypeId,
             shipmentTypeId: jobCardData.shipmentTypeId,
@@ -95,26 +104,34 @@ function EditJobCardPage({ params }: EditJobCardPageProps) {
     if (formData.exporterTypeId) {
       const fetchFilteredExporters = async () => {
         try {
-          const response = await fetch(`/api/exporters?exporterTypeId=${formData.exporterTypeId}`);
+          const response = await fetch(
+            `/api/exporters?exporterTypeId=${formData.exporterTypeId}`
+          );
           if (response.ok) {
             const data = await response.json();
             setExporters(data);
             // Clear selected exporter if it doesn't belong to this type
-            const exporterExists = data.some((exporter: any) => exporter.id === formData.exporterId);
+            const exporterExists = data.some(
+              (exporter: any) => exporter.id === formData.exporterId
+            );
             if (!exporterExists && formData.exporterId) {
-              setFormData(prev => ({ ...prev, exporterId: "" }));
+              setFormData((prev) => ({ ...prev, exporterId: "" }));
             }
           }
         } catch (error) {
           console.error("Error fetching exporters by type:", error);
         }
       };
-      
+
       fetchFilteredExporters();
     }
   }, [formData.exporterTypeId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -181,7 +198,9 @@ function EditJobCardPage({ params }: EditJobCardPageProps) {
       <div className="md:grid md:grid-cols-3 md:gap-6">
         <div className="md:col-span-1">
           <div className="px-4 sm:px-0">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Edit Job Card</h3>
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
+              Edit Job Card
+            </h3>
             <p className="mt-1 text-sm text-gray-600">
               Update the details of this job card.
             </p>

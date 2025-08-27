@@ -22,8 +22,8 @@ function JobCardsPage() {
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold text-gray-900">Job Cards</h1>
           <p className="mt-2 text-sm text-gray-700">
-            A list of all job cards in the system, including their reference number,
-            exporter, status, and received date.
+            A list of all job cards in the system, including their reference
+            number, exporter, status, and received date.
           </p>
         </div>
         <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
@@ -36,9 +36,9 @@ function JobCardsPage() {
           </Link>
         </div>
       </div>
-      
+
       <JobCardFilters filters={filters} setFilters={setFilters} />
-      
+
       <div className="mt-6">
         <JobCardList filters={filters} />
       </div>
