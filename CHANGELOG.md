@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-08-27
 
 ### Added
+
 - Initial release of GBR App - Gold Buying and Refining Management System
 - Complete job card management system with comprehensive form fields
 - User authentication with JWT and role-based access control (SUPERADMIN, ADMIN, USER)
@@ -19,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Country selection with react-select integration
 
 ### Database Schema
+
 - **JobCard**: Central entity with 25+ fields including buyer details, gold specifications, financial data
 - **User Management**: User authentication with role-based permissions
 - **Business Entities**: Exporters, ExporterTypes, ShipmentTypes
@@ -27,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Reference Data**: Currencies, PriceTypes, LevyTypes, InvoiceTypes
 
 ### Key Features
+
 - Dynamic job card forms with consistent styling
 - Real-time form validation
 - Secure API routes with middleware protection
@@ -35,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Environment configuration support
 
 ### Technical Stack
+
 - Next.js 15.5.2 with App Router
 - React 19 with TypeScript
 - Prisma ORM with PostgreSQL
@@ -43,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - React Select for enhanced form components
 
 ### Fixed
+
 - Dynamic route parameter handling in Next.js App Router
 - API endpoint error handling and validation
 - Database update operations for job cards
@@ -50,17 +55,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Runtime error handling with proper null checks
 
 ### Removed
+
 - Dummy test data from database seeding
 - Placeholder content from README
 - Development-only test job cards and related entities
 
 ### Development Setup
+
 - Comprehensive README with setup instructions
 - Environment configuration template (.env.example)
 - Clean database seeding script with essential data only
 - TypeScript configuration and linting setup
 
 ### Security
+
 - JWT-based authentication
 - Role-based access control
 - Input validation and sanitization
@@ -72,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Version History Notes
 
 This project follows semantic versioning:
+
 - **MAJOR** version for incompatible API changes
 - **MINOR** version for new functionality in a backwards compatible manner
 - **PATCH** version for backwards compatible bug fixes

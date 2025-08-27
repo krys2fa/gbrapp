@@ -5,16 +5,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { formatDate } from "@/app/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
-interface JobCardDetailProps {
-  params: {
-    id: string;
-  };
-}
-
-function JobCardDetailPage({ params }: JobCardDetailProps) {
-  const { id } = params;
+function JobCardDetailPage() {
+  const params = useParams();
+  const id = (params?.id as string) || "";
   const router = useRouter();
   const [jobCard, setJobCard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -289,14 +284,16 @@ function JobCardDetailPage({ params }: JobCardDetailProps) {
                         <div className="mt-2 sm:flex sm:justify-between">
                           <div className="sm:flex">
                             <p className="flex items-center text-sm text-gray-500">
-                              Amount: {invoice.currency?.symbol || '$'}
-                              {invoice.amount?.toLocaleString() || '0'}
+                              Amount: {invoice.currency?.symbol || "$"}
+                              {invoice.amount?.toLocaleString() || "0"}
                             </p>
                           </div>
                           <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                             <p>
                               Issue Date:{" "}
-                              {invoice.issueDate ? formatDate(new Date(invoice.issueDate)) : 'Not set'}
+                              {invoice.issueDate
+                                ? formatDate(new Date(invoice.issueDate))
+                                : "Not set"}
                             </p>
                           </div>
                         </div>

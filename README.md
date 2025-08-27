@@ -27,7 +27,8 @@ A comprehensive web application for managing gold buying and refining operations
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
-- Node.js 18+ 
+
+- Node.js 18+
 - npm, yarn, pnpm, or bun
 - PostgreSQL database
 - Git
@@ -35,12 +36,14 @@ Before you begin, ensure you have the following installed:
 ## 🚀 Installation & Setup
 
 ### 1. Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd gbrapp
 ```
 
 ### 2. Install Dependencies
+
 ```bash
 npm install
 # or
@@ -50,6 +53,7 @@ pnpm install
 ```
 
 ### 3. Environment Configuration
+
 Create a `.env` file in the root directory with the following variables:
 
 ```env
@@ -68,6 +72,7 @@ NODE_ENV="development"
 ```
 
 ### 4. Database Setup
+
 ```bash
 # Generate Prisma client
 npx prisma generate
@@ -80,6 +85,7 @@ npm run db:seed
 ```
 
 ### 5. Start Development Server
+
 ```bash
 npm run dev
 # or
@@ -97,7 +103,9 @@ The application uses PostgreSQL with the following main entities:
 ### Core Models
 
 #### JobCard
+
 Central entity for managing gold transactions with fields for:
+
 - Reference number and received date
 - Exporter and shipment information
 - Buyer details (ID, name, phone)
@@ -107,21 +115,25 @@ Central entity for managing gold transactions with fields for:
 - Status tracking and notes
 
 #### User Management
+
 - **User**: System users with role-based access
 - **Role**: SUPERADMIN, ADMIN, USER
 
 #### Business Entities
+
 - **Exporter**: Companies/individuals exporting gold
 - **ExporterType**: Categories of exporters
 - **ShipmentType**: Different shipment categories
 
 #### Processing Entities
+
 - **Assay**: Gold purity and composition results
 - **Seal**: Security seals for shipments
 - **Invoice**: Financial documentation
 - **Fee & Levy**: Associated charges
 
 #### Personnel
+
 - **CustomsOfficer**: Customs department officials
 - **NACOBOfficer**: NACOB department officials
 - **NationalSecurityOfficer**: Security officials
@@ -129,6 +141,7 @@ Central entity for managing gold transactions with fields for:
 - **TechnicalDirector**: Technical oversight
 
 ### Key Enums
+
 - **IdType**: PASSPORT, GHANA_CARD, DRIVERS_LICENSE, TIN
 - **SealType**: CUSTOMS_SEAL, PMMC_SEAL, OTHER_SEAL
 - **FeeType**: ASSAY_FEE, WHT_FEE
@@ -153,6 +166,7 @@ npx prisma db push   # Push schema to database
 ## 🔒 Authentication & Authorization
 
 The application uses JWT-based authentication with three user roles:
+
 - **SUPERADMIN**: Full system access
 - **ADMIN**: Administrative functions
 - **USER**: Basic operations
@@ -184,6 +198,7 @@ gbrapp/
 ## 🔄 API Endpoints
 
 ### Job Cards
+
 - `GET /api/job-cards` - List all job cards
 - `POST /api/job-cards` - Create new job card
 - `GET /api/job-cards/[id]` - Get specific job card
@@ -191,11 +206,13 @@ gbrapp/
 - `DELETE /api/job-cards/[id]` - Delete job card
 
 ### Authentication
+
 - `POST /api/auth/login` - User login
 - `POST /api/auth/register` - User registration
 - `GET /api/auth/validate` - Validate JWT token
 
 ### Reference Data
+
 - `GET /api/exporters` - List exporters
 - `GET /api/exporter-types` - List exporter types
 - `GET /api/shipment-types` - List shipment types
@@ -203,13 +220,16 @@ gbrapp/
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
+
 1. Push your code to GitHub
 2. Connect your repository to Vercel
 3. Add environment variables in Vercel dashboard
 4. Deploy automatically on every push
 
 ### Other Platforms
+
 Ensure your hosting platform supports:
+
 - Node.js 18+
 - PostgreSQL database
 - Environment variables
@@ -231,6 +251,7 @@ This project is proprietary software. All rights reserved.
 ## 🆘 Support
 
 For support and questions:
+
 - Review the documentation
 - Check existing issues
 - Create a new issue for bugs or feature requests

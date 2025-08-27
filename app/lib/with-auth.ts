@@ -18,14 +18,14 @@ interface DecodedToken {
  * @param requiredRoles Array of roles allowed to access the route (empty means any authenticated user)
  * @returns The wrapped route handler with auth protection
  */
-export function withAuth<T = any>(
-  handler: (
-    req: NextRequest,
-    params: { params: T; user: DecodedToken }
-  ) => Promise<NextResponse>,
+type AnyRouteHandler = (...args: any[]) => Promise<NextResponse>;
+
+export function withAuth<H extends AnyRouteHandler>(
+  handler: H,
   requiredRoles: Role[] = []
 ) {
-  return async (req: NextRequest, params: { params?: T }) => {
+  return (async (...args: Parameters<H>): Promise<NextResponse> => {
+    const req = args[0] as NextRequest;
     const JWT_SECRET =
       process.env.JWT_SECRET || "fallback-secret-for-development-only";
 
@@ -64,11 +64,20 @@ export function withAuth<T = any>(
         );
       }
 
-      // Call the original handler with user info
-      return handler(req, { 
-        params: params.params as T, 
-        user: decoded 
-      });
+      // Optional: enforce role checks without altering handler signature
+      if (requiredRoles.length > 0 && !requiredRoles.includes(decoded.role)) {
+        return NextResponse.json(
+          {
+            error: "Forbidden - Insufficient permissions",
+            requiredRoles,
+            userRole: decoded.role,
+          },
+          { status: 403 }
+        );
+      }
+
+      // Call the original handler with unmodified signature
+      return handler(...(args as Parameters<H>));
     } catch (error: any) {
       console.error("Authentication error:", error);
 
@@ -88,5 +97,5 @@ export function withAuth<T = any>(
 
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-  };
+  }) as unknown as H;
 }

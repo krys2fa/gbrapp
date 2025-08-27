@@ -8,12 +8,13 @@ import bcrypt from "bcryptjs";
  */
 async function getUser(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await ctx.params;
     // Get user by ID
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         email: true,
@@ -42,14 +43,15 @@ async function getUser(
  */
 async function updateUser(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await ctx.params;
     const { email, password, name, role, isActive } = await req.json();
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingUser) {
@@ -64,7 +66,7 @@ async function updateUser(
       const emailInUse = await prisma.user.findFirst({
         where: {
           email,
-          id: { not: params.id },
+          id: { not: id },
         },
       });
 
@@ -97,7 +99,7 @@ async function updateUser(
 
     // Update user
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       select: {
         id: true,
@@ -123,12 +125,13 @@ async function updateUser(
  */
 async function deleteUser(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await ctx.params;
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingUser) {
@@ -137,7 +140,7 @@ async function deleteUser(
 
     // Delete user
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json(

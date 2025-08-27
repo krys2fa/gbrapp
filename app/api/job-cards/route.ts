@@ -96,7 +96,9 @@ async function createJobCard(req: NextRequest) {
 
     // Extract only the required fields for simplicity
     const data: any = {
-      referenceNumber: requestData.referenceNumber || `JC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+      referenceNumber:
+        requestData.referenceNumber ||
+        `JC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
       receivedDate: new Date(),
       exporterId: requestData.exporterId,
       shipmentTypeId: requestData.shipmentTypeId,
@@ -108,7 +110,8 @@ async function createJobCard(req: NextRequest) {
       console.log("Missing required fields");
       return NextResponse.json(
         {
-          error: "Missing required fields: exporterId and shipmentTypeId are required",
+          error:
+            "Missing required fields: exporterId and shipmentTypeId are required",
         },
         { status: 400 }
       );
@@ -131,10 +134,10 @@ async function createJobCard(req: NextRequest) {
     console.error("Error creating job card:", error);
     // Return more detailed error information for debugging
     return NextResponse.json(
-      { 
-        error: "Error creating job card", 
+      {
+        error: "Error creating job card",
         details: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       { status: 500 }
     );

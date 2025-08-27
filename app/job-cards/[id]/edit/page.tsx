@@ -2,18 +2,13 @@
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
-interface EditJobCardPageProps {
-  params: {
-    id: string;
-  };
-}
-
-function EditJobCardPage({ params }: EditJobCardPageProps) {
-  const { id } = params;
+function EditJobCardPage() {
+  const params = useParams();
+  const id = (params?.id as string) || "";
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

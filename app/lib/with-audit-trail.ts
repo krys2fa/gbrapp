@@ -6,11 +6,8 @@ interface AuditableRouteOptions {
   entityType: string;
 }
 
-// More generic type that accepts any params structure
-type RouteHandler<T = any> = (
-  req: NextRequest,
-  params: { params: T }
-) => Promise<NextResponse>;
+// Generic wrapper type that preserves the original handler signature
+type AnyRouteHandler = (...args: any[]) => Promise<NextResponse>;
 
 /**
  * Higher-order function that wraps API route handlers to add audit trail functionality
@@ -19,11 +16,17 @@ type RouteHandler<T = any> = (
  * @param options Options for the auditable route
  * @returns The wrapped route handler with audit trail
  */
-export function withAuditTrail<T = Record<string, string>>(
-  handler: RouteHandler<T>,
+export function withAuditTrail<H extends AnyRouteHandler>(
+  handler: H,
   options: AuditableRouteOptions
 ) {
-  return async (req: NextRequest, params: { params: T }) => {
+  // Preserve the original handler signature to satisfy Next.js typed routes
+  return (async (...args: Parameters<H>): Promise<NextResponse> => {
+    const req = args[0] as NextRequest;
+    const ctx = (args.length > 1 ? args[1] : undefined) as
+      | { params?: any }
+      | { params?: Promise<any> }
+      | undefined;
     // Extract user ID from auth context (replace with your actual auth logic)
     const authHeader = req.headers.get("authorization");
     let userId = "unknown";
@@ -38,7 +41,7 @@ export function withAuditTrail<T = Record<string, string>>(
     // If we're handling a login request, we don't have a userId yet, so skip audit for now
     if (req.nextUrl.pathname === "/api/auth/login" && req.method === "POST") {
       // Skip audit trail for login attempts to avoid foreign key constraint issues
-      return await handler(req, params);
+      return await handler(...(args as Parameters<H>));
     }
 
     // Determine action type from HTTP method
@@ -65,15 +68,21 @@ export function withAuditTrail<T = Record<string, string>>(
 
     // Determine entity ID from URL params, safely handling cases where params might be undefined
     let entityId = "unknown";
-    
-    // Handle params safely by checking if they exist first
-    if (params && params.params) {
-      try {
-        // Use optional chaining to safely access id
-        entityId = (params.params as any)?.id || "unknown";
-      } catch (error) {
-        console.error("Error accessing params:", error);
+    // Prefer extracting id from ctx.params (supports both sync and Promise in Next 15)
+    try {
+      const maybeParams = ctx?.params;
+      if (maybeParams) {
+        if (typeof (maybeParams as any)?.then === "function") {
+          const resolved = await (maybeParams as Promise<any>);
+          entityId = resolved?.id ?? entityId;
+        } else {
+          entityId = (maybeParams as any)?.id ?? entityId;
+        }
       }
+    } catch (error) {
+      // Fallback to parsing from URL as a last resort
+      const parts = req.nextUrl.pathname.split("/").filter(Boolean);
+      entityId = parts[parts.length - 1] ?? entityId;
     }
 
     // For POST/PUT/PATCH requests, capture the request body
@@ -91,7 +100,7 @@ export function withAuditTrail<T = Record<string, string>>(
 
     // Call the original handler
     try {
-      const response = await handler(req, params);
+  const response = await handler(...(args as Parameters<H>));
 
       // Record successful audit trail
       await AuditTrailService.createAuditTrail({
@@ -134,5 +143,5 @@ export function withAuditTrail<T = Record<string, string>>(
       // Re-throw the error for the API route to handle
       throw error;
     }
-  };
+  }) as unknown as H;
 }

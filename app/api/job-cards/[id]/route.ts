@@ -7,7 +7,7 @@ function getIdFromUrl(req: NextRequest): string | null {
   try {
     // Extract the ID from the URL pathname
     const pathname = req.nextUrl.pathname;
-    const segments = pathname.split('/');
+    const segments = pathname.split("/");
     // The ID should be the last segment
     const id = segments[segments.length - 1];
     return id || null;
@@ -22,9 +22,9 @@ function getIdFromUrl(req: NextRequest): string | null {
  */
 export async function GET(req: NextRequest) {
   try {
-    const id = getIdFromUrl(req);
+    const id = await getIdFromUrl(req);
     console.log("GET request for job card with ID:", id);
-    
+
     // Ensure id exists
     if (!id) {
       return NextResponse.json(
@@ -79,7 +79,7 @@ export async function PUT(req: NextRequest) {
   try {
     const id = getIdFromUrl(req);
     console.log("PUT request for job card with ID:", id);
-    
+
     if (!id) {
       return NextResponse.json(
         { error: "Missing job card ID" },
@@ -105,7 +105,7 @@ export async function PUT(req: NextRequest) {
 
     // Create update object with all the provided fields
     const updateData: any = {};
-    
+
     // Update only the fields that are provided and belong to JobCard model
     if (requestData.referenceNumber !== undefined) {
       updateData.referenceNumber = requestData.referenceNumber;
@@ -142,7 +142,9 @@ export async function PUT(req: NextRequest) {
       updateData.buyerPhone = requestData.buyerPhone;
     }
     if (requestData.exporterPricePerOz !== undefined) {
-      updateData.exporterPricePerOz = parseFloat(requestData.exporterPricePerOz);
+      updateData.exporterPricePerOz = parseFloat(
+        requestData.exporterPricePerOz
+      );
     }
     if (requestData.teamLeader !== undefined) {
       updateData.teamLeader = requestData.teamLeader;
@@ -194,17 +196,20 @@ export async function PUT(req: NextRequest) {
         include: {
           exporter: true,
           shipmentType: true,
-        }
+        },
       });
-  
+
       return NextResponse.json(updatedJobCard);
     } catch (updateError) {
       console.error("Error during update operation:", updateError);
       return NextResponse.json(
-        { 
+        {
           error: "Error updating job card",
-          details: updateError instanceof Error ? updateError.message : String(updateError),
-          stack: updateError instanceof Error ? updateError.stack : undefined
+          details:
+            updateError instanceof Error
+              ? updateError.message
+              : String(updateError),
+          stack: updateError instanceof Error ? updateError.stack : undefined,
         },
         { status: 500 }
       );
@@ -213,11 +218,16 @@ export async function PUT(req: NextRequest) {
     console.error("Error updating job card:", error);
     // Return detailed error information for debugging
     return NextResponse.json(
-      { 
+      {
         error: "Error updating job card",
         details: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        cause: error instanceof Error ? (error.cause ? String(error.cause) : undefined) : undefined
+        cause:
+          error instanceof Error
+            ? error.cause
+              ? String(error.cause)
+              : undefined
+            : undefined,
       },
       { status: 500 }
     );
@@ -231,14 +241,14 @@ export async function DELETE(req: NextRequest) {
   try {
     const id = getIdFromUrl(req);
     console.log("DELETE request for job card with ID:", id);
-    
+
     if (!id) {
       return NextResponse.json(
         { error: "Missing job card ID" },
         { status: 400 }
       );
     }
-    
+
     // Check if job card exists
     const existingJobCard = await prisma.jobCard.findUnique({
       where: { id },

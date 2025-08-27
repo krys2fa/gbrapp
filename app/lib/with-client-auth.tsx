@@ -1,59 +1,76 @@
 'use client';
 
-import { useAuth } from '@/app/context/auth-context';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-export interface WithAuthOptions {
-  requiredRoles?: string[];
-  redirectTo?: string;
-}
+import { useAuth } from '@/app/context/auth-context';
+import { Role } from '@/app/generated/prisma';
 
 /**
- * Higher-order component for protecting client-side routes
+ * Higher-order component for client-side route protection
  * 
- * @param Component The component to wrap
- * @param options Configuration options
- * @returns Protected component
+ * @param Component The component to wrap with authentication
+ * @param requiredRoles Optional array of roles required to access the component
+ * @returns A new component with authentication logic
  */
 export function withClientAuth<P extends object>(
   Component: React.ComponentType<P>,
-  options: WithAuthOptions = {}
+  requiredRoles: Role[] = []
 ) {
-  const { requiredRoles = [], redirectTo = '/login' } = options;
-  
-  function ProtectedComponent(props: P) {
-    const { isAuthenticated, hasRole, isLoading } = useAuth();
+  return function ProtectedRoute(props: P) {
+    const { user, isLoading, isAuthenticated } = useAuth();
     const router = useRouter();
-    
+
     useEffect(() => {
-      if (!isLoading) {
-        if (!isAuthenticated) {
-          router.push(redirectTo);
-          return;
-        }
-        
-        if (requiredRoles.length > 0 && !hasRole(requiredRoles)) {
-          router.push('/unauthorized');
-          return;
-        }
+      let redirectTimeout: NodeJS.Timeout;
+      
+      // If still loading, don't do anything yet
+      if (isLoading) return;
+      
+      // Only redirect if not loading and not authenticated
+      if (!isAuthenticated) {
+        // Add a small delay to ensure state is fully updated
+        redirectTimeout = setTimeout(() => {
+          router.push('/login');
+        }, 300);
+        return;
       }
-    }, [isLoading, isAuthenticated, router]);
-    
-    if (isLoading) {
-      return <div className="flex justify-center items-center h-screen">Loading...</div>;
+
+      // Check roles if needed
+      if (
+        isAuthenticated && 
+        requiredRoles.length > 0 && 
+        user && 
+        !requiredRoles.includes(user.role as Role)
+      ) {
+        redirectTimeout = setTimeout(() => {
+          router.push('/unauthorized');
+        }, 300);
+      }
+      
+      return () => {
+        if (redirectTimeout) clearTimeout(redirectTimeout);
+      };
+    }, [isLoading, isAuthenticated, router, user, requiredRoles]);
+
+    // Show nothing while loading or redirecting
+    if (isLoading || !isAuthenticated) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
+      );
     }
-    
-    if (!isAuthenticated) {
-      return null; // Will be redirected by the useEffect
+
+    // If we have role requirements and the user doesn't match, don't render
+    if (
+      requiredRoles.length > 0 && 
+      user && 
+      !requiredRoles.includes(user.role as Role)
+    ) {
+      return null;
     }
-    
-    if (requiredRoles.length > 0 && !hasRole(requiredRoles)) {
-      return null; // Will be redirected by the useEffect
-    }
-    
+
+    // All checks passed, render the protected component
     return <Component {...props} />;
-  }
-  
-  return ProtectedComponent;
+  };
 }

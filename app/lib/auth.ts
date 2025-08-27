@@ -19,7 +19,7 @@ const JWT_SECRET =
  * @returns The session data if token is valid, null otherwise
  */
 export async function getSession(): Promise<UserSession | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get("auth-token")?.value;
 
   if (!token) {

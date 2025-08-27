@@ -18,51 +18,55 @@ function NewJobCardPage() {
   const [shipmentTypes, setShipmentTypes] = useState<
     { id: string; name: string }[]
   >([]);
-  
+
   // Get countries list for the dropdown
   const countryOptions = useMemo(() => countryList().getData(), []);
-  
+
   // Custom styles for React Select to match other form inputs
   const customSelectStyles = {
     container: (provided: any) => ({
       ...provided,
-      height: '38px',
+      height: "38px",
     }),
     control: (provided: any) => ({
       ...provided,
-      minHeight: '38px',
-      height: '38px',
-      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-      borderColor: '#D1D5DB',
-      '&:hover': {
-        borderColor: '#9CA3AF',
-      }
+      minHeight: "38px",
+      height: "38px",
+      boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+      borderColor: "#D1D5DB",
+      "&:hover": {
+        borderColor: "#9CA3AF",
+      },
     }),
     valueContainer: (provided: any) => ({
       ...provided,
-      height: '38px',
-      padding: '0 6px',
-      display: 'flex',
-      alignItems: 'center',
+      height: "38px",
+      padding: "0 6px",
+      display: "flex",
+      alignItems: "center",
     }),
     input: (provided: any) => ({
       ...provided,
-      margin: '0',
-      padding: '0',
+      margin: "0",
+      padding: "0",
     }),
     indicatorSeparator: () => ({
-      display: 'none',
+      display: "none",
     }),
     indicatorsContainer: (provided: any) => ({
       ...provided,
-      height: '38px',
+      height: "38px",
     }),
     option: (provided: any, state: any) => ({
       ...provided,
-      backgroundColor: state.isSelected ? '#4F46E5' : state.isFocused ? '#EEF2FF' : 'white',
-      color: state.isSelected ? 'white' : '#111827',
-      cursor: 'pointer',
-      fontSize: '0.875rem',
+      backgroundColor: state.isSelected
+        ? "#4F46E5"
+        : state.isFocused
+        ? "#EEF2FF"
+        : "white",
+      color: state.isSelected ? "white" : "#111827",
+      cursor: "pointer",
+      fontSize: "0.875rem",
     }),
   };
 
@@ -100,11 +104,10 @@ function NewJobCardPage() {
     // Fetch exporters and shipment types
     const fetchData = async () => {
       try {
-        const [exportersRes, shipmentTypesRes] =
-          await Promise.all([
-            fetch("/api/exporters"),
-            fetch("/api/shipment-types"),
-          ]);
+        const [exportersRes, shipmentTypesRes] = await Promise.all([
+          fetch("/api/exporters"),
+          fetch("/api/shipment-types"),
+        ]);
 
         if (exportersRes.ok) {
           const exportersData = await exportersRes.json();
@@ -135,7 +138,7 @@ function NewJobCardPage() {
       [name]: value,
     }));
   };
-  
+
   // Handle country selection from react-select
   const handleCountryChange = (selectedOption: any) => {
     setFormData((prev) => ({
@@ -155,7 +158,9 @@ function NewJobCardPage() {
       shipmentTypeId: formData.shipmentTypeId,
       status: formData.status,
       // Include reference number if provided
-      ...(formData.referenceNumber ? { referenceNumber: formData.referenceNumber } : {})
+      ...(formData.referenceNumber
+        ? { referenceNumber: formData.referenceNumber }
+        : {}),
     };
 
     console.log("Submitting data:", submissionData);
@@ -221,8 +226,18 @@ function NewJobCardPage() {
                   <div className="rounded-md bg-red-50 p-4 mb-6">
                     <div className="flex">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        <svg
+                          className="h-5 w-5 text-red-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </div>
                       <div className="ml-3">
@@ -484,7 +499,14 @@ function NewJobCardPage() {
                       inputId="destinationCountry"
                       name="destinationCountry"
                       options={countryOptions}
-                      value={formData.destinationCountry ? countryOptions.find((option: any) => option.value === formData.destinationCountry) : null}
+                      value={
+                        formData.destinationCountry
+                          ? countryOptions.find(
+                              (option: any) =>
+                                option.value === formData.destinationCountry
+                            )
+                          : null
+                      }
                       onChange={handleCountryChange}
                       className="mt-1 form-control-select"
                       classNamePrefix="react-select"

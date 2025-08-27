@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { withAuth } from "@/app/lib/with-auth";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { Role } from "@/app/generated/prisma";
@@ -16,15 +16,15 @@ interface ApiHandlerOptions {
  * @param options Configuration options including entity type and required roles
  * @returns The wrapped handler with auth and audit trail
  */
-export function withProtectedRoute<T = any>(
-  handler: (req: NextRequest, params: any) => Promise<NextResponse>,
+type AnyRouteHandler = (...args: any[]) => Promise<NextResponse>;
+
+export function withProtectedRoute<H extends AnyRouteHandler>(
+  handler: H,
   options: ApiHandlerOptions
 ) {
   const { entityType, requiredRoles = [] } = options;
-
-  // First apply authentication/authorization
-  const authHandler = withAuth(handler, requiredRoles);
-
-  // Then apply audit trail on top
-  return withAuditTrail(authHandler, { entityType });
+  // Compose wrappers while preserving the original handler signature
+  const authed = withAuth(handler, requiredRoles);
+  const audited = withAuditTrail(authed, { entityType });
+  return audited as unknown as H;
 }

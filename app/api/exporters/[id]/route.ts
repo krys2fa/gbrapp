@@ -7,11 +7,12 @@ import { NextRequest, NextResponse } from "next/server";
  */
 async function getExporter(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await ctx.params;
     const exporter = await prisma.exporter.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         jobCards: {
           orderBy: {
@@ -44,14 +45,15 @@ async function getExporter(
  */
 async function updateExporter(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await ctx.params;
     const data = await req.json();
 
     // Check if exporter exists
     const existingExporter = await prisma.exporter.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingExporter) {
@@ -66,7 +68,7 @@ async function updateExporter(
       const nameConflict = await prisma.exporter.findFirst({
         where: {
           name: data.name,
-          id: { not: params.id },
+          id: { not: id },
         },
       });
 
@@ -80,7 +82,7 @@ async function updateExporter(
 
     // Update the exporter
     const updatedExporter = await prisma.exporter.update({
-      where: { id: params.id },
+      where: { id },
       data,
     });
 
@@ -99,12 +101,13 @@ async function updateExporter(
  */
 async function deleteExporter(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await ctx.params;
     // Check if exporter exists
     const existingExporter = await prisma.exporter.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         jobCards: {
           select: { id: true },
@@ -130,7 +133,7 @@ async function deleteExporter(
 
     // Delete the exporter
     await prisma.exporter.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json(
