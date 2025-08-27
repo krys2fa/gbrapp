@@ -21,22 +21,35 @@ export function withClientAuth<P extends object>(
     const router = useRouter();
 
     useEffect(() => {
+      let redirectTimeout: NodeJS.Timeout;
+      
+      // If still loading, don't do anything yet
+      if (isLoading) return;
+      
       // Only redirect if not loading and not authenticated
-      if (!isLoading && !isAuthenticated) {
-        router.push('/login');
+      if (!isAuthenticated) {
+        // Add a small delay to ensure state is fully updated
+        redirectTimeout = setTimeout(() => {
+          router.push('/login');
+        }, 300);
         return;
       }
 
       // Check roles if needed
       if (
-        !isLoading && 
         isAuthenticated && 
         requiredRoles.length > 0 && 
         user && 
         !requiredRoles.includes(user.role as Role)
       ) {
-        router.push('/unauthorized');
+        redirectTimeout = setTimeout(() => {
+          router.push('/unauthorized');
+        }, 300);
       }
+      
+      return () => {
+        if (redirectTimeout) clearTimeout(redirectTimeout);
+      };
     }, [isLoading, isAuthenticated, router, user, requiredRoles]);
 
     // Show nothing while loading or redirecting

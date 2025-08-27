@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/ui/button";
+import { useAuth } from "@/app/context/auth-context";
+import { LogoutButton } from "@/app/components/auth/logout-button";
 
 interface SidebarProps {
   children?: React.ReactNode;
@@ -74,6 +76,7 @@ const NavItem: React.FC<NavItemProps> = ({
 export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const navigation = [
     {
@@ -234,19 +237,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
         {/* User Profile Section */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-amber-500/20 dark:border-amber-500/10">
-          <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+          <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
             <div className="w-10 h-10 bg-black border border-amber-500/40 rounded-full flex items-center justify-center">
-              <span className="text-amber-500 font-medium text-sm">U</span>
+              <span className="text-amber-500 font-medium text-sm">
+                {user?.name?.charAt(0) || 'U'}
+              </span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                <span className="text-amber-700 dark:text-amber-500">User</span>{" "}
-                Name
+                <span className="text-amber-700 dark:text-amber-500">{user?.role || 'User'}</span>{" "}
+                {user?.name || 'Loading...'}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                user@example.com
+                {user?.email || 'user@example.com'}
               </p>
             </div>
+            <LogoutButton />
           </div>
         </div>
       </div>

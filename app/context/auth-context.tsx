@@ -36,20 +36,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing token on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem("auth-token");
-    const storedUser = localStorage.getItem("auth-user");
-
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-
-      // Set token in cookie for server-side access
-      document.cookie = `auth-token=${storedToken}; path=/; max-age=${
-        60 * 60 * 8
-      }`; // 8 hours
-    }
-
-    setIsLoading(false);
+    const checkAuth = async () => {
+      try {
+        const storedToken = localStorage.getItem("auth-token");
+        const storedUser = localStorage.getItem("auth-user");
+  
+        if (storedToken && storedUser) {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+          
+          // Validate token with the backend
+          const response = await fetch("/api/auth/validate", {
+            headers: {
+              Authorization: `Bearer ${storedToken}`
+            },
+            credentials: 'include'
+          });
+          
+          if (!response.ok) {
+            // If token is invalid, clear everything
+            localStorage.removeItem("auth-token");
+            localStorage.removeItem("auth-user");
+            setUser(null);
+            setToken(null);
+          }
+        }
+      } catch (error) {
+        console.error("Auth validation error:", error);
+        // Clear invalid state
+        localStorage.removeItem("auth-token");
+        localStorage.removeItem("auth-user");
+        setUser(null);
+        setToken(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    checkAuth();
   }, []);
 
   // Login function
@@ -63,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        credentials: 'include', // Important: include cookies
       });
 
       if (!response.ok) {
@@ -79,14 +104,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Store in localStorage for persistence
       localStorage.setItem("auth-token", data.token);
       localStorage.setItem("auth-user", JSON.stringify(data.user));
-
-      // Set token in cookie for server-side access
-      document.cookie = `auth-token=${data.token}; path=/; max-age=${
-        60 * 60 * 8
-      }`; // 8 hours
-
-      // Redirect to dashboard
-      router.push("/dashboard");
+      
+      // The cookie is set on the server side in the login API response
+      
+      // After a short delay to ensure all state updates have processed, redirect
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 100);
     } catch (error) {
       console.error("Login error:", error);
       throw error;

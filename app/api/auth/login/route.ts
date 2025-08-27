@@ -1,8 +1,7 @@
 import { PrismaClient } from "@/app/generated/prisma";
-import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { sign } from "jsonwebtoken";
+import * as jose from 'jose';
 import { cookies } from "next/headers";
 
 const prisma = new PrismaClient();
@@ -52,17 +51,17 @@ async function login(req: NextRequest) {
       data: { lastLogin: new Date() },
     });
 
-    // Generate JWT token
-    const token = sign(
-      {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-        name: user.name,
-      },
-      JWT_SECRET,
-      { expiresIn: "8h" }
-    );
+    // Generate JWT token using jose
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const token = await new jose.SignJWT({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('8h')
+      .sign(secret);
 
     // Create a clean user object without sensitive data
     const userResponse = {

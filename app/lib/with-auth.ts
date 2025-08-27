@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verify } from "jsonwebtoken";
+import * as jose from 'jose';
 import { Role } from "@/app/generated/prisma";
 
 interface DecodedToken {
   userId: string;
   email: string;
   role: Role;
-  iat: number;
-  exp: number;
+  name: string;
+  iat?: number;
+  exp?: number;
 }
 
 /**
@@ -39,9 +40,17 @@ export function withAuth<T = any>(
     }
 
     try {
-      // Verify the token
+      // Verify the token using jose
       const token = authHeader.substring(7);
-      const decoded = verify(token, JWT_SECRET) as DecodedToken;
+      const secret = new TextEncoder().encode(JWT_SECRET);
+      const { payload } = await jose.jwtVerify(token, secret);
+      
+      const decoded: DecodedToken = {
+        userId: payload.userId as string,
+        email: payload.email as string,
+        role: payload.role as Role,
+        name: payload.name as string,
+      };
 
       // Check if token has required role (if roles are specified)
       if (requiredRoles.length > 0 && !requiredRoles.includes(decoded.role)) {
