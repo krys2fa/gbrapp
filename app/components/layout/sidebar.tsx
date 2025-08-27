@@ -164,7 +164,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </div>
 
         {/* Navigation */}
+          {/* Mobile Menu Logo - Only visible when mobile menu is open */}
         <nav className="p-4 xl:p-6 space-y-2 mt-16 lg:mt-0">
+          <div className="bg-black flex justify-center mb-6 lg:hidden">
+            <div>
+              <Image 
+                src="/goldbod-logo.webp" 
+                alt="GBR Logo" 
+                width={120}
+                height={40}
+                className="w-auto h-10"
+              />
+            </div>
+          </div>
           <div className="mb-4 lg:mb-6">
             <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-4">
               Main Menu
