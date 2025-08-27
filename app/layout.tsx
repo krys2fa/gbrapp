@@ -5,7 +5,7 @@ import { Sidebar } from "./components/layout/sidebar";
 export const metadata: Metadata = {
   title: "GBR Management System",
   description:
-    "Modern management system built with Next.js 15 and Tailwind CSS",
+    "Modern management system built",
 };
 
 export default function RootLayout({
