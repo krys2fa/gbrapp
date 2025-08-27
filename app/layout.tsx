@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "./components/layout/sidebar";
+import { AuthProvider } from "./context/auth-context";
 
 export const metadata: Metadata = {
   title: "GBR Management System",
@@ -28,7 +29,9 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <Sidebar>{children}</Sidebar>
+        <AuthProvider>
+          <Sidebar>{children}</Sidebar>
+        </AuthProvider>
       </body>
     </html>
   );

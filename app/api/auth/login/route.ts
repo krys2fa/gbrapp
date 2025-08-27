@@ -3,6 +3,7 @@ import { withAuditTrail } from '@/app/lib/with-audit-trail';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-development-only';
@@ -56,6 +57,7 @@ async function login(req: NextRequest) {
         userId: user.id,
         email: user.email,
         role: user.role,
+        name: user.name,
       },
       JWT_SECRET,
       { expiresIn: '8h' }
@@ -69,10 +71,24 @@ async function login(req: NextRequest) {
       role: user.role,
     };
     
-    return NextResponse.json({
+    // Create response
+    const response = NextResponse.json({
       user: userResponse,
       token,
     });
+    
+    // Set cookie in response
+    response.cookies.set({
+      name: 'auth-token',
+      value: token,
+      httpOnly: true,
+      path: '/',
+      maxAge: 60 * 60 * 8, // 8 hours
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+    
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

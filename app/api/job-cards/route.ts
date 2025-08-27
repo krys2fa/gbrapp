@@ -1,5 +1,5 @@
-import { PrismaClient } from '@/app/generated/prisma';
-import { withAuditTrail } from '@/app/lib/with-audit-trail';
+import { PrismaClient, Role } from '@/app/generated/prisma';
+import { withProtectedRoute } from '@/app/lib/with-protected-route';
 import { NextRequest, NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
@@ -98,6 +98,13 @@ async function createJobCard(req: NextRequest) {
   }
 }
 
-// Wrap all handlers with audit trail
-export const GET = withAuditTrail(getAllJobCards, { entityType: 'JobCard' });
-export const POST = withAuditTrail(createJobCard, { entityType: 'JobCard' });
+// Wrap all handlers with auth and audit trail
+export const GET = withProtectedRoute(getAllJobCards, { 
+  entityType: 'JobCard',
+  requiredRoles: [Role.ADMIN, Role.USER, Role.SUPERADMIN]
+});
+
+export const POST = withProtectedRoute(createJobCard, { 
+  entityType: 'JobCard',
+  requiredRoles: [Role.ADMIN, Role.SUPERADMIN]
+});

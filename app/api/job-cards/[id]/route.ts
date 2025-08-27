@@ -1,6 +1,7 @@
 import { PrismaClient } from '@/app/generated/prisma';
-import { withAuditTrail } from '@/app/lib/with-audit-trail';
+import { withProtectedRoute } from '@/app/lib/with-protected-route';
 import { NextRequest, NextResponse } from 'next/server';
+import { Role } from '@/app/generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -132,7 +133,18 @@ async function deleteJobCard(
   }
 }
 
-// Wrap all handlers with audit trail
-export const GET = withAuditTrail(getJobCard, { entityType: 'JobCard' });
-export const PUT = withAuditTrail(updateJobCard, { entityType: 'JobCard' });
-export const DELETE = withAuditTrail(deleteJobCard, { entityType: 'JobCard' });
+// Wrap all handlers with auth and audit trail
+export const GET = withProtectedRoute(getJobCard, { 
+  entityType: 'JobCard',
+  requiredRoles: [Role.ADMIN, Role.USER, Role.SUPERADMIN]
+});
+
+export const PUT = withProtectedRoute(updateJobCard, { 
+  entityType: 'JobCard',
+  requiredRoles: [Role.ADMIN, Role.SUPERADMIN]
+});
+
+export const DELETE = withProtectedRoute(deleteJobCard, { 
+  entityType: 'JobCard',
+  requiredRoles: [Role.SUPERADMIN] 
+});
