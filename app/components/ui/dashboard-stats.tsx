@@ -8,16 +8,47 @@ import {
   DollarSign,
   Activity,
   ShoppingCart,
+  Briefcase,
+  Building,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 
 interface StatCardProps {
   title: string;
-  value: string;
+  value: string | number;
   change: string;
   changeType: "positive" | "negative";
   icon: React.ReactNode;
   className?: string;
+}
+
+interface DashboardStatsProps {
+  data?: {
+    totalJobCards: {
+      value: number;
+      change: string;
+      changeType: "positive" | "negative";
+    };
+    totalExporters: {
+      value: number;
+      change: string;
+      changeType: "positive" | "negative";
+    };
+    totalUsers: {
+      value: number;
+      change: string;
+      changeType: "positive" | "negative";
+    };
+    totalRevenue: {
+      value: number;
+      change: string;
+      changeType: "positive" | "negative";
+    };
+    activeJobCards: number;
+    completedJobCards: number;
+    pendingJobCards: number;
+    thisWeekJobCards: number;
+  };
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -61,43 +92,87 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
       </div>
       <p className="text-2xl font-bold text-gray-900 dark:text-white">
-        {value}
+        {typeof value === "number" && value > 999
+          ? value.toLocaleString()
+          : value}
       </p>
     </div>
   );
 };
 
-export const DashboardStats: React.FC = () => {
-  const stats = [
+export const DashboardStats: React.FC<DashboardStatsProps> = ({ data }) => {
+  // Default fallback stats
+  const defaultStats = [
+    {
+      title: "Total Job Cards",
+      value: "0",
+      change: "+0.0%",
+      changeType: "positive" as const,
+      icon: <Briefcase className="h-5 w-5 text-blue-600" />,
+    },
+    {
+      title: "Total Exporters",
+      value: "0",
+      change: "+0.0%",
+      changeType: "positive" as const,
+      icon: <Building className="h-5 w-5 text-green-600" />,
+    },
     {
       title: "Total Users",
-      value: "12,345",
-      change: "+12.3%",
+      value: "0",
+      change: "+0.0%",
       changeType: "positive" as const,
-      icon: <Users className="h-5 w-5 text-blue-600" />,
+      icon: <Users className="h-5 w-5 text-purple-600" />,
     },
     {
-      title: "Revenue",
-      value: "$45,678",
-      change: "+8.2%",
+      title: "Total Revenue",
+      value: "$0",
+      change: "+0.0%",
       changeType: "positive" as const,
-      icon: <DollarSign className="h-5 w-5 text-green-600" />,
-    },
-    {
-      title: "Orders",
-      value: "1,234",
-      change: "-2.1%",
-      changeType: "negative" as const,
-      icon: <ShoppingCart className="h-5 w-5 text-purple-600" />,
-    },
-    {
-      title: "Active Sessions",
-      value: "567",
-      change: "+5.4%",
-      changeType: "positive" as const,
-      icon: <Activity className="h-5 w-5 text-orange-600" />,
+      icon: <DollarSign className="h-5 w-5 text-orange-600" />,
     },
   ];
+
+  const stats = data
+    ? [
+        {
+          title: "Total Job Cards",
+          value: data.totalJobCards.value,
+          change: `${data.totalJobCards.changeType === "positive" ? "+" : ""}${
+            data.totalJobCards.change
+          }%`,
+          changeType: data.totalJobCards.changeType,
+          icon: <Briefcase className="h-5 w-5 text-blue-600" />,
+        },
+        {
+          title: "Total Exporters",
+          value: data.totalExporters.value,
+          change: `${data.totalExporters.changeType === "positive" ? "+" : ""}${
+            data.totalExporters.change
+          }%`,
+          changeType: data.totalExporters.changeType,
+          icon: <Building className="h-5 w-5 text-green-600" />,
+        },
+        {
+          title: "Total Users",
+          value: data.totalUsers.value,
+          change: `${data.totalUsers.changeType === "positive" ? "+" : ""}${
+            data.totalUsers.change
+          }%`,
+          changeType: data.totalUsers.changeType,
+          icon: <Users className="h-5 w-5 text-purple-600" />,
+        },
+        {
+          title: "Total Revenue",
+          value: `$${data.totalRevenue.value.toLocaleString()}`,
+          change: `${data.totalRevenue.changeType === "positive" ? "+" : ""}${
+            data.totalRevenue.change
+          }%`,
+          changeType: data.totalRevenue.changeType,
+          icon: <DollarSign className="h-5 w-5 text-orange-600" />,
+        },
+      ]
+    : defaultStats;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
@@ -115,51 +190,60 @@ export const DashboardStats: React.FC = () => {
   );
 };
 
-export const RecentActivity: React.FC = () => {
-  const activities = [
+interface RecentActivityProps {
+  data?: Array<{
+    id: string;
+    user: string;
+    action: string;
+    time: Date | string;
+    type: string;
+  }>;
+}
+
+export const RecentActivity: React.FC<RecentActivityProps> = ({ data }) => {
+  const defaultActivities = [
     {
-      id: 1,
-      user: "John Doe",
-      action: "Created new project",
-      time: "2 minutes ago",
-      type: "create",
-    },
-    {
-      id: 2,
-      user: "Jane Smith",
-      action: "Updated user profile",
-      time: "5 minutes ago",
-      type: "update",
-    },
-    {
-      id: 3,
-      user: "Mike Johnson",
-      action: "Deleted old files",
-      time: "10 minutes ago",
-      type: "delete",
-    },
-    {
-      id: 4,
-      user: "Sarah Wilson",
-      action: "Exported data report",
-      time: "15 minutes ago",
-      type: "export",
+      id: "1",
+      user: "System",
+      action: "No recent activity",
+      time: new Date(),
+      type: "info",
     },
   ];
 
+  const activities = data && data.length > 0 ? data : defaultActivities;
+
   const getActivityColor = (type: string) => {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case "create":
         return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
       case "update":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
       case "delete":
         return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
-      case "export":
+      case "view":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400";
+      case "approve":
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
+      case "reject":
+        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
     }
+  };
+
+  const formatTime = (time: Date | string) => {
+    const date = new Date(time);
+    const now = new Date();
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60)
+    );
+
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
+    if (diffInMinutes < 1440)
+      return `${Math.floor(diffInMinutes / 60)} hours ago`;
+    return date.toLocaleDateString();
   };
 
   return (
@@ -168,20 +252,20 @@ export const RecentActivity: React.FC = () => {
         Recent Activity
       </h3>
       <div className="space-y-4">
-        {activities.map((activity) => (
+        {activities.slice(0, 8).map((activity) => (
           <div key={activity.id} className="flex items-center gap-4">
             <div className="flex-shrink-0">
               <div className="w-10 h-10 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  {activity.user.charAt(0)}
+                  {activity.user.charAt(0).toUpperCase()}
                 </span>
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                 {activity.user}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                 {activity.action}
               </p>
             </div>
@@ -192,10 +276,10 @@ export const RecentActivity: React.FC = () => {
                   getActivityColor(activity.type)
                 )}
               >
-                {activity.type}
+                {activity.type.toLowerCase()}
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                {activity.time}
+                {formatTime(activity.time)}
               </span>
             </div>
           </div>
