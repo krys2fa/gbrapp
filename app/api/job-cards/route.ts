@@ -15,6 +15,9 @@ async function getAllJobCards(req: NextRequest) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const status = searchParams.get("status");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const skip = (page - 1) * limit;
 
     // Build where clause based on filters
     const where: any = {};
@@ -42,6 +45,9 @@ async function getAllJobCards(req: NextRequest) {
       where.status = status;
     }
 
+    // Get total count of job cards matching the filter
+    const totalCount = await prisma.jobCard.count({ where });
+
     // Get job cards with basic relations
     const jobCards = await prisma.jobCard.findMany({
       where,
@@ -52,9 +58,14 @@ async function getAllJobCards(req: NextRequest) {
       orderBy: {
         createdAt: "desc",
       },
+      skip,
+      take: limit,
     });
 
-    return NextResponse.json(jobCards);
+    return NextResponse.json({
+      jobCards,
+      total: totalCount,
+    });
   } catch (error) {
     console.error("Error fetching job cards:", error);
     return NextResponse.json(

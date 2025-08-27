@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as jose from 'jose';
+import * as jose from "jose";
 import { Role } from "@/app/generated/prisma";
 
 interface DecodedToken {
@@ -44,7 +44,7 @@ export function withAuth<T = any>(
       const token = authHeader.substring(7);
       const secret = new TextEncoder().encode(JWT_SECRET);
       const { payload } = await jose.jwtVerify(token, secret);
-      
+
       const decoded: DecodedToken = {
         userId: payload.userId as string,
         email: payload.email as string,

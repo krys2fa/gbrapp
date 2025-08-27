@@ -86,9 +86,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
-      id: "job-card",
-      label: "Job Card",
-      href: "/job-card",
+      id: "job-cards",
+      label: "Job Cards",
+      href: "/job-cards",
       icon: <FileText className="h-5 w-5" />,
     },
     {
@@ -181,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       >
         {/* Desktop Header */}
         <div className="bg-black hidden lg:flex items-center gap-3 px-6 py-5 border-b border-amber-500/30 dark:border-amber-500/20">
-          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg border border-amber-500/30"></div>
+          {/* <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg border border-amber-500/30"></div> */}
           <div>
             {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               GBR App
@@ -194,7 +194,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               alt="GBR Logo"
               width={120}
               height={80}
-              className="w-auto h-8"
+              className="w-auto h-8 ml-10"
             />
           </div>
         </div>

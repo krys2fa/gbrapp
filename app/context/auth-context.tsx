@@ -40,19 +40,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const storedToken = localStorage.getItem("auth-token");
         const storedUser = localStorage.getItem("auth-user");
-  
+
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
-          
+
           // Validate token with the backend
           const response = await fetch("/api/auth/validate", {
             headers: {
-              Authorization: `Bearer ${storedToken}`
+              Authorization: `Bearer ${storedToken}`,
             },
-            credentials: 'include'
+            credentials: "include",
           });
-          
+
           if (!response.ok) {
             // If token is invalid, clear everything
             localStorage.removeItem("auth-token");
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     };
-  
+
     checkAuth();
   }, []);
 
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'include', // Important: include cookies
+        credentials: "include", // Important: include cookies
       });
 
       if (!response.ok) {
@@ -104,9 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Store in localStorage for persistence
       localStorage.setItem("auth-token", data.token);
       localStorage.setItem("auth-user", JSON.stringify(data.user));
-      
+
       // The cookie is set on the server side in the login API response
-      
+
       // After a short delay to ensure all state updates have processed, redirect
       setTimeout(() => {
         router.push("/dashboard");
