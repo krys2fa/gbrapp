@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { Menu, X, LayoutDashboard, Settings, ChevronRight } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/ui/button";
@@ -26,7 +28,7 @@ const NavItem: React.FC<NavItemProps> = ({
   onClick,
 }) => {
   return (
-    <a
+    <Link
       href={href}
       onClick={onClick}
       className={cn(
@@ -55,13 +57,13 @@ const NavItem: React.FC<NavItemProps> = ({
             : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
         )}
       />
-    </a>
+    </Link>
   );
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState("dashboard");
+  const pathname = usePathname();
 
   const navigation = [
     {
@@ -82,8 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const handleNavClick = (itemId: string) => {
-    setActiveItem(itemId);
+  const handleNavClick = () => {
     setIsMobileMenuOpen(false);
   };
 
@@ -143,9 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       >
         {/* Desktop Header */}
         <div className="bg-black hidden lg:flex items-center gap-3 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg">
-           
-          </div>
+          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg"></div>
           <div>
             {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               GBR App
@@ -164,13 +163,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </div>
 
         {/* Navigation */}
-          {/* Mobile Menu Logo - Only visible when mobile menu is open */}
+        {/* Mobile Menu Logo - Only visible when mobile menu is open */}
         <nav className="p-4 xl:p-6 space-y-2 mt-16 lg:mt-0">
           <div className="bg-black flex justify-center mb-6 lg:hidden">
             <div>
-              <Image 
-                src="/goldbod-logo.webp" 
-                alt="GBR Logo" 
+              <Image
+                src="/goldbod-logo.webp"
+                alt="GBR Logo"
                 width={120}
                 height={40}
                 className="w-auto h-10"
@@ -188,8 +187,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
                   icon={item.icon}
                   label={item.label}
                   href={item.href}
-                  isActive={activeItem === item.id}
-                  onClick={() => handleNavClick(item.id)}
+                  isActive={pathname === item.href || pathname.startsWith(`${item.href}/`)}
+                  onClick={handleNavClick}
                 />
               ))}
             </div>
