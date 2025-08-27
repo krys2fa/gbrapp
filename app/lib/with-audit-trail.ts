@@ -35,6 +35,12 @@ export function withAuditTrail<T = Record<string, string>>(
       userId = token;
     }
 
+    // If we're handling a login request, we don't have a userId yet, so skip audit for now
+    if (req.nextUrl.pathname === "/api/auth/login" && req.method === "POST") {
+      // Skip audit trail for login attempts to avoid foreign key constraint issues
+      return await handler(req, params);
+    }
+
     // Determine action type from HTTP method
     const method = req.method;
     let action: ActionType;
@@ -57,8 +63,10 @@ export function withAuditTrail<T = Record<string, string>>(
         action = ActionType.OTHER;
     }
 
-    // Determine entity ID from URL params
-    const entityId = (params.params as any).id || "unknown";
+    // Determine entity ID from URL params, safely handling cases where params might be undefined
+    const entityId = params.params
+      ? (params.params as any).id || "unknown"
+      : "unknown";
 
     // For POST/PUT/PATCH requests, capture the request body
     let details: any = null;

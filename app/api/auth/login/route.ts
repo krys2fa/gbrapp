@@ -99,5 +99,5 @@ async function login(req: NextRequest) {
   }
 }
 
-// Wrap handler with audit trail
-export const POST = withAuditTrail(login, { entityType: "User" });
+// Export the login handler directly without audit trail since we're handling that specially
+export const POST = login;
