@@ -149,21 +149,37 @@ function NewJobCardPage() {
     setLoading(true);
     setError("");
 
+    // Simplify submission to only include required fields
+    const submissionData = {
+      exporterId: formData.exporterId,
+      shipmentTypeId: formData.shipmentTypeId,
+      status: formData.status,
+      // Include reference number if provided
+      ...(formData.referenceNumber ? { referenceNumber: formData.referenceNumber } : {})
+    };
+
+    console.log("Submitting data:", submissionData);
+
     try {
       const response = await fetch("/api/job-cards", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
 
+      const responseData = await response.json();
+      console.log("Server response:", response.status, responseData);
+
       if (response.ok) {
-        const data = await response.json();
-        router.push(`/job-cards/${data.id}`);
+        router.push(`/job-cards/${responseData.id}`);
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Failed to create job card");
+        setError(responseData.error || "Failed to create job card");
+        console.error("Server error details:", responseData);
+        if (responseData.details) {
+          setError(`${responseData.error}: ${responseData.details}`);
+        }
       }
     } catch (error) {
       console.error("Error creating job card:", error);
@@ -202,13 +218,20 @@ function NewJobCardPage() {
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
                 {error && (
-                  <div className="rounded-md bg-red-50 p-4">
+                  <div className="rounded-md bg-red-50 p-4 mb-6">
                     <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      </div>
                       <div className="ml-3">
                         <h3 className="text-sm font-medium text-red-800">
-                          Error
+                          Error Creating Job Card
                         </h3>
-                        <div className="text-sm text-red-700">{error}</div>
+                        <div className="mt-2 text-sm text-red-700 whitespace-pre-wrap">
+                          {error}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -461,9 +484,9 @@ function NewJobCardPage() {
                       inputId="destinationCountry"
                       name="destinationCountry"
                       options={countryOptions}
-                      value={countryOptions.find((option: any) => option.value === formData.destinationCountry)}
+                      value={formData.destinationCountry ? countryOptions.find((option: any) => option.value === formData.destinationCountry) : null}
                       onChange={handleCountryChange}
-                      className="mt-1"
+                      className="mt-1 form-control-select"
                       classNamePrefix="react-select"
                       placeholder="Select country..."
                       styles={customSelectStyles}

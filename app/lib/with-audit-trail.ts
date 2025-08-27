@@ -64,9 +64,17 @@ export function withAuditTrail<T = Record<string, string>>(
     }
 
     // Determine entity ID from URL params, safely handling cases where params might be undefined
-    const entityId = params.params
-      ? (params.params as any).id || "unknown"
-      : "unknown";
+    let entityId = "unknown";
+    
+    // Handle params safely by checking if they exist first
+    if (params && params.params) {
+      try {
+        // Use optional chaining to safely access id
+        entityId = (params.params as any)?.id || "unknown";
+      } catch (error) {
+        console.error("Error accessing params:", error);
+      }
+    }
 
     // For POST/PUT/PATCH requests, capture the request body
     let details: any = null;

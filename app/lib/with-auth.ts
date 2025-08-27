@@ -25,7 +25,7 @@ export function withAuth<T = any>(
   ) => Promise<NextResponse>,
   requiredRoles: Role[] = []
 ) {
-  return async (req: NextRequest, params: { params: T }) => {
+  return async (req: NextRequest, params: { params?: T }) => {
     const JWT_SECRET =
       process.env.JWT_SECRET || "fallback-secret-for-development-only";
 
@@ -65,7 +65,10 @@ export function withAuth<T = any>(
       }
 
       // Call the original handler with user info
-      return handler(req, { ...params, user: decoded });
+      return handler(req, { 
+        params: params.params as T, 
+        user: decoded 
+      });
     } catch (error: any) {
       console.error("Authentication error:", error);
 
