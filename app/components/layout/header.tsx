@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
               {title}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Welcome back! Here's what's happening today.
+              {/* Welcome back! Here's what's happening today. */}
             </p>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Menu, X, LayoutDashboard, Settings, ChevronRight } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/ui/button";
@@ -92,12 +93,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">G</span>
+            <div className="w-32 h-12 bg-black flex items-center justify-center">
+              <Image
+                src="/goldbod-logo.webp"
+                alt="GBR Logo"
+                width={200}
+                height={24}
+                className="h-6"
+              />
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               GBR App
-            </h1>
+            </h1> */}
           </div>
           <Button
             variant="ghost"
@@ -135,17 +142,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         )}
       >
         {/* Desktop Header */}
-        <div className="hidden lg:flex items-center gap-3 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">G</span>
+        <div className="bg-black hidden lg:flex items-center gap-3 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg">
+           
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               GBR App
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Management System
-            </p>
+            </p> */}
+            <Image
+              src="/goldbod-logo.webp"
+              alt="GBR Logo"
+              width={120}
+              height={80}
+              className="w-auto h-8"
+            />
           </div>
         </div>
 
