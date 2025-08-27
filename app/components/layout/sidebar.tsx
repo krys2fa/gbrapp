@@ -91,12 +91,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       href: "/job-cards",
       icon: <FileText className="h-5 w-5" />,
     },
-    {
-      id: "evaluation",
-      label: "Evaluation",
-      href: "/evaluation",
-      icon: <ClipboardCheck className="h-5 w-5" />,
-    },
+    // {
+    //   id: "evaluation",
+    //   label: "Evaluation",
+    //   href: "/evaluation",
+    //   icon: <ClipboardCheck className="h-5 w-5" />,
+    // },
     {
       id: "sealing-certification",
       label: "Sealing & Certification",
