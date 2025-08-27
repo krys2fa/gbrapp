@@ -24,6 +24,50 @@ function NewJobCardPage() {
   
   // Get countries list for the dropdown
   const countryOptions = useMemo(() => countryList().getData(), []);
+  
+  // Custom styles for React Select to match other form inputs
+  const customSelectStyles = {
+    container: (provided: any) => ({
+      ...provided,
+      height: '38px',
+    }),
+    control: (provided: any) => ({
+      ...provided,
+      minHeight: '38px',
+      height: '38px',
+      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+      borderColor: '#D1D5DB',
+      '&:hover': {
+        borderColor: '#9CA3AF',
+      }
+    }),
+    valueContainer: (provided: any) => ({
+      ...provided,
+      height: '38px',
+      padding: '0 6px',
+      display: 'flex',
+      alignItems: 'center',
+    }),
+    input: (provided: any) => ({
+      ...provided,
+      margin: '0',
+      padding: '0',
+    }),
+    indicatorSeparator: () => ({
+      display: 'none',
+    }),
+    indicatorsContainer: (provided: any) => ({
+      ...provided,
+      height: '38px',
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? '#4F46E5' : state.isFocused ? '#EEF2FF' : 'white',
+      color: state.isSelected ? 'white' : '#111827',
+      cursor: 'pointer',
+      fontSize: '0.875rem',
+    }),
+  };
 
   const [formData, setFormData] = useState({
     referenceNumber: "",
@@ -236,7 +280,7 @@ function NewJobCardPage() {
                       name="referenceNumber"
                       id="referenceNumber"
                       required
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="mt-1 form-control"
                       value={formData.referenceNumber}
                       onChange={handleChange}
                     />
@@ -254,7 +298,7 @@ function NewJobCardPage() {
                       name="receivedDate"
                       id="receivedDate"
                       required
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="mt-1 form-control"
                       value={formData.receivedDate}
                       onChange={handleChange}
                     />
@@ -270,7 +314,7 @@ function NewJobCardPage() {
                     <select
                       id="exporterTypeId"
                       name="exporterTypeId"
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 form-control"
                       value={formData.exporterTypeId}
                       onChange={handleChange}
                     >
@@ -294,7 +338,7 @@ function NewJobCardPage() {
                       id="exporterId"
                       name="exporterId"
                       required
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 form-control"
                       value={formData.exporterId}
                       onChange={handleChange}
                     >
@@ -318,7 +362,7 @@ function NewJobCardPage() {
                       id="shipmentTypeId"
                       name="shipmentTypeId"
                       required
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 form-control"
                       value={formData.shipmentTypeId}
                       onChange={handleChange}
                     >
@@ -343,7 +387,7 @@ function NewJobCardPage() {
                       type="text"
                       name="unitOfMeasure"
                       id="unitOfMeasure"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="mt-1 form-control"
                       value={formData.unitOfMeasure}
                       onChange={handleChange}
                     />
@@ -360,7 +404,7 @@ function NewJobCardPage() {
                     <select
                       id="idType"
                       name="idType"
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 form-control"
                       value={formData.idType}
                       onChange={handleChange}
                     >
@@ -493,10 +537,12 @@ function NewJobCardPage() {
                       inputId="destinationCountry"
                       name="destinationCountry"
                       options={countryOptions}
-                      value={countryOptions.find(option => option.value === formData.destinationCountry)}
+                      value={countryOptions.find((option: any) => option.value === formData.destinationCountry)}
                       onChange={handleCountryChange}
                       className="mt-1"
+                      classNamePrefix="react-select"
                       placeholder="Select country..."
+                      styles={customSelectStyles}
                       isClearable
                     />
                   </div>
@@ -681,7 +727,7 @@ function NewJobCardPage() {
                       type="text"
                       name="remittanceType"
                       id="remittanceType"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="mt-1 form-control"
                       value={formData.remittanceType}
                       onChange={handleChange}
                     />
@@ -697,7 +743,7 @@ function NewJobCardPage() {
                     <select
                       id="status"
                       name="status"
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 form-control"
                       value={formData.status}
                       onChange={handleChange}
                     >
@@ -719,7 +765,7 @@ function NewJobCardPage() {
                       id="notes"
                       name="notes"
                       rows={3}
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md"
+                      className="mt-1 form-control"
                       placeholder="Additional information or notes about this job card"
                       value={formData.notes}
                       onChange={handleChange}

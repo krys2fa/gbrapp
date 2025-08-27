@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import custom form styles */
+@import './styles/form.css';
+@import './styles/form-fields.css';
+
 :root {
   /* Light mode colors */
   --background: #ffffff;

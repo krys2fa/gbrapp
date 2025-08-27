@@ -1,0 +1,73 @@
+/* Consistent form field styles */
+.form-control {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0.5rem 0.75rem !important;
+  width: 100% !important;
+  border-radius: 0.375rem !important;
+  border-color: #D1D5DB !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.form-control:focus {
+  outline: none !important;
+  border-color: #6366F1 !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Input specific styles */
+input.form-control {
+  display: block !important;
+}
+
+/* Select specific styles */
+select.form-control {
+  padding-right: 2.5rem !important;
+  background-position: right 0.5rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1.5em 1.5em !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* React-select styles to match other controls */
+.react-select-container {
+  height: 38px !important;
+}
+
+.react-select__control {
+  min-height: 38px !important;
+  height: 38px !important;
+  border-color: #D1D5DB !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.react-select__control--is-focused {
+  border-color: #6366F1 !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+.react-select__value-container {
+  height: 38px !important;
+  padding: 0 6px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.react-select__indicators {
+  height: 38px !important;
+}
+
+.react-select__indicator-separator {
+  display: none !important;
+}
+
+/* Style placeholder text consistently */
+.react-select__placeholder,
+::placeholder {
+  color: #9CA3AF !important;
+}
