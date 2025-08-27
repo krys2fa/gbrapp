@@ -33,7 +33,8 @@ export async function middleware(request: NextRequest) {
   
   // If no token found, redirect to login
   if (!token) {
-    console.log("No token found, redirecting to login");
+    console.log("No token found in middleware for path:", pathname);
+    console.log("All cookies:", request.cookies.getAll());
     const url = new URL("/login", request.url);
     url.searchParams.set("from", pathname);
     return NextResponse.redirect(url);

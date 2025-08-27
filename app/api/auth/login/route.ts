@@ -87,6 +87,9 @@ async function login(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
     });
 
+    console.log("Login successful, cookie set for user:", user.email);
+    console.log("Token generated:", token.substring(0, 20) + "...");
+
     return response;
   } catch (error) {
     console.error("Login error:", error);

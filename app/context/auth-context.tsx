@@ -106,11 +106,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("auth-user", JSON.stringify(data.user));
 
       // The cookie is set on the server side in the login API response
+      console.log("Login successful, user set:", data.user);
+      console.log("Token stored:", data.token.substring(0, 20) + "...");
 
-      // After a short delay to ensure all state updates have processed, redirect
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 100);
+      // Force a page reload to ensure the cookie is available to the middleware
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Login error:", error);
       throw error;
