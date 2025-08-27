@@ -37,15 +37,15 @@ const NavItem: React.FC<NavItemProps> = ({
       className={cn(
         "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group",
         isActive
-          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
-          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800/50"
+          ? "bg-gradient-to-r from-black to-black/90 text-white border-l-4 border-amber-500 shadow-md"
+          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800"
       )}
     >
       <div
         className={cn(
           "transition-transform duration-200",
           isActive
-            ? "text-white"
+            ? "text-amber-400"
             : "text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-200"
         )}
       >
@@ -56,7 +56,7 @@ const NavItem: React.FC<NavItemProps> = ({
         className={cn(
           "ml-auto h-4 w-4 transition-transform duration-200",
           isActive
-            ? "text-white/80"
+            ? "text-amber-400"
             : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
         )}
       />
@@ -118,10 +118,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   return (
     <div className="lg:flex lg:h-screen lg:overflow-hidden">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-amber-500/20 dark:border-amber-500/10">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-32 h-12 bg-black flex items-center justify-center">
+            <div className="w-32 h-12 bg-black flex items-center justify-center border border-amber-500/30 rounded-md">
               <Image
                 src="/goldbod-logo.webp"
                 alt="GBR Logo"
@@ -170,8 +170,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         )}
       >
         {/* Desktop Header */}
-        <div className="bg-black hidden lg:flex items-center gap-3 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg"></div>
+        <div className="bg-black hidden lg:flex items-center gap-3 px-6 py-5 border-b border-amber-500/30 dark:border-amber-500/20">
+          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg border border-amber-500/30"></div>
           <div>
             {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               GBR App
@@ -192,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         {/* Navigation */}
         {/* Mobile Menu Logo - Only visible when mobile menu is open */}
         <nav className="p-4 xl:p-6 space-y-2 mt-16 lg:mt-0">
-          <div className="bg-black flex justify-center mb-6 lg:hidden">
+          <div className="bg-black flex justify-center mb-6 lg:hidden p-4 rounded-lg border border-amber-500/30">
             <div>
               <Image
                 src="/goldbod-logo.webp"
@@ -204,7 +204,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             </div>
           </div>
           <div className="mb-4 lg:mb-6">
-            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-4">
+            <h2 className="text-xs font-semibold text-amber-600 dark:text-amber-500 uppercase tracking-wider mb-3 px-4">
               Main Menu
             </h2>
             <div className="space-y-1">
@@ -226,14 +226,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </nav>
 
         {/* User Profile Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-amber-500/20 dark:border-amber-500/10">
           <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
-            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-medium text-sm">U</span>
+            <div className="w-10 h-10 bg-black border border-amber-500/40 rounded-full flex items-center justify-center">
+              <span className="text-amber-500 font-medium text-sm">U</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                User Name
+                <span className="text-amber-700 dark:text-amber-500">User</span> Name
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                 user@example.com
