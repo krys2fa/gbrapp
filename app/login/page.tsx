@@ -24,15 +24,16 @@ export default function LoginPage() {
       await login(email, password);
       // Redirect is handled in the auth context
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Login failed. Please try again.";
+      const errorMessage =
+        err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(errorMessage);
     }
   };
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Side - Form */}
-      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
+      {/* Left Side - Form (2/3 width on large screens) */}
+      <div className="flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 w-full lg:w-2/3">
         <div className="mx-auto w-full max-w-sm lg:max-w-md">
           <div className="mb-10 ">
             <div className="flex justify-center mb-6 bg-black">
@@ -85,7 +86,7 @@ export default function LoginPage() {
                   autoComplete="email"
                   required
                   className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  placeholder="admin@goldbod.local"
+                  placeholder="admin@gbrapp.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -163,8 +164,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right Side - Image/Brand */}
-      <div className="relative hidden w-0 flex-1 lg:block">
+      {/* Right Side - Demo Credentials (1/3 width on large screens) */}
+      <div className="relative hidden lg:flex w-0 lg:w-1/3 flex-1">
         <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-yellow-600 to-yellow-800 flex flex-col items-center justify-center">
           <div className="text-center px-8">
             {/* <div className="flex justify-center mb-8">
