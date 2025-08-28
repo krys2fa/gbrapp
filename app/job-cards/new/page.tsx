@@ -57,7 +57,10 @@ function NewJobCardPage() {
       ...provided,
       height: "38px",
     }),
-    option: (provided: Record<string, unknown>, state: { isSelected: boolean; isFocused: boolean }) => ({
+    option: (
+      provided: Record<string, unknown>,
+      state: { isSelected: boolean; isFocused: boolean }
+    ) => ({
       ...provided,
       backgroundColor: state.isSelected
         ? "#4F46E5"
@@ -140,7 +143,9 @@ function NewJobCardPage() {
   };
 
   // Handle country selection from react-select
-  const handleCountryChange = (selectedOption: { value: string; label: string } | null) => {
+  const handleCountryChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
     setFormData((prev) => ({
       ...prev,
       destinationCountry: selectedOption ? selectedOption.value : "",
@@ -373,7 +378,9 @@ function NewJobCardPage() {
                       <option value="TIN">TIN</option>
                       <option value="PASSPORT">Passport</option>
                       <option value="GHANA_CARD">Ghana Card</option>
-                      <option value="DRIVERS_LICENSE">Driver&apos;s License</option>
+                      <option value="DRIVERS_LICENSE">
+                        Driver&apos;s License
+                      </option>
                     </select>
                   </div>
 

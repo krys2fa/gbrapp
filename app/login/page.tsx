@@ -201,18 +201,34 @@ export default function LoginPage() {
               </h3>
               <div className="space-y-4 text-left">
                 <div className="bg-white/10 rounded-md p-3 flex items-center gap-3">
-                  <Shield className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                  <Shield
+                    className="h-5 w-5 text-yellow-400"
+                    aria-hidden="true"
+                  />
                   <div>
-                    <p className="text-sm font-medium text-yellow-200">Super Administrator</p>
-                    <p className="text-xs text-white mt-1">Email: superadmin@gbrapp.com</p>
-                    <p className="text-xs text-white">Password: superadmin123</p>
+                    <p className="text-sm font-medium text-yellow-200">
+                      Super Administrator
+                    </p>
+                    <p className="text-xs text-white mt-1">
+                      Email: superadmin@gbrapp.com
+                    </p>
+                    <p className="text-xs text-white">
+                      Password: superadmin123
+                    </p>
                   </div>
                 </div>
                 <div className="bg-white/10 rounded-md p-3 flex items-center gap-3">
-                  <User className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                  <User
+                    className="h-5 w-5 text-yellow-400"
+                    aria-hidden="true"
+                  />
                   <div>
-                    <p className="text-sm font-medium text-yellow-200">Administrator</p>
-                    <p className="text-xs text-white mt-1">Email: admin@gbrapp.com</p>
+                    <p className="text-sm font-medium text-yellow-200">
+                      Administrator
+                    </p>
+                    <p className="text-xs text-white mt-1">
+                      Email: admin@gbrapp.com
+                    </p>
                     <p className="text-xs text-white">Password: admin123</p>
                   </div>
                 </div>

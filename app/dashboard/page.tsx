@@ -7,16 +7,42 @@ import {
   RecentActivity,
 } from "@/app/components/ui/dashboard-stats";
 import { DashboardCharts } from "@/app/components/ui/dashboard-charts";
-import { BarChart3, PieChart, Activity, Calendar, RefreshCw, Plus, Building, Users, Settings } from "lucide-react";
+import {
+  BarChart3,
+  PieChart,
+  Activity,
+  Calendar,
+  RefreshCw,
+  Plus,
+  Building,
+  Users,
+  Settings,
+} from "lucide-react";
 import { withClientAuth } from "@/app/lib/with-client-auth";
 import { useAuth } from "@/app/context/auth-context";
 
 interface DashboardData {
   overview: {
-    totalJobCards: { value: number; change: string; changeType: "positive" | "negative" };
-    totalExporters: { value: number; change: string; changeType: "positive" | "negative" };
-    totalUsers: { value: number; change: string; changeType: "positive" | "negative" };
-    totalRevenue: { value: number; change: string; changeType: "positive" | "negative" };
+    totalJobCards: {
+      value: number;
+      change: string;
+      changeType: "positive" | "negative";
+    };
+    totalExporters: {
+      value: number;
+      change: string;
+      changeType: "positive" | "negative";
+    };
+    totalUsers: {
+      value: number;
+      change: string;
+      changeType: "positive" | "negative";
+    };
+    totalRevenue: {
+      value: number;
+      change: string;
+      changeType: "positive" | "negative";
+    };
     activeJobCards: number;
     completedJobCards: number;
     pendingJobCards: number;
@@ -38,7 +64,9 @@ interface DashboardData {
 
 function DashboardPage() {
   const { user } = useAuth();
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,12 +74,12 @@ function DashboardPage() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await fetch("/api/dashboard/stats");
       if (!response.ok) {
         throw new Error("Failed to fetch dashboard data");
       }
-      
+
       const data = await response.json();
       setDashboardData(data);
     } catch (err) {
@@ -94,7 +122,9 @@ function DashboardPage() {
                 disabled={isLoading}
                 className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`}
+                />
                 <span className="font-medium">Refresh</span>
               </button>
             </div>
@@ -106,9 +136,13 @@ function DashboardPage() {
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <p className="text-red-700 dark:text-red-400 font-medium">Error loading dashboard data</p>
+              <p className="text-red-700 dark:text-red-400 font-medium">
+                Error loading dashboard data
+              </p>
             </div>
-            <p className="text-red-600 dark:text-red-300 text-sm mt-1">{error}</p>
+            <p className="text-red-600 dark:text-red-300 text-sm mt-1">
+              {error}
+            </p>
           </div>
         )}
 
@@ -117,7 +151,9 @@ function DashboardPage() {
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading dashboard data...</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                Loading dashboard data...
+              </p>
             </div>
           </div>
         )}
@@ -135,43 +171,51 @@ function DashboardPage() {
                 <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                   <Activity className="h-5 w-5 text-blue-600" />
                 </div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Job Cards</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  Active Job Cards
+                </span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {dashboardData.overview.activeJobCards}
               </p>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-xl">
                   <BarChart3 className="h-5 w-5 text-green-600" />
                 </div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed Job Cards</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  Completed Job Cards
+                </span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {dashboardData.overview.completedJobCards}
               </p>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
                   <PieChart className="h-5 w-5 text-yellow-600" />
                 </div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Pending Job Cards</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  Pending Job Cards
+                </span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {dashboardData.overview.pendingJobCards}
               </p>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                   <Calendar className="h-5 w-5 text-purple-600" />
                 </div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">This Week</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  This Week
+                </span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {dashboardData.overview.thisWeekJobCards}
@@ -181,9 +225,7 @@ function DashboardPage() {
         )}
 
         {/* Charts Section */}
-        {dashboardData && (
-          <DashboardCharts data={dashboardData.charts} />
-        )}
+        {dashboardData && <DashboardCharts data={dashboardData.charts} />}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -201,33 +243,33 @@ function DashboardPage() {
                   </span>
                 </div>
               </div>
-              
+
               {/* Quick Actions */}
               <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-4">
                 {[
-                  { 
-                    label: "New Job Card", 
-                    icon: <Plus className="h-6 w-6" />, 
-                    color: "bg-yellow-600", 
-                    href: "/job-cards/new" 
+                  {
+                    label: "New Job Card",
+                    icon: <Plus className="h-6 w-6" />,
+                    color: "bg-yellow-600",
+                    href: "/job-cards/new",
                   },
-                  { 
-                    label: "View Exporters", 
-                    icon: <Building className="h-6 w-6" />, 
-                    color: "bg-gray-800", 
-                    href: "/exporters" 
+                  {
+                    label: "View Exporters",
+                    icon: <Building className="h-6 w-6" />,
+                    color: "bg-gray-800",
+                    href: "/exporters",
                   },
-                  { 
-                    label: "User Management", 
-                    icon: <Users className="h-6 w-6" />, 
-                    color: "bg-yellow-700", 
-                    href: "/users" 
+                  {
+                    label: "User Management",
+                    icon: <Users className="h-6 w-6" />,
+                    color: "bg-yellow-700",
+                    href: "/users",
                   },
-                  { 
-                    label: "System Settings", 
-                    icon: <Settings className="h-6 w-6" />, 
-                    color: "bg-gray-900", 
-                    href: "/settings" 
+                  {
+                    label: "System Settings",
+                    icon: <Settings className="h-6 w-6" />,
+                    color: "bg-gray-900",
+                    href: "/settings",
                   },
                 ].map((action, index) => (
                   <a
@@ -263,7 +305,11 @@ function DashboardPage() {
                 {[
                   { service: "API Server", status: "online", color: "green" },
                   { service: "Database", status: "online", color: "green" },
-                  { service: "Auth Service", status: dashboardData ? "online" : "warning", color: dashboardData ? "green" : "yellow" },
+                  {
+                    service: "Auth Service",
+                    status: dashboardData ? "online" : "warning",
+                    color: dashboardData ? "green" : "yellow",
+                  },
                   { service: "File Storage", status: "online", color: "green" },
                 ].map((item, index) => (
                   <div

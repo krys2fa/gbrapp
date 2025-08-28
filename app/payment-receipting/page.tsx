@@ -38,21 +38,35 @@ const PaymentReceiptingPage = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Job Card</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Job Card
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Customer
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {jobCards.map((card) => (
                 <tr key={card.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 font-medium text-gray-900">{card.title}</td>
+                  <td className="px-4 py-2 font-medium text-gray-900">
+                    {card.title}
+                  </td>
                   <td className="px-4 py-2 text-gray-700">{card.customer}</td>
                   <td className="px-4 py-2 flex gap-2 flex-wrap">
-                    <Link href={`/invoice/assay/${card.assayInvoiceId}`} className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                    <Link
+                      href={`/invoice/assay/${card.assayInvoiceId}`}
+                      className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                    >
                       <FileText className="h-4 w-4 mr-1" /> View Assay Invoice
                     </Link>
-                    <Link href={`/invoice/wht/${card.whtInvoiceId}`} className="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                    <Link
+                      href={`/invoice/wht/${card.whtInvoiceId}`}
+                      className="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                    >
                       <FileText className="h-4 w-4 mr-1" /> View WHT Invoice
                     </Link>
                     <button className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700">

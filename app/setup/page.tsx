@@ -42,11 +42,19 @@ const SetupPage = () => {
         <h2 className="text-xl font-bold mb-6">Setup Options</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {setupOptions.map((option) => (
-            <Link key={option.label} href={option.href} className="group block bg-white shadow rounded-xl p-6 hover:bg-gray-50 transition">
-              <div className={`w-12 h-12 ${option.color} rounded-xl flex items-center justify-center mb-4 text-white group-hover:scale-105 transition-transform`}>
+            <Link
+              key={option.label}
+              href={option.href}
+              className="group block bg-white shadow rounded-xl p-6 hover:bg-gray-50 transition"
+            >
+              <div
+                className={`w-12 h-12 ${option.color} rounded-xl flex items-center justify-center mb-4 text-white group-hover:scale-105 transition-transform`}
+              >
                 {option.icon}
               </div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">{option.label}</h3>
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">
+                {option.label}
+              </h3>
               <p className="text-sm text-gray-600">{option.description}</p>
             </Link>
           ))}
