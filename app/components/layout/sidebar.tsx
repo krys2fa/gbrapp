@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     {
       id: "settings",
       label: "Settings",
-      href: "/settings",
+      href: "/setup",
       icon: <Settings className="h-5 w-5" />,
     },
   ];

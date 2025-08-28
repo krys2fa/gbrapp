@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Search, Bell, User, Moon, Sun } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { cn } from "@/app/lib/utils";
@@ -77,15 +78,17 @@ export const Header: React.FC<HeaderProps> = ({
           </Button>
 
           {/* Profile */}
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2 rounded-xl px-3"
-          >
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              <User className="h-4 w-4 text-white" />
-            </div>
-            <span className="hidden md:block text-sm font-medium">Profile</span>
-          </Button>
+          <Link href="/settings">
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2 rounded-xl px-3"
+            >
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-white" />
+              </div>
+              <span className="hidden md:block text-sm font-medium">Profile</span>
+            </Button>
+          </Link>
         </div>
       </div>
     </header>
