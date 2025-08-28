@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/auth-context";
 import Image from "next/image";
-import { AtSign, Key, Loader2 } from "lucide-react";
+import { AtSign, Key, Loader2, Shield, User, Mail } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -68,24 +68,19 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="flex items-center gap-2 text-sm font-medium leading-6 text-gray-900"
               >
+                <Mail className="h-5 w-5 text-gray-400" aria-hidden="true" />
                 Email address
               </label>
               <div className="relative mt-2">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <AtSign
-                    className="h-5 w-5 text-gray-400"
-                    aria-hidden="true"
-                  />
-                </div>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 pl-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   placeholder="admin@gbrapp.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -96,21 +91,19 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="flex items-center gap-2 text-sm font-medium leading-6 text-gray-900"
               >
+                <Key className="h-5 w-5 text-gray-400" aria-hidden="true" />
                 Password
               </label>
               <div className="relative mt-2">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Key className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                </div>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 pl-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -192,23 +185,21 @@ export default function LoginPage() {
                 Demo Login Credentials
               </h3>
               <div className="space-y-4 text-left">
-                <div className="bg-white/10 rounded-md p-3">
-                  <p className="text-sm font-medium text-yellow-200">
-                    Super Administrator
-                  </p>
-                  <p className="text-xs text-white mt-1">
-                    Email: superadmin@gbrapp.com
-                  </p>
-                  <p className="text-xs text-white">Password: superadmin123</p>
+                <div className="bg-white/10 rounded-md p-3 flex items-center gap-3">
+                  <Shield className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-200">Super Administrator</p>
+                    <p className="text-xs text-white mt-1">Email: superadmin@gbrapp.com</p>
+                    <p className="text-xs text-white">Password: superadmin123</p>
+                  </div>
                 </div>
-                <div className="bg-white/10 rounded-md p-3">
-                  <p className="text-sm font-medium text-yellow-200">
-                    Administrator
-                  </p>
-                  <p className="text-xs text-white mt-1">
-                    Email: admin@gbrapp.com
-                  </p>
-                  <p className="text-xs text-white">Password: admin123</p>
+                <div className="bg-white/10 rounded-md p-3 flex items-center gap-3">
+                  <User className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-200">Administrator</p>
+                    <p className="text-xs text-white mt-1">Email: admin@gbrapp.com</p>
+                    <p className="text-xs text-white">Password: admin123</p>
+                  </div>
                 </div>
               </div>
             </div>
