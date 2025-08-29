@@ -60,6 +60,21 @@ interface DashboardData {
     time: Date | string;
     type: string;
   }>;
+  financials?: {
+    currentExchangeRateGhs?: number;
+    currentGoldPriceGhsPerOz?: number;
+    currentSilverPriceGhsPerOz?: number;
+    totalExportValueUsd?: number;
+    totalExportValueGhs?: number;
+    totalQuantityKg?: number;
+    totalQuantityLbs?: number;
+    serviceFeesInclusive?: number;
+    withholdingTax?: number;
+    totalVat?: number;
+    totalNhil?: number;
+    totalCovidLevy?: number;
+    totalGetFund?: number;
+  };
 }
 
 function DashboardPage() {
@@ -165,63 +180,330 @@ function DashboardPage() {
 
         {/* Additional Stats Cards */}
         {dashboardData && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                  <Activity className="h-5 w-5 text-blue-600" />
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              <div
+                title="Number of job cards currently active"
+                aria-label="Number of job cards currently active"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                    <Activity className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Active Job Cards
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  Active Job Cards
-                </span>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.overview.activeJobCards}
+                </p>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {dashboardData.overview.activeJobCards}
-              </p>
+
+              <div
+                title="Number of job cards completed"
+                aria-label="Number of job cards completed"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                    <BarChart3 className="h-5 w-5 text-green-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Completed Job Cards
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.overview.completedJobCards}
+                </p>
+              </div>
+
+              <div
+                title="Number of job cards pending action"
+                aria-label="Number of job cards pending action"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
+                    <PieChart className="h-5 w-5 text-yellow-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Pending Job Cards
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.overview.pendingJobCards}
+                </p>
+              </div>
+
+              <div
+                title="Job cards created or processed this week"
+                aria-label="Job cards created or processed this week"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+                    <Calendar className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    This Week
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.overview.thisWeekJobCards}
+                </p>
+              </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                  <BarChart3 className="h-5 w-5 text-green-600" />
+            {/* Financial & Export Metrics */}
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {/** FX and precious metals **/}
+              <div
+                title="Current exchange rate (GHS per USD)"
+                aria-label="Current exchange rate (GHS per USD)"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                    <span className="text-indigo-600 font-semibold">FX</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Exchange (GHS/USD)
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  Completed Job Cards
-                </span>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.currentExchangeRateGhs?.toFixed(2)}
+                </p>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {dashboardData.overview.completedJobCards}
-              </p>
+
+              <div
+                title="Current gold price in GHS per troy ounce"
+                aria-label="Current gold price in GHS per troy ounce"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
+                    <span className="text-yellow-600 font-semibold">Au</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Gold (GHS/oz)
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.currentGoldPriceGhsPerOz?.toLocaleString()}
+                </p>
+              </div>
+
+              <div
+                title="Current silver price in GHS per troy ounce"
+                aria-label="Current silver price in GHS per troy ounce"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-slate-50 dark:bg-slate-900/20 rounded-xl">
+                    <span className="text-slate-600 font-semibold">Ag</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Silver (GHS/oz)
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.currentSilverPriceGhsPerOz?.toFixed(
+                    2
+                  )}
+                </p>
+              </div>
+
+              <div
+                title="Total value of exports in US dollars"
+                aria-label="Total value of exports in US dollars"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
+                    <span className="text-emerald-600 font-semibold">USD</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Total Export (USD)
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  $
+                  {dashboardData.financials?.totalExportValueUsd?.toLocaleString()}
+                </p>
+              </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
-                  <PieChart className="h-5 w-5 text-yellow-600" />
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              <div
+                title="Total value of exports in Ghana Cedi"
+                aria-label="Total value of exports in Ghana Cedi"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
+                    <span className="text-emerald-600 font-semibold">GHS</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Total Export (GHS)
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  Pending Job Cards
-                </span>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.totalExportValueGhs?.toLocaleString()}
+                </p>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {dashboardData.overview.pendingJobCards}
-              </p>
+
+              <div
+                title="Total quantity exported in kilograms"
+                aria-label="Total quantity exported in kilograms"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl">
+                    <span className="text-cyan-600 font-semibold">KG</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Total Qty (kg)
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.totalQuantityKg?.toLocaleString()}{" "}
+                  kg
+                </p>
+              </div>
+
+              <div
+                title="Total quantity exported in pounds"
+                aria-label="Total quantity exported in pounds"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl">
+                    <span className="text-cyan-600 font-semibold">LB</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Total Qty (lbs)
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.totalQuantityLbs?.toLocaleString()}{" "}
+                  lbs
+                </p>
+              </div>
+
+              <div
+                title="Sum of service fees (inclusive)"
+                aria-label="Sum of service fees (inclusive)"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-rose-50 dark:bg-rose-900/20 rounded-xl">
+                    <span className="text-rose-600 font-semibold">Fees</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Service Fees (inc)
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.serviceFeesInclusive?.toLocaleString()}
+                </p>
+              </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-                  <Calendar className="h-5 w-5 text-purple-600" />
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              <div
+                title="Total withholding tax collected"
+                aria-label="Total withholding tax collected"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-rose-50 dark:bg-rose-900/20 rounded-xl">
+                    <span className="text-rose-600 font-semibold">W/H</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Withholding Tax
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  This Week
-                </span>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.withholdingTax?.toLocaleString()}
+                </p>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {dashboardData.overview.thisWeekJobCards}
-              </p>
+
+              <div
+                title="Total VAT collected"
+                aria-label="Total VAT collected"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
+                    <span className="text-amber-600 font-semibold">VAT</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Total VAT
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.totalVat?.toLocaleString()}
+                </p>
+              </div>
+
+              <div
+                title="Total NHIL collected"
+                aria-label="Total NHIL collected"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-slate-50 dark:bg-slate-900/20 rounded-xl">
+                    <span className="text-slate-600 font-semibold">NHIL</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Total NHIL
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.totalNhil?.toLocaleString()}
+                </p>
+              </div>
+
+              <div
+                title="Total COVID levy collected"
+                aria-label="Total COVID levy collected"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-slate-50 dark:bg-slate-900/20 rounded-xl">
+                    <span className="text-slate-600 font-semibold">COVID</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    COVID Levy
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.totalCovidLevy?.toLocaleString()}
+                </p>
+              </div>
             </div>
-          </div>
+
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              <div
+                title="Total amount collected for GETFund"
+                aria-label="Total amount collected for GETFund"
+                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
+                    <span className="text-violet-600 font-semibold">GET</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                    GETFund
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {dashboardData.financials?.totalGetFund?.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Charts Section */}
@@ -257,19 +539,19 @@ function DashboardPage() {
                     label: "View Exporters",
                     icon: <Building className="h-6 w-6" />,
                     color: "bg-gray-800",
-                    href: "/exporters",
+                    href: "/setup/exporters",
                   },
                   {
                     label: "User Management",
                     icon: <Users className="h-6 w-6" />,
                     color: "bg-yellow-700",
-                    href: "/users",
+                    href: "/setup/users",
                   },
                   {
                     label: "System Settings",
                     icon: <Settings className="h-6 w-6" />,
                     color: "bg-gray-900",
-                    href: "/settings",
+                    href: "/setup",
                   },
                 ].map((action, index) => (
                   <a

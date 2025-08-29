@@ -4,6 +4,22 @@ export async function GET(req: NextRequest) {
   try {
     // Mock data structured to match dashboard expectations
     const stats = {
+      // Financial & export metrics requested for dashboard stat cards
+      financials: {
+        currentExchangeRateGhs: 12.34, // GHS per USD (example)
+        currentGoldPriceGhsPerOz: 7400.5,
+        currentSilverPriceGhsPerOz: 88.75,
+        totalExportValueUsd: 1234567.89,
+        totalExportValueGhs: 15234567.45,
+        totalQuantityKg: 12345.67,
+        totalQuantityLbs: 27232.45,
+        serviceFeesInclusive: 23456.78,
+        withholdingTax: 3456.12,
+        totalVat: 4567.89,
+        totalNhil: 567.01,
+        totalCovidLevy: 78.9,
+        totalGetFund: 123.45,
+      },
       overview: {
         totalJobCards: {
           value: 245,
