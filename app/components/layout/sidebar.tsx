@@ -245,9 +245,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                <span className="text-amber-700 dark:text-amber-500">
+                {/* <span className="text-amber-700 dark:text-amber-500">
                   {user?.role || "User"}
-                </span>{" "}
+                </span>{" "} */}
                 {user?.name || "Loading..."}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">

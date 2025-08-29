@@ -6,7 +6,7 @@ import {
   DashboardStats,
   RecentActivity,
 } from "@/app/components/ui/dashboard-stats";
-import { DashboardCharts } from "@/app/components/ui/dashboard-charts";
+import { TopExportersChart } from "@/app/components/ui/dashboard-charts";
 import {
   BarChart3,
   PieChart,
@@ -506,8 +506,58 @@ function DashboardPage() {
           </>
         )}
 
-        {/* Charts Section */}
-        {dashboardData && <DashboardCharts data={dashboardData.charts} />}
+        {/* Charts + Sidebar Trio: Recent Activity | System Status | Top Exporters (single row) */}
+        {dashboardData && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Recent Activity card */}
+            <RecentActivity data={dashboardData.recentActivity} />
+
+            {/* System Status card (moved here so it sits on same row) */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                System Status
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { service: "API Server", status: "online", color: "green" },
+                  { service: "Database", status: "online", color: "green" },
+                  {
+                    service: "Auth Service",
+                    status: dashboardData ? "online" : "warning",
+                    color: dashboardData ? "green" : "yellow",
+                  },
+                  { service: "File Storage", status: "online", color: "green" },
+                ].map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      {item.service}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          item.color === "green"
+                            ? "bg-green-500"
+                            : item.color === "yellow"
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                        }`}
+                      />
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">
+                        {item.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Top Exporters chart */}
+            <TopExportersChart data={dashboardData.charts.topExporters} />
+          </div>
+        )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -573,53 +623,7 @@ function DashboardPage() {
             </div>
           </div>
 
-          {/* Sidebar Content */}
-          <div className="space-y-6">
-            {/* Recent Activity */}
-            <RecentActivity data={dashboardData?.recentActivity} />
-
-            {/* System Status */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                System Status
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { service: "API Server", status: "online", color: "green" },
-                  { service: "Database", status: "online", color: "green" },
-                  {
-                    service: "Auth Service",
-                    status: dashboardData ? "online" : "warning",
-                    color: dashboardData ? "green" : "yellow",
-                  },
-                  { service: "File Storage", status: "online", color: "green" },
-                ].map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between"
-                  >
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {item.service}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          item.color === "green"
-                            ? "bg-green-500"
-                            : item.color === "yellow"
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
-                        }`}
-                      />
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">
-                        {item.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* Sidebar Content removed — moved into top row trio */}
         </div>
       </main>
     </>
