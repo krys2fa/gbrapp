@@ -7,6 +7,7 @@ import {
   EyeIcon,
   ArrowLeftIcon,
   ArrowPathIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { Header } from "../../components/layout/header";
 import Link from "next/link";
@@ -39,6 +40,7 @@ const CreateUserPage = () => {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [viewingUser, setViewingUser] = useState<any>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [filterTrigger, setFilterTrigger] = useState(0);
 
   React.useEffect(() => {
     async function fetchUsers() {
@@ -61,7 +63,7 @@ const CreateUserPage = () => {
       }
     }
     fetchUsers();
-  }, [success, roleFilter, nameFilter, emailFilter]);
+  }, [success, filterTrigger]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -184,107 +186,126 @@ const CreateUserPage = () => {
             </Link>
           </div>
         </div>
-        <div className="max-w-md mx-auto">
-          <h2 className="text-xl font-bold mb-6">Create a New User</h2>
-          <form
-            className="space-y-6"
-            onSubmit={editingUser ? handleUpdateUser : handleSubmit}
-          >
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Role
-              </label>
-              <div className="relative mt-1">
-                <select
-                  name="role"
-                  value={form.role}
-                  onChange={handleChange}
-                  className="block w-full appearance-none rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
-                >
-                  {roles.map((role) => (
-                    <option key={role} value={role}>
-                      {role.charAt(0) + role.slice(1).toLowerCase()}
-                    </option>
-                  ))}
-                </select>
-                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
-                </span>
+        <div className="max-w-xl mx-auto mt-8">
+          <form onSubmit={handleSubmit}>
+            <div className="shadow sm:rounded-md sm:overflow-hidden">
+              <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
+                {error && (
+                  <div className="rounded-md bg-red-50 p-4 mb-6">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        {/* Error icon */}
+                        <svg
+                          className="h-5 w-5 text-red-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-red-800">
+                          Error Creating User
+                        </h3>
+                        <div className="mt-2 text-sm text-red-700 whitespace-pre-wrap">
+                          {error}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      id="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      name="password"
+                      id="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="role"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Role
+                    </label>
+                    <div className="relative">
+                      <select
+                        name="role"
+                        id="role"
+                        value={form.role}
+                        onChange={handleChange}
+                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
+                      >
+                        {roles.map((role) => (
+                          <option key={role} value={role}>
+                            {capitalizeFirst(role)}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
+                  >
+                    {editingUser ? "Update User" : "Create User"}
+                  </button>
+                </div>
               </div>
             </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
-            >
-              {loading
-                ? editingUser
-                  ? "Updating..."
-                  : "Creating..."
-                : editingUser
-                ? "Update User"
-                : "Create User"}
-            </button>
-            {editingUser && (
-              <button
-                type="button"
-                className="w-full py-2 px-4 bg-gray-400 text-white rounded-md hover:bg-gray-500 focus:outline-none mt-2"
-                onClick={() => {
-                  setEditingUser(null);
-                  setForm({
-                    name: "",
-                    email: "",
-                    password: "",
-                    role: roles[0],
-                  });
-                }}
-              >
-                Cancel Edit
-              </button>
-            )}
-            {success && (
-              <p className="text-green-600 text-sm mt-2">{success}</p>
-            )}
-            {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
           </form>
         </div>
         <div className="mt-10">
@@ -330,6 +351,13 @@ const CreateUserPage = () => {
                 <ChevronDown className="h-4 w-4 text-gray-400" />
               </span>
             </div>
+            <button
+              className="bg-blue-500 text-white px-4 py-1 rounded flex items-center gap-2"
+              onClick={() => setFilterTrigger(filterTrigger + 1)}
+            >
+              <MagnifyingGlassIcon className="h-4 w-4" />
+              Search
+            </button>
           </div>
           {usersLoading ? (
             <div className="flex justify-center items-center py-10">

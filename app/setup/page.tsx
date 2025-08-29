@@ -22,7 +22,7 @@ const setupOptions = [
     label: "Daily Price Setup",
     description: "Set up daily commodity prices.",
     icon: <DollarSign className="h-6 w-6" />,
-    href: "/setup/daily-price",
+    href: "/setup/daily-prices",
     color: "bg-yellow-600",
   },
   {
