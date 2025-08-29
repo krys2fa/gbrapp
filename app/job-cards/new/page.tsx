@@ -8,6 +8,11 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import Select from "react-select";
 import countryList from "react-select-country-list";
 
+enum UnitOfMeasure {
+  GRAMS = "g",
+  KILOGRAMS = "kg",
+}
+
 function NewJobCardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -79,7 +84,7 @@ function NewJobCardPage() {
     exporterId: "",
     shipmentTypeId: "",
     // New fields
-    unitOfMeasure: "",
+    unitOfMeasure: UnitOfMeasure.GRAMS,
     idType: "TIN", // Default to TIN
     buyerIdNumber: "",
     buyerName: "",
@@ -223,7 +228,7 @@ function NewJobCardPage() {
           </div>
         </div>
 
-        <div className="mt-5 md:mt-0 md:col-span-2">
+        <div className="mt-5 md:mt-0 md:col-span-3">
           <form onSubmit={handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
@@ -350,14 +355,38 @@ function NewJobCardPage() {
                     >
                       Unit of Measure
                     </label>
-                    <input
-                      type="text"
-                      name="unitOfMeasure"
-                      id="unitOfMeasure"
-                      className="mt-1 form-control"
-                      value={formData.unitOfMeasure}
-                      onChange={handleChange}
-                    />
+                    <div className="relative mt-1">
+                      <select
+                        id="unitOfMeasure"
+                        name="unitOfMeasure"
+                        className="form-control pr-8"
+                        value={formData.unitOfMeasure}
+                        onChange={handleChange}
+                        aria-label="Unit of Measure"
+                      >
+                        <option value={UnitOfMeasure.GRAMS}>Grams</option>
+                        <option value={UnitOfMeasure.KILOGRAMS}>
+                          Kilograms
+                        </option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                        <svg
+                          className="h-4 w-4 text-gray-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M6 8l4 4 4-4"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
 
                   {/* ID Type */}
