@@ -231,6 +231,26 @@ export async function PUT(req: NextRequest) {
               certificateNumber: `CERT-${Date.now()}-${Math.floor(
                 Math.random() * 1000
               )}`,
+              // create measurement rows if provided
+              measurements: Array.isArray(assayItem.measurements)
+                ? {
+                    create: assayItem.measurements.map(
+                      (m: any, idx: number) => ({
+                        pieceNumber: Number(m.piece) || idx + 1,
+                        grossWeight: m.grossWeight
+                          ? Number(m.grossWeight)
+                          : undefined,
+                        waterWeight: m.waterWeight
+                          ? Number(m.waterWeight)
+                          : undefined,
+                        fineness: m.fineness ? Number(m.fineness) : undefined,
+                        netWeight: m.netWeight
+                          ? Number(m.netWeight)
+                          : undefined,
+                      })
+                    ),
+                  }
+                : undefined,
             },
           });
         } catch (assayErr) {
@@ -240,6 +260,149 @@ export async function PUT(req: NextRequest) {
 
       // mark job card as completed unless a different status is provided
       updateData.status = requestData.status || "completed";
+    }
+
+    // If seals array or officer names are provided, persist seals and/or update notes
+    if (
+      (Array.isArray(requestData.seals) && requestData.seals.length > 0) ||
+      requestData.customsOfficerName ||
+      requestData.nacobOfficerName ||
+      requestData.nationalSecurityName
+    ) {
+      // Append officer names to the notes field so we don't need DB migrations for officer relations here
+      const parts: string[] = [];
+      if (requestData.customsOfficerName) {
+        parts.push(`Customs Officer: ${requestData.customsOfficerName}`);
+      }
+      if (requestData.nacobOfficerName) {
+        parts.push(`NACOB Officer: ${requestData.nacobOfficerName}`);
+      }
+      if (requestData.nationalSecurityName) {
+        parts.push(`National Security: ${requestData.nationalSecurityName}`);
+      }
+
+      if (parts.length > 0) {
+        // preserve existing notes
+        updateData.notes = [existingJobCard.notes || "", parts.join("; ")]
+          .filter(Boolean)
+          .join("\n");
+      }
+
+      // Persist any seals provided
+      // Also persist officer names as Seal records so they're stored and associated to the job card
+      try {
+        // Upsert officer seals: if an officer seal of the expected type exists, update it; otherwise create
+        const existingSeals = await prisma.seal.findMany({
+          where: { jobCardId: id },
+        });
+        const findExisting = (sealType: string) =>
+          existingSeals.find((s) => s.sealType === sealType) || null;
+        if (requestData.customsOfficerName) {
+          const existing = findExisting("CUSTOMS_SEAL");
+          if (existing) {
+            await prisma.seal.update({
+              where: { id: existing.id },
+              data: {
+                sealNumber: String(requestData.customsOfficerName),
+                notes: "Updated from sealing modal - customs officer",
+              },
+            });
+          } else {
+            await prisma.seal.create({
+              data: {
+                jobCardId: id,
+                sealNumber: String(requestData.customsOfficerName),
+                sealType: "CUSTOMS_SEAL",
+                notes: "Saved from sealing modal - customs officer",
+              },
+            });
+          }
+        }
+        if (requestData.nacobOfficerName) {
+          // store NACOB as OTHER_SEAL to keep previous mapping
+          const existing = findExisting("OTHER_SEAL");
+          if (existing) {
+            await prisma.seal.update({
+              where: { id: existing.id },
+              data: {
+                sealNumber: String(requestData.nacobOfficerName),
+                notes: "Updated from sealing modal - NACOB officer",
+              },
+            });
+          } else {
+            await prisma.seal.create({
+              data: {
+                jobCardId: id,
+                sealNumber: String(requestData.nacobOfficerName),
+                sealType: "OTHER_SEAL",
+                notes: "Saved from sealing modal - NACOB officer",
+              },
+            });
+          }
+        }
+        if (requestData.nationalSecurityName) {
+          const existing = findExisting("OTHER_SEAL");
+          if (existing) {
+            await prisma.seal.update({
+              where: { id: existing.id },
+              data: {
+                sealNumber: String(requestData.nationalSecurityName),
+                notes: "Updated from sealing modal - national security",
+              },
+            });
+          } else {
+            await prisma.seal.create({
+              data: {
+                jobCardId: id,
+                sealNumber: String(requestData.nationalSecurityName),
+                sealType: "OTHER_SEAL",
+                notes: "Saved from sealing modal - national security",
+              },
+            });
+          }
+        }
+      } catch (officerSealErr) {
+        console.error("Failed to persist officer seals:", officerSealErr);
+      }
+
+      if (Array.isArray(requestData.seals) && requestData.seals.length > 0) {
+        for (const sealItem of requestData.seals) {
+          try {
+            // If an id is provided, update that seal. Otherwise create a new one.
+            if (sealItem.id) {
+              await prisma.seal.update({
+                where: { id: sealItem.id },
+                data: {
+                  sealNumber: sealItem.sealNumber || undefined,
+                  notes: sealItem.notes || undefined,
+                  sealType: sealItem.sealType || undefined,
+                },
+              });
+            } else {
+              // Map sealType to allowed enum values; default to OTHER_SEAL
+              const allowedTypes = ["CUSTOMS_SEAL", "PMMC_SEAL", "OTHER_SEAL"];
+              const type = String(
+                sealItem.sealType || "OTHER_SEAL"
+              ).toUpperCase();
+              const sealType = allowedTypes.includes(type)
+                ? (type as any)
+                : "OTHER_SEAL";
+              await prisma.seal.create({
+                data: {
+                  jobCardId: id,
+                  sealNumber:
+                    sealItem.sealNumber ||
+                    `SEAL-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                  sealType,
+                  notes: sealItem.notes || undefined,
+                },
+              });
+            }
+          } catch (sealErr) {
+            console.error("Failed to create seal record:", sealErr);
+          }
+        }
+      }
     }
 
     try {

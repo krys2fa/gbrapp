@@ -12,6 +12,8 @@ async function getAllJobCards(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const exporterId = searchParams.get("exporterId");
     const exporterTypeId = searchParams.get("exporterTypeId");
+    const reference = searchParams.get("reference");
+    const pmmc = searchParams.get("pmmc");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const status = searchParams.get("status");
@@ -32,6 +34,10 @@ async function getAllJobCards(req: NextRequest) {
       where.exporter = {
         exporterTypeId: exporterTypeId,
       };
+    }
+
+    if (reference) {
+      where.referenceNumber = { contains: reference };
     }
 
     if (startDate && endDate) {
@@ -58,6 +64,13 @@ async function getAllJobCards(req: NextRequest) {
       where.assays = { some: {} };
     }
 
+    // filter by PMMC seal number if provided
+    if (pmmc) {
+      where.seals = {
+        some: { sealType: "PMMC_SEAL", sealNumber: { contains: pmmc } },
+      };
+    }
+
     // Get total count of job cards matching the filter
     const totalCount = await prisma.jobCard.count({ where });
 
@@ -73,6 +86,7 @@ async function getAllJobCards(req: NextRequest) {
 
     if (hasAssays === "true") {
       includeObj.assays = true;
+      includeObj.seals = true;
     }
 
     // Fetch job cards
@@ -89,8 +103,14 @@ async function getAllJobCards(req: NextRequest) {
     // If client requested hasAssays=true, sort the returned jobCards by latest assay date (server-side sorting by related array not directly supported across DBs in Prisma), so do a client-side sort here before returning to keep behavior deterministic.
     if (hasAssays === "true") {
       jobCards.sort((a: any, b: any) => {
-        const aDate = a.assays && a.assays.length ? new Date(a.assays[a.assays.length - 1].createdAt).getTime() : 0;
-        const bDate = b.assays && b.assays.length ? new Date(b.assays[b.assays.length - 1].createdAt).getTime() : 0;
+        const aDate =
+          a.assays && a.assays.length
+            ? new Date(a.assays[a.assays.length - 1].createdAt).getTime()
+            : 0;
+        const bDate =
+          b.assays && b.assays.length
+            ? new Date(b.assays[b.assays.length - 1].createdAt).getTime()
+            : 0;
         return bDate - aDate;
       });
     }

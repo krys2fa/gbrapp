@@ -1,34 +1,351 @@
-import React from "react";
-import { Header } from "../components/layout/header";
+"use client";
+
+import { withClientAuth } from "@/app/lib/with-client-auth";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BadgeCheck, FileText, Search, Award } from "lucide-react";
+import { ArrowPathIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { Header } from "../components/layout/header";
+import { Award, FileText } from "lucide-react";
+import { formatDate } from "@/app/lib/utils";
 
-// Dummy data for pending job cards
-const pendingJobCards = [
-  {
-    id: "JC001",
-    title: "Job Card 001",
-    customer: "Acme Corp",
-    certificateId: "CERT-1001",
-    analysisId: "AN-2001",
-  },
-  {
-    id: "JC002",
-    title: "Job Card 002",
-    customer: "Beta Ltd",
-    certificateId: "CERT-1002",
-    analysisId: "AN-2002",
-  },
-  {
-    id: "JC003",
-    title: "Job Card 003",
-    customer: "Gamma Inc",
-    certificateId: "CERT-1003",
-    analysisId: "AN-2003",
-  },
-];
+function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
+  const [jobCards, setJobCards] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
+  const [referenceFilter, setReferenceFilter] = useState("");
+  const [pmmcFilter, setPmmcFilter] = useState("");
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
 
-const SealingCertificationPage = () => {
+  useEffect(() => {
+    fetchSealingList();
+  }, [currentPage]);
+
+  useEffect(() => {
+    const handler = () => fetchSealingList();
+    window.addEventListener("refreshSealingList", handler);
+    return () => window.removeEventListener("refreshSealingList", handler);
+  }, []);
+
+  const fetchSealingList = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.append("page", String(currentPage));
+      params.append("limit", String(itemsPerPage));
+      params.append("hasAssays", "true");
+      if (referenceFilter) params.append("reference", referenceFilter);
+      if (pmmcFilter) params.append("pmmc", pmmcFilter);
+      if (startDateFilter) params.append("startDate", startDateFilter);
+      if (endDateFilter) params.append("endDate", endDateFilter);
+
+      const res = await fetch(`/api/job-cards?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch job cards");
+      const data = await res.json();
+      const valued = (data.jobCards || []).filter(
+        (jc: any) => jc.assays && jc.assays.length > 0
+      );
+      setJobCards(valued);
+      setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white shadow overflow-hidden sm:rounded-md">
+      {loading ? (
+        <div className="flex justify-center items-center py-10">
+          <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+          <span className="ml-2 text-gray-500">Loading...</span>
+        </div>
+      ) : jobCards.length === 0 ? (
+        <div className="text-center py-10">
+          <p className="text-gray-500">No job cards ready for sealing.</p>
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <div className="px-4 py-3 bg-white border-b">
+              <div className="flex flex-wrap gap-3 items-end">
+                <div className="flex flex-col">
+                  <label className="text-xs text-gray-600">Reference</label>
+                  <input
+                    value={referenceFilter}
+                    onChange={(e) => setReferenceFilter(e.target.value)}
+                    className="mt-1 border rounded px-2 py-1"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-xs text-gray-600">PMMC Seal</label>
+                  <input
+                    value={pmmcFilter}
+                    onChange={(e) => setPmmcFilter(e.target.value)}
+                    className="mt-1 border rounded px-2 py-1"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-xs text-gray-600">Start Date</label>
+                  <input
+                    type="date"
+                    value={startDateFilter}
+                    onChange={(e) => setStartDateFilter(e.target.value)}
+                    className="mt-1 border rounded px-2 py-1"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-xs text-gray-600">End Date</label>
+                  <input
+                    type="date"
+                    value={endDateFilter}
+                    onChange={(e) => setEndDateFilter(e.target.value)}
+                    className="mt-1 border rounded px-2 py-1"
+                  />
+                </div>
+                <div>
+                  <button
+                    onClick={() => {
+                      setCurrentPage(1);
+                      fetchSealingList();
+                    }}
+                    className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
+                  >
+                    Search
+                  </button>
+                </div>
+              </div>
+            </div>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Reference
+                  </th>
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Assay Date
+                  </th> */}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Customs Officer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    NACOB Officer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    National Security
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Security Seal Ref
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    PMMC Seal
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Other Seal
+                  </th>
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th> */}
+                  <th className="px-6 py-3" />
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {jobCards.map((jc) => {
+                  const assay =
+                    jc.assays && jc.assays.length ? jc.assays[0] : null;
+                  // helper to find a seal by type
+                  const findSeal = (type: string) => {
+                    if (!jc.seals || !jc.seals.length) return "";
+                    const s = jc.seals.find(
+                      (x: any) =>
+                        x.sealType === type ||
+                        String(x.notes || "")
+                          .toUpperCase()
+                          .includes(type)
+                    );
+                    return s ? s.sealNumber || String(s.notes || "") : "";
+                  };
+
+                  return (
+                    <tr key={jc.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                        {jc.referenceNumber}
+                      </td>
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {assay
+                          ? formatDate(
+                              new Date(
+                                assay.assayDate || assay.createdAt || Date.now()
+                              )
+                            )
+                          : "-"}
+                      </td> */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {jc.notes
+                          ? (jc.notes.match(/Customs Officer: ([^;\n]+)/) ||
+                              [])[1] || ""
+                          : ""}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {jc.notes
+                          ? (jc.notes.match(/NACOB Officer: ([^;\n]+)/) ||
+                              [])[1] || ""
+                          : ""}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {jc.notes
+                          ? (jc.notes.match(/National Security: ([^;\n]+)/) ||
+                              [])[1] || ""
+                          : ""}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {findSeal("CUSTOMS_SEAL")}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {findSeal("PMMC_SEAL")}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {findSeal("OTHER_SEAL")}
+                      </td>
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{jc.notes || ""}</td> */}
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-2">
+                          {(() => {
+                            const hasSealInfo =
+                              (jc.seals && jc.seals.length) ||
+                              (jc.notes &&
+                                /Customs Officer|NACOB Officer|National Security/.test(
+                                  jc.notes
+                                ));
+                            return (
+                              <button
+                                onClick={() => {
+                                  if (onAddSeal) return onAddSeal(jc.id);
+                                  const ev = new CustomEvent(
+                                    "openAddSealModal",
+                                    { detail: { jobCardId: jc.id } }
+                                  );
+                                  window.dispatchEvent(ev);
+                                }}
+                                className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                              >
+                                {hasSealInfo ? "Edit Seal" : "Add Seal"}
+                              </button>
+                            );
+                          })()}
+                          <Link
+                            href={`/job-cards/${jc.id}`}
+                            className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
+                          >
+                            <EyeIcon className="h-4 w-4 mr-1" />
+                            View
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing{" "}
+                  <span className="font-medium">
+                    {(currentPage - 1) * itemsPerPage + 1}
+                  </span>{" "}
+                  to{" "}
+                  <span className="font-medium">
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      totalPages * itemsPerPage
+                    )}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium">
+                    {totalPages * itemsPerPage}
+                  </span>{" "}
+                  results
+                </p>
+              </div>
+              <div>
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                      currentPage === 1
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`relative inline-flex items-center px-4 py-2 border ${
+                          currentPage === page
+                            ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                        } text-sm font-medium`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(p + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                      currentPage === totalPages
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    Next
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SealingCertificationPage() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalJobCardId, setModalJobCardId] = useState<string | null>(null);
+
+  const openModalFor = (id: string) => {
+    setModalJobCardId(id);
+    console.debug("openModalFor called for", id);
+    setModalOpen(true);
+  };
+
+  // closeModal(refresh = true) -- when refresh=true we trigger list refresh
+  const closeModal = (refresh = true) => {
+    setModalOpen(false);
+    setModalJobCardId(null);
+    if (refresh) {
+      // trigger a refresh event for the list
+      window.dispatchEvent(new CustomEvent("refreshSealingList"));
+    }
+  };
+
   return (
     <>
       <Header
@@ -36,55 +353,243 @@ const SealingCertificationPage = () => {
         icon={<Award className="h-5 w-5" />}
         subtitle="Seal and certify completed job cards."
       />
-      <div className="max-w-4xl mx-auto py-10 px-4">
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">Pending Job Cards</h2>
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                  Job Card
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                  Customer
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingJobCards.map((card) => (
-                <tr key={card.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 font-medium text-gray-900">
-                    {card.title}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700">{card.customer}</td>
-                  <td className="px-4 py-2 flex gap-2">
-                    <button className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
-                      <BadgeCheck className="h-4 w-4 mr-1" /> Add Seal
-                    </button>
-                    <Link
-                      href={`/certificate/${card.certificateId}`}
-                      className="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                    >
-                      <FileText className="h-4 w-4 mr-1" /> View Certificate
-                    </Link>
-                    <Link
-                      href={`/analysis/${card.analysisId}`}
-                      className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700"
-                    >
-                      <Search className="h-4 w-4 mr-1" /> View Analysis
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="sm:flex sm:items-center">
+          <div className="sm:flex-auto"></div>
         </div>
+
+        <div className="mt-6">
+          <SealingList onAddSeal={openModalFor} />
+        </div>
+        <AddSealModal
+          open={modalOpen}
+          jobCardId={modalJobCardId}
+          onClose={(refresh = true) => closeModal(refresh)}
+        />
       </div>
     </>
   );
-};
+}
 
-export default SealingCertificationPage;
+export default withClientAuth(SealingCertificationPage);
+
+function AddSealModal({
+  open,
+  jobCardId,
+  onClose,
+}: {
+  open: boolean;
+  jobCardId: string | null;
+  onClose: (refresh?: boolean) => void;
+}) {
+  console.debug("AddSealModal render", { open, jobCardId });
+  const [customsOfficerName, setCustomsOfficerName] = useState("");
+  const [nacobOfficerName, setNacobOfficerName] = useState("");
+  const [nationalSecurityName, setNationalSecurityName] = useState("");
+  const [customsSeal, setCustomsSeal] = useState("");
+  const [pmmcSeal, setPmmcSeal] = useState("");
+  const [otherSeal, setOtherSeal] = useState("");
+  const [customsSealId, setCustomsSealId] = useState<string | null>(null);
+  const [pmmcSealId, setPmmcSealId] = useState<string | null>(null);
+  const [otherSealId, setOtherSealId] = useState<string | null>(null);
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(false);
+
+  const close = () => {
+    // close without refreshing list
+    onClose(false);
+    setCustomsOfficerName("");
+    setNacobOfficerName("");
+    setNationalSecurityName("");
+    setCustomsSeal("");
+    setPmmcSeal("");
+    setOtherSeal("");
+    setCustomsSealId(null);
+    setPmmcSealId(null);
+    setOtherSealId(null);
+    setNotes("");
+  };
+
+  const submit = async () => {
+    if (!jobCardId) return;
+    setSaving(true);
+    try {
+      const payload: any = {
+        customsOfficerName: customsOfficerName || undefined,
+        nacobOfficerName: nacobOfficerName || undefined,
+        nationalSecurityName: nationalSecurityName || undefined,
+        seals: [],
+      };
+      if (customsSeal)
+        payload.seals.push({
+          id: customsSealId || undefined,
+          sealType: "CUSTOMS_SEAL",
+          sealNumber: customsSeal,
+          notes,
+        });
+      if (pmmcSeal)
+        payload.seals.push({
+          id: pmmcSealId || undefined,
+          sealType: "PMMC_SEAL",
+          sealNumber: pmmcSeal,
+          notes,
+        });
+      if (otherSeal)
+        payload.seals.push({
+          id: otherSealId || undefined,
+          sealType: "OTHER_SEAL",
+          sealNumber: otherSeal,
+          notes,
+        });
+
+      const res = await fetch(`/api/job-cards/${jobCardId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to save seal");
+      // close and request a refresh so the list updates
+      onClose(true);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save seal");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // When jobCardId changes (and modal is open) attempt to load existing seal/note data
+  useEffect(() => {
+    if (!open || !jobCardId) return;
+    let mounted = true;
+    (async () => {
+      setLoadingExisting(true);
+      try {
+        const res = await fetch(`/api/job-cards/${jobCardId}`);
+        if (!res.ok) throw new Error("Failed to load job card");
+        const jc = await res.json();
+        if (!mounted) return;
+        // parse notes for officer names
+        const notesText = jc.notes || "";
+        setNotes(notesText);
+        const customsMatch = notesText.match(/Customs Officer: ([^;\n]+)/);
+        const nacobMatch = notesText.match(/NACOB Officer: ([^;\n]+)/);
+        const nationalMatch = notesText.match(/National Security: ([^;\n]+)/);
+        setCustomsOfficerName(customsMatch ? customsMatch[1].trim() : "");
+        setNacobOfficerName(nacobMatch ? nacobMatch[1].trim() : "");
+        setNationalSecurityName(nationalMatch ? nationalMatch[1].trim() : "");
+        // populate seals
+        const seals = jc.seals || [];
+        const findObj = (type: string) =>
+          seals.find((s: any) => s.sealType === type) || null;
+        const customsObj = findObj("CUSTOMS_SEAL");
+        const pmmcObj = findObj("PMMC_SEAL");
+        const otherObj = findObj("OTHER_SEAL");
+        setCustomsSeal(
+          customsObj
+            ? customsObj.sealNumber || String(customsObj.notes || "")
+            : ""
+        );
+        setCustomsSealId(customsObj ? customsObj.id : null);
+        setPmmcSeal(
+          pmmcObj ? pmmcObj.sealNumber || String(pmmcObj.notes || "") : ""
+        );
+        setPmmcSealId(pmmcObj ? pmmcObj.id : null);
+        setOtherSeal(
+          otherObj ? otherObj.sealNumber || String(otherObj.notes || "") : ""
+        );
+        setOtherSealId(otherObj ? otherObj.id : null);
+      } catch (e) {
+        console.debug("Failed to prefill seal modal", e);
+      } finally {
+        setLoadingExisting(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [open, jobCardId]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6">
+        <h3 className="text-lg font-medium mb-4">Add Seal</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col">
+            <span className="text-sm text-gray-600">Customs Officer</span>
+            <input
+              value={customsOfficerName}
+              onChange={(e) => setCustomsOfficerName(e.target.value)}
+              className="mt-1 border rounded px-2 py-1"
+            />
+          </label>
+          <label className="flex flex-col">
+            <span className="text-sm text-gray-600">NACOB Officer</span>
+            <input
+              value={nacobOfficerName}
+              onChange={(e) => setNacobOfficerName(e.target.value)}
+              className="mt-1 border rounded px-2 py-1"
+            />
+          </label>
+          <label className="flex flex-col">
+            <span className="text-sm text-gray-600">National Security</span>
+            <input
+              value={nationalSecurityName}
+              onChange={(e) => setNationalSecurityName(e.target.value)}
+              className="mt-1 border rounded px-2 py-1"
+            />
+          </label>
+          <label className="flex flex-col">
+            <span className="text-sm text-gray-600">
+              Security Seal Ref (Customs)
+            </span>
+            <input
+              value={customsSeal}
+              onChange={(e) => setCustomsSeal(e.target.value)}
+              className="mt-1 border rounded px-2 py-1"
+            />
+          </label>
+          <label className="flex flex-col">
+            <span className="text-sm text-gray-600">PMMC Seal Ref</span>
+            <input
+              value={pmmcSeal}
+              onChange={(e) => setPmmcSeal(e.target.value)}
+              className="mt-1 border rounded px-2 py-1"
+            />
+          </label>
+          <label className="flex flex-col">
+            <span className="text-sm text-gray-600">Other Seal Ref</span>
+            <input
+              value={otherSeal}
+              onChange={(e) => setOtherSeal(e.target.value)}
+              className="mt-1 border rounded px-2 py-1"
+            />
+          </label>
+          <label className="col-span-2 flex flex-col">
+            <span className="text-sm text-gray-600">Notes</span>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="mt-1 border rounded px-2 py-1"
+            />
+          </label>
+        </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <button onClick={close} className="px-4 py-2 border rounded">
+            Cancel
+          </button>
+          <button
+            onClick={submit}
+            disabled={saving}
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            {saving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
