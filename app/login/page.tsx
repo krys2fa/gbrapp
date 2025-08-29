@@ -210,10 +210,10 @@ export default function LoginPage() {
                       Super Administrator
                     </p>
                     <p className="text-xs text-white mt-1">
-                      Email: superadmin@gbrapp.com
+                      Email: supeadmin@gbrapp.com
                     </p>
                     <p className="text-xs text-white">
-                      Password: superadmin123
+                      Password: admin123
                     </p>
                   </div>
                 </div>
