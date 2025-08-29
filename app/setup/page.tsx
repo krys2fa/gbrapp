@@ -1,7 +1,7 @@
 import React from "react";
 import { Header } from "../components/layout/header";
 import Link from "next/link";
-import { UserPlus, Building2, DollarSign, RefreshCw } from "lucide-react";
+import { UserPlus, Building2, DollarSign, Gem, BadgeDollarSign, BadgeCent } from "lucide-react";
 
 const setupOptions = [
   {
@@ -22,7 +22,7 @@ const setupOptions = [
   {
     label: "Manage Commodities",
     description: "Add and manage commodities.",
-    icon: <DollarSign className="h-6 w-6" />,
+    icon: <Gem className="h-6 w-6" />,
     href: "/setup/commodities",
     color: "bg-indigo-600",
   },
@@ -36,14 +36,14 @@ const setupOptions = [
   {
     label: "Manage Daily Prices",
     description: "Set up daily commodity prices.",
-    icon: <DollarSign className="h-6 w-6" />,
+    icon: <BadgeCent className="h-6 w-6" />,
     href: "/setup/daily-prices",
     color: "bg-yellow-600",
   },
   {
     label: "Manage Daily Exchanges",
     description: "Set up daily exchange rates.",
-    icon: <RefreshCw className="h-6 w-6" />,
+    icon: <BadgeDollarSign className="h-6 w-6" />,
     href: "/setup/daily-exchange",
     color: "bg-purple-600",
   },

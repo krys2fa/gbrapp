@@ -2,7 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { Header } from "../../components/layout/header";
 import { ChevronDown } from "lucide-react";
+import Link from "next/link";
 import {
+  ArrowLeftIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
   TrashIcon,
@@ -129,6 +131,21 @@ export default function DailyExchangePage() {
   return (
     <>
       <Header title="Daily Exchange Rates" />
+      <div className="my-6 px-4" style={{ width: "100%" }}>
+        <div
+          className="flex"
+          style={{ justifyContent: "flex-start", width: "100%" }}
+        >
+          <Link
+            href="/setup"
+            className="inline-flex items-center text-gray-600 hover:text-blue-600"
+            style={{ marginLeft: "0.5rem" }}
+          >
+            <ArrowLeftIcon className="h-5 w-5 mr-2" />
+            Back to Settings
+          </Link>
+        </div>
+      </div>
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-5xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
           <form
@@ -192,20 +209,37 @@ export default function DailyExchangePage() {
               <ul className="space-y-3">
                 {prices
                   .slice()
-                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                  .sort(
+                    (a, b) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                  )
                   .slice(0, 3)
                   .map((r: any) => (
-                    <li key={r.id} className="flex items-center justify-between">
+                    <li
+                      key={r.id}
+                      className="flex items-center justify-between"
+                    >
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {r.exchange?.name}{' '}
-                          <span className="text-xs text-gray-500">({r.exchange?.symbol})</span>
+                          {r.exchange?.name}{" "}
+                          <span className="text-xs text-gray-500">
+                            ({r.exchange?.symbol})
+                          </span>
                         </div>
                         <div className="text-sm text-gray-600">
-                          {r.createdAt ? `${new Date(r.createdAt).toLocaleDateString()} ${new Date(r.createdAt).toLocaleTimeString()}` : '-'}
+                          {r.createdAt
+                            ? `${new Date(
+                                r.createdAt
+                              ).toLocaleDateString()} ${new Date(
+                                r.createdAt
+                              ).toLocaleTimeString()}`
+                            : "-"}
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-gray-900">{r.price}</div>
+                      <div className="text-sm font-semibold text-gray-900">
+                        {r.price}
+                      </div>
                     </li>
                   ))}
               </ul>
@@ -262,97 +296,235 @@ export default function DailyExchangePage() {
             </div>
           ) : (
             <>
-              <table className="w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Name
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Symbol
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Rate
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Date
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Time
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {prices
-                    .slice((page - 1) * pageSize, page * pageSize)
-                    .map((p: any) => (
-                      <tr key={p.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-2 text-gray-900">
-                          {p.exchange?.name}
-                        </td>
-                        <td className="px-4 py-2 text-gray-700">
-                          {p.exchange?.symbol}
-                        </td>
-                        <td className="px-4 py-2 text-gray-700">{p.price}</td>
-                        <td className="px-4 py-2 text-gray-700">
-                          {p.createdAt
-                            ? new Date(p.createdAt).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td className="px-4 py-2 text-gray-700">
-                          {p.createdAt
-                            ? new Date(p.createdAt).toLocaleTimeString()
-                            : "-"}
-                        </td>
-                        <td className="px-4 py-2 flex gap-2">
-                          <button
-                            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
-                            onClick={() => handleView(p)}
-                          >
-                            <MagnifyingGlassIcon className="h-4 w-4 mr-1" />{" "}
-                            View
-                          </button>
-                          <button
-                            className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
-                            onClick={() => handleEdit(p)}
-                          >
-                            <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
-                          </button>
-                          <button
-                            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
-                            onClick={() => handleDelete(p.id)}
-                          >
-                            <TrashIcon className="h-4 w-4 mr-1" /> Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Name
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Symbol
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Rate
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Date
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Time
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prices
+                      .slice((page - 1) * pageSize, page * pageSize)
+                      .map((p: any) => (
+                        <tr key={p.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 text-gray-900">
+                            {p.exchange?.name}
+                          </td>
+                          <td className="px-4 py-2 text-gray-700">
+                            {p.exchange?.symbol}
+                          </td>
+                          <td className="px-4 py-2 text-gray-700">{p.price}</td>
+                          <td className="px-4 py-2 text-gray-700">
+                            {p.createdAt
+                              ? new Date(p.createdAt).toLocaleDateString()
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-2 text-gray-700">
+                            {p.createdAt
+                              ? new Date(p.createdAt).toLocaleTimeString()
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-2 flex gap-2">
+                            <button
+                              className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
+                              onClick={() => handleView(p)}
+                            >
+                              <MagnifyingGlassIcon className="h-4 w-4 mr-1" />{" "}
+                              View
+                            </button>
+                            <button
+                              className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
+                              onClick={() => handleEdit(p)}
+                            >
+                              <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
+                            </button>
+                            <button
+                              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
+                              onClick={() => handleDelete(p.id)}
+                            >
+                              <TrashIcon className="h-4 w-4 mr-1" /> Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
 
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-sm text-gray-600">
-                  Page {page} of{" "}
-                  {Math.max(1, Math.ceil(prices.length / pageSize))}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-                    disabled={page === 1}
-                    onClick={() => setPage(page - 1)}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-                    disabled={page >= Math.ceil(prices.length / pageSize)}
-                    onClick={() => setPage(page + 1)}
-                  >
-                    Next
-                  </button>
+              {/* <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing{" "}
+                      <span className="font-medium">
+                        {(page - 1) * pageSize + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(page * pageSize, prices.length)}
+                      </span>{" "}
+                      of <span className="font-medium">{prices.length}</span>{" "}
+                      results
+                    </p>
+                  </div>
+                  <div>
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
+                      <button
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                          page === 1
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
+                      >
+                        Previous
+                      </button>
+                      {Array.from(
+                        {
+                          length: Math.max(
+                            1,
+                            Math.ceil(prices.length / pageSize)
+                          ),
+                        },
+                        (_, i) => i + 1
+                      ).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className={`relative inline-flex items-center px-4 py-2 border ${
+                            page === p
+                              ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          } text-sm font-medium`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() =>
+                          setPage((prev) =>
+                            Math.min(
+                              prev + 1,
+                              Math.max(1, Math.ceil(prices.length / pageSize))
+                            )
+                          )
+                        }
+                        disabled={
+                          page ===
+                          Math.max(1, Math.ceil(prices.length / pageSize))
+                        }
+                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                          page ===
+                          Math.max(1, Math.ceil(prices.length / pageSize))
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div> */}
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing{" "}
+                      <span className="font-medium">
+                        {(page - 1) * pageSize + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(page * pageSize, prices.length)}
+                      </span>{" "}
+                      of <span className="font-medium">{prices.length}</span>{" "}
+                      results
+                    </p>
+                  </div>
+                  <div>
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
+                      <button
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                          page === 1
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
+                      >
+                        Previous
+                      </button>
+                      {Array.from(
+                        {
+                          length: Math.max(
+                            1,
+                            Math.ceil(prices.length / pageSize)
+                          ),
+                        },
+                        (_, i) => i + 1
+                      ).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className={`relative inline-flex items-center px-4 py-2 border ${
+                            page === p
+                              ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          } text-sm font-medium`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() =>
+                          setPage((prev) =>
+                            Math.min(
+                              prev + 1,
+                              Math.max(1, Math.ceil(prices.length / pageSize))
+                            )
+                          )
+                        }
+                        disabled={
+                          page ===
+                          Math.max(1, Math.ceil(prices.length / pageSize))
+                        }
+                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                          page ===
+                          Math.max(1, Math.ceil(prices.length / pageSize))
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
                 </div>
               </div>
             </>

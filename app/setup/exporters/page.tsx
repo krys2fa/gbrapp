@@ -383,111 +383,179 @@ const ExportersPage = () => {
               </div>
             ) : (
               <>
-                <table className="w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Name
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Email
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Contact Person
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Phone
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Address
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Date Added
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Last Login
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {exporters
-                      .slice((page - 1) * pageSize, page * pageSize)
-                      .map((exporter: any) => (
-                        <tr key={exporter.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 text-gray-900">
-                            {exporter.name}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {exporter.email}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {exporter.contactPerson}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {exporter.phone}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {exporter.address}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {exporter.createdAt
-                              ? new Date(
-                                  exporter.createdAt
-                                ).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {exporter.lastLogin
-                              ? new Date(exporter.lastLogin).toLocaleString()
-                              : "Never"}
-                          </td>
-                          <td className="px-4 py-2 flex gap-2">
-                            <button
-                              className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
-                              onClick={() => handleViewExporter(exporter)}
-                            >
-                              <EyeIcon className="h-4 w-4 mr-1" /> View
-                            </button>
-                            <button
-                              className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
-                              onClick={() => handleEditExporter(exporter)}
-                            >
-                              <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
-                            </button>
-                            <button
-                              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
-                              onClick={() => handleDeleteExporter(exporter.id)}
-                            >
-                              <TrashIcon className="h-4 w-4 mr-1" /> Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-                <div className="flex justify-between items-center mt-4">
-                  <span className="text-sm text-gray-600">
-                    Page {page} of{" "}
-                    {Math.max(1, Math.ceil(exporters.length / pageSize))}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-                      disabled={page === 1}
-                      onClick={() => setPage(page - 1)}
-                    >
-                      Previous
-                    </button>
-                    <button
-                      className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-                      disabled={page >= Math.ceil(exporters.length / pageSize)}
-                      onClick={() => setPage(page + 1)}
-                    >
-                      Next
-                    </button>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Name
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Email
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Contact Person
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Phone
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Address
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Date Added
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Last Login
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {exporters
+                        .slice((page - 1) * pageSize, page * pageSize)
+                        .map((exporter: any) => (
+                          <tr key={exporter.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-2 text-gray-900">
+                              {exporter.name}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {exporter.email}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {exporter.contactPerson}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {exporter.phone}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {exporter.address}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {exporter.createdAt
+                                ? new Date(
+                                    exporter.createdAt
+                                  ).toLocaleDateString()
+                                : "-"}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {exporter.lastLogin
+                                ? new Date(exporter.lastLogin).toLocaleString()
+                                : "Never"}
+                            </td>
+                            <td className="px-4 py-2 flex gap-2">
+                              <button
+                                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
+                                onClick={() => handleViewExporter(exporter)}
+                              >
+                                <EyeIcon className="h-4 w-4 mr-1" /> View
+                              </button>
+                              <button
+                                className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
+                                onClick={() => handleEditExporter(exporter)}
+                              >
+                                <PencilSquareIcon className="h-4 w-4 mr-1" />{" "}
+                                Edit
+                              </button>
+                              <button
+                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
+                                onClick={() =>
+                                  handleDeleteExporter(exporter.id)
+                                }
+                              >
+                                <TrashIcon className="h-4 w-4 mr-1" /> Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Showing{" "}
+                        <span className="font-medium">
+                          {(page - 1) * pageSize + 1}
+                        </span>{" "}
+                        to{" "}
+                        <span className="font-medium">
+                          {Math.min(page * pageSize, exporters.length)}
+                        </span>{" "}
+                        of{" "}
+                        <span className="font-medium">{exporters.length}</span>{" "}
+                        results
+                      </p>
+                    </div>
+                    <div>
+                      <nav
+                        className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                        aria-label="Pagination"
+                      >
+                        <button
+                          onClick={() =>
+                            setPage((prev) => Math.max(prev - 1, 1))
+                          }
+                          disabled={page === 1}
+                          className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                            page === 1
+                              ? "text-gray-300 cursor-not-allowed"
+                              : "text-gray-500 hover:bg-gray-50"
+                          }`}
+                        >
+                          Previous
+                        </button>
+                        {Array.from(
+                          {
+                            length: Math.max(
+                              1,
+                              Math.ceil(exporters.length / pageSize)
+                            ),
+                          },
+                          (_, i) => i + 1
+                        ).map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setPage(p)}
+                            className={`relative inline-flex items-center px-4 py-2 border ${
+                              page === p
+                                ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                            } text-sm font-medium`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() =>
+                            setPage((prev) =>
+                              Math.min(
+                                prev + 1,
+                                Math.max(
+                                  1,
+                                  Math.ceil(exporters.length / pageSize)
+                                )
+                              )
+                            )
+                          }
+                          disabled={
+                            page ===
+                            Math.max(1, Math.ceil(exporters.length / pageSize))
+                          }
+                          className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                            page ===
+                            Math.max(1, Math.ceil(exporters.length / pageSize))
+                              ? "text-gray-300 cursor-not-allowed"
+                              : "text-gray-500 hover:bg-gray-50"
+                          }`}
+                        >
+                          Next
+                        </button>
+                      </nav>
+                    </div>
                   </div>
                 </div>
               </>

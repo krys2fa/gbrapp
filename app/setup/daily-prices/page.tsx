@@ -210,7 +210,9 @@ export default function DailyPricesPage() {
   };
 
   // Only show commodity-type entries in the main "All Prices" table
-  const commodityPrices = (prices || []).filter((p: any) => p.type === "COMMODITY");
+  const commodityPrices = (prices || []).filter(
+    (p: any) => p.type === "COMMODITY"
+  );
 
   return (
     <>
@@ -238,17 +240,19 @@ export default function DailyPricesPage() {
               onSubmit={handleCommoditySubmit}
               className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6"
             >
-              <h2 className="text-lg font-semibold mb-4">Add Commodity Price</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                Add Commodity Price
+              </h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Commodity
                   </label>
-                  <div>
+                  <div className="relative">
                     <select
                       value={commodityId}
                       onChange={(e) => setCommodityId(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
                     >
                       {commodities.map((opt) => (
                         <option key={opt.id} value={opt.id}>
@@ -256,6 +260,7 @@ export default function DailyPricesPage() {
                         </option>
                       ))}
                     </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
                 <div>
@@ -267,23 +272,17 @@ export default function DailyPricesPage() {
                     step="0.01"
                     value={commodityPrice}
                     onChange={(e) => setCommodityPrice(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
                 </div>
-                <div className="flex justify-end">
+                <div className="mt-6 flex justify-end">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
+                    className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
                   >
-                    {loading
-                      ? editingPrice
-                        ? "Updating..."
-                        : "Creating..."
-                      : editingPrice
-                      ? "Update Price"
-                      : "Add Price"}
+                    {editingPrice ? "Update Price" : "Add Price"}
                   </button>
                 </div>
                 {success && (
@@ -302,23 +301,45 @@ export default function DailyPricesPage() {
                 <ul className="space-y-3">
                   {prices
                     .slice()
-                    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .sort(
+                      (a: any, b: any) =>
+                        new Date(b.createdAt).getTime() -
+                        new Date(a.createdAt).getTime()
+                    )
                     .slice(0, 3)
                     .map((r: any) => {
                       const isCommodity = r.type === "COMMODITY";
-                      const name = isCommodity ? r.commodity?.name : r.exchange?.name;
-                      const symbol = isCommodity ? r.commodity?.symbol : r.exchange?.symbol;
+                      const name = isCommodity
+                        ? r.commodity?.name
+                        : r.exchange?.name;
+                      const symbol = isCommodity
+                        ? r.commodity?.symbol
+                        : r.exchange?.symbol;
                       return (
-                        <li key={r.id} className="flex items-center justify-between">
+                        <li
+                          key={r.id}
+                          className="flex items-center justify-between"
+                        >
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {name} <span className="text-xs text-gray-500">({symbol})</span>
+                              {name}{" "}
+                              <span className="text-xs text-gray-500">
+                                ({symbol})
+                              </span>
                             </div>
                             <div className="text-sm text-gray-600">
-                              {r.createdAt ? `${new Date(r.createdAt).toLocaleDateString()} ${new Date(r.createdAt).toLocaleTimeString()}` : "-"}
+                              {r.createdAt
+                                ? `${new Date(
+                                    r.createdAt
+                                  ).toLocaleDateString()} ${new Date(
+                                    r.createdAt
+                                  ).toLocaleTimeString()}`
+                                : "-"}
                             </div>
                           </div>
-                          <div className="text-sm font-semibold text-gray-900">{r.price}</div>
+                          <div className="text-sm font-semibold text-gray-900">
+                            {r.price}
+                          </div>
                         </li>
                       );
                     })}
@@ -381,97 +402,179 @@ export default function DailyPricesPage() {
             </div>
           ) : (
             <>
-              <table className="w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Name
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Symbol
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Price
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Date
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Time
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {commodityPrices
-                    .slice((page - 1) * pageSize, page * pageSize)
-                    .map((priceObj: any) => {
-                      const isCommodity = priceObj.type === "COMMODITY";
-                      const name = isCommodity
-                        ? priceObj.commodity?.name
-                        : priceObj.exchange?.name;
-                      const symbol = isCommodity
-                        ? priceObj.commodity?.symbol
-                        : priceObj.exchange?.symbol;
-                      return (
-                        <tr key={priceObj.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 text-gray-700">{name}</td>
-                          <td className="px-4 py-2 text-gray-700">{symbol}</td>
-                          <td className="px-4 py-2 text-gray-700">{priceObj.price}</td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {new Date(priceObj.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {priceObj.createdAt ? new Date(priceObj.createdAt).toLocaleTimeString() : "-"}
-                          </td>
-                          <td className="px-4 py-2 flex gap-2">
-                            <button
-                              className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
-                              onClick={() => handleView(priceObj)}
-                            >
-                              <MagnifyingGlassIcon className="h-4 w-4 mr-1" />{" "}
-                              View
-                            </button>
-                            <button
-                              className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
-                              onClick={() => handleEdit(priceObj)}
-                            >
-                              <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
-                            </button>
-                            <button
-                              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
-                              onClick={() => handleDelete(priceObj.id)}
-                            >
-                              <TrashIcon className="h-4 w-4 mr-1" /> Delete
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-sm text-gray-600">
-                  Page {page} of{" "}
-                  {Math.max(1, Math.ceil(commodityPrices.length / pageSize))}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-                    disabled={page === 1}
-                    onClick={() => setPage(page - 1)}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-                    disabled={page >= Math.ceil(commodityPrices.length / pageSize)}
-                    onClick={() => setPage(page + 1)}
-                  >
-                    Next
-                  </button>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Name
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Symbol
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Price
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Date
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Time
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {commodityPrices
+                      .slice((page - 1) * pageSize, page * pageSize)
+                      .map((priceObj: any) => {
+                        const isCommodity = priceObj.type === "COMMODITY";
+                        const name = isCommodity
+                          ? priceObj.commodity?.name
+                          : priceObj.exchange?.name;
+                        const symbol = isCommodity
+                          ? priceObj.commodity?.symbol
+                          : priceObj.exchange?.symbol;
+                        return (
+                          <tr key={priceObj.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-2 text-gray-700">{name}</td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {symbol}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {priceObj.price}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {new Date(
+                                priceObj.createdAt
+                              ).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {priceObj.createdAt
+                                ? new Date(
+                                    priceObj.createdAt
+                                  ).toLocaleTimeString()
+                                : "-"}
+                            </td>
+                            <td className="px-4 py-2 flex gap-2">
+                              <button
+                                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
+                                onClick={() => handleView(priceObj)}
+                              >
+                                <MagnifyingGlassIcon className="h-4 w-4 mr-1" />{" "}
+                                View
+                              </button>
+                              <button
+                                className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
+                                onClick={() => handleEdit(priceObj)}
+                              >
+                                <PencilSquareIcon className="h-4 w-4 mr-1" />{" "}
+                                Edit
+                              </button>
+                              <button
+                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
+                                onClick={() => handleDelete(priceObj.id)}
+                              >
+                                <TrashIcon className="h-4 w-4 mr-1" /> Delete
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing{" "}
+                      <span className="font-medium">
+                        {(page - 1) * pageSize + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(page * pageSize, commodityPrices.length)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {commodityPrices.length}
+                      </span>{" "}
+                      results
+                    </p>
+                  </div>
+                  <div>
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
+                      <button
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                          page === 1
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
+                      >
+                        Previous
+                      </button>
+                      {Array.from(
+                        {
+                          length: Math.max(
+                            1,
+                            Math.ceil(commodityPrices.length / pageSize)
+                          ),
+                        },
+                        (_, i) => i + 1
+                      ).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className={`relative inline-flex items-center px-4 py-2 border ${
+                            page === p
+                              ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          } text-sm font-medium`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() =>
+                          setPage((prev) =>
+                            Math.min(
+                              prev + 1,
+                              Math.max(
+                                1,
+                                Math.ceil(commodityPrices.length / pageSize)
+                              )
+                            )
+                          )
+                        }
+                        disabled={
+                          page ===
+                          Math.max(
+                            1,
+                            Math.ceil(commodityPrices.length / pageSize)
+                          )
+                        }
+                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                          page ===
+                          Math.max(
+                            1,
+                            Math.ceil(commodityPrices.length / pageSize)
+                          )
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
                 </div>
               </div>
             </>

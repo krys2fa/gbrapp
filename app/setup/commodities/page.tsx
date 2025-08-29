@@ -245,7 +245,8 @@ export default function CommoditiesPage() {
             </div>
           ) : (
             <>
-              <table className="w-full divide-y divide-gray-200 bg-white rounded shadow">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 bg-white rounded shadow">
                 <thead>
                   <tr>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -299,28 +300,43 @@ export default function CommoditiesPage() {
                       </tr>
                     ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
 
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-sm text-gray-600">
-                  Page {page} of{" "}
-                  {Math.max(1, Math.ceil(commodities.length / pageSize))}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-                    disabled={page === 1}
-                    onClick={() => setPage(page - 1)}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-                    disabled={page >= Math.ceil(commodities.length / pageSize)}
-                    onClick={() => setPage(page + 1)}
-                  >
-                    Next
-                  </button>
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing <span className="font-medium">{(page - 1) * pageSize + 1}</span> to <span className="font-medium">{Math.min(page * pageSize, commodities.length)}</span> of <span className="font-medium">{commodities.length}</span> results
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                      <button
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"}`}
+                      >
+                        Previous
+                      </button>
+                      {Array.from({ length: Math.max(1, Math.ceil(commodities.length / pageSize)) }, (_, i) => i + 1).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className={`relative inline-flex items-center px-4 py-2 border ${page === p ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"} text-sm font-medium`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setPage((prev) => Math.min(prev + 1, Math.max(1, Math.ceil(commodities.length / pageSize))))}
+                        disabled={page === Math.max(1, Math.ceil(commodities.length / pageSize))}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page === Math.max(1, Math.ceil(commodities.length / pageSize)) ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"}`}
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
                 </div>
               </div>
             </>
