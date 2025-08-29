@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowPathIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { Header } from "../components/layout/header";
-import { Award, FileText } from "lucide-react";
-import { formatDate } from "@/app/lib/utils";
+import { Award } from "lucide-react";
 
 function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
   const [jobCards, setJobCards] = useState<any[]>([]);
@@ -152,8 +151,8 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {jobCards.map((jc) => {
-                  const assay =
-                    jc.assays && jc.assays.length ? jc.assays[0] : null;
+                  // const assay =
+                  //   jc.assays && jc.assays.length ? jc.assays[0] : null;
                   // helper to find a seal by type
                   const findSeal = (type: string) => {
                     if (!jc.seals || !jc.seals.length) return "";

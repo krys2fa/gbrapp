@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Header } from "@/app/components/layout/header";
-import { FileText, Download, Calendar } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 
 type ReportType =
   | "weekly-summary"

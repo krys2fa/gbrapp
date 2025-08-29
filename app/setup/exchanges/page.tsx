@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Header } from "../../components/layout/header";
-import { GlobeAltIcon } from "@heroicons/react/24/outline";
 import { Globe } from "lucide-react";
 import {
   ArrowLeftIcon,

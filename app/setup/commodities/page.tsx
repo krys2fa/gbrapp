@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Header } from "../../components/layout/header";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Gem } from "lucide-react";
 import {
   ArrowLeftIcon,

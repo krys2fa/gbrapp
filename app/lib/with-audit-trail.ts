@@ -80,6 +80,7 @@ export function withAuditTrail<H extends AnyRouteHandler>(
         }
       }
     } catch (error) {
+      console.log(error)
       // Fallback to parsing from URL as a last resort
       const parts = req.nextUrl.pathname.split("/").filter(Boolean);
       entityId = parts[parts.length - 1] ?? entityId;

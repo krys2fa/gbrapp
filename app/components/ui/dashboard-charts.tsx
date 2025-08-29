@@ -12,9 +12,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  LineChart,
-  Line,
   Area,
   AreaChart,
 } from "recharts";

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/auth-context";
 import Image from "next/image";
-import { AtSign, Key, Loader2, Shield, User, Mail } from "lucide-react";
+import { Key, Loader2, Shield, User, Mail } from "lucide-react";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
