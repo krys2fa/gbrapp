@@ -15,6 +15,7 @@ async function getAllJobCards(req: NextRequest) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const status = searchParams.get("status");
+    const hasAssays = searchParams.get("hasAssays");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const skip = (page - 1) * limit;
@@ -52,26 +53,47 @@ async function getAllJobCards(req: NextRequest) {
       where.status = status;
     }
 
+    // Server-side filter: only include job cards that have at least one assay
+    if (hasAssays === "true") {
+      where.assays = { some: {} };
+    }
+
     // Get total count of job cards matching the filter
     const totalCount = await prisma.jobCard.count({ where });
 
-    // Get job cards with basic relations
+    // Get job cards with basic relations and assays when requested
+    const includeObj: any = {
+      exporter: {
+        include: {
+          exporterType: true,
+        },
+      },
+      shipmentType: true,
+    };
+
+    if (hasAssays === "true") {
+      includeObj.assays = true;
+    }
+
+    // Fetch job cards
     const jobCards = await prisma.jobCard.findMany({
       where,
-      include: {
-        exporter: {
-          include: {
-            exporterType: true,
-          },
-        },
-        shipmentType: true,
-      },
+      include: includeObj,
       orderBy: {
         createdAt: "desc",
       },
       skip,
       take: limit,
     });
+
+    // If client requested hasAssays=true, sort the returned jobCards by latest assay date (server-side sorting by related array not directly supported across DBs in Prisma), so do a client-side sort here before returning to keep behavior deterministic.
+    if (hasAssays === "true") {
+      jobCards.sort((a: any, b: any) => {
+        const aDate = a.assays && a.assays.length ? new Date(a.assays[a.assays.length - 1].createdAt).getTime() : 0;
+        const bDate = b.assays && b.assays.length ? new Date(b.assays[b.assays.length - 1].createdAt).getTime() : 0;
+        return bDate - aDate;
+      });
+    }
 
     return NextResponse.json({
       jobCards,

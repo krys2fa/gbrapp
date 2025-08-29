@@ -188,6 +188,60 @@ export async function PUT(req: NextRequest) {
 
     console.log("Updating with data:", updateData);
 
+    // If assays array is provided, persist any new/local assays to the DB
+    if (Array.isArray(requestData.assays) && requestData.assays.length > 0) {
+      for (const assayItem of requestData.assays) {
+        try {
+          // Only create assays that look local (no id or local- prefix)
+          const isLocal =
+            !assayItem.id || String(assayItem.id).startsWith("local-");
+          if (!isLocal) continue;
+
+          // Compute average fineness from measurements if available
+          let avgFineness = 0;
+          if (
+            Array.isArray(assayItem.measurements) &&
+            assayItem.measurements.length > 0
+          ) {
+            const vals = assayItem.measurements
+              .map((m: any) => Number(m.fineness || 0))
+              .filter((v: number) => !isNaN(v));
+            if (vals.length > 0)
+              avgFineness =
+                vals.reduce((a: number, b: number) => a + b, 0) / vals.length;
+          }
+
+          await prisma.assay.create({
+            data: {
+              jobCardId: id,
+              comments:
+                typeof assayItem.comments === "string"
+                  ? assayItem.comments
+                  : JSON.stringify({
+                      method: assayItem.method,
+                      pieces: assayItem.pieces,
+                      signatory: assayItem.signatory,
+                      measurements: assayItem.measurements,
+                    }),
+              assayDate: assayItem.createdAt
+                ? new Date(assayItem.createdAt)
+                : new Date(),
+              goldContent: avgFineness || 0,
+              silverContent: 0,
+              certificateNumber: `CERT-${Date.now()}-${Math.floor(
+                Math.random() * 1000
+              )}`,
+            },
+          });
+        } catch (assayErr) {
+          console.error("Failed to create assay record:", assayErr);
+        }
+      }
+
+      // mark job card as completed unless a different status is provided
+      updateData.status = requestData.status || "completed";
+    }
+
     try {
       // Update the job card with the provided data
       const updatedJobCard = await prisma.jobCard.update({
@@ -198,6 +252,20 @@ export async function PUT(req: NextRequest) {
           shipmentType: true,
         },
       });
+
+      // If assays were part of the request we just created, return the refreshed job card including assays/invoices
+      if (Array.isArray(requestData.assays) && requestData.assays.length > 0) {
+        const refreshed = await prisma.jobCard.findUnique({
+          where: { id },
+          include: {
+            exporter: true,
+            shipmentType: true,
+            assays: true,
+            invoices: true,
+          },
+        });
+        return NextResponse.json(refreshed);
+      }
 
       return NextResponse.json(updatedJobCard);
     } catch (updateError) {

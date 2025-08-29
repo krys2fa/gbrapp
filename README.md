@@ -200,6 +200,7 @@ gbrapp/
 ### Job Cards
 
 - `GET /api/job-cards` - List all job cards
+	- Optional query: `hasAssays=true` to return only job cards that have at least one assay (useful for the Valuations page). When `hasAssays=true` the endpoint will include `assays` in the returned job card objects and results are ordered by latest assay date.
 - `POST /api/job-cards` - Create new job card
 - `GET /api/job-cards/[id]` - Get specific job card
 - `PUT /api/job-cards/[id]` - Update job card

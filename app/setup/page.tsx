@@ -61,7 +61,7 @@ const SetupPage = () => {
   return (
     <>
       <Header
-        title="Application Setup"
+        title="Application Settings"
         icon={<Settings className="h-5 w-5" />}
         subtitle="Configure users, exporters, commodities and exchange rates."
       />
