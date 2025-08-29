@@ -54,7 +54,7 @@ const SetupPage = () => {
     <>
       <Header title="Application Setup" />
       <div className="max-w-3xl mx-auto py-10 px-4">
-        <h2 className="text-xl font-bold mb-6">Setup Options</h2>
+        {/* <h2 className="text-xl font-bold mb-6">Setup Options</h2> */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {setupOptions.map((option) => (
             <Link

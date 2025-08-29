@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { Header } from "../../components/layout/header";
 import { ChevronDown } from "lucide-react";
+import Link from "next/link";
 import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
   TrashIcon,
   ArrowPathIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 
 // allItems is derived from fetched commodities and exchanges later
@@ -207,168 +209,123 @@ export default function DailyPricesPage() {
     setViewingPrice(null);
   };
 
+  // Only show commodity-type entries in the main "All Prices" table
+  const commodityPrices = (prices || []).filter((p: any) => p.type === "COMMODITY");
+
   return (
     <>
-      <Header title="Daily Price Setup" />
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-5xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Commodity creation moved to /setup/commodities */}
+      <Header title="Daily Commodity Prices" />
+      <div className="max-w-5xl mx-auto py-10 px-4">
+        <div className="mb-6" style={{ width: "100%" }}>
+          <div
+            className="flex"
+            style={{ justifyContent: "flex-start", width: "100%" }}
+          >
+            <Link
+              href="/setup"
+              className="inline-flex items-center text-gray-600 hover:text-blue-600"
+              style={{ marginLeft: "0.5rem" }}
+            >
+              <ArrowLeftIcon className="h-5 w-5 mr-2" />
+              Back to Settings
+            </Link>
+          </div>
+        </div>
 
-          {/* Add Exchange Form */}
-          <form
-            onSubmit={handleAddExchange}
-            className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6 mb-4"
-          >
-            <h2 className="text-lg font-semibold mb-4">Add New Exchange</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Exchange Name
-                </label>
-                <input
-                  type="text"
-                  value={newExchange}
-                  onChange={(e) => setNewExchange(e.target.value)}
-                  className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Exchange name"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Symbol
-                </label>
-                <input
-                  type="text"
-                  value={newExchangeSymbol}
-                  onChange={(e) => setNewExchangeSymbol(e.target.value)}
-                  className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Symbol (e.g. USD)"
-                  required
-                />
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
-                disabled={addExchangeLoading}
-              >
-                Add Exchange
-              </button>
-            </div>
-            {addExchangeError && (
-              <div className="text-red-600 mt-2">{addExchangeError}</div>
-            )}
-            {addExchangeSuccess && (
-              <div className="text-green-600 mt-2">{addExchangeSuccess}</div>
-            )}
-          </form>
-          {/* Commodity Price Form */}
-          <form
-            onSubmit={handleCommoditySubmit}
-            className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6"
-          >
-            <h2 className="text-lg font-semibold mb-4">Add Commodity Price</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Commodity
-                </label>
-                <div className="relative">
-                  <select
-                    value={commodityId}
-                    onChange={(e) => setCommodityId(e.target.value)}
-                    className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
-                  >
-                    {commodities.map((opt) => (
-                      <option key={opt.id} value={opt.id}>
-                        {capitalizeFirst(opt.name)}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-5xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
+            <form
+              onSubmit={handleCommoditySubmit}
+              className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6"
+            >
+              <h2 className="text-lg font-semibold mb-4">Add Commodity Price</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Commodity
+                  </label>
+                  <div>
+                    <select
+                      value={commodityId}
+                      onChange={(e) => setCommodityId(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      {commodities.map((opt) => (
+                        <option key={opt.id} value={opt.id}>
+                          {capitalizeFirst(opt.name)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Price
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={commodityPrice}
+                    onChange={(e) => setCommodityPrice(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
+                  >
+                    {loading
+                      ? editingPrice
+                        ? "Updating..."
+                        : "Creating..."
+                      : editingPrice
+                      ? "Update Price"
+                      : "Add Price"}
+                  </button>
+                </div>
+                {success && (
+                  <p className="text-green-600 text-sm mt-2">{success}</p>
+                )}
+                {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Price
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={commodityPrice}
-                  onChange={(e) => setCommodityPrice(e.target.value)}
-                  className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
-                disabled={loading}
-              >
-                Add Price
-              </button>
-            </div>
-            {error && <div className="text-red-600 mt-2">{error}</div>}
-            {success && <div className="text-green-600 mt-2">{success}</div>}
-          </form>
+            </form>
 
-          {/* Exchange Rate Form */}
-          <form
-            onSubmit={handleExchangeSubmit}
-            className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6"
-          >
-            <h2 className="text-lg font-semibold mb-4">Add Exchange Rate</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Exchange
-                </label>
-                <div className="relative">
-                  <select
-                    value={exchangeId}
-                    onChange={(e) => setExchangeId(e.target.value)}
-                    className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
-                  >
-                    {exchanges.map((opt) => (
-                      <option key={opt.id} value={opt.id}>
-                        {capitalizeFirst(opt.name)}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Rate
-                </label>
-                <input
-                  type="number"
-                  step="0.0001"
-                  value={exchangeRate}
-                  onChange={(e) => setExchangeRate(e.target.value)}
-                  className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
+            {/* Recent Prices (last 3) */}
+            <div className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6">
+              <h2 className="text-lg font-semibold mb-4">Recent Prices</h2>
+              {prices.length === 0 ? (
+                <p className="text-sm text-gray-500">No recent prices.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {prices
+                    .slice()
+                    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .slice(0, 3)
+                    .map((r: any) => {
+                      const isCommodity = r.type === "COMMODITY";
+                      const name = isCommodity ? r.commodity?.name : r.exchange?.name;
+                      const symbol = isCommodity ? r.commodity?.symbol : r.exchange?.symbol;
+                      return (
+                        <li key={r.id} className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {name} <span className="text-xs text-gray-500">({symbol})</span>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {r.createdAt ? `${new Date(r.createdAt).toLocaleDateString()} ${new Date(r.createdAt).toLocaleTimeString()}` : "-"}
+                            </div>
+                          </div>
+                          <div className="text-sm font-semibold text-gray-900">{r.price}</div>
+                        </li>
+                      );
+                    })}
+                </ul>
+              )}
             </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
-                disabled={loading}
-              >
-                Add Rate
-              </button>
-            </div>
-            {error && <div className="text-red-600 mt-2">{error}</div>}
-            {success && <div className="text-green-600 mt-2">{success}</div>}
-          </form>
+          </div>
         </div>
         <div className="mt-10">
           <h3 className="text-lg font-semibold mb-4">All Prices</h3>
@@ -428,19 +385,19 @@ export default function DailyPricesPage() {
                 <thead>
                   <tr>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Type
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Name
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Symbol
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Price/Rate
+                      Price
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Date
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Time
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                       Actions
@@ -448,7 +405,7 @@ export default function DailyPricesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {prices
+                  {commodityPrices
                     .slice((page - 1) * pageSize, page * pageSize)
                     .map((priceObj: any) => {
                       const isCommodity = priceObj.type === "COMMODITY";
@@ -460,16 +417,14 @@ export default function DailyPricesPage() {
                         : priceObj.exchange?.symbol;
                       return (
                         <tr key={priceObj.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 text-gray-900">
-                            {isCommodity ? "Commodity" : "Exchange"}
-                          </td>
                           <td className="px-4 py-2 text-gray-700">{name}</td>
                           <td className="px-4 py-2 text-gray-700">{symbol}</td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {priceObj.price}
-                          </td>
+                          <td className="px-4 py-2 text-gray-700">{priceObj.price}</td>
                           <td className="px-4 py-2 text-gray-700">
                             {new Date(priceObj.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2 text-gray-700">
+                            {priceObj.createdAt ? new Date(priceObj.createdAt).toLocaleTimeString() : "-"}
                           </td>
                           <td className="px-4 py-2 flex gap-2">
                             <button
@@ -500,7 +455,7 @@ export default function DailyPricesPage() {
               <div className="flex justify-between items-center mt-4">
                 <span className="text-sm text-gray-600">
                   Page {page} of{" "}
-                  {Math.max(1, Math.ceil(prices.length / pageSize))}
+                  {Math.max(1, Math.ceil(commodityPrices.length / pageSize))}
                 </span>
                 <div className="flex gap-2">
                   <button
@@ -512,7 +467,7 @@ export default function DailyPricesPage() {
                   </button>
                   <button
                     className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
-                    disabled={page >= Math.ceil(prices.length / pageSize)}
+                    disabled={page >= Math.ceil(commodityPrices.length / pageSize)}
                     onClick={() => setPage(page + 1)}
                   >
                     Next
@@ -535,26 +490,47 @@ export default function DailyPricesPage() {
               </button>
               <h2 className="text-lg font-bold mb-4">Price Details</h2>
               <div className="space-y-2">
-                <div>
-                  <span className="font-semibold">Type:</span>{" "}
-                  {viewingPrice.itemType}
-                </div>
-                <div>
-                  <span className="font-semibold">Item:</span>{" "}
-                  {capitalizeFirst(viewingPrice.item)}
-                </div>
-                <div>
-                  <span className="font-semibold">Price:</span>{" "}
-                  {viewingPrice.price}
-                </div>
-                <div>
-                  <span className="font-semibold">Date:</span>{" "}
-                  {viewingPrice.date}
-                </div>
-                <div>
-                  <span className="font-semibold">Time:</span>{" "}
-                  {viewingPrice.time}
-                </div>
+                {(() => {
+                  const isCommodity = viewingPrice.type === "COMMODITY";
+                  const name = isCommodity
+                    ? viewingPrice.commodity?.name
+                    : viewingPrice.exchange?.name;
+                  const symbol = isCommodity
+                    ? viewingPrice.commodity?.symbol
+                    : viewingPrice.exchange?.symbol;
+                  const price = viewingPrice.price ?? "-";
+                  const date = viewingPrice.createdAt
+                    ? new Date(viewingPrice.createdAt).toLocaleDateString()
+                    : "-";
+                  const time = viewingPrice.createdAt
+                    ? new Date(viewingPrice.createdAt).toLocaleTimeString()
+                    : "-";
+
+                  return (
+                    <>
+                      <div>
+                        <span className="font-semibold">Name:</span>{" "}
+                        <span>{name ? capitalizeFirst(name) : "-"}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold">Symbol:</span>{" "}
+                        <span>{symbol ?? "-"}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold">Price:</span>{" "}
+                        <span>{price}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold">Date:</span>{" "}
+                        <span>{date}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold">Time:</span>{" "}
+                        <span>{time}</span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
