@@ -6,9 +6,9 @@ import {
   Building2,
   DollarSign,
   Gem,
-  BadgeDollarSign,
-  BadgeCent,
   Settings,
+  Globe,
+  Repeat,
 } from "lucide-react";
 
 const setupOptions = [
@@ -37,21 +37,21 @@ const setupOptions = [
   {
     label: "Manage Exchanges",
     description: "Add and manage exchanges.",
-    icon: <DollarSign className="h-6 w-6" />,
+    icon: <Globe className="h-6 w-6" />,
     href: "/setup/exchanges",
     color: "bg-indigo-600",
   },
   {
     label: "Manage Daily Prices",
     description: "Set up daily commodity prices.",
-    icon: <BadgeCent className="h-6 w-6" />,
+    icon: <DollarSign className="h-6 w-6" />,
     href: "/setup/daily-prices",
     color: "bg-yellow-600",
   },
   {
     label: "Manage Daily Exchanges",
     description: "Set up daily exchange rates.",
-    icon: <BadgeDollarSign className="h-6 w-6" />,
+    icon: <Repeat className="h-6 w-6" />,
     href: "/setup/daily-exchange",
     color: "bg-purple-600",
   },

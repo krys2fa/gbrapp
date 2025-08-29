@@ -9,8 +9,7 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
-import { Users } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { Header } from "../../components/layout/header";
 
 const ExportersPage = () => {
@@ -186,8 +185,8 @@ const ExportersPage = () => {
   return (
     <>
       <Header
-        title="Create Exporter"
-        icon={<Users className="h-5 w-5" />}
+        title="Manage Exporter"
+        icon={<Building2 className="h-5 w-5" />}
         subtitle="Register exporters and manage exporter details."
       />
       <div className="my-6 px-4" style={{ width: "100%" }}>

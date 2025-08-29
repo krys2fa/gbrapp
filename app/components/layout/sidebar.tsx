@@ -7,11 +7,9 @@ import Link from "next/link";
 import {
   Menu,
   X,
-  LayoutDashboard,
   Settings,
   ChevronRight,
   FileText,
-  ClipboardCheck,
   Award,
   CreditCard,
   Activity
