@@ -15,7 +15,7 @@ const ExchangeSetupPage = () => {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   // Table state
-  const [exchanges, setExchanges] = useState([]);
+  const [exchanges, setExchanges] = useState<any[]>([]);
   const [exchangesLoading, setExchangesLoading] = useState(true);
   const [page, setPage] = useState(1);
   const pageSize = 10;

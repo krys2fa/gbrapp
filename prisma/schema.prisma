@@ -1,3 +1,37 @@
+model Commodity {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  symbol    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  prices    DailyPrice[]
+}
+
+model Exchange {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  symbol    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rates     DailyPrice[]
+}
+
+model DailyPrice {
+  id           String   @id @default(uuid())
+  type         DailyPriceType
+  commodityId  String?  // Only for type COMMODITY
+  commodity    Commodity? @relation(fields: [commodityId], references: [id])
+  exchangeId   String?  // Only for type EXCHANGE
+  exchange     Exchange? @relation(fields: [exchangeId], references: [id])
+  price        Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum DailyPriceType {
+  COMMODITY
+  EXCHANGE
+}
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 

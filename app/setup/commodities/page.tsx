@@ -1,0 +1,366 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import { Header } from "../../components/layout/header";
+import {
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  EyeIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
+
+function capitalizeFirst(str: string) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+export default function CommoditiesPage() {
+  const [name, setName] = useState("");
+  const [symbol, setSymbol] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const [commodities, setCommodities] = useState<any[]>([]);
+  const [fetching, setFetching] = useState(true);
+
+  // Filters / pagination / UI state similar to users page
+  const [nameFilter, setNameFilter] = useState("");
+  const [symbolFilter, setSymbolFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const [editingCommodity, setEditingCommodity] = useState<any>(null);
+  const [viewingCommodity, setViewingCommodity] = useState<any>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [filterTrigger, setFilterTrigger] = useState(0);
+
+  useEffect(() => {
+    async function load() {
+      setFetching(true);
+      try {
+        let url = "/api/commodity";
+        const params: string[] = [];
+        if (nameFilter) params.push(`name=${encodeURIComponent(nameFilter)}`);
+        if (symbolFilter)
+          params.push(`symbol=${encodeURIComponent(symbolFilter)}`);
+        if (params.length) url += `?${params.join("&")}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        setCommodities(data || []);
+      } catch {
+        setCommodities([]);
+      } finally {
+        setFetching(false);
+      }
+    }
+    load();
+  }, [success, filterTrigger]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch("/api/commodity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, symbol }),
+      });
+      if (!res.ok) throw new Error("Failed to create commodity");
+      setSuccess("Commodity created");
+      setName("");
+      setSymbol("");
+    } catch (err: any) {
+      setError(err.message || "Error creating commodity");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditCommodity = (c: any) => {
+    setEditingCommodity(c);
+    setName(c.name || "");
+    setSymbol(c.symbol || "");
+  };
+
+  const handleUpdateCommodity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCommodity) return;
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/commodity/${editingCommodity.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, symbol }),
+      });
+      if (!res.ok) throw new Error("Failed to update commodity");
+      setSuccess("Commodity updated");
+      setEditingCommodity(null);
+      setName("");
+      setSymbol("");
+    } catch (err: any) {
+      setError(err.message || "Error updating commodity");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCommodity = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this commodity?"))
+      return;
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch(`/api/commodity/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete commodity");
+      setSuccess("Commodity deleted");
+    } catch (err: any) {
+      setError(err.message || "Error deleting commodity");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewCommodity = async (c: any) => {
+    try {
+      const res = await fetch(`/api/commodity/${c.id}`);
+      if (!res.ok) throw new Error("Failed to fetch commodity details");
+      const data = await res.json();
+      setViewingCommodity(data);
+      setViewModalOpen(true);
+    } catch {
+      setViewingCommodity(c);
+      setViewModalOpen(true);
+    }
+  };
+
+  return (
+    <>
+      <Header title="Manage Commodities" />
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6" style={{ width: "100%" }}>
+          <div
+            className="flex"
+            style={{ justifyContent: "flex-start", width: "100%" }}
+          >
+            <Link
+              href="/setup"
+              className="inline-flex items-center text-gray-600 hover:text-blue-600"
+              style={{ marginLeft: "0.5rem" }}
+            >
+              <ArrowLeftIcon className="h-5 w-5 mr-2" />
+              Back to Settings
+            </Link>
+          </div>
+        </div>
+
+        <div className="max-w-xl mx-auto">
+          <form
+            onSubmit={editingCommodity ? handleUpdateCommodity : handleSubmit}
+          >
+            <div className="shadow sm:rounded-md sm:overflow-hidden">
+              <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
+                {error && <div className="text-red-600">{error}</div>}
+                {success && <div className="text-green-600">{success}</div>}
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Commodity Name
+                    </label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Symbol
+                    </label>
+                    <input
+                      type="text"
+                      value={symbol}
+                      onChange={(e) => setSymbol(e.target.value)}
+                      required
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
+                    disabled={loading}
+                  >
+                    {editingCommodity ? "Update Commodity" : "Create Commodity"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div className="mt-10">
+          <h3 className="text-lg font-semibold mb-4">All Commodities</h3>
+          <div className="flex items-center gap-4 mb-4">
+            <input
+              type="text"
+              value={nameFilter}
+              onChange={(e) => {
+                setNameFilter(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Filter by name"
+              className="!w-64 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
+            />
+            <input
+              type="text"
+              value={symbolFilter}
+              onChange={(e) => {
+                setSymbolFilter(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Filter by symbol"
+              className="!w-64 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
+            />
+            <button
+              className="bg-blue-500 text-white px-4 py-1 rounded flex items-center gap-2"
+              onClick={() => setFilterTrigger(filterTrigger + 1)}
+            >
+              <MagnifyingGlassIcon className="h-4 w-4" />
+              Search
+            </button>
+          </div>
+
+          {fetching ? (
+            <div className="flex justify-center items-center py-10">
+              <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+              <span className="ml-2 text-gray-500">Loading commodities...</span>
+            </div>
+          ) : (
+            <>
+              <table className="w-full divide-y divide-gray-200 bg-white rounded shadow">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Name
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Symbol
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Date Added
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {commodities
+                    .slice((page - 1) * pageSize, page * pageSize)
+                    .map((c: any) => (
+                      <tr key={c.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-2 text-gray-900">
+                          {capitalizeFirst(c.name)}
+                        </td>
+                        <td className="px-4 py-2 text-gray-700">{c.symbol}</td>
+                        <td className="px-4 py-2 text-gray-700">
+                          {c.createdAt
+                            ? new Date(c.createdAt).toLocaleDateString()
+                            : "-"}
+                        </td>
+                        <td className="px-4 py-2 flex gap-2">
+                          <button
+                            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
+                            onClick={() => handleViewCommodity(c)}
+                          >
+                            <EyeIcon className="h-4 w-4 mr-1" /> View
+                          </button>
+                          <button
+                            className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
+                            onClick={() => handleEditCommodity(c)}
+                          >
+                            <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
+                          </button>
+                          <button
+                            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
+                            onClick={() => handleDeleteCommodity(c.id)}
+                          >
+                            <TrashIcon className="h-4 w-4 mr-1" /> Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-sm text-gray-600">
+                  Page {page} of{" "}
+                  {Math.max(1, Math.ceil(commodities.length / pageSize))}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+                    disabled={page === 1}
+                    onClick={() => setPage(page - 1)}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+                    disabled={page >= Math.ceil(commodities.length / pageSize)}
+                    onClick={() => setPage(page + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {viewModalOpen && viewingCommodity && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+              <button
+                className="absolute top-2 right-2 flex items-center justify-center w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-red-400"
+                onClick={() => {
+                  setViewModalOpen(false);
+                  setViewingCommodity(null);
+                }}
+                aria-label="Close"
+              >
+                <span className="text-xl">&times;</span>
+              </button>
+              <h2 className="text-lg font-bold mb-4">Commodity Details</h2>
+              <div className="space-y-2">
+                <div>
+                  <span className="font-semibold">Name:</span>{" "}
+                  {viewingCommodity.name}
+                </div>
+                <div>
+                  <span className="font-semibold">Symbol:</span>{" "}
+                  {viewingCommodity.symbol}
+                </div>
+                <div>
+                  <span className="font-semibold">Date Added:</span>{" "}
+                  {viewingCommodity.createdAt
+                    ? new Date(viewingCommodity.createdAt).toLocaleDateString()
+                    : "-"}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
