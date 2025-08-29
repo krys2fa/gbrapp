@@ -14,6 +14,10 @@ function ValuationList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
+  const [referenceFilter, setReferenceFilter] = useState("");
+  const [certificateFilter, setCertificateFilter] = useState("");
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
 
   useEffect(() => {
     fetchValuations();
@@ -29,6 +33,9 @@ function ValuationList() {
 
       // Request only job cards that have assays (valuations) on the server side
       params.append("hasAssays", "true");
+      if (referenceFilter) params.append("reference", referenceFilter);
+      if (startDateFilter) params.append("startDate", startDateFilter);
+      if (endDateFilter) params.append("endDate", endDateFilter);
       const res = await fetch(`/api/job-cards?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch job cards");
       const data = await res.json();
@@ -36,6 +43,13 @@ function ValuationList() {
       const valued = (data.jobCards || []).filter(
         (jc: any) => jc.assays && jc.assays.length > 0
       );
+      // apply certificate filter client-side (API doesn't support certificate filter)
+      const certificateFiltered = certificateFilter
+        ? valued.filter((jc: any) => {
+            const assay = jc.assays && jc.assays.length ? jc.assays[0] : null;
+            return assay?.certificateNumber?.toLowerCase().includes(certificateFilter.toLowerCase());
+          })
+        : valued;
       setJobCards(valued);
       setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
     } catch (err) {
@@ -59,6 +73,55 @@ function ValuationList() {
       ) : (
         <>
           <div className="overflow-x-auto">
+            <div className="px-4 py-3 bg-white border-b">
+              <div className="flex flex-wrap gap-3 items-end">
+                <div className="flex flex-col">
+                  <label className="text-xs text-gray-600">Reference</label>
+                  <input
+                    value={referenceFilter}
+                    onChange={(e) => setReferenceFilter(e.target.value)}
+                    className="mt-1 border rounded px-2 py-1"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-xs text-gray-600">Certificate</label>
+                  <input
+                    value={certificateFilter}
+                    onChange={(e) => setCertificateFilter(e.target.value)}
+                    className="mt-1 border rounded px-2 py-1"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-xs text-gray-600">Start Date</label>
+                  <input
+                    type="date"
+                    value={startDateFilter}
+                    onChange={(e) => setStartDateFilter(e.target.value)}
+                    className="mt-1 border rounded px-2 py-1"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-xs text-gray-600">End Date</label>
+                  <input
+                    type="date"
+                    value={endDateFilter}
+                    onChange={(e) => setEndDateFilter(e.target.value)}
+                    className="mt-1 border rounded px-2 py-1"
+                  />
+                </div>
+                <div>
+                  <button
+                    onClick={() => {
+                      setCurrentPage(1);
+                      fetchValuations();
+                    }}
+                    className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
+                  >
+                    Search
+                  </button>
+                </div>
+              </div>
+            </div>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>

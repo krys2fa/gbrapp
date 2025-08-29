@@ -48,7 +48,11 @@ export async function GET(req: NextRequest) {
         assayOfficer: true,
         technicalDirector: true,
         seals: true,
-        assays: true,
+        assays: {
+          include: {
+            measurements: true,
+          },
+        },
         invoices: true,
         fees: true,
         levies: true,

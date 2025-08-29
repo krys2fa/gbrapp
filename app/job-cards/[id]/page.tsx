@@ -206,19 +206,10 @@ function JobCardDetailPage() {
           </h3>
           {jobCard.assays && jobCard.assays.length > 0 ? (
             <Link
-              href={`/job-cards/${id}/invoices/new`}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+              href={`/job-cards/${id}/assays/${jobCard.assays[0].id}`}
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mr-2"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7.414A2 2 0 0016.414 6L12 1.586A2 2 0 0010.586 1H5z" />
-              </svg>
-              Pay
+              View Valuation
             </Link>
           ) : (
             <Link
@@ -282,7 +273,7 @@ function JobCardDetailPage() {
               href={`/job-cards/${id}/invoices/new`}
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
             >
-              Create Invoice
+              View Invoice
             </Link>
           </div>
 
