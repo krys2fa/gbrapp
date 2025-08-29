@@ -253,59 +253,61 @@ export default function CommoditiesPage() {
             <>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 bg-white rounded shadow">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Name
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Symbol
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Date Added
-                    </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {commodities
-                    .slice((page - 1) * pageSize, page * pageSize)
-                    .map((c: any) => (
-                      <tr key={c.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-2 text-gray-900">
-                          {capitalizeFirst(c.name)}
-                        </td>
-                        <td className="px-4 py-2 text-gray-700">{c.symbol}</td>
-                        <td className="px-4 py-2 text-gray-700">
-                          {c.createdAt
-                            ? new Date(c.createdAt).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td className="px-4 py-2 flex gap-2">
-                          <button
-                            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
-                            onClick={() => handleViewCommodity(c)}
-                          >
-                            <EyeIcon className="h-4 w-4 mr-1" /> View
-                          </button>
-                          <button
-                            className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
-                            onClick={() => handleEditCommodity(c)}
-                          >
-                            <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
-                          </button>
-                          <button
-                            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
-                            onClick={() => handleDeleteCommodity(c.id)}
-                          >
-                            <TrashIcon className="h-4 w-4 mr-1" /> Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Name
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Symbol
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Date Added
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {commodities
+                      .slice((page - 1) * pageSize, page * pageSize)
+                      .map((c: any) => (
+                        <tr key={c.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 text-gray-900">
+                            {capitalizeFirst(c.name)}
+                          </td>
+                          <td className="px-4 py-2 text-gray-700">
+                            {c.symbol}
+                          </td>
+                          <td className="px-4 py-2 text-gray-700">
+                            {c.createdAt
+                              ? new Date(c.createdAt).toLocaleDateString()
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-2 flex gap-2">
+                            <button
+                              className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
+                              onClick={() => handleViewCommodity(c)}
+                            >
+                              <EyeIcon className="h-4 w-4 mr-1" /> View
+                            </button>
+                            <button
+                              className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
+                              onClick={() => handleEditCommodity(c)}
+                            >
+                              <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
+                            </button>
+                            <button
+                              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
+                              onClick={() => handleDeleteCommodity(c.id)}
+                            >
+                              <TrashIcon className="h-4 w-4 mr-1" /> Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
                 </table>
               </div>
 
@@ -313,31 +315,78 @@ export default function CommoditiesPage() {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{(page - 1) * pageSize + 1}</span> to <span className="font-medium">{Math.min(page * pageSize, commodities.length)}</span> of <span className="font-medium">{commodities.length}</span> results
+                      Showing{" "}
+                      <span className="font-medium">
+                        {(page - 1) * pageSize + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(page * pageSize, commodities.length)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">{commodities.length}</span>{" "}
+                      results
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
                       <button
                         onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                         disabled={page === 1}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"}`}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                          page === 1
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
                       >
                         Previous
                       </button>
-                      {Array.from({ length: Math.max(1, Math.ceil(commodities.length / pageSize)) }, (_, i) => i + 1).map((p) => (
+                      {Array.from(
+                        {
+                          length: Math.max(
+                            1,
+                            Math.ceil(commodities.length / pageSize)
+                          ),
+                        },
+                        (_, i) => i + 1
+                      ).map((p) => (
                         <button
                           key={p}
                           onClick={() => setPage(p)}
-                          className={`relative inline-flex items-center px-4 py-2 border ${page === p ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"} text-sm font-medium`}
+                          className={`relative inline-flex items-center px-4 py-2 border ${
+                            page === p
+                              ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          } text-sm font-medium`}
                         >
                           {p}
                         </button>
                       ))}
                       <button
-                        onClick={() => setPage((prev) => Math.min(prev + 1, Math.max(1, Math.ceil(commodities.length / pageSize))))}
-                        disabled={page === Math.max(1, Math.ceil(commodities.length / pageSize))}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page === Math.max(1, Math.ceil(commodities.length / pageSize)) ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"}`}
+                        onClick={() =>
+                          setPage((prev) =>
+                            Math.min(
+                              prev + 1,
+                              Math.max(
+                                1,
+                                Math.ceil(commodities.length / pageSize)
+                              )
+                            )
+                          )
+                        }
+                        disabled={
+                          page ===
+                          Math.max(1, Math.ceil(commodities.length / pageSize))
+                        }
+                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                          page ===
+                          Math.max(1, Math.ceil(commodities.length / pageSize))
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
                       >
                         Next
                       </button>

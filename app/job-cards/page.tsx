@@ -20,7 +20,11 @@ function JobCardsPage() {
 
   return (
     <>
-  <Header title="Job Cards" icon={<FileText className="h-5 w-5" />} subtitle="Create and manage job cards, track status and invoices." />
+      <Header
+        title="Job Cards"
+        icon={<FileText className="h-5 w-5" />}
+        subtitle="Create and manage job cards, track status and invoices."
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">

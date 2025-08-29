@@ -1,7 +1,15 @@
 import React from "react";
 import { Header } from "../components/layout/header";
 import Link from "next/link";
-import { UserPlus, Building2, DollarSign, Gem, BadgeDollarSign, BadgeCent, Settings } from "lucide-react";
+import {
+  UserPlus,
+  Building2,
+  DollarSign,
+  Gem,
+  BadgeDollarSign,
+  BadgeCent,
+  Settings,
+} from "lucide-react";
 
 const setupOptions = [
   {

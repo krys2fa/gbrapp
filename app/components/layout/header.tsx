@@ -87,19 +87,31 @@ export const Header: React.FC<HeaderProps> = ({
           {icon ? (
             <div className="flex items-center gap-4">
               <div
-                className={`${iconBgClass || "bg-gradient-to-r from-amber-500 to-black"} w-12 h-12 rounded-full flex items-center justify-center text-white`}
+                className={`${
+                  iconBgClass || "bg-gradient-to-r from-amber-500 to-black"
+                } w-12 h-12 rounded-full flex items-center justify-center text-white`}
               >
                 {icon}
               </div>
               <div>
-                <h1 className="text-2xl xl:text-3xl font-bold text-gray-900 dark:text-white">{title}</h1>
-                {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
+                <h1 className="text-2xl xl:text-3xl font-bold text-gray-900 dark:text-white">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {subtitle}
+                  </p>
+                )}
               </div>
             </div>
           ) : (
             <div>
-              <h1 className="text-2xl xl:text-3xl font-bold text-gray-900 dark:text-white">{title}</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{/* Welcome back! Here's what's happening today. */}</p>
+              <h1 className="text-2xl xl:text-3xl font-bold text-gray-900 dark:text-white">
+                {title}
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {/* Welcome back! Here's what's happening today. */}
+              </p>
             </div>
           )}
         </div>
@@ -119,8 +131,17 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           {/* Dark Mode Toggle */}
-          <Button variant="ghost" size="icon" onClick={toggleDarkMode} className="rounded-xl">
-            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleDarkMode}
+            className="rounded-xl"
+          >
+            {isDarkMode ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
           </Button>
 
           {/* Notifications */}
@@ -135,7 +156,9 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Bell className="h-5 w-5" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-[10px] text-white font-medium">{notifications.length}</span>
+                <span className="text-[10px] text-white font-medium">
+                  {notifications.length}
+                </span>
               </div>
             </Button>
 
@@ -143,17 +166,31 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                 <div className="p-3 border-b border-gray-100 dark:border-gray-700">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-gray-800 dark:text-gray-200">Notifications</span>
-                    <button onClick={() => setIsNotifOpen(false)} className="text-xs text-gray-500 hover:text-gray-700">Close</button>
+                    <span className="font-medium text-sm text-gray-800 dark:text-gray-200">
+                      Notifications
+                    </span>
+                    <button
+                      onClick={() => setIsNotifOpen(false)}
+                      className="text-xs text-gray-500 hover:text-gray-700"
+                    >
+                      Close
+                    </button>
                   </div>
                 </div>
                 <div className="max-h-64 overflow-y-auto">
                   {notifications.map((n) => (
-                    <div key={n.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-900 border-b last:border-b-0">
+                    <div
+                      key={n.id}
+                      className="p-3 hover:bg-gray-50 dark:hover:bg-gray-900 border-b last:border-b-0"
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{n.title}</p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">{n.description}</p>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            {n.title}
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            {n.description}
+                          </p>
                         </div>
                         <div className="text-xs text-gray-400">{n.time}</div>
                       </div>
@@ -161,7 +198,12 @@ export const Header: React.FC<HeaderProps> = ({
                   ))}
                 </div>
                 <div className="p-2 text-center">
-                  <a href="/notifications" className="text-sm text-blue-600 hover:underline">View all</a>
+                  <a
+                    href="/notifications"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    View all
+                  </a>
                 </div>
               </div>
             )}
@@ -169,11 +211,16 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Profile */}
           <Link href="/settings">
-            <Button variant="ghost" className="flex items-center gap-2 rounded-xl px-3">
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2 rounded-xl px-3"
+            >
               <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-black rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 text-white" />
               </div>
-              <span className="hidden md:block text-sm font-medium">Profile</span>
+              <span className="hidden md:block text-sm font-medium">
+                Profile
+              </span>
             </Button>
           </Link>
         </div>
