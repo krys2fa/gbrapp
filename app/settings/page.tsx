@@ -32,7 +32,11 @@ export default function SettingsPage() {
 
   return (
     <>
-      <Header title="Settings" />
+      <Header
+        title="Settings"
+        icon={<User className="h-5 w-5" />}
+        subtitle="Manage profile, security and application preferences."
+      />
 
       <main className="py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto space-y-6">

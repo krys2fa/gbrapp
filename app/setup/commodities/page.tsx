@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Header } from "../../components/layout/header";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { Box } from "lucide-react";
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
@@ -141,7 +143,11 @@ export default function CommoditiesPage() {
 
   return (
     <>
-      <Header title="Manage Commodities" />
+      <Header
+        title="Manage Commodities"
+        icon={<Box className="h-5 w-5" />}
+        subtitle="Create, edit and filter commodities."
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6" style={{ width: "100%" }}>
           <div

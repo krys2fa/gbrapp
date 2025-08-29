@@ -31,7 +31,11 @@ const jobCards = [
 const PaymentReceiptingPage = () => {
   return (
     <>
-      <Header title="Payment & Receipting" />
+      <Header
+        title="Payment & Receipting"
+        icon={<CreditCard className="h-5 w-5" />}
+        subtitle="Record payments and manage invoices."
+      />
       <div className="max-w-4xl mx-auto py-10 px-4">
         <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-semibold mb-4">Job Cards</h2>

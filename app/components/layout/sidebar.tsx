@@ -14,6 +14,7 @@ import {
   ClipboardCheck,
   Award,
   CreditCard,
+  Activity
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/ui/button";
@@ -83,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       id: "dashboard",
       label: "Dashboard",
       href: "/dashboard",
-      icon: <LayoutDashboard className="h-5 w-5" />,
+      icon: <Activity className="h-5 w-5" />,
     },
     {
       id: "job-cards",
@@ -98,16 +99,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     //   icon: <ClipboardCheck className="h-5 w-5" />,
     // },
     {
+      id: "payment-receipting",
+      label: "Payment & Receipting",
+      href: "/payment-receipting",
+      icon: <CreditCard className="h-5 w-5" />,
+    },
+    {
       id: "sealing-certification",
       label: "Sealing & Certification",
       href: "/sealing-certification",
       icon: <Award className="h-5 w-5" />,
     },
     {
-      id: "payment-receipting",
-      label: "Payment & Receipting",
-      href: "/payment-receipting",
-      icon: <CreditCard className="h-5 w-5" />,
+      id: "reports",
+      label: "Reports",
+      href: "/reports",
+      icon: <FileText className="h-5 w-5" />,
     },
     {
       id: "settings",

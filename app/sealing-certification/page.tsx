@@ -1,7 +1,7 @@
 import React from "react";
 import { Header } from "../components/layout/header";
 import Link from "next/link";
-import { BadgeCheck, FileText, Search } from "lucide-react";
+import { BadgeCheck, FileText, Search, Award } from "lucide-react";
 
 // Dummy data for pending job cards
 const pendingJobCards = [
@@ -31,7 +31,7 @@ const pendingJobCards = [
 const SealingCertificationPage = () => {
   return (
     <>
-      <Header title="Sealing & Certification" />
+  <Header title="Sealing & Certification" icon={<Award className="h-5 w-5" />} subtitle="Seal and certify completed job cards." />
       <div className="max-w-4xl mx-auto py-10 px-4">
         <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-semibold mb-4">Pending Job Cards</h2>

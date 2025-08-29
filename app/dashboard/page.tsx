@@ -111,7 +111,11 @@ function DashboardPage() {
 
   return (
     <>
-      <Header title="Dashboard" />
+      <Header
+        title="Dashboard"
+        icon={<Activity className="h-5 w-5" />}
+        subtitle="Overview of system metrics and recent activity."
+      />
 
       <main className="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
         {/* Welcome Section */}

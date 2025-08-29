@@ -1,7 +1,7 @@
 import React from "react";
 import { Header } from "../components/layout/header";
 import Link from "next/link";
-import { UserPlus, Building2, DollarSign, Gem, BadgeDollarSign, BadgeCent } from "lucide-react";
+import { UserPlus, Building2, DollarSign, Gem, BadgeDollarSign, BadgeCent, Settings } from "lucide-react";
 
 const setupOptions = [
   {
@@ -52,7 +52,11 @@ const setupOptions = [
 const SetupPage = () => {
   return (
     <>
-      <Header title="Application Setup" />
+      <Header
+        title="Application Setup"
+        icon={<Settings className="h-5 w-5" />}
+        subtitle="Configure users, exporters, commodities and exchange rates."
+      />
       <div className="max-w-3xl mx-auto py-10 px-4">
         {/* <h2 className="text-xl font-bold mb-6">Setup Options</h2> */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

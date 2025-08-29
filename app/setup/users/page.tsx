@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { Users } from "lucide-react";
 import {
   PencilSquareIcon,
   TrashIcon,
@@ -169,7 +170,11 @@ const CreateUserPage = () => {
 
   return (
     <>
-      <Header title="Create User" />
+      <Header
+        title="Create User"
+        icon={<Users className="h-5 w-5" />}
+        subtitle="Manage application users and roles."
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6" style={{ width: "100%" }}>
           <div

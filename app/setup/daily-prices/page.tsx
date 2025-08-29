@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Header } from "../../components/layout/header";
 import { ChevronDown } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import Link from "next/link";
 import {
   MagnifyingGlassIcon,
@@ -216,7 +217,11 @@ export default function DailyPricesPage() {
 
   return (
     <>
-      <Header title="Daily Commodity Prices" />
+      <Header
+        title="Daily Commodity Prices"
+        icon={<DollarSign className="h-5 w-5" />}
+        subtitle="Record and view daily commodity prices."
+      />
       <div className="max-w-5xl mx-auto py-10 px-4">
         <div className="mb-6" style={{ width: "100%" }}>
           <div

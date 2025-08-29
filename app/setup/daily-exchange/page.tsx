@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Header } from "../../components/layout/header";
 import { ChevronDown } from "lucide-react";
+import { Repeat } from "lucide-react";
 import Link from "next/link";
 import {
   ArrowLeftIcon,
@@ -130,7 +131,11 @@ export default function DailyExchangePage() {
 
   return (
     <>
-      <Header title="Daily Exchange Rates" />
+      <Header
+        title="Daily Exchange Rates"
+        icon={<Repeat className="h-5 w-5" />}
+        subtitle="Add and view daily exchange rates."
+      />
       <div className="my-6 px-4" style={{ width: "100%" }}>
         <div
           className="flex"

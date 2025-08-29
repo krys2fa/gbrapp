@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Header } from "../../components/layout/header";
+import { GlobeAltIcon } from "@heroicons/react/24/outline";
+import { Globe } from "lucide-react";
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
@@ -141,7 +143,11 @@ export default function ExchangesPage() {
 
   return (
     <>
-      <Header title="Manage Exchanges" />
+      <Header
+        title="Manage Exchanges"
+        icon={<Globe className="h-5 w-5" />}
+        subtitle="Add and manage exchange rate sources."
+      />
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6" style={{ width: "100%" }}>
           <div
