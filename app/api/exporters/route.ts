@@ -7,14 +7,25 @@ import { NextRequest, NextResponse } from "next/server";
  */
 async function getAllExporters(req: NextRequest) {
   try {
-    // Check if exporter type filter is provided
     const { searchParams } = new URL(req.url);
     const exporterTypeId = searchParams.get("exporterTypeId");
+    const search = searchParams.get("search");
+    const email = searchParams.get("email");
+    const phone = searchParams.get("phone");
 
     // Build where clause for filtering
     const where: any = {};
     if (exporterTypeId) {
       where.exporterTypeId = exporterTypeId;
+    }
+    if (search) {
+      where.name = { contains: search, mode: "insensitive" };
+    }
+    if (email) {
+      where.email = { contains: email, mode: "insensitive" };
+    }
+    if (phone) {
+      where.phone = { contains: phone, mode: "insensitive" };
     }
 
     const exporters = await prisma.exporter.findMany({
