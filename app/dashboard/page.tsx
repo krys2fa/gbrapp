@@ -118,8 +118,11 @@ function DashboardPage() {
       />
 
       <main className="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
-  {/* Welcome Section */}
-  <div className="rounded-2xl p-6 text-white" style={{ background: "linear-gradient(90deg, #27572a, #2e7030)" }}>
+        {/* Welcome Section */}
+        <div
+          className="rounded-2xl p-6 text-white"
+          style={{ background: "linear-gradient(90deg, #27572a, #2e7030)" }}
+        >
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold mb-2">

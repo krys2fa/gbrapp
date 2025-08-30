@@ -87,7 +87,9 @@ export const Header: React.FC<HeaderProps> = ({
           {icon ? (
             <div className="flex items-center gap-4">
               <div
-                className={`${iconBgClass || "bg-[#d4af37]"} w-12 h-12 rounded-full flex items-center justify-center text-white`}
+                className={`${
+                  iconBgClass || "bg-[#d4af37]"
+                } w-12 h-12 rounded-full flex items-center justify-center text-white`}
                 style={iconBgClass ? undefined : { backgroundColor: "#d4af37" }}
               >
                 {icon}
@@ -97,9 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="text-sm text-white/90">
-                    {subtitle}
-                  </p>
+                  <p className="text-sm text-white/90">{subtitle}</p>
                 )}
               </div>
             </div>
@@ -133,15 +133,15 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-xl relative text-white hover:bg-white/10"
-                onClick={() => setIsNotifOpen((s) => !s)}
-                aria-expanded={isNotifOpen}
-                aria-haspopup="true"
-              >
-                <Bell className="h-5 w-5 text-white" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-xl relative text-white hover:bg-white/10"
+              onClick={() => setIsNotifOpen((s) => !s)}
+              aria-expanded={isNotifOpen}
+              aria-haspopup="true"
+            >
+              <Bell className="h-5 w-5 text-white" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
                 <span className="text-[10px] text-white font-medium">
                   {notifications.length}

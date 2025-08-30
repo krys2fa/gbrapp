@@ -13,7 +13,7 @@ import {
   Award,
   CreditCard,
   Activity,
-  ClipboardCheck
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/ui/button";
@@ -53,9 +53,7 @@ const NavItem: React.FC<NavItemProps> = ({
       <div
         className={cn(
           "transition-transform duration-200",
-          isActive
-            ? "text-amber-400"
-            : "text-white/90 group-hover:text-white"
+          isActive ? "text-amber-400" : "text-white/90 group-hover:text-white"
         )}
       >
         {icon}
@@ -64,9 +62,7 @@ const NavItem: React.FC<NavItemProps> = ({
       <ChevronRight
         className={cn(
           "ml-auto h-4 w-4 transition-transform duration-200",
-          isActive
-            ? "text-amber-400"
-            : "text-white/80 group-hover:text-white"
+          isActive ? "text-amber-400" : "text-white/80 group-hover:text-white"
         )}
       />
     </Link>
@@ -186,7 +182,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         )}
       >
         {/* Desktop Header */}
-  <div className="bg-[#27562a] hidden lg:flex items-center gap-3 px-6 py-5 border-b border-amber-500/30 dark:border-amber-500/20">
+        <div className="bg-[#27562a] hidden lg:flex items-center gap-3 px-6 py-5 border-b border-amber-500/30 dark:border-amber-500/20">
           {/* <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg border border-amber-500/30"></div> */}
           <div>
             {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -250,8 +246,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.name || "Loading..."}</p>
-              <p className="text-xs text-white/80 truncate">{user?.email || "user@example.com"}</p>
+              <p className="text-sm font-medium text-white truncate">
+                {user?.name || "Loading..."}
+              </p>
+              <p className="text-xs text-white/80 truncate">
+                {user?.email || "user@example.com"}
+              </p>
             </div>
             <LogoutButton />
           </div>

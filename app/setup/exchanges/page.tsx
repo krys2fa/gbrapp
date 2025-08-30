@@ -164,7 +164,7 @@ export default function ExchangesPage() {
           </div>
         </div>
 
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-xl">
           <form
             onSubmit={editingExchange ? handleUpdateExchange : handleSubmit}
           >

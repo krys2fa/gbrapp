@@ -65,9 +65,9 @@ const SetupPage = () => {
         icon={<Settings className="h-5 w-5" />}
         subtitle="Configure users, exporters, commodities and exchange rates."
       />
-      <div className="max-w-3xl mx-auto py-10 px-4">
+      <div className="max-w-7xl py-10 px-4">
         {/* <h2 className="text-xl font-bold mb-6">Setup Options</h2> */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
           {setupOptions.map((option) => (
             <Link
               key={option.label}

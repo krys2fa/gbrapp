@@ -190,7 +190,7 @@ const CreateUserPage = () => {
             </Link>
           </div>
         </div>
-        <div className="max-w-xl mx-auto mt-8">
+        <div className="max-w-xl mt-8">
           <form onSubmit={handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">

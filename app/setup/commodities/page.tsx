@@ -164,7 +164,7 @@ export default function CommoditiesPage() {
           </div>
         </div>
 
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-xl">
           <form
             onSubmit={editingCommodity ? handleUpdateCommodity : handleSubmit}
           >

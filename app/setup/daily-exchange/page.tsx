@@ -152,7 +152,7 @@ export default function DailyExchangePage() {
         </div>
       </div>
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-5xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="max-w-5xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
           <form
             onSubmit={handleSubmit}
             className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6"

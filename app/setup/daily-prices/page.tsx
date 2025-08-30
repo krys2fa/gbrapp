@@ -222,7 +222,7 @@ export default function DailyPricesPage() {
         icon={<DollarSign className="h-5 w-5" />}
         subtitle="Record and view daily commodity prices."
       />
-      <div className="max-w-5xl mx-auto py-10 px-4">
+      <div className="max-w-5xl py-8 px-4">
         <div className="mb-6" style={{ width: "100%" }}>
           <div
             className="flex"
@@ -239,8 +239,8 @@ export default function DailyPricesPage() {
           </div>
         </div>
 
-        <div className="px-4 sm:px-6 lg:px-8 py-8">
-          <div className="max-w-5xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="px-4 sm:px-6 lg:px-6 py-6">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
             <form
               onSubmit={handleCommoditySubmit}
               className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6"

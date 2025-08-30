@@ -3,15 +3,7 @@
 import React, { useState } from "react";
 import { Header } from "@/app/components/layout/header";
 import { Button } from "@/app/components/ui/button";
-import {
-  User,
-  Bell,
-  Shield,
-  Palette,
-  Save,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { User, Bell, Shield, Palette, Save, Eye, EyeOff } from "lucide-react";
 
 export default function SettingsPage() {
   const [showPassword, setShowPassword] = useState(false);
