@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700",
+        "sticky top-0 z-30 bg-[#27562a] border-b border-amber-500/30",
         className
       )}
     >
@@ -87,18 +87,17 @@ export const Header: React.FC<HeaderProps> = ({
           {icon ? (
             <div className="flex items-center gap-4">
               <div
-                className={`${
-                  iconBgClass || "bg-gradient-to-r from-amber-500 to-black"
-                } w-12 h-12 rounded-full flex items-center justify-center text-white`}
+                className={`${iconBgClass || "bg-[#d4af37]"} w-12 h-12 rounded-full flex items-center justify-center text-white`}
+                style={iconBgClass ? undefined : { backgroundColor: "#d4af37" }}
               >
                 {icon}
               </div>
               <div>
-                <h1 className="text-2xl xl:text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-2xl xl:text-3xl font-bold text-white">
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-white/90">
                     {subtitle}
                   </p>
                 )}
@@ -106,10 +105,10 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           ) : (
             <div>
-              <h1 className="text-2xl xl:text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl xl:text-3xl font-bold text-white">
                 {title}
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-white/90">
                 {/* Welcome back! Here's what's happening today. */}
               </p>
             </div>
@@ -118,43 +117,31 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
-          {/* Search Bar - hidden on dashboard pages */}
-          {!pathname?.startsWith("/dashboard") && (
-            <div className="hidden md:flex relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="pl-10 pr-4 py-2 w-64 xl:w-80 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:text-white placeholder:text-gray-400"
-              />
-            </div>
-          )}
-
           {/* Dark Mode Toggle */}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleDarkMode}
-            className="rounded-xl"
+            className="rounded-xl text-white hover:bg-white/10"
           >
             {isDarkMode ? (
-              <Sun className="h-5 w-5" />
+              <Sun className="h-5 w-5 text-white" />
             ) : (
-              <Moon className="h-5 w-5" />
+              <Moon className="h-5 w-5 text-white" />
             )}
           </Button>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-xl relative"
-              onClick={() => setIsNotifOpen((s) => !s)}
-              aria-expanded={isNotifOpen}
-              aria-haspopup="true"
-            >
-              <Bell className="h-5 w-5" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-xl relative text-white hover:bg-white/10"
+                onClick={() => setIsNotifOpen((s) => !s)}
+                aria-expanded={isNotifOpen}
+                aria-haspopup="true"
+              >
+                <Bell className="h-5 w-5 text-white" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
                 <span className="text-[10px] text-white font-medium">
                   {notifications.length}
@@ -213,12 +200,12 @@ export const Header: React.FC<HeaderProps> = ({
           <Link href="/settings">
             <Button
               variant="ghost"
-              className="flex items-center gap-2 rounded-xl px-3"
+              className="flex items-center gap-2 rounded-xl px-3 text-white hover:bg-white/10"
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-black rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-[#d4af37] rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 text-white" />
               </div>
-              <span className="hidden md:block text-sm font-medium">
+              <span className="hidden md:block text-sm font-medium text-white">
                 Profile
               </span>
             </Button>
