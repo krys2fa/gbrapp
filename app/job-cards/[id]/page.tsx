@@ -104,6 +104,12 @@ function JobCardDetailPage() {
     }
   };
 
+  // If assays exist, treat the job card as completed for the status badge
+  const badgeStatus = jobCard.assays && jobCard.assays.length > 0 ? "completed" : jobCard.status;
+  const badgeText = jobCard.assays && jobCard.assays.length > 0
+    ? "Completed"
+    : jobCard.status.charAt(0).toUpperCase() + jobCard.status.slice(1).replace("_", " ");
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6 flex items-center justify-between">
@@ -135,11 +141,10 @@ function JobCardDetailPage() {
           </div>
           <span
             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
-              jobCard.status
+              badgeStatus
             )}`}
           >
-            {jobCard.status.charAt(0).toUpperCase() +
-              jobCard.status.slice(1).replace("_", " ")}
+            {badgeText}
           </span>
         </div>
         <div className="border-t border-gray-200 px-4 py-5 sm:p-0">

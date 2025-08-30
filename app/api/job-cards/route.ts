@@ -82,6 +82,12 @@ async function getAllJobCards(req: NextRequest) {
         },
       },
       shipmentType: true,
+      // include a count of related rows so clients can know if assays exist without pulling full arrays
+      _count: {
+        select: {
+          assays: true,
+        },
+      },
     };
 
     if (hasAssays === "true") {
