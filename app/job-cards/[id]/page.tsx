@@ -269,12 +269,21 @@ function JobCardDetailPage() {
             <h3 className="text-lg leading-6 font-medium text-gray-900">
               Invoices
             </h3>
-            <Link
-              href={`/job-cards/${id}/invoices/new`}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              View Invoice
-            </Link>
+            {jobCard.invoices && jobCard.invoices.length > 0 ? (
+              <Link
+                href={`/job-cards/${id}/invoices/${jobCard.invoices[0].id}`}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                View Invoice
+              </Link>
+            ) : (
+              <Link
+                href={`/job-cards/${id}/invoices/new`}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                Create Invoice
+              </Link>
+            )}
           </div>
 
           {jobCard.invoices && jobCard.invoices.length > 0 ? (

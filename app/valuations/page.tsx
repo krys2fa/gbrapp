@@ -47,7 +47,9 @@ function ValuationList() {
       const certificateFiltered = certificateFilter
         ? valued.filter((jc: any) => {
             const assay = jc.assays && jc.assays.length ? jc.assays[0] : null;
-            return assay?.certificateNumber?.toLowerCase().includes(certificateFilter.toLowerCase());
+            return assay?.certificateNumber
+              ?.toLowerCase()
+              .includes(certificateFilter.toLowerCase());
           })
         : valued;
       setJobCards(valued);
@@ -125,28 +127,69 @@ function ValuationList() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exporter</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shipment</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certificate</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assay Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gold %</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Reference
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Exporter
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Shipment
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Certificate
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Assay Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Gold %
+                  </th>
                   <th className="px-6 py-3" />
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {jobCards.map((jc) => {
-                  const assay = jc.assays && jc.assays.length ? jc.assays[0] : null;
+                  const assay =
+                    jc.assays && jc.assays.length ? jc.assays[0] : null;
                   return (
                     <tr key={jc.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">{jc.referenceNumber}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{jc.exporter?.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{jc.shipmentType?.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{assay?.certificateNumber || "-"}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{assay ? formatDate(new Date(assay.assayDate || assay.createdAt || Date.now())) : "-"}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{assay ? (assay.goldContent || assay.fineness || 0) + "%" : "-"}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                        <Link
+                          href={`/job-cards/${jc.id}`}
+                          className="hover:underline"
+                        >
+                          {jc.referenceNumber}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {jc.exporter?.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {jc.shipmentType?.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {assay?.certificateNumber || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {assay
+                          ? formatDate(
+                              new Date(
+                                assay.assayDate || assay.createdAt || Date.now()
+                              )
+                            )
+                          : "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {assay
+                          ? (assay.goldContent || assay.fineness || 0) + "%"
+                          : "-"}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link href={`/job-cards/${jc.id}`} className="text-indigo-600 hover:text-indigo-900 inline-flex items-center">
+                        <Link
+                          href={`/job-cards/${jc.id}`}
+                          className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
+                        >
                           <EyeIcon className="h-4 w-4 mr-1" />
                           View
                         </Link>
