@@ -1,125 +1,112 @@
-"use client";
-
-import React, { useState } from "react";
 import { Header } from "@/app/components/layout/header";
-import { FileText, Download } from "lucide-react";
+import { FileText } from "lucide-react";
+import { prisma } from "@/app/lib/prisma";
 
-type ReportType =
-  | "weekly-summary"
-  | "weekly-comprehensive"
-  | "monthly-summary"
-  | "monthly-comprehensive";
+const GRAMS_PER_TROY_OUNCE = 31.1034768;
 
-const mockReportContent = (type: ReportType) => {
-  const now = new Date().toLocaleString();
-  switch (type) {
-    case "weekly-summary":
-      return `Weekly Summary Report\nGenerated: ${now}\n\n- Total Job Cards: 42\n- Completed: 30\n- Pending: 12\n- Total Export Value (USD): $120,345`;
-    case "weekly-comprehensive":
-      return `Weekly Comprehensive Report\nGenerated: ${now}\n\nDetailed transactions, exporter breakdowns, tax summaries, and attached charts.`;
-    case "monthly-summary":
-      return `Monthly Summary Report\nGenerated: ${now}\n\n- Total Job Cards: 432\n- Completed: 398\n- Pending: 34\n- Total Export Value (USD): $1,234,567`;
-    case "monthly-comprehensive":
-      return `Monthly Comprehensive Report\nGenerated: ${now}\n\nFull export ledger, tax reconciliations, fees, and per-exporter analytics.`;
-  }
-};
+function formatNumber(v?: number) {
+  if (v == null) return "-";
+  return v.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
-export default function ReportsPage() {
-  const [report, setReport] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+export default async function ReportsPage() {
+  // Fetch latest commodity price (best-effort)
+  const dailyPrice = await prisma.dailyPrice.findFirst({
+    where: { type: "COMMODITY" },
+    orderBy: { createdAt: "desc" },
+  });
+  const commodityPrice = dailyPrice?.price || 0; // assumed per troy ounce
 
-  const generateReport = (type: ReportType) => {
-    setLoading(true);
-    setTimeout(() => {
-      setReport(mockReportContent(type));
-      setLoading(false);
-    }, 600);
-  };
+  // Fetch job cards with exporter and assays/measurements
+  const jobCards = await prisma.jobCard.findMany({
+    include: { exporter: true, assays: { include: { measurements: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 200,
+  });
 
-  const downloadReport = () => {
-    if (!report) return;
-    const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `report-${Date.now()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const rows = jobCards.map((jc: any) => {
+    const storedNet = Number(jc.totalNetWeight) || 0; // grams
+    let netGoldGrams = storedNet;
+
+    if (!storedNet || storedNet === 0) {
+      netGoldGrams = (jc.assays || []).reduce((acc: number, a: any) => {
+        const s = (a.measurements || []).reduce(
+          (mAcc: number, m: any) => mAcc + (Number(m.netWeight) || 0),
+          0
+        );
+        return acc + s;
+      }, 0);
+    }
+
+    const netSilverGrams = (jc.assays || []).reduce(
+      (acc: number, a: any) => acc + (Number(a.silverContent) || 0),
+      0
+    );
+
+    const ounces = netGoldGrams / GRAMS_PER_TROY_OUNCE;
+    const estimatedValue = ounces * commodityPrice;
+
+    return {
+      id: jc.id,
+      exporter: jc.exporter?.name || "-",
+      netGoldGrams,
+      netSilverGrams,
+      estimatedValue,
+    };
+  });
 
   return (
     <>
       <Header
         title="Reports"
         icon={<FileText className="h-5 w-5" />}
-        subtitle="Generate weekly and monthly summary or comprehensive reports."
+        subtitle="Generated reports from database data"
       />
 
-      <main className="py-6 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            {/* <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-black rounded-lg flex items-center justify-center text-white">
-                <FileText className="h-6 w-6" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold">Generate Reports</h2>
-                <p className="text-sm text-gray-500">
-                  Weekly and monthly, summary and comprehensive reports.
-                </p>
-              </div>
-            </div> */}
-            <div>
-              <span className="text-sm text-gray-500">Quick generate</span>
-            </div>
-          </div>
+      <main className="py-6 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div className="bg-white rounded-2xl p-6 border border-gray-200">
+          <h2 className="text-lg font-semibold mb-4">Exporters & Weights</h2>
 
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button
-              onClick={() => generateReport("weekly-summary")}
-              className="p-4 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-900"
-            >
-              Weekly Summary
-            </button>
-            <button
-              onClick={() => generateReport("weekly-comprehensive")}
-              className="p-4 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-900"
-            >
-              Weekly Comprehensive
-            </button>
-            <button
-              onClick={() => generateReport("monthly-summary")}
-              className="p-4 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-900"
-            >
-              Monthly Summary
-            </button>
-            <button
-              onClick={() => generateReport("monthly-comprehensive")}
-              className="p-4 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-900"
-            >
-              Monthly Comprehensive
-            </button>
-          </div>
-
-          <div className="mt-6">
-            {loading && (
-              <div className="text-sm text-gray-500">Generating...</div>
-            )}
-            {report && (
-              <div className="mt-4 bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-100">
-                  {report}
-                </pre>
-                <div className="mt-3 flex items-center gap-2">
-                  <button
-                    onClick={downloadReport}
-                    className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md"
-                  >
-                    <Download className="h-4 w-4" /> Download
-                  </button>
-                </div>
-              </div>
-            )}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Exporter
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Net Gold (g)
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Net Silver (g)
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Estimated Value (USD)
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {rows.map((r) => (
+                  <tr key={r.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                      {r.exporter}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                      {formatNumber(r.netGoldGrams)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                      {formatNumber(r.netSilverGrams)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                      {formatNumber(r.estimatedValue)} USD
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>
