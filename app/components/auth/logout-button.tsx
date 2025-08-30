@@ -35,10 +35,10 @@ export function LogoutButton() {
     <button
       onClick={handleLogout}
       disabled={isLoading}
-      className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-amber-600 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+      className="flex items-center justify-center w-8 h-8 text-white hover:text-white/90 hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
       title="Logout"
     >
-      <LogOut className="h-4 w-4" />
+      <LogOut className="h-4 w-4 text-white" />
       <span className="sr-only">{isLoading ? "Logging out..." : "Logout"}</span>
     </button>
   );

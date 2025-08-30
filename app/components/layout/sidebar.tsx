@@ -46,8 +46,8 @@ const NavItem: React.FC<NavItemProps> = ({
       className={cn(
         "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group",
         isActive
-          ? "bg-gradient-to-r from-black to-black/90 text-white border-l-4 border-amber-500 shadow-md"
-          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800"
+          ? "bg-[#2e7030] text-white border-l-4 border-amber-500 shadow-md"
+          : "text-white hover:text-white/90 hover:bg-[#2e7030]"
       )}
     >
       <div
@@ -55,7 +55,7 @@ const NavItem: React.FC<NavItemProps> = ({
           "transition-transform duration-200",
           isActive
             ? "text-amber-400"
-            : "text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-200"
+            : "text-white/90 group-hover:text-white"
         )}
       >
         {icon}
@@ -66,7 +66,7 @@ const NavItem: React.FC<NavItemProps> = ({
           "ml-auto h-4 w-4 transition-transform duration-200",
           isActive
             ? "text-amber-400"
-            : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+            : "text-white/80 group-hover:text-white"
         )}
       />
     </Link>
@@ -176,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       {/* Sidebar */}
       <div
         className={cn(
-          "lg:flex-shrink-0 lg:h-screen lg:overflow-y-auto bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700",
+          "lg:flex-shrink-0 lg:h-screen lg:overflow-y-auto bg-[#27562a] dark:bg-[#27562a] border-r border-gray-200 dark:border-gray-700",
           "lg:relative lg:z-auto lg:translate-x-0",
           "fixed top-0 left-0 z-40 h-full transition-transform duration-300 ease-in-out overflow-y-auto",
           isMobileMenuOpen
@@ -186,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         )}
       >
         {/* Desktop Header */}
-        <div className="bg-black hidden lg:flex items-center gap-3 px-6 py-5 border-b border-amber-500/30 dark:border-amber-500/20">
+  <div className="bg-[#27562a] hidden lg:flex items-center gap-3 px-6 py-5 border-b border-amber-500/30 dark:border-amber-500/20">
           {/* <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg border border-amber-500/30"></div> */}
           <div>
             {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -208,7 +208,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         {/* Navigation */}
         {/* Mobile Menu Logo - Only visible when mobile menu is open */}
         <nav className="p-4 xl:p-6 space-y-2 mt-16 lg:mt-0">
-          <div className="bg-black flex justify-center mb-6 lg:hidden p-4 rounded-lg border border-amber-500/30">
+          <div className="bg-[#27562a] flex justify-center mb-6 lg:hidden p-4 rounded-lg border border-amber-500/30">
             <div>
               <Image
                 src="/goldbod-logo.webp"
@@ -242,23 +242,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </nav>
 
         {/* User Profile Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-amber-500/20 dark:border-amber-500/10">
-          <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-            <div className="w-10 h-10 bg-black border border-amber-500/40 rounded-full flex items-center justify-center">
-              <span className="text-amber-500 font-medium text-sm">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-amber-500/20">
+          <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2e7030] transition-colors">
+            <div className="w-10 h-10 bg-[#27562a] border border-amber-500/40 rounded-full flex items-center justify-center">
+              <span className="text-white font-medium text-sm">
                 {user?.name?.charAt(0) || "U"}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {/* <span className="text-amber-700 dark:text-amber-500">
-                  {user?.role || "User"}
-                </span>{" "} */}
-                {user?.name || "Loading..."}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {user?.email || "user@example.com"}
-              </p>
+              <p className="text-sm font-medium text-white truncate">{user?.name || "Loading..."}</p>
+              <p className="text-xs text-white/80 truncate">{user?.email || "user@example.com"}</p>
             </div>
             <LogoutButton />
           </div>
