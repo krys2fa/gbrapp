@@ -13,13 +13,18 @@ function csvEscape(v: any) {
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const reportParam = (url.searchParams.get("report") || "weekly-summary").toString();
+  const reportParam = (
+    url.searchParams.get("report") || "weekly-summary"
+  ).toString();
   const isWeekly = reportParam.startsWith("weekly");
   const isSummary = reportParam.includes("summary");
   const periodDays = isWeekly ? 7 : 30;
   const sinceDate = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000);
 
-  const dailyPrice = await prisma.dailyPrice.findFirst({ where: { type: "COMMODITY" }, orderBy: { createdAt: "desc" } });
+  const dailyPrice = await prisma.dailyPrice.findFirst({
+    where: { type: "COMMODITY" },
+    orderBy: { createdAt: "desc" },
+  });
   const commodityPrice = dailyPrice?.price || 0;
 
   const jobCards = await prisma.jobCard.findMany({
@@ -34,11 +39,17 @@ export async function GET(req: Request) {
     let netGoldGrams = storedNet;
     if (!storedNet || storedNet === 0) {
       netGoldGrams = (jc.assays || []).reduce((acc: number, a: any) => {
-        const s = (a.measurements || []).reduce((mAcc: number, m: any) => mAcc + (Number(m.netWeight) || 0), 0);
+        const s = (a.measurements || []).reduce(
+          (mAcc: number, m: any) => mAcc + (Number(m.netWeight) || 0),
+          0
+        );
         return acc + s;
       }, 0);
     }
-    const netSilverGrams = (jc.assays || []).reduce((acc: number, a: any) => acc + (Number(a.silverContent) || 0), 0);
+    const netSilverGrams = (jc.assays || []).reduce(
+      (acc: number, a: any) => acc + (Number(a.silverContent) || 0),
+      0
+    );
     const ounces = netGoldGrams / GRAMS_PER_TROY_OUNCE;
     const estimatedValue = ounces * commodityPrice;
     return {
@@ -62,7 +73,12 @@ export async function GET(req: Request) {
         prev.netSilverGrams += c.netSilverGrams;
         prev.estimatedValue += c.estimatedValue;
       } else {
-        map.set(key, { exporter: key, netGoldGrams: c.netGoldGrams, netSilverGrams: c.netSilverGrams, estimatedValue: c.estimatedValue });
+        map.set(key, {
+          exporter: key,
+          netGoldGrams: c.netGoldGrams,
+          netSilverGrams: c.netSilverGrams,
+          estimatedValue: c.estimatedValue,
+        });
       }
     }
     rows = Array.from(map.values());
@@ -78,11 +94,30 @@ export async function GET(req: Request) {
   const lines = [headers.join(",")];
   for (const r of rows) {
     const cols: string[] = [];
-    if (!isSummary) cols.push(csvEscape(r.createdAt ? new Date(r.createdAt).toISOString() : ""));
+    if (!isSummary)
+      cols.push(
+        csvEscape(r.createdAt ? new Date(r.createdAt).toISOString() : "")
+      );
     cols.push(csvEscape(r.exporter));
-    cols.push(csvEscape(r.netGoldGrams?.toFixed ? r.netGoldGrams.toFixed(2) : r.netGoldGrams));
-    cols.push(csvEscape(r.netSilverGrams?.toFixed ? r.netSilverGrams.toFixed(2) : r.netSilverGrams));
-    cols.push(csvEscape(r.estimatedValue?.toFixed ? r.estimatedValue.toFixed(2) : r.estimatedValue));
+    cols.push(
+      csvEscape(
+        r.netGoldGrams?.toFixed ? r.netGoldGrams.toFixed(2) : r.netGoldGrams
+      )
+    );
+    cols.push(
+      csvEscape(
+        r.netSilverGrams?.toFixed
+          ? r.netSilverGrams.toFixed(2)
+          : r.netSilverGrams
+      )
+    );
+    cols.push(
+      csvEscape(
+        r.estimatedValue?.toFixed
+          ? r.estimatedValue.toFixed(2)
+          : r.estimatedValue
+      )
+    );
     lines.push(cols.join(","));
   }
 
