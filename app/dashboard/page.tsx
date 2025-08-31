@@ -17,6 +17,8 @@ import {
   Building,
   Users,
   Settings,
+  DollarSign,
+  Repeat,
 } from "lucide-react";
 import { withClientAuth } from "@/app/lib/with-client-auth";
 import { useAuth } from "@/app/context/auth-context";
@@ -513,6 +515,87 @@ function DashboardPage() {
           </>
         )}
 
+         {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {/* Performance Overview - Placeholder for additional charts */}
+          <div className="lg:col-span-2 xl:col-span-3 space-y-6">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 w-screen -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+              {/* <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  System Overview
+                </h3>
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Live data
+                  </span>
+                </div>
+              </div> */}
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6 gap-4">
+                {[
+                  {
+                    label: "New Job Card",
+                    icon: <Plus className="h-6 w-6" />,
+                    color: "bg-yellow-600",
+                    href: "/job-cards/new",
+                  },
+                  {
+                    label: "Manage Daily Prices",
+                    description: "Set up daily commodity prices.",
+                    icon: <DollarSign className="h-6 w-6" />,
+                    href: "/setup/daily-prices",
+                    color: "bg-yellow-600",
+                  },
+                  {
+                    label: "Manage Daily Exchanges",
+                    description: "Set up daily exchange rates.",
+                    icon: <Repeat className="h-6 w-6" />,
+                    href: "/setup/daily-exchange",
+                    color: "bg-purple-600",
+                  },
+                  {
+                    label: "View Exporters",
+                    icon: <Building className="h-6 w-6" />,
+                    color: "bg-gray-800",
+                    href: "/setup/exporters",
+                  },
+                  {
+                    label: "User Management",
+                    icon: <Users className="h-6 w-6" />,
+                    color: "bg-yellow-700",
+                    href: "/setup/users",
+                  },
+                  {
+                    label: "System Settings",
+                    icon: <Settings className="h-6 w-6" />,
+                    color: "bg-gray-900",
+                    href: "/setup",
+                  },
+                ].map((action, index) => (
+                  <a
+                    key={index}
+                    href={action.href}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+                  >
+                    <div
+                      className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center text-white group-hover:scale-105 transition-transform`}
+                    >
+                      {action.icon}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                      {action.label}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar Content removed — moved into top row trio */}
+        </div>
+
         {/* Charts + Sidebar Trio: Recent Activity | System Status | Top Exporters (single row) */}
         {dashboardData && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -566,72 +649,7 @@ function DashboardPage() {
           </div>
         )}
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {/* Performance Overview - Placeholder for additional charts */}
-          <div className="lg:col-span-2 xl:col-span-3 space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  System Overview
-                </h3>
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-blue-600" />
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Live data
-                  </span>
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-4">
-                {[
-                  {
-                    label: "New Job Card",
-                    icon: <Plus className="h-6 w-6" />,
-                    color: "bg-yellow-600",
-                    href: "/job-cards/new",
-                  },
-                  {
-                    label: "View Exporters",
-                    icon: <Building className="h-6 w-6" />,
-                    color: "bg-gray-800",
-                    href: "/setup/exporters",
-                  },
-                  {
-                    label: "User Management",
-                    icon: <Users className="h-6 w-6" />,
-                    color: "bg-yellow-700",
-                    href: "/setup/users",
-                  },
-                  {
-                    label: "System Settings",
-                    icon: <Settings className="h-6 w-6" />,
-                    color: "bg-gray-900",
-                    href: "/setup",
-                  },
-                ].map((action, index) => (
-                  <a
-                    key={index}
-                    href={action.href}
-                    className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
-                  >
-                    <div
-                      className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center text-white group-hover:scale-105 transition-transform`}
-                    >
-                      {action.icon}
-                    </div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
-                      {action.label}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar Content removed — moved into top row trio */}
-        </div>
+       
       </main>
     </>
   );

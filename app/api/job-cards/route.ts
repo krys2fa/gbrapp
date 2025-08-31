@@ -142,15 +142,44 @@ async function createJobCard(req: NextRequest) {
     const requestData = await req.json();
     console.log("Received data:", JSON.stringify(requestData, null, 2));
 
-    // Extract only the required fields for simplicity
+    // Sanitize incoming payload: remove nested relation objects if present
+    // (client may send objects like `exporter` or `shipmentType` accidentally)
+    const cleaned: any = { ...requestData };
+    delete cleaned.exporter;
+    delete cleaned.shipmentType;
+    delete cleaned.shipmentTypeIdObj;
+
+    // Build prisma data object from allowed scalar fields
     const data: any = {
       referenceNumber:
-        requestData.referenceNumber ||
+        cleaned.referenceNumber ||
         `JC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      receivedDate: new Date(),
-      exporterId: requestData.exporterId,
-      shipmentTypeId: requestData.shipmentTypeId,
-      status: requestData.status || "pending",
+      receivedDate: cleaned.receivedDate ? new Date(cleaned.receivedDate) : new Date(),
+      exporterId: cleaned.exporterId || null,
+      shipmentTypeId: cleaned.shipmentTypeId || null,
+      status: cleaned.status || "pending",
+      // optional fields - include if provided
+      unitOfMeasure: cleaned.unitOfMeasure || undefined,
+      idType: cleaned.idType || undefined,
+      buyerIdNumber: cleaned.buyerIdNumber || undefined,
+      buyerName: cleaned.buyerName || undefined,
+      buyerPhone: cleaned.buyerPhone || undefined,
+      exporterPricePerOz: cleaned.exporterPricePerOz ? Number(cleaned.exporterPricePerOz) : undefined,
+      teamLeader: cleaned.teamLeader || undefined,
+      totalGrossWeight: cleaned.totalGrossWeight ? Number(cleaned.totalGrossWeight) : undefined,
+      destinationCountry: cleaned.destinationCountry || undefined,
+      fineness: cleaned.fineness ? Number(cleaned.fineness) : undefined,
+      sourceOfGold: cleaned.sourceOfGold || undefined,
+      totalNetWeight: cleaned.totalNetWeight ? Number(cleaned.totalNetWeight) : undefined,
+      totalNetWeightOz: cleaned.totalNetWeightOz ? Number(cleaned.totalNetWeightOz) : undefined,
+      numberOfPersons: cleaned.numberOfPersons ? Number(cleaned.numberOfPersons) : undefined,
+      exporterValueUsd: cleaned.exporterValueUsd ? Number(cleaned.exporterValueUsd) : undefined,
+      exporterValueGhs: cleaned.exporterValueGhs ? Number(cleaned.exporterValueGhs) : undefined,
+      graDeclarationNumber: cleaned.graDeclarationNumber || undefined,
+      numberOfBoxes: cleaned.numberOfBoxes ? Number(cleaned.numberOfBoxes) : undefined,
+      remittanceType: cleaned.remittanceType || undefined,
+      commodityId: cleaned.commodityId || undefined,
+      notes: cleaned.notes || undefined,
     };
 
     // Validate required fields
@@ -167,17 +196,47 @@ async function createJobCard(req: NextRequest) {
 
     console.log("Creating job card with data:", JSON.stringify(data, null, 2));
 
-    // Create the job card with minimal fields first
-    const jobCard = await prisma.jobCard.create({
+    // Prepare the arguments we will pass to Prisma so we can log them exactly
+    const createArgs = {
       data,
       include: {
         exporter: true,
         shipmentType: true,
       },
-    });
+    } as const;
 
-    console.log("Job card created successfully:", jobCard.id);
-    return NextResponse.json(jobCard, { status: 201 });
+    // Log the exact create arguments to help debug Prisma validation errors
+    try {
+      console.log("Prisma create args:", JSON.stringify(createArgs, null, 2));
+
+      // Try the full create first
+      const jobCard = await prisma.jobCard.create(createArgs as any);
+      console.log("Job card created successfully:", jobCard.id);
+      return NextResponse.json(jobCard, { status: 201 });
+    } catch (createError) {
+      console.error("prisma.jobCard.create failed:", createError);
+
+      // As a fallback, attempt a minimal create with only the required scalar fields
+      try {
+        const minimalData: any = {
+          referenceNumber: data.referenceNumber,
+          receivedDate: data.receivedDate,
+          exporterId: data.exporterId,
+          shipmentTypeId: data.shipmentTypeId,
+          status: data.status || "pending",
+        };
+        console.log("Attempting minimal create with data:", JSON.stringify(minimalData, null, 2));
+        const fallbackJobCard = await prisma.jobCard.create({
+          data: minimalData,
+          include: { exporter: true, shipmentType: true },
+        });
+        console.log("Fallback job card created successfully:", fallbackJobCard.id);
+        return NextResponse.json(fallbackJobCard, { status: 201 });
+      } catch (fallbackError) {
+        console.error("Fallback create also failed:", fallbackError);
+        throw fallbackError; // let outer catch handle the response
+      }
+    }
   } catch (error) {
     console.error("Error creating job card:", error);
     // Return more detailed error information for debugging

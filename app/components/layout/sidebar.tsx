@@ -231,7 +231,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
                   href={item.href}
                   isActive={
                     pathname === item.href ||
-                    pathname.startsWith(`${item.href}/`)
+                    pathname?.startsWith(`${item.href}/`)
                   }
                   onClick={handleNavClick}
                 />
