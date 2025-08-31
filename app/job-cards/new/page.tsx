@@ -23,7 +23,9 @@ function NewJobCardPage() {
   const [shipmentTypes, setShipmentTypes] = useState<
     { id: string; name: string }[]
   >([]);
-  const [commodities, setCommodities] = useState<{ id: string; name: string }[]>([]);
+  const [commodities, setCommodities] = useState<
+    { id: string; name: string }[]
+  >([]);
 
   // Get countries list for the dropdown
   const countryOptions = useMemo(() => countryList().getData(), []);
@@ -84,7 +86,7 @@ function NewJobCardPage() {
     receivedDate: new Date().toISOString().split("T")[0], // Today's date as default
     exporterId: "",
     shipmentTypeId: "",
-  commodityId: "",
+    commodityId: "",
     // New fields
     unitOfMeasure: UnitOfMeasure.GRAMS,
     buyerIdNumber: "",
@@ -110,11 +112,12 @@ function NewJobCardPage() {
     // Fetch exporters and shipment types
     const fetchData = async () => {
       try {
-        const [exportersRes, shipmentTypesRes, commoditiesRes] = await Promise.all([
-          fetch("/api/exporters"),
-          fetch("/api/shipment-types"),
-          fetch("/api/commodity"),
-        ]);
+        const [exportersRes, shipmentTypesRes, commoditiesRes] =
+          await Promise.all([
+            fetch("/api/exporters"),
+            fetch("/api/shipment-types"),
+            fetch("/api/commodity"),
+          ]);
 
         if (exportersRes.ok) {
           const exportersData = await exportersRes.json();

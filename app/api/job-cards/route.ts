@@ -154,7 +154,9 @@ async function createJobCard(req: NextRequest) {
       referenceNumber:
         cleaned.referenceNumber ||
         `JC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      receivedDate: cleaned.receivedDate ? new Date(cleaned.receivedDate) : new Date(),
+      receivedDate: cleaned.receivedDate
+        ? new Date(cleaned.receivedDate)
+        : new Date(),
       exporterId: cleaned.exporterId || null,
       shipmentTypeId: cleaned.shipmentTypeId || null,
       status: cleaned.status || "pending",
@@ -164,19 +166,35 @@ async function createJobCard(req: NextRequest) {
       buyerIdNumber: cleaned.buyerIdNumber || undefined,
       buyerName: cleaned.buyerName || undefined,
       buyerPhone: cleaned.buyerPhone || undefined,
-      exporterPricePerOz: cleaned.exporterPricePerOz ? Number(cleaned.exporterPricePerOz) : undefined,
+      exporterPricePerOz: cleaned.exporterPricePerOz
+        ? Number(cleaned.exporterPricePerOz)
+        : undefined,
       teamLeader: cleaned.teamLeader || undefined,
-      totalGrossWeight: cleaned.totalGrossWeight ? Number(cleaned.totalGrossWeight) : undefined,
+      totalGrossWeight: cleaned.totalGrossWeight
+        ? Number(cleaned.totalGrossWeight)
+        : undefined,
       destinationCountry: cleaned.destinationCountry || undefined,
       fineness: cleaned.fineness ? Number(cleaned.fineness) : undefined,
       sourceOfGold: cleaned.sourceOfGold || undefined,
-      totalNetWeight: cleaned.totalNetWeight ? Number(cleaned.totalNetWeight) : undefined,
-      totalNetWeightOz: cleaned.totalNetWeightOz ? Number(cleaned.totalNetWeightOz) : undefined,
-      numberOfPersons: cleaned.numberOfPersons ? Number(cleaned.numberOfPersons) : undefined,
-      exporterValueUsd: cleaned.exporterValueUsd ? Number(cleaned.exporterValueUsd) : undefined,
-      exporterValueGhs: cleaned.exporterValueGhs ? Number(cleaned.exporterValueGhs) : undefined,
+      totalNetWeight: cleaned.totalNetWeight
+        ? Number(cleaned.totalNetWeight)
+        : undefined,
+      totalNetWeightOz: cleaned.totalNetWeightOz
+        ? Number(cleaned.totalNetWeightOz)
+        : undefined,
+      numberOfPersons: cleaned.numberOfPersons
+        ? Number(cleaned.numberOfPersons)
+        : undefined,
+      exporterValueUsd: cleaned.exporterValueUsd
+        ? Number(cleaned.exporterValueUsd)
+        : undefined,
+      exporterValueGhs: cleaned.exporterValueGhs
+        ? Number(cleaned.exporterValueGhs)
+        : undefined,
       graDeclarationNumber: cleaned.graDeclarationNumber || undefined,
-      numberOfBoxes: cleaned.numberOfBoxes ? Number(cleaned.numberOfBoxes) : undefined,
+      numberOfBoxes: cleaned.numberOfBoxes
+        ? Number(cleaned.numberOfBoxes)
+        : undefined,
       remittanceType: cleaned.remittanceType || undefined,
       commodityId: cleaned.commodityId || undefined,
       notes: cleaned.notes || undefined,
@@ -225,12 +243,18 @@ async function createJobCard(req: NextRequest) {
           shipmentTypeId: data.shipmentTypeId,
           status: data.status || "pending",
         };
-        console.log("Attempting minimal create with data:", JSON.stringify(minimalData, null, 2));
+        console.log(
+          "Attempting minimal create with data:",
+          JSON.stringify(minimalData, null, 2)
+        );
         const fallbackJobCard = await prisma.jobCard.create({
           data: minimalData,
           include: { exporter: true, shipmentType: true },
         });
-        console.log("Fallback job card created successfully:", fallbackJobCard.id);
+        console.log(
+          "Fallback job card created successfully:",
+          fallbackJobCard.id
+        );
         return NextResponse.json(fallbackJobCard, { status: 201 });
       } catch (fallbackError) {
         console.error("Fallback create also failed:", fallbackError);

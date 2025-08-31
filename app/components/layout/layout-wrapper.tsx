@@ -13,7 +13,9 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
 
   // Don't show sidebar on login or unauthorized pages
   const hideSidebar =
-    (pathname && (pathname.includes("/login") || pathname.includes("/unauthorized"))) || false;
+    (pathname &&
+      (pathname.includes("/login") || pathname.includes("/unauthorized"))) ||
+    false;
 
   if (hideSidebar) {
     return <>{children}</>;

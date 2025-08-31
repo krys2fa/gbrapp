@@ -515,11 +515,11 @@ function DashboardPage() {
           </>
         )}
 
-         {/* Main Content Grid */}
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {/* Performance Overview - Placeholder for additional charts */}
-          <div className="lg:col-span-2 xl:col-span-3 space-y-6">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 w-screen -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+          <div className="lg:col-span-3 xl:col-span-4 space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 w-full">
               {/* <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   System Overview
@@ -533,6 +533,9 @@ function DashboardPage() {
               </div> */}
 
               {/* Quick Actions */}
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Quick Actions
+                </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6 gap-4">
                 {[
                   {
@@ -546,7 +549,7 @@ function DashboardPage() {
                     description: "Set up daily commodity prices.",
                     icon: <DollarSign className="h-6 w-6" />,
                     href: "/setup/daily-prices",
-                    color: "bg-yellow-600",
+                    color: "bg-lime-600",
                   },
                   {
                     label: "Manage Daily Exchanges",
@@ -558,7 +561,7 @@ function DashboardPage() {
                   {
                     label: "View Exporters",
                     icon: <Building className="h-6 w-6" />,
-                    color: "bg-gray-800",
+                    color: "bg-blue-800",
                     href: "/setup/exporters",
                   },
                   {
@@ -648,8 +651,6 @@ function DashboardPage() {
             <TopExportersChart data={dashboardData.charts.topExporters} />
           </div>
         )}
-
-       
       </main>
     </>
   );
