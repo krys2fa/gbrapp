@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import BackLink from "@/app/components/ui/BackLink";
 import { formatDate } from "@/app/lib/utils";
 
 export default function AssayDetailPage() {
@@ -144,12 +145,7 @@ export default function AssayDetailPage() {
           <p className="text-sm text-yellow-700">Assay not found.</p>
         </div>
         <div className="mt-4">
-          <Link
-            href={`/job-cards/${id}`}
-            className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-900"
-          >
-            ← Back to Job Card
-          </Link>
+          <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
         </div>
       </div>
     );
@@ -158,12 +154,7 @@ export default function AssayDetailPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <Link
-          href={`/job-cards/${id}`}
-          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-        >
-          ← Back to Job Card
-        </Link>
+        <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-medium">Valuation Details</h2>
           <button

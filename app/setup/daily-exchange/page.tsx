@@ -3,9 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Header } from "../../components/layout/header";
 import { ChevronDown } from "lucide-react";
 import { Repeat } from "lucide-react";
-import Link from "next/link";
+import BackLink from "@/app/components/ui/BackLink";
 import {
-  ArrowLeftIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
   TrashIcon,
@@ -137,19 +136,7 @@ export default function DailyExchangePage() {
         subtitle="Add and view daily exchange rates."
       />
       <div className="my-6 px-4" style={{ width: "100%" }}>
-        <div
-          className="flex"
-          style={{ justifyContent: "flex-start", width: "100%" }}
-        >
-          <Link
-            href="/setup"
-            className="inline-flex items-center text-gray-600 hover:text-blue-600"
-            style={{ marginLeft: "0.5rem" }}
-          >
-            <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to Settings
-          </Link>
-        </div>
+        <BackLink href="/setup" label="Back to Settings" />
       </div>
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-5xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">

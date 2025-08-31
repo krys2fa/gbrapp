@@ -3,7 +3,8 @@
 import { withClientAuth } from "@/app/lib/with-client-auth";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { PencilIcon } from "@heroicons/react/24/outline";
+import BackLink from "@/app/components/ui/BackLink";
 import { formatDate } from "@/app/lib/utils";
 import { useParams } from "next/navigation";
 
@@ -77,13 +78,7 @@ function JobCardDetailPage() {
           </div>
         </div>
         <div className="mt-4">
-          <Link
-            href="/job-cards"
-            className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500"
-          >
-            <ArrowLeftIcon className="h-4 w-4 mr-1" />
-            Back to job cards
-          </Link>
+          <BackLink href="/job-cards" label="Back to Job Cards" />
         </div>
       </div>
     );
@@ -116,13 +111,10 @@ function JobCardDetailPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <Link
-          href="/job-cards"
-          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-        >
-          <ArrowLeftIcon className="h-4 w-4 mr-1" />
-          Back to Job Cards
-        </Link>
+        {/* Back link */}
+        <div>
+          <BackLink href="/job-cards" label="Back to Job Cards" />
+        </div>
         <Link
           href={`/job-cards/${id}/edit`}
           className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"

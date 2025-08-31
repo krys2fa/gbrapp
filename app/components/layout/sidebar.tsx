@@ -263,7 +263,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
       {/* Main Content */}
       <div className="lg:flex-1 lg:overflow-auto lg:h-screen bg-gray-50 dark:bg-gray-950">
-        <div className="pt-16 lg:pt-0 min-h-full lg:min-h-screen bg-[#d4af37]">
+        <div className="pt-16 lg:pt-0 min-h-full lg:min-h-screen">
           {children}
         </div>
       </div>

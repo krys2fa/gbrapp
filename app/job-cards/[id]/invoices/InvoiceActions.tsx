@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import BackLink from "@/app/components/ui/BackLink";
 import { useRouter } from "next/navigation";
 
 export default function InvoiceActions({
@@ -96,12 +97,7 @@ export default function InvoiceActions({
 
   return (
     <div className="flex items-center gap-3">
-      {/* <Link
-        href={`/job-cards/${jobCardId}`}
-        className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-      >
-        ← Back to Job Card
-      </Link> */}
+  <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
 
       <button
         onClick={() => {

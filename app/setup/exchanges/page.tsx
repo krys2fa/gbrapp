@@ -3,14 +3,13 @@ import React, { useEffect, useState } from "react";
 import { Header } from "../../components/layout/header";
 import { Globe } from "lucide-react";
 import {
-  ArrowLeftIcon,
   ArrowPathIcon,
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import Link from "next/link";
+import BackLink from "@/app/components/ui/BackLink";
 
 function capitalizeFirst(str: string) {
   if (!str) return "";
@@ -149,19 +148,7 @@ export default function ExchangesPage() {
       />
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6" style={{ width: "100%" }}>
-          <div
-            className="flex"
-            style={{ justifyContent: "flex-start", width: "100%" }}
-          >
-            <Link
-              href="/setup"
-              className="inline-flex items-center text-gray-600 hover:text-blue-600"
-              style={{ marginLeft: "0.5rem" }}
-            >
-              <ArrowLeftIcon className="h-5 w-5 mr-2" />
-              Back to Settings
-            </Link>
-          </div>
+          <BackLink href="/setup" label="Back to Settings" />
         </div>
 
         <div className="max-w-xl">

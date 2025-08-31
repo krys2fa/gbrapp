@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Header } from "../../components/layout/header";
 import { ChevronDown } from "lucide-react";
 import { DollarSign } from "lucide-react";
-import Link from "next/link";
+import BackLink from "@/app/components/ui/BackLink";
 import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
@@ -228,14 +228,7 @@ export default function DailyPricesPage() {
             className="flex"
             style={{ justifyContent: "flex-start", width: "100%" }}
           >
-            <Link
-              href="/setup"
-              className="inline-flex items-center text-gray-600 hover:text-blue-600"
-              style={{ marginLeft: "0.5rem" }}
-            >
-              <ArrowLeftIcon className="h-5 w-5 mr-2" />
-              Back to Settings
-            </Link>
+            <BackLink href="/setup" label="Back to Settings" />
           </div>
         </div>
 

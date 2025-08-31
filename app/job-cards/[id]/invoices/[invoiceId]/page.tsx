@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import BackLink from "@/app/components/ui/BackLink";
 import { prisma } from "@/app/lib/prisma";
 import InvoiceActions from "@/app/job-cards/[id]/invoices/InvoiceActions"; // client component
 
@@ -41,7 +42,7 @@ export default async function InvoicePage(props: any) {
     return (
       <div className="max-w-4xl mx-auto py-10 px-4">
         <p>Invoice not found.</p>
-        <Link href={`/job-cards/${jobCardId}`}>Back to job card</Link>
+        <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
       </div>
     );
   }
@@ -93,12 +94,7 @@ export default async function InvoicePage(props: any) {
   return (
     <>
       <div className="my-4 ml-4">
-        <Link
-          href={`/job-cards/${jobCardId}`}
-          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-        >
-          ← Back to Job Card
-        </Link>
+        <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
       </div>
       <div className="max-w-4xl mx-auto py-10 px-4">
         <div className="flex items-center justify-between mb-6">

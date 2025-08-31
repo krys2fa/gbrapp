@@ -5,12 +5,12 @@ import {
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
-  ArrowLeftIcon,
   ArrowPathIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { Header } from "../../components/layout/header";
 import Link from "next/link";
+import BackLink from "@/app/components/ui/BackLink";
 
 const roles = ["SUPERADMIN", "ADMIN", "USER"];
 
@@ -180,14 +180,7 @@ const CreateUserPage = () => {
             className="flex"
             style={{ justifyContent: "flex-start", width: "100%" }}
           >
-            <Link
-              href="/setup"
-              className="inline-flex items-center text-gray-600 hover:text-blue-600"
-              style={{ marginLeft: "0.5rem" }}
-            >
-              <ArrowLeftIcon className="h-5 w-5 mr-2" />
-              Back to Settings
-            </Link>
+            <BackLink href="/setup" label="Back to Settings" />
           </div>
         </div>
         <div className="max-w-xl mt-8">

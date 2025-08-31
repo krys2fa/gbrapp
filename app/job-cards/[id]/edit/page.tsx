@@ -4,7 +4,7 @@ import { withClientAuth } from "@/app/lib/with-client-auth";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import BackLink from "@/app/components/ui/BackLink";
 
 function EditJobCardPage() {
   const params = useParams();
@@ -181,17 +181,11 @@ function EditJobCardPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
-        <Link
-          href={`/job-cards/${id}`}
-          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-        >
-          <ArrowLeftIcon className="h-4 w-4 mr-1" />
-          Back to Job Card
-        </Link>
+        <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
       </div>
 
-      <div className="md:grid md:grid-cols-3 md:gap-6">
-        <div className="md:col-span-1">
+      <div className="max-w-3xl w-full">
+        <div className="bg-white shadow sm:rounded-lg p-4 mb-6">
           <div className="px-4 sm:px-0">
             <h3 className="text-lg font-medium leading-6 text-gray-900">
               Edit Job Card
@@ -202,7 +196,7 @@ function EditJobCardPage() {
           </div>
         </div>
 
-        <div className="mt-5 md:mt-0 md:col-span-2">
+        <div className="w-full">
           <form onSubmit={handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
@@ -219,8 +213,8 @@ function EditJobCardPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-6 gap-6">
-                  <div className="col-span-6 sm:col-span-3">
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="col-span-1">
                     <label
                       htmlFor="referenceNumber"
                       className="block text-sm font-medium text-gray-700"
@@ -238,7 +232,7 @@ function EditJobCardPage() {
                     />
                   </div>
 
-                  <div className="col-span-6 sm:col-span-3">
+                  <div className="col-span-1">
                     <label
                       htmlFor="receivedDate"
                       className="block text-sm font-medium text-gray-700"
@@ -256,7 +250,7 @@ function EditJobCardPage() {
                     />
                   </div>
 
-                  <div className="col-span-6 sm:col-span-3">
+                  <div className="col-span-1">
                     <label
                       htmlFor="exporterTypeId"
                       className="block text-sm font-medium text-gray-700"
@@ -279,7 +273,7 @@ function EditJobCardPage() {
                     </select>
                   </div>
 
-                  <div className="col-span-6 sm:col-span-3">
+                  <div className="col-span-1">
                     <label
                       htmlFor="exporterId"
                       className="block text-sm font-medium text-gray-700"
@@ -303,7 +297,7 @@ function EditJobCardPage() {
                     </select>
                   </div>
 
-                  <div className="col-span-6 sm:col-span-3">
+                  <div className="col-span-1">
                     <label
                       htmlFor="shipmentTypeId"
                       className="block text-sm font-medium text-gray-700"
@@ -327,7 +321,7 @@ function EditJobCardPage() {
                     </select>
                   </div>
 
-                  <div className="col-span-6">
+                  <div className="col-span-1">
                     <label
                       htmlFor="status"
                       className="block text-sm font-medium text-gray-700"
@@ -348,7 +342,7 @@ function EditJobCardPage() {
                     </select>
                   </div>
 
-                  <div className="col-span-6">
+                  <div className="col-span-1">
                     <label
                       htmlFor="notes"
                       className="block text-sm font-medium text-gray-700"
