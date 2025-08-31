@@ -18,6 +18,10 @@ export default function NewAssayPage() {
     { id: string; name: string }[]
   >([]);
 
+  const [commodities, setCommodities] = useState<
+    { id: string; name: string }[]
+  >([]);
+
   const [jobCard, setJobCard] = useState<any | null>(null);
   const [dailyPrice, setDailyPrice] = useState<any | null>(null);
   const [dailyExchange, setDailyExchange] = useState<any | null>(null);
@@ -70,13 +74,27 @@ export default function NewAssayPage() {
           fetch(`/api/job-cards/${id}`),
           // fetch all daily prices (commodity + exchange entries)
           fetch(`/api/daily-prices`),
+          // fetch commodities so we can resolve commodity name when jobCard doesn't include relation
+          fetch(`/api/commodity`),
         ]);
 
         if (jobRes.ok) setJobCard(await jobRes.json());
 
         let pricesBody: any[] = [];
+        let commoditiesBody: any[] = [];
         if (pricesRes && pricesRes.ok) {
           pricesBody = await pricesRes.json().catch(() => []);
+        }
+        // commodity response may be the 3rd item in the Promise.all; try to read it
+        try {
+          const comRes = await fetch(`/api/commodity`);
+          if (comRes.ok) commoditiesBody = await comRes.json().catch(() => []);
+        } catch (e) {
+          // ignore
+        }
+
+        if (commoditiesBody && Array.isArray(commoditiesBody)) {
+          setCommodities(commoditiesBody);
         }
 
         const today = date;
@@ -138,6 +156,26 @@ export default function NewAssayPage() {
     });
   };
 
+  // conversion helpers and computed totals for meta bar
+  const toOunces = (value: number, unit: string) => {
+    if (!value) return 0;
+    const u = (unit || "g").toLowerCase();
+    if (u === "kg" || u === "kilograms") return value * 35.2739619495804;
+    // default grams
+    return value / 28.349523125;
+  };
+
+  const totalInputNetWeight = rows.reduce(
+    (s, r) => s + (Number(r.netWeight) || 0),
+    0
+  );
+  const unitOfMeasure = jobCard?.unitOfMeasure || "g"; // expect 'g' or 'kg' stored on jobCard
+  const totalNetWeightOz = toOunces(totalInputNetWeight, unitOfMeasure);
+  const totalNetWeightOzDisplay = Number.isFinite(totalNetWeightOz)
+    ? totalNetWeightOz
+    : 0;
+  const usdValue = (Number(dailyPrice?.value) || 0) * totalNetWeightOzDisplay;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -161,7 +199,15 @@ export default function NewAssayPage() {
           fineness: r.fineness || 0,
           netWeight: r.netWeight || 0,
         })),
-        comments: form.comments,
+        // persist a JSON blob in comments so server can store structured metadata
+        comments: JSON.stringify({
+          note: form.comments || "",
+          meta: {
+            unit: unitOfMeasure,
+            totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(4)),
+            valueUsd: Number(usdValue.toFixed(4)),
+          },
+        }),
         shipmentTypeId: form.shipmentTypeId || null,
         createdAt: new Date().toISOString(),
       };
@@ -170,6 +216,13 @@ export default function NewAssayPage() {
         ...jobCard,
         assays: [...(jobCard.assays || []), newAssay],
       };
+
+      // include totals and computed values on the job card update so server persists them
+      updated.totalNetWeight =
+        totalInputNetWeight || jobCard.totalNetWeight || 0;
+      updated.totalNetWeightOz =
+        totalNetWeightOzDisplay || jobCard.totalNetWeightOz || 0;
+      updated.exporterValueUsd = usdValue || jobCard.exporterValueUsd || 0;
 
       const put = await fetch(`/api/job-cards/${id}`, {
         method: "PUT",
@@ -207,6 +260,25 @@ export default function NewAssayPage() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
+                <div className="text-xs text-gray-500">Commodity</div>
+                <div className="font-medium text-gray-900">
+                  {jobCard?.commodity?.name ||
+                    commodities.find((c) => c.id === jobCard?.commodityId)
+                      ?.name ||
+                    "-"}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Unit</div>
+                <div className="font-medium text-gray-900">
+                  {unitOfMeasure === "kg"
+                    ? "kg"
+                    : unitOfMeasure === "g"
+                    ? "g"
+                    : unitOfMeasure}
+                </div>
+              </div>
+              <div>
                 <div className="text-xs text-gray-500">Exporter</div>
                 <div className="font-medium text-gray-900">
                   {jobCard?.exporter?.name || "-"}
@@ -228,6 +300,22 @@ export default function NewAssayPage() {
               </div>
 
               <div>
+                <div className="text-xs text-gray-500">Net weight (oz)</div>
+                <div className="font-medium text-gray-900">
+                  {totalNetWeightOzDisplay
+                    ? totalNetWeightOzDisplay.toFixed(2)
+                    : "0.00"}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-gray-500">Value (USD)</div>
+                <div className="font-medium text-gray-900">
+                  {usdValue ? usdValue.toFixed(2) : "0.00"}
+                </div>
+              </div>
+
+              <div>
                 <div className="text-xs text-gray-500">Reference #</div>
                 <div className="font-medium text-gray-900">
                   {jobCard?.referenceNumber || jobCard?.reference || "-"}
@@ -243,6 +331,13 @@ export default function NewAssayPage() {
                 <div className="text-xs text-gray-500">Destination</div>
                 <div className="font-medium text-gray-900">
                   {jobCard?.destinationCountry || "-"}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-gray-500">Number of boxes</div>
+                <div className="font-medium text-gray-900">
+                  {jobCard?.numberOfBoxes ?? "-"}
                 </div>
               </div>
 
