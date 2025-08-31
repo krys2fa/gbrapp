@@ -97,7 +97,7 @@ export default function InvoiceActions({
 
   return (
     <div className="flex items-center gap-3">
-  <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
+      <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
 
       <button
         onClick={() => {

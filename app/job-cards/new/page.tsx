@@ -256,7 +256,10 @@ function NewJobCardPage() {
                   </div>
                 )}
 
+                
                 <div className="grid grid-cols-6 gap-6">
+
+                  {/* Reference Number */}
                   <div className="col-span-6 sm:col-span-3">
                     <label
                       htmlFor="referenceNumber"
@@ -275,6 +278,7 @@ function NewJobCardPage() {
                     />
                   </div>
 
+                  {/* Received Date */}
                   <div className="col-span-6 sm:col-span-3">
                     <label
                       htmlFor="receivedDate"
@@ -293,6 +297,7 @@ function NewJobCardPage() {
                     />
                   </div>
 
+                  {/* Exporter */}
                   <div className="col-span-6 sm:col-span-3">
                     <label
                       htmlFor="exporterId"
@@ -317,6 +322,7 @@ function NewJobCardPage() {
                     </select>
                   </div>
 
+                  {/* Shipment */}    
                   <div className="col-span-6 sm:col-span-3">
                     <label
                       htmlFor="shipmentTypeId"

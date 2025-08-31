@@ -245,31 +245,77 @@ const ExchangeSetupPage = () => {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{(page - 1) * pageSize + 1}</span> to <span className="font-medium">{Math.min(page * pageSize, exchanges.length)}</span> of <span className="font-medium">{exchanges.length}</span> results
+                      Showing{" "}
+                      <span className="font-medium">
+                        {(page - 1) * pageSize + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(page * pageSize, exchanges.length)}
+                      </span>{" "}
+                      of <span className="font-medium">{exchanges.length}</span>{" "}
+                      results
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
                       <button
                         onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                         disabled={page === 1}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${page === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"}`}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                          page === 1
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
                       >
                         Previous
                       </button>
-                      {Array.from({ length: Math.max(1, Math.ceil(exchanges.length / pageSize)) }, (_, i) => i + 1).map((p) => (
+                      {Array.from(
+                        {
+                          length: Math.max(
+                            1,
+                            Math.ceil(exchanges.length / pageSize)
+                          ),
+                        },
+                        (_, i) => i + 1
+                      ).map((p) => (
                         <button
                           key={p}
                           onClick={() => setPage(p)}
-                          className={`relative inline-flex items-center px-4 py-2 border ${page === p ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"} text-sm font-medium`}
+                          className={`relative inline-flex items-center px-4 py-2 border ${
+                            page === p
+                              ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          } text-sm font-medium`}
                         >
                           {p}
                         </button>
                       ))}
                       <button
-                        onClick={() => setPage((prev) => Math.min(prev + 1, Math.max(1, Math.ceil(exchanges.length / pageSize))))}
-                        disabled={page === Math.max(1, Math.ceil(exchanges.length / pageSize))}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page === Math.max(1, Math.ceil(exchanges.length / pageSize)) ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"}`}
+                        onClick={() =>
+                          setPage((prev) =>
+                            Math.min(
+                              prev + 1,
+                              Math.max(
+                                1,
+                                Math.ceil(exchanges.length / pageSize)
+                              )
+                            )
+                          )
+                        }
+                        disabled={
+                          page ===
+                          Math.max(1, Math.ceil(exchanges.length / pageSize))
+                        }
+                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                          page ===
+                          Math.max(1, Math.ceil(exchanges.length / pageSize))
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
                       >
                         Next
                       </button>

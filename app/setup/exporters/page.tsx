@@ -19,6 +19,7 @@ const ExportersPage = () => {
     contactPerson: "",
     phone: "",
     address: "",
+    exporterTypeId: "",
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
@@ -33,6 +34,7 @@ const ExportersPage = () => {
   const [phoneFilter, setPhoneFilter] = useState("");
   const [filterTrigger, setFilterTrigger] = useState(0);
   const [editingExporter, setEditingExporter] = useState<any>(null);
+  const [exporterTypes, setExporterTypes] = useState<any[]>([]);
   const [viewingExporter, setViewingExporter] = useState<any>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
@@ -52,6 +54,16 @@ const ExportersPage = () => {
         const res = await fetch(url);
         const data = await res.json();
         setExporters(Array.isArray(data) ? data : []);
+        // fetch exporter types as well
+        try {
+          const typesRes = await fetch("/api/exporter-types");
+          if (typesRes.ok) {
+            const types = await typesRes.json();
+            setExporterTypes(Array.isArray(types) ? types : []);
+          }
+        } catch (e) {
+          setExporterTypes([]);
+        }
       } catch {
         setExporters([]);
       } finally {
@@ -63,6 +75,10 @@ const ExportersPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm({ ...form, exporterTypeId: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,6 +96,7 @@ const ExportersPage = () => {
           contactPerson: form.contactPerson,
           phone: form.phone,
           address: form.address,
+          exporterTypeId: form.exporterTypeId || undefined,
         }),
       });
       if (!res.ok) throw new Error("Failed to create exporter");
@@ -90,6 +107,7 @@ const ExportersPage = () => {
         contactPerson: "",
         phone: "",
         address: "",
+        exporterTypeId: "",
       });
     } catch (err: any) {
       setError(err.message || "Error creating exporter");
@@ -106,6 +124,7 @@ const ExportersPage = () => {
       contactPerson: exporter.contactPerson || "",
       phone: exporter.phone || "",
       address: exporter.address || "",
+      exporterTypeId: exporter.exporterType?.id || "",
     });
   };
 
@@ -125,6 +144,7 @@ const ExportersPage = () => {
           contactPerson: form.contactPerson,
           phone: form.phone,
           address: form.address,
+          exporterTypeId: form.exporterTypeId || undefined,
         }),
       });
       if (!res.ok) throw new Error("Failed to update exporter");
@@ -136,6 +156,7 @@ const ExportersPage = () => {
         contactPerson: "",
         phone: "",
         address: "",
+        exporterTypeId: "",
       });
     } catch (err: any) {
       setError(err.message || "Error updating exporter");
@@ -192,7 +213,7 @@ const ExportersPage = () => {
         <BackLink href="/setup" label="Back to Settings" />
       </div>
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-xl mt-8">
+        <div className="max-w-xl">
           <form onSubmit={handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
@@ -243,6 +264,28 @@ const ExportersPage = () => {
                       className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       required
                     />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="exporterTypeId"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Exporter Type
+                    </label>
+                    <select
+                      id="exporterTypeId"
+                      name="exporterTypeId"
+                      value={form.exporterTypeId}
+                      onChange={handleSelectChange}
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select exporter type</option>
+                      {exporterTypes.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label
@@ -394,6 +437,9 @@ const ExportersPage = () => {
                           Address
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Exporter Type
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Date Added
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -423,6 +469,9 @@ const ExportersPage = () => {
                             </td>
                             <td className="px-4 py-2 text-gray-700">
                               {exporter.address}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {exporter.exporterType?.name || "-"}
                             </td>
                             <td className="px-4 py-2 text-gray-700">
                               {exporter.createdAt

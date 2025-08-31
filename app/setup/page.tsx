@@ -9,6 +9,7 @@ import {
   Settings,
   Globe,
   Repeat,
+  Tag,
 } from "lucide-react";
 
 const setupOptions = [
@@ -25,6 +26,14 @@ const setupOptions = [
     icon: <Building2 className="h-6 w-6" />,
     href: "/setup/exporters",
     color: "bg-green-600",
+  },
+
+  {
+    label: "Manage Exporter Types",
+    description: "Create and manage exporter types (e.g. Licensed Exporter).",
+    icon: <Tag className="h-6 w-6" />,
+    href: "/setup/exporter-types",
+    color: "bg-rose-600",
   },
 
   {
