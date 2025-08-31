@@ -274,7 +274,7 @@ export async function PUT(req: NextRequest) {
           const amountUsd =
             requestData.exporterValueUsd != null
               ? Number(requestData.exporterValueUsd)
-              : existingJobCard.exporterValueUsd || 0;
+              : 0;
 
           // Ensure an InvoiceType exists for assay invoices
           let invoiceType = await prisma.invoiceType.findUnique({
@@ -313,7 +313,6 @@ export async function PUT(req: NextRequest) {
                 assayUsdValue: Number(amountUsd) || 0,
                 assayGhsValue:
                   Number(requestData.exporterValueGhs) ||
-                  Number(existingJobCard.exporterValueGhs) ||
                   0,
                 rate: 1,
                 issueDate: new Date(),
