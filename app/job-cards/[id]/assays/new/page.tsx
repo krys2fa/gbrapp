@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
+import BackLink from "@/app/components/ui/BackLink";
 
 type AssayMethod = "X_RAY" | "WATER_DENSITY";
 
@@ -17,6 +17,11 @@ export default function NewAssayPage() {
   const [shipmentTypes, setShipmentTypes] = useState<
     { id: string; name: string }[]
   >([]);
+
+  const [jobCard, setJobCard] = useState<any | null>(null);
+  const [dailyPrice, setDailyPrice] = useState<any | null>(null);
+  const [dailyExchange, setDailyExchange] = useState<any | null>(null);
+  const [metaLoading, setMetaLoading] = useState(true);
 
   const [form, setForm] = useState({
     method: "X_RAY" as AssayMethod,
@@ -51,6 +56,50 @@ export default function NewAssayPage() {
     };
     fetchData();
   }, []);
+
+  // fetch job card and today's daily price/exchange for quick meta display
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchMeta = async () => {
+      setMetaLoading(true);
+      try {
+        const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+        const [jobRes, pricesRes] = await Promise.all([
+          fetch(`/api/job-cards/${id}`),
+          // fetch all daily prices (commodity + exchange entries)
+          fetch(`/api/daily-prices`),
+        ]);
+
+        if (jobRes.ok) setJobCard(await jobRes.json());
+
+        let pricesBody: any[] = [];
+        if (pricesRes && pricesRes.ok) {
+          pricesBody = await pricesRes.json().catch(() => []);
+        }
+
+        const today = date;
+        const matching = (pricesBody || []).filter(
+          (p: any) => String(p?.createdAt || "").split("T")[0] === today
+        );
+
+        const commodityEntry =
+          matching.find((p: any) => p.type === "COMMODITY") || null;
+        const exchangeEntry =
+          matching.find((p: any) => p.type === "EXCHANGE") || null;
+
+        setDailyPrice({ value: commodityEntry?.price ?? null });
+        setDailyExchange({ value: exchangeEntry?.price ?? null });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setMetaLoading(false);
+      }
+    };
+
+    fetchMeta();
+  }, [id]);
 
   // adjust rows when pieces changes
   useEffect(() => {
@@ -145,12 +194,70 @@ export default function NewAssayPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
-        <Link
-          href={`/job-cards/${id}`}
-          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-        >
-          ← Back
-        </Link>
+        <BackLink href={`/job-cards/${id}`} label="Back" />
+      </div>
+
+      {/* Meta info bar: exporter, today's price/exchange, reference, buyer, destination, shipment */}
+      <div className="mb-4">
+        {metaLoading ? (
+          <div className="flex justify-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <div className="text-xs text-gray-500">Exporter</div>
+                <div className="font-medium text-gray-900">
+                  {jobCard?.exporter?.name || "-"}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Daily Price (today)</div>
+                <div className="font-medium text-gray-900">
+                  {dailyPrice?.value ?? "-"}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">
+                  Daily Exchange (today)
+                </div>
+                <div className="font-medium text-gray-900">
+                  {dailyExchange?.value ?? "-"}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-gray-500">Reference #</div>
+                <div className="font-medium text-gray-900">
+                  {jobCard?.referenceNumber || jobCard?.reference || "-"}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Buyer</div>
+                <div className="font-medium text-gray-900">
+                  {jobCard?.buyerName || "-"}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Destination</div>
+                <div className="font-medium text-gray-900">
+                  {jobCard?.destinationCountry || "-"}
+                </div>
+              </div>
+
+              <div className="sm:col-span-2 lg:col-span-3">
+                <div className="text-xs text-gray-500">Shipment Type</div>
+                <div className="font-medium text-gray-900">
+                  {shipmentTypes.find((s) => s.id === jobCard?.shipmentTypeId)
+                    ?.name ||
+                    jobCard?.shipmentType?.name ||
+                    "-"}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
