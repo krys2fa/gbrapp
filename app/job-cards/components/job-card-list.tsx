@@ -125,7 +125,7 @@ export function JobCardList({ filters }: JobCardListProps) {
       ) : (
         <>
           <ul className="divide-y divide-gray-200">
-                {jobCards.map((jobCard) => (
+            {jobCards.map((jobCard) => (
               <li key={jobCard.id}>
                 <div className="block hover:bg-gray-50">
                   <div className="px-4 py-4 sm:px-6">
@@ -134,26 +134,30 @@ export function JobCardList({ filters }: JobCardListProps) {
                         <p className="text-sm font-medium text-indigo-600 truncate">
                           {jobCard.referenceNumber}
                         </p>
-                            {/* If the job card has assays, treat it as Completed for the badge */}
-                            {(() => {
-                              const hasAssays = !!(
-                                jobCard._count && jobCard._count.assays && jobCard._count.assays > 0
-                              );
-                              const statusText = hasAssays
-                                ? "Completed"
-                                : jobCard.status.charAt(0).toUpperCase() +
-                                  jobCard.status.slice(1).replace("_", " ");
-                              const statusKey = hasAssays ? "completed" : jobCard.status;
-                              return (
-                                <span
-                                  className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
-                                    statusKey
-                                  )}`}
-                                >
-                                  {statusText}
-                                </span>
-                              );
-                            })()}
+                        {/* If the job card has assays, treat it as Completed for the badge */}
+                        {(() => {
+                          const hasAssays = !!(
+                            jobCard._count &&
+                            jobCard._count.assays &&
+                            jobCard._count.assays > 0
+                          );
+                          const statusText = hasAssays
+                            ? "Completed"
+                            : jobCard.status.charAt(0).toUpperCase() +
+                              jobCard.status.slice(1).replace("_", " ");
+                          const statusKey = hasAssays
+                            ? "completed"
+                            : jobCard.status;
+                          return (
+                            <span
+                              className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
+                                statusKey
+                              )}`}
+                            >
+                              {statusText}
+                            </span>
+                          );
+                        })()}
                       </div>
                       <div className="flex space-x-2">
                         <Link

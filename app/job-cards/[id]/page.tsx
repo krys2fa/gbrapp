@@ -105,10 +105,13 @@ function JobCardDetailPage() {
   };
 
   // If assays exist, treat the job card as completed for the status badge
-  const badgeStatus = jobCard.assays && jobCard.assays.length > 0 ? "completed" : jobCard.status;
-  const badgeText = jobCard.assays && jobCard.assays.length > 0
-    ? "Completed"
-    : jobCard.status.charAt(0).toUpperCase() + jobCard.status.slice(1).replace("_", " ");
+  const badgeStatus =
+    jobCard.assays && jobCard.assays.length > 0 ? "completed" : jobCard.status;
+  const badgeText =
+    jobCard.assays && jobCard.assays.length > 0
+      ? "Completed"
+      : jobCard.status.charAt(0).toUpperCase() +
+        jobCard.status.slice(1).replace("_", " ");
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">

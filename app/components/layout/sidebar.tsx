@@ -134,13 +134,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="w-32 h-12 bg-black flex items-center justify-center border border-amber-500/30 rounded-md">
-              <Image
-                src="/goldbod-logo.webp"
-                alt="GBR Logo"
-                width={200}
-                height={24}
-                className="h-6"
-              />
+              <div className="relative w-full h-full">
+                <Image
+                  src="/goldbod-logo.webp"
+                  alt="GBR Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
             </div>
             {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               GBR App
@@ -182,38 +183,40 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         )}
       >
         {/* Desktop Header */}
-        <div className="bg-[#27562a] hidden lg:flex items-center gap-3 px-6 py-5 border-b border-amber-500/30 dark:border-amber-500/20">
+        <div className="bg-[#27562a] hidden lg:flex items-center py-3 border-b border-amber-500/30 dark:border-amber-500/20">
           {/* <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg border border-amber-500/30"></div> */}
-          <div>
+          {/* <div> */}
             {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               GBR App
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Management System
             </p> */}
-            <Image
-              src="/goldbod-logo.webp"
-              alt="GBR Logo"
-              width={120}
-              height={80}
-              className="w-auto h-8 ml-10"
-            />
-          </div>
+            <div className="relative w-full h-16">
+              <Image
+                src="/goldbod-logo.webp"
+                alt="GBR Logo"
+                fill
+                className="object-contain mx-auto"
+              />
+            </div>
+          {/* </div> */}
         </div>
 
         {/* Navigation */}
         {/* Mobile Menu Logo - Only visible when mobile menu is open */}
         <nav className="p-4 xl:p-6 space-y-2 mt-16 lg:mt-0">
           <div className="bg-[#27562a] flex justify-center mb-6 lg:hidden p-4 rounded-lg border border-amber-500/30">
-            <div>
-              <Image
-                src="/goldbod-logo.webp"
-                alt="GBR Logo"
-                width={120}
-                height={40}
-                className="w-auto h-10"
-              />
-            </div>
+            {/* <div> */}
+              <div className="relative w-[120px] h-10">
+                <Image
+                  src="/goldbod-logo.webp"
+                  alt="GBR Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            {/* </div> */}
           </div>
           <div className="mb-4 lg:mb-6">
             <h2 className="text-xs font-semibold text-amber-600 dark:text-amber-500 uppercase tracking-wider mb-3 px-4">
@@ -260,7 +263,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
       {/* Main Content */}
       <div className="lg:flex-1 lg:overflow-auto lg:h-screen bg-gray-50 dark:bg-gray-950">
-        <div className="pt-16 lg:pt-0 min-h-full lg:min-h-screen">
+        <div className="pt-16 lg:pt-0 min-h-full lg:min-h-screen bg-[#d4af37]">
           {children}
         </div>
       </div>
