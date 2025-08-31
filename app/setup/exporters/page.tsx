@@ -213,7 +213,7 @@ const ExportersPage = () => {
         <BackLink href="/setup" label="Back to Settings" />
       </div>
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-xl">
+        <div className="max-w-xl mt-8">
           <form onSubmit={handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">

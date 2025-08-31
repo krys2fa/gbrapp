@@ -4,12 +4,12 @@ import Link from "next/link";
 import {
   UserPlus,
   Building2,
+  Building,
   DollarSign,
   Gem,
   Settings,
   Globe,
   Repeat,
-  Tag,
 } from "lucide-react";
 
 const setupOptions = [
@@ -27,15 +27,13 @@ const setupOptions = [
     href: "/setup/exporters",
     color: "bg-green-600",
   },
-
   {
     label: "Manage Exporter Types",
-    description: "Create and manage exporter types (e.g. Licensed Exporter).",
-    icon: <Tag className="h-6 w-6" />,
+    description: "Add and manage exporter types.",
+    icon: <Building className="h-6 w-6" />,
     href: "/setup/exporter-types",
-    color: "bg-rose-600",
+    color: "bg-lime-600",
   },
-
   {
     label: "Manage Commodities",
     description: "Add and manage commodities.",
