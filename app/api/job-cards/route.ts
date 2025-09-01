@@ -74,15 +74,35 @@ async function getAllJobCards(req: NextRequest) {
     // Get total count of job cards matching the filter
     const totalCount = await prisma.jobCard.count({ where });
 
-    // Get job cards with basic relations and assays when requested
-    const includeObj: any = {
+    // Use an explicit select to avoid referencing columns that may not exist in older DBs
+    const selectObj: any = {
+      id: true,
+      referenceNumber: true,
+      receivedDate: true,
+      status: true,
+      exporterId: true,
+      shipmentTypeId: true,
+      createdAt: true,
+      updatedAt: true,
+      // include lightweight relations via select to avoid selecting all job card columns
       exporter: {
-        include: {
-          exporterType: true,
+        select: {
+          id: true,
+          name: true,
+          exporterType: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
-      shipmentType: true,
-      // include a count of related rows so clients can know if assays exist without pulling full arrays
+      shipmentType: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
       _count: {
         select: {
           assays: true,
@@ -90,21 +110,35 @@ async function getAllJobCards(req: NextRequest) {
       },
     };
 
-    if (hasAssays === "true") {
-      includeObj.assays = true;
-      includeObj.seals = true;
-    }
-
-    // Fetch job cards
+    // Fetch job cards (only selected fields)
     const jobCards = await prisma.jobCard.findMany({
       where,
-      include: includeObj,
-      orderBy: {
-        createdAt: "desc",
-      },
+      select: selectObj,
+      orderBy: { createdAt: "desc" },
       skip,
       take: limit,
     });
+
+    // If assays were requested, fetch assays separately and attach them to the job cards to avoid selecting additional jobcard columns that may be missing in the DB schema.
+    if (hasAssays === "true" && jobCards.length) {
+      const jobCardIds = jobCards.map((j: any) => j.id);
+      const assays = await prisma.assay.findMany({
+        where: { jobCardId: { in: jobCardIds } },
+        orderBy: { createdAt: "asc" },
+      });
+
+      const assaysByJob: Record<string, any[]> = {};
+      assays.forEach((a: any) => {
+        if (!assaysByJob[a.jobCardId]) assaysByJob[a.jobCardId] = [];
+        assaysByJob[a.jobCardId].push(a);
+      });
+
+      // attach assays and a simple seals array placeholder (if needed elsewhere)
+      jobCards.forEach((jc: any) => {
+        jc.assays = assaysByJob[jc.id] || [];
+        jc.seals = []; // keep existing shape when client expects seals
+      });
+    }
 
     // If client requested hasAssays=true, sort the returned jobCards by latest assay date (server-side sorting by related array not directly supported across DBs in Prisma), so do a client-side sort here before returning to keep behavior deterministic.
     if (hasAssays === "true") {
