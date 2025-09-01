@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "./context/auth-context";
 import { LayoutWrapper } from "./components/layout/layout-wrapper";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "GBR Management System",
@@ -34,6 +35,20 @@ export default function RootLayout({
       <body className="antialiased">
         <AuthProvider>
           <LayoutWrapper>{children}</LayoutWrapper>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              // Default options
+              duration: 6000,
+              style: {
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.95)",
+                color: "#0f172a",
+                padding: "12px 14px",
+                boxShadow: "0 6px 18px rgba(15,23,42,0.12)",
+              },
+            }}
+          />
         </AuthProvider>
       </body>
     </html>

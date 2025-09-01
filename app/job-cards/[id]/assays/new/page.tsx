@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
 
@@ -26,6 +27,9 @@ export default function NewAssayPage() {
   const [dailyPrice, setDailyPrice] = useState<any | null>(null);
   const [dailyExchange, setDailyExchange] = useState<any | null>(null);
   const [metaLoading, setMetaLoading] = useState(true);
+  const [warning, setWarning] = useState("");
+  const [missingTodayCommodity, setMissingTodayCommodity] = useState(false);
+  const [missingTodayExchange, setMissingTodayExchange] = useState(false);
 
   const [form, setForm] = useState({
     method: "X_RAY" as AssayMethod,
@@ -70,35 +74,44 @@ export default function NewAssayPage() {
       try {
         const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-        const [jobRes, pricesRes, commoditiesRes] = await Promise.all([
-          fetch(`/api/job-cards/${id}`),
-          // fetch all daily prices (commodity + exchange entries)
-          fetch(`/api/daily-prices`),
-          // fetch commodities so we can resolve commodity name when jobCard doesn't include relation
-          fetch(`/api/commodity`),
-        ]);
-
-        if (jobRes.ok) setJobCard(await jobRes.json());
-
-        let pricesBody: any[] = [];
-        let commoditiesBody: any[] = [];
-        if (pricesRes && pricesRes.ok) {
-          pricesBody = await pricesRes.json().catch(() => []);
+        // fetch job card first so we know the commodityId to query
+        const jobRes = await fetch(`/api/job-cards/${id}`);
+        let jobBody: any = null;
+        if (jobRes.ok) {
+          jobBody = await jobRes.json().catch(() => null);
+          if (jobBody) setJobCard(jobBody);
         }
+
+        // fetch commodities list for name resolution
+        const commoditiesRes = await fetch(`/api/commodity`);
+        let commoditiesBody: any[] = [];
         if (commoditiesRes && commoditiesRes.ok) {
           commoditiesBody = await commoditiesRes.json().catch(() => []);
         }
-
         if (commoditiesBody && Array.isArray(commoditiesBody)) {
           setCommodities(commoditiesBody);
         }
 
-        const today = date;
-        const all = pricesBody || [];
-        // find today's entries
-        const todayMatches = all.filter(
-          (p: any) => String(p?.createdAt || "").split("T")[0] === today
-        );
+        // Fetch commodity prices specifically for this job card's commodity so the
+        // server can attempt to fetch & persist today's price if missing.
+        let commodityPrices: any[] = [];
+        if (jobBody?.commodityId) {
+          const cpRes = await fetch(
+            `/api/daily-prices?type=COMMODITY&itemId=${jobBody.commodityId}`
+          );
+          if (cpRes && cpRes.ok) {
+            commodityPrices = await cpRes.json().catch(() => []);
+          }
+        } else {
+          // fallback: fetch all commodity prices
+          const cpRes = await fetch(`/api/daily-prices?type=COMMODITY`);
+          if (cpRes && cpRes.ok) commodityPrices = await cpRes.json().catch(() => []);
+        }
+
+        // Fetch exchange prices (no itemId) and use latest/existing entries
+        let exchangePrices: any[] = [];
+        const exRes = await fetch(`/api/daily-prices?type=EXCHANGE`);
+        if (exRes && exRes.ok) exchangePrices = await exRes.json().catch(() => []);
 
         const latestByDate = (items: any[]) =>
           items
@@ -109,28 +122,30 @@ export default function NewAssayPage() {
                 new Date(a.createdAt).getTime()
             )[0];
 
-        // pick latest COMMODITY for today, else latest historical
+        const today = date;
+
+        const todayCommodityMatches = (commodityPrices || []).filter(
+          (p: any) => String(p?.createdAt || "").split("T")[0] === today
+        );
+        const todaysExchangeMatches = (exchangePrices || []).filter(
+          (p: any) => String(p?.createdAt || "").split("T")[0] === today
+        );
+
         const commodityEntry =
-          latestByDate(
-            todayMatches.filter((p: any) => p.type === "COMMODITY")
-          ) ||
-          latestByDate(all.filter((p: any) => p.type === "COMMODITY")) ||
+          latestByDate(todayCommodityMatches.filter((p: any) => p.type === "COMMODITY")) ||
+          latestByDate((commodityPrices || []).filter((p: any) => p.type === "COMMODITY")) ||
           null;
 
-        // pick latest EXCHANGE for today, else latest historical
         const exchangeEntry =
-          latestByDate(
-            todayMatches.filter((p: any) => p.type === "EXCHANGE")
-          ) ||
-          latestByDate(all.filter((p: any) => p.type === "EXCHANGE")) ||
+          latestByDate(todaysExchangeMatches.filter((p: any) => p.type === "EXCHANGE")) ||
+          latestByDate((exchangePrices || []).filter((p: any) => p.type === "EXCHANGE")) ||
           null;
 
-        setDailyPrice({
-          value: commodityEntry ? Number(commodityEntry.price) : null,
-        });
-        setDailyExchange({
-          value: exchangeEntry ? Number(exchangeEntry.price) : null,
-        });
+        setMissingTodayCommodity(todayCommodityMatches.length === 0);
+        setMissingTodayExchange(todaysExchangeMatches.length === 0);
+
+        setDailyPrice({ value: commodityEntry ? Number(commodityEntry.price) : null });
+        setDailyExchange({ value: exchangeEntry ? Number(exchangeEntry.price) : null });
       } catch (err) {
         console.error(err);
       } finally {
@@ -273,6 +288,18 @@ export default function NewAssayPage() {
         return;
       }
 
+      // If today's price or exchange are missing, block saving and show an error
+      if (missingTodayCommodity || missingTodayExchange) {
+        const parts: string[] = [];
+        if (missingTodayCommodity) parts.push("daily commodity price for today");
+        if (missingTodayExchange) parts.push("daily exchange rate for today");
+        const msg = `Cannot save valuation: no ${parts.join(" and ")} set for today. Please add today's prices before saving.`;
+        setError(msg);
+        toast(msg, { icon: "⚠️" });
+        setSaving(false);
+        return;
+      }
+
       const newAssay = {
         id: `local-${Date.now()}`,
         method: form.method,
@@ -377,7 +404,9 @@ export default function NewAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Daily Price (today)</div>
                 <div className="font-medium text-gray-900">
-                  {dailyPrice?.value ?? "-"}
+                  {dailyPrice?.value != null
+                    ? Number(dailyPrice.value).toFixed(2)
+                    : "-"}
                 </div>
               </div>
               <div>
@@ -385,7 +414,9 @@ export default function NewAssayPage() {
                   Daily Exchange (today)
                 </div>
                 <div className="font-medium text-gray-900">
-                  {dailyExchange?.value ?? "-"}
+                  {dailyExchange?.value != null
+                    ? Number(dailyExchange.value).toFixed(2)
+                    : "-"}
                 </div>
               </div>
 
@@ -460,6 +491,8 @@ export default function NewAssayPage() {
                 <div className="text-sm text-red-700">{error}</div>
               </div>
             )}
+
+            {/* warning is shown via toast; keep warning state for potential future UI needs */}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
