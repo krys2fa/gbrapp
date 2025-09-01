@@ -257,8 +257,27 @@ export default function AssayDetailPage() {
                 Commodity Price (per oz)
               </dt>
               <dd className="mt-1 text-sm text-gray-900">
-                {commodityPrice != null
-                  ? `$${commodityPrice.toFixed(2)} (${commodityName || ""})`
+                {/* Prefer saved meta (comments.meta.dailyPrice) if present */}
+                {assay.comments && typeof assay.comments === "string"
+                  ? (() => {
+                      try {
+                        const parsed = JSON.parse(assay.comments || "{}");
+                        const mp = parsed?.meta?.dailyPrice;
+                        return mp != null
+                          ? `$${Number(mp).toFixed(2)}`
+                          : commodityPrice != null
+                          ? `$${commodityPrice.toFixed(2)}`
+                          : "-";
+                      } catch {
+                        return commodityPrice != null
+                          ? `$${commodityPrice.toFixed(2)}`
+                          : "-";
+                      }
+                    })()
+                  : assay.comments?.meta?.dailyPrice != null
+                  ? `$${Number(assay.comments.meta.dailyPrice).toFixed(2)}`
+                  : commodityPrice != null
+                  ? `$${commodityPrice.toFixed(2)}`
                   : "-"}
               </dd>
             </div>
@@ -270,7 +289,28 @@ export default function AssayDetailPage() {
                 Total Value (USD)
               </dt>
               <dd className="mt-1 text-sm text-gray-900">
-                {totalUsd != null ? `$${totalUsd.toFixed(2)}` : "-"}
+                {/** prefer saved meta */}
+                {assay.comments && typeof assay.comments === "string"
+                  ? (() => {
+                      try {
+                        const parsed = JSON.parse(assay.comments || "{}");
+                        const v = parsed?.meta?.valueUsd;
+                        return v != null
+                          ? `$${Number(v).toFixed(2)}`
+                          : totalUsd != null
+                          ? `$${totalUsd.toFixed(2)}`
+                          : "-";
+                      } catch {
+                        return totalUsd != null
+                          ? `$${totalUsd.toFixed(2)}`
+                          : "-";
+                      }
+                    })()
+                  : assay.comments?.meta?.valueUsd != null
+                  ? `$${Number(assay.comments.meta.valueUsd).toFixed(2)}`
+                  : totalUsd != null
+                  ? `$${totalUsd.toFixed(2)}`
+                  : "-"}
               </dd>
             </div>
             <div>
@@ -278,7 +318,27 @@ export default function AssayDetailPage() {
                 Total Value (GHS)
               </dt>
               <dd className="mt-1 text-sm text-gray-900">
-                {totalGhs != null ? `GHS ${totalGhs.toFixed(2)}` : "-"}
+                {assay.comments && typeof assay.comments === "string"
+                  ? (() => {
+                      try {
+                        const parsed = JSON.parse(assay.comments || "{}");
+                        const v = parsed?.meta?.valueGhs;
+                        return v != null
+                          ? `GHS ${Number(v).toFixed(2)}`
+                          : totalGhs != null
+                          ? `GHS ${totalGhs.toFixed(2)}`
+                          : "-";
+                      } catch {
+                        return totalGhs != null
+                          ? `GHS ${totalGhs.toFixed(2)}`
+                          : "-";
+                      }
+                    })()
+                  : assay.comments?.meta?.valueGhs != null
+                  ? `GHS ${Number(assay.comments.meta.valueGhs).toFixed(2)}`
+                  : totalGhs != null
+                  ? `GHS ${totalGhs.toFixed(2)}`
+                  : "-"}
               </dd>
             </div>
             <div>
@@ -286,7 +346,25 @@ export default function AssayDetailPage() {
                 Exchange Rate (USD→GHS)
               </dt>
               <dd className="mt-1 text-sm text-gray-900">
-                {exchangeRate != null ? exchangeRate : "-"}
+                {assay.comments && typeof assay.comments === "string"
+                  ? (() => {
+                      try {
+                        const parsed = JSON.parse(assay.comments || "{}");
+                        const v = parsed?.meta?.dailyExchange;
+                        return v != null
+                          ? v
+                          : exchangeRate != null
+                          ? exchangeRate
+                          : "-";
+                      } catch {
+                        return exchangeRate != null ? exchangeRate : "-";
+                      }
+                    })()
+                  : assay.comments?.meta?.dailyExchange != null
+                  ? assay.comments.meta.dailyExchange
+                  : exchangeRate != null
+                  ? exchangeRate
+                  : "-"}
               </dd>
             </div>
           </div>

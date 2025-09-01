@@ -35,7 +35,7 @@ export default function NewAssayPage() {
     shipmentTypeId: "",
   });
 
-  // rows for each piece: grossWeight, waterWeight, fineness, netWeight
+  // rows for each piece: grossWeight, waterWeight, fineness (auto), netWeight
   const [rows, setRows] = useState<
     Array<{
       grossWeight?: number;
@@ -70,7 +70,7 @@ export default function NewAssayPage() {
       try {
         const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-        const [jobRes, pricesRes] = await Promise.all([
+        const [jobRes, pricesRes, commoditiesRes] = await Promise.all([
           fetch(`/api/job-cards/${id}`),
           // fetch all daily prices (commodity + exchange entries)
           fetch(`/api/daily-prices`),
@@ -85,12 +85,8 @@ export default function NewAssayPage() {
         if (pricesRes && pricesRes.ok) {
           pricesBody = await pricesRes.json().catch(() => []);
         }
-        // commodity response may be the 3rd item in the Promise.all; try to read it
-        try {
-          const comRes = await fetch(`/api/commodity`);
-          if (comRes.ok) commoditiesBody = await comRes.json().catch(() => []);
-        } catch (e) {
-          // ignore
+        if (commoditiesRes && commoditiesRes.ok) {
+          commoditiesBody = await commoditiesRes.json().catch(() => []);
         }
 
         if (commoditiesBody && Array.isArray(commoditiesBody)) {
@@ -98,17 +94,43 @@ export default function NewAssayPage() {
         }
 
         const today = date;
-        const matching = (pricesBody || []).filter(
+        const all = pricesBody || [];
+        // find today's entries
+        const todayMatches = all.filter(
           (p: any) => String(p?.createdAt || "").split("T")[0] === today
         );
 
-        const commodityEntry =
-          matching.find((p: any) => p.type === "COMMODITY") || null;
-        const exchangeEntry =
-          matching.find((p: any) => p.type === "EXCHANGE") || null;
+        const latestByDate = (items: any[]) =>
+          items
+            .slice()
+            .sort(
+              (a: any, b: any) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )[0];
 
-        setDailyPrice({ value: commodityEntry?.price ?? null });
-        setDailyExchange({ value: exchangeEntry?.price ?? null });
+        // pick latest COMMODITY for today, else latest historical
+        const commodityEntry =
+          latestByDate(
+            todayMatches.filter((p: any) => p.type === "COMMODITY")
+          ) ||
+          latestByDate(all.filter((p: any) => p.type === "COMMODITY")) ||
+          null;
+
+        // pick latest EXCHANGE for today, else latest historical
+        const exchangeEntry =
+          latestByDate(
+            todayMatches.filter((p: any) => p.type === "EXCHANGE")
+          ) ||
+          latestByDate(all.filter((p: any) => p.type === "EXCHANGE")) ||
+          null;
+
+        setDailyPrice({
+          value: commodityEntry ? Number(commodityEntry.price) : null,
+        });
+        setDailyExchange({
+          value: exchangeEntry ? Number(exchangeEntry.price) : null,
+        });
       } catch (err) {
         console.error(err);
       } finally {
@@ -148,10 +170,35 @@ export default function NewAssayPage() {
   const handleRowChange = (index: number, field: string, value: string) => {
     setRows((prev) => {
       const next = [...prev];
+      const parsed = value === "" ? undefined : Number(value);
       next[index] = {
         ...next[index],
-        [field]: value === "" ? undefined : Number(value),
+        [field]: parsed,
       };
+
+      // If grossWeight or netWeight changed, recompute fineness = (net / gross) * 100
+      const gross =
+        typeof next[index].grossWeight === "number"
+          ? next[index].grossWeight
+          : undefined;
+      const net =
+        typeof next[index].netWeight === "number"
+          ? next[index].netWeight
+          : undefined;
+
+      // Always auto-compute fineness when gross or net changes
+      if (field === "netWeight" || field === "grossWeight") {
+        if (typeof gross === "number" && gross > 0 && typeof net === "number") {
+          // set fineness to percentage with 2 decimals
+          next[index].fineness = Number(((net / gross) * 100).toFixed(2));
+        } else {
+          // not enough info to compute
+          next[index].fineness = undefined;
+        }
+      }
+
+      // fineness is not manually editable anymore; ignore edits to fineness field
+
       return next;
     });
   };
@@ -175,6 +222,7 @@ export default function NewAssayPage() {
     ? totalNetWeightOz
     : 0;
   const usdValue = (Number(dailyPrice?.value) || 0) * totalNetWeightOzDisplay;
+  const ghsValue = usdValue * (Number(dailyExchange?.value) || 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +234,44 @@ export default function NewAssayPage() {
       const res = await fetch(`/api/job-cards/${id}`);
       if (!res.ok) throw new Error("Failed to load job card");
       const jobCard = await res.json();
+
+      // --- Validation: require meta bar fields and at least one measurement row ---
+      const commodityName =
+        jobCard?.commodity?.name ||
+        commodities.find((c) => c.id === jobCard?.commodityId)?.name ||
+        null;
+
+      const metaMissing: string[] = [];
+      if (!jobCard?.exporter?.name) metaMissing.push("exporter");
+      if (dailyPrice?.value == null) metaMissing.push("daily price");
+      if (dailyExchange?.value == null) metaMissing.push("daily exchange");
+      if (!(jobCard?.referenceNumber || jobCard?.reference))
+        metaMissing.push("reference number");
+      if (!jobCard?.buyerName) metaMissing.push("buyer");
+      if (!jobCard?.destinationCountry) metaMissing.push("destination");
+      if (!jobCard?.shipmentTypeId && !form.shipmentTypeId)
+        metaMissing.push("shipment type");
+      if (!commodityName) metaMissing.push("commodity");
+      if (jobCard?.numberOfBoxes == null) metaMissing.push("number of boxes");
+      if (!jobCard?.unitOfMeasure) metaMissing.push("unit of measure");
+
+      const hasMeasurement =
+        rows &&
+        rows.length > 0 &&
+        rows.some((r) => {
+          return (
+            typeof r.grossWeight === "number" ||
+            typeof r.netWeight === "number" ||
+            typeof r.waterWeight === "number"
+          );
+        });
+      if (!hasMeasurement) metaMissing.push("at least one measurement row");
+
+      if (metaMissing.length > 0) {
+        setError(`Cannot save valuation. Missing: ${metaMissing.join(", ")}`);
+        setSaving(false);
+        return;
+      }
 
       const newAssay = {
         id: `local-${Date.now()}`,
@@ -206,6 +292,9 @@ export default function NewAssayPage() {
             unit: unitOfMeasure,
             totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(4)),
             valueUsd: Number(usdValue.toFixed(4)),
+            valueGhs: Number(ghsValue.toFixed(4)),
+            dailyExchange: Number(dailyExchange?.value) || null,
+            dailyPrice: Number(dailyPrice?.value) || null,
           },
         }),
         shipmentTypeId: form.shipmentTypeId || null,
@@ -223,6 +312,7 @@ export default function NewAssayPage() {
       updated.totalNetWeightOz =
         totalNetWeightOzDisplay || jobCard.totalNetWeightOz || 0;
       updated.exporterValueUsd = usdValue || jobCard.exporterValueUsd || 0;
+      updated.exporterValueGhs = ghsValue || jobCard.exporterValueGhs || 0;
 
       const put = await fetch(`/api/job-cards/${id}`, {
         method: "PUT",
@@ -312,6 +402,13 @@ export default function NewAssayPage() {
                 <div className="text-xs text-gray-500">Value (USD)</div>
                 <div className="font-medium text-gray-900">
                   {usdValue ? usdValue.toFixed(2) : "0.00"}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs text-gray-500">Value (GHS)</div>
+                <div className="font-medium text-gray-900">
+                  {ghsValue ? ghsValue.toFixed(2) : "0.00"}
                 </div>
               </div>
 
@@ -415,6 +512,7 @@ export default function NewAssayPage() {
               <p className="text-xs text-gray-500">
                 Provide measurements for each piece saved.
               </p>
+              {/* fineness is always auto-calculated from gross/net */}
 
               <div className="mt-3 space-y-2">
                 {rows.map((r, i) => (
@@ -454,15 +552,15 @@ export default function NewAssayPage() {
                       <label className="block text-xs text-gray-600">
                         Fineness
                       </label>
-                      <input
-                        type="number"
-                        step="any"
-                        value={r.fineness ?? ""}
-                        onChange={(e) =>
-                          handleRowChange(i, "fineness", e.target.value)
-                        }
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                      />
+                      <div className="mt-1 flex items-center gap-2">
+                        <input
+                          type="number"
+                          step="any"
+                          value={r.fineness ?? ""}
+                          readOnly
+                          className="flex-1 rounded-md border-gray-100 bg-gray-50 text-gray-600 shadow-sm"
+                        />
+                      </div>
                     </div>
                     <div>
                       <label className="block text-xs text-gray-600">

@@ -58,8 +58,33 @@ export default async function InvoicePage(props: any) {
   const dailyCommodityName = dailyPrice?.commodity?.name || "Commodity";
 
   // Use invoice stored assay values (assayUsdValue and assayGhsValue)
-  const assayUsdValue = Number(invoice.assayUsdValue || 0);
-  const assayGhsValue = Number(invoice.assayGhsValue || 0);
+  // Prefer per-assay saved meta if present
+  let assayUsdValue = Number(invoice.assayUsdValue || 0);
+  let assayGhsValue = Number(invoice.assayGhsValue || 0);
+  if (
+    (!assayUsdValue || !assayGhsValue) &&
+    invoice.assays &&
+    invoice.assays.length
+  ) {
+    // try to use first linked assay's comments.meta
+    try {
+      const a = invoice.assays[0];
+      let meta: any = null;
+      if (a?.comments) {
+        if (typeof a.comments === "string") {
+          meta = JSON.parse(a.comments || "{}")?.meta;
+        } else {
+          meta = (a.comments as any)?.meta;
+        }
+      }
+      if (meta) {
+        if (meta.valueUsd) assayUsdValue = Number(meta.valueUsd);
+        if (meta.valueGhs) assayGhsValue = Number(meta.valueGhs);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
 
   // Fixed rate as requested
   const rate = 0.258;
