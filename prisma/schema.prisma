@@ -1,3 +1,16 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model Commodity {
   id        String   @id @default(uuid())
   name      String   @unique
@@ -31,18 +44,6 @@ model DailyPrice {
 enum DailyPriceType {
   COMMODITY
   EXCHANGE
-}
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // Define enums
@@ -100,27 +101,21 @@ model JobCard {
   assayOfficer    AssayOfficer? @relation(fields: [assayOfficerId], references: [id])
   technicalDirectorId String?
   technicalDirector TechnicalDirector? @relation(fields: [technicalDirectorId], references: [id])
-  // New fields
   unitOfMeasure   String?
   idType          IdType?     @default(TIN)  // passport, TIN, ghana card, drivers license
   buyerIdNumber   String?
   buyerName       String?
   buyerPhone      String?
-  exporterPricePerOz Float?
   teamLeader      String?
   totalGrossWeight Float?
   destinationCountry String?
   fineness        Float?      // Percentage
   sourceOfGold    String?     @default("Ghana")
-  totalNetWeight  Float?      // in grams
-  totalNetWeightOz Float?     // in oz
+  totalNetWeight  Float?      
   numberOfPersons Int?
-  exporterValueUsd Float?
-  exporterValueGhs Float?
   graDeclarationNumber String?
   numberOfBoxes   Int?
   remittanceType  String?
-  // Original relations
   seals           Seal[]
   assays          Assay[]
   invoices        Invoice[]
