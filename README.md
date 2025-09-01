@@ -264,3 +264,38 @@ For support and questions:
 ---
 
 Built with ❤️ using Next.js and TypeScript
+
+## 🛡️ Production Migrations (safe deploy)
+
+When deploying to production (Vercel or other hosts) you must apply Prisma migrations to keep the database schema in sync with `prisma/schema.prisma`.
+
+Recommended steps (PowerShell examples):
+
+1. Create a backup/snapshot of your production database (critical):
+
+```powershell
+# Replace with your production DATABASE_URL
+$prodUrl = "<PROD_DB_URL>"
+pg_dump $prodUrl -Fc -f "prod-backup-$(Get-Date -Format yyyyMMddHHmmss).dump"
+```
+
+2. Deploy migrations:
+
+```powershell
+# Ensure DATABASE_URL and NODE_ENV are set for production context
+$env:DATABASE_URL = "<PROD_DB_URL>"
+$env:NODE_ENV = "production"
+
+# Apply all pending migrations
+npx prisma migrate deploy --schema=prisma/schema.prisma
+```
+
+3. Verify the migration succeeded (example check for `exporterPricePerOz` column):
+
+```powershell
+psql $prodUrl -c "SELECT column_name FROM information_schema.columns WHERE table_name='\"JobCard\"' AND column_name='exporterPricePerOz';"
+```
+
+Vercel tip: to ensure migrations run during deployment, either add the `vercel-build` script (already included) which runs `npx prisma migrate deploy && next build`, or add a CI step to run `npx prisma migrate deploy` prior to deploying.
+
+Rollback: If something goes wrong, restore the backup created above using `pg_restore` or your provider snapshot restore functionality.

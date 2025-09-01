@@ -27,16 +27,50 @@ export default async function InvoicePage(props: any) {
     invoiceId: string;
   };
 
-  // Load the invoice and related data
-  const invoice = await prisma.invoice.findUnique({
-    where: { id: invoiceId },
-    include: {
-      jobCard: { include: { exporter: true } },
-      currency: true,
-      invoiceType: true,
-      assays: true,
-    },
-  });
+  // Load the invoice and only the related fields needed for rendering (defensive)
+  let invoice: any = null;
+  try {
+    invoice = await prisma.invoice.findUnique({
+      where: { id: invoiceId },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        jobCardId: true,
+        assayUsdValue: true,
+        assayGhsValue: true,
+        amount: true,
+        rate: true,
+        issueDate: true,
+        createdAt: true,
+        notes: true,
+        currency: { select: { id: true, code: true, symbol: true } },
+        invoiceType: { select: { id: true, name: true, description: true } },
+        assays: {
+          select: {
+            id: true,
+            certificateNumber: true,
+            assayDate: true,
+            comments: true,
+          },
+        },
+        jobCard: {
+          select: {
+            id: true,
+            referenceNumber: true,
+            exporter: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+  } catch (e) {
+    console.error("Failed to load invoice for invoice page:", e);
+    return (
+      <div className="max-w-4xl mx-auto py-10 px-4">
+        <p>Failed to load invoice data. See server logs for details.</p>
+        <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
+      </div>
+    );
+  }
 
   if (!invoice) {
     return (

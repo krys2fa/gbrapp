@@ -29,13 +29,34 @@ export default async function ReportsPage(props: any) {
   });
   const commodityPrice = dailyPrice?.price || 0; // assumed per troy ounce
 
-  // Fetch job cards within the selected period with exporter and assays/measurements
-  const jobCards = await prisma.jobCard.findMany({
-    where: { createdAt: { gte: sinceDate } },
-    include: { exporter: true, assays: { include: { measurements: true } } },
-    orderBy: { createdAt: "desc" },
-    take: 1000,
-  });
+  // Fetch job cards within the selected period with only the fields needed for reports
+  let jobCards: any[] = [];
+  try {
+    jobCards = await prisma.jobCard.findMany({
+      where: { createdAt: { gte: sinceDate } },
+      orderBy: { createdAt: "desc" },
+      take: 1000,
+      select: {
+        id: true,
+        createdAt: true,
+        totalNetWeight: true,
+        totalNetWeightOz: true,
+        exporter: { select: { id: true, name: true } },
+        assays: {
+          select: {
+            id: true,
+            silverContent: true,
+            measurements: { select: { id: true, netWeight: true } },
+          },
+        },
+      },
+    });
+  } catch (e) {
+    // Defensive: log and continue with empty jobCards so the Reports page doesn't crash
+    // Common cause: production DB schema is older and missing recently added columns
+    console.error("Failed to load job cards for reports page:", e);
+    jobCards = [];
+  }
 
   let rows: any[] = [];
 

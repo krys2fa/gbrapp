@@ -87,7 +87,6 @@ function NewJobCardPage() {
     exporterId: "",
     shipmentTypeId: "",
     commodityId: "",
-    // New fields
     unitOfMeasure: UnitOfMeasure.GRAMS,
     buyerIdNumber: "",
     buyerName: "",
@@ -103,7 +102,6 @@ function NewJobCardPage() {
     graDeclarationNumber: "",
     numberOfBoxes: "",
     remittanceType: "",
-    // Original fields
     status: "pending",
     notes: "",
   });
@@ -158,9 +156,10 @@ function NewJobCardPage() {
   const handleCountryChange = (
     selectedOption: { value: string; label: string } | null
   ) => {
+    // Save the full country name (label) instead of the short code (value)
     setFormData((prev) => ({
       ...prev,
-      destinationCountry: selectedOption ? selectedOption.value : "",
+      destinationCountry: selectedOption ? selectedOption.label : "",
     }));
   };
 
@@ -168,6 +167,13 @@ function NewJobCardPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // Basic client-side validation: commodity is required (DB has non-null constraint)
+    if (!formData.commodityId) {
+      setError("Please select a commodity before creating the job card.");
+      setLoading(false);
+      return;
+    }
 
     // Prepare full submission payload from formData
     const submissionData: any = { ...formData };
@@ -457,7 +463,7 @@ function NewJobCardPage() {
                           formData.destinationCountry
                             ? countryOptions.find(
                                 (o: any) =>
-                                  o.value === formData.destinationCountry
+                                  o.label === formData.destinationCountry
                               )
                             : null
                         }

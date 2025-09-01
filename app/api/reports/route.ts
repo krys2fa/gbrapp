@@ -27,12 +27,31 @@ export async function GET(req: Request) {
   });
   const commodityPrice = dailyPrice?.price || 0;
 
-  const jobCards = await prisma.jobCard.findMany({
-    where: { createdAt: { gte: sinceDate } },
-    include: { exporter: true, assays: { include: { measurements: true } } },
-    orderBy: { createdAt: "desc" },
-    take: 1000,
-  });
+  let jobCards: any[] = [];
+  try {
+    jobCards = await prisma.jobCard.findMany({
+      where: { createdAt: { gte: sinceDate } },
+      orderBy: { createdAt: "desc" },
+      take: 1000,
+      select: {
+        id: true,
+        createdAt: true,
+        totalNetWeight: true,
+        totalNetWeightOz: true,
+        exporter: { select: { id: true, name: true } },
+        assays: {
+          select: {
+            id: true,
+            silverContent: true,
+            measurements: { select: { id: true, netWeight: true } },
+          },
+        },
+      },
+    });
+  } catch (e) {
+    console.error("Failed to load job cards for CSV report:", e);
+    jobCards = [];
+  }
 
   const computed = jobCards.map((jc: any) => {
     const storedNet = Number(jc.totalNetWeight) || 0;

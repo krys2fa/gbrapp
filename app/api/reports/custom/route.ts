@@ -52,16 +52,32 @@ export async function GET(req: Request) {
     prisma.jobCard.count({ where }),
     prisma.jobCard.findMany({
       where,
-      include: {
-        exporter: true,
-        assays: { include: { measurements: true, assayOfficer: true } },
-        fees: true,
-        seals: true,
-        shipmentType: true,
-      },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,
+      select: {
+        id: true,
+        referenceNumber: true,
+        receivedDate: true,
+        createdAt: true,
+        exporter: { select: { id: true, name: true, code: true } },
+        destinationCountry: true,
+        totalGrossWeight: true,
+        totalNetWeight: true,
+        totalNetWeightOz: true,
+        assays: {
+          select: {
+            id: true,
+            certificateNumber: true,
+            assayDate: true,
+            silverContent: true,
+            measurements: { select: { id: true, netWeight: true } },
+          },
+        },
+        fees: true,
+        seals: true,
+        shipmentType: { select: { id: true, name: true } },
+      },
     }),
   ]);
 

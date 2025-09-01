@@ -39,14 +39,25 @@ export async function GET(req: NextRequest) {
     const [invoices, total] = await Promise.all([
       prisma.invoice.findMany({
         where,
-        include: {
-          jobCard: { include: { exporter: true } },
-          assays: true,
-          currency: true,
-        },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
+        select: {
+          id: true,
+          invoiceNumber: true,
+          amount: true,
+          createdAt: true,
+          status: true,
+          jobCard: {
+            select: {
+              id: true,
+              referenceNumber: true,
+              exporter: { select: { id: true, name: true } },
+            },
+          },
+          assays: true,
+          currency: { select: { id: true, code: true, symbol: true } },
+        },
       }),
       prisma.invoice.count({ where }),
     ]);

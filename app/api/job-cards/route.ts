@@ -235,12 +235,16 @@ async function createJobCard(req: NextRequest) {
     };
 
     // Validate required fields
-    if (!data.exporterId || !data.shipmentTypeId) {
-      console.log("Missing required fields");
+    if (!data.exporterId || !data.shipmentTypeId || !data.commodityId) {
+      console.log("Missing required fields", {
+        exporterId: data.exporterId,
+        shipmentTypeId: data.shipmentTypeId,
+        commodityId: data.commodityId,
+      });
       return NextResponse.json(
         {
           error:
-            "Missing required fields: exporterId and shipmentTypeId are required",
+            "Missing required fields: exporterId, shipmentTypeId and commodityId are required",
         },
         { status: 400 }
       );
