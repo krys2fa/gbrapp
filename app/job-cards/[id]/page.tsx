@@ -86,6 +86,8 @@ function JobCardDetailPage() {
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
+      case "paid":
+        return "bg-green-100 text-green-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
       case "in_progress":
@@ -99,14 +101,24 @@ function JobCardDetailPage() {
     }
   };
 
-  // If assays exist, treat the job card as completed for the status badge
+  // If any invoice is paid or jobCard.status is 'paid', show Paid badge.
+  const hasPaidInvoice =
+    Array.isArray(jobCard.invoices) &&
+    jobCard.invoices.some((inv: any) => inv.status === "paid");
   const badgeStatus =
-    jobCard.assays && jobCard.assays.length > 0 ? "completed" : jobCard.status;
-  const badgeText =
-    jobCard.assays && jobCard.assays.length > 0
-      ? "Completed"
-      : jobCard.status.charAt(0).toUpperCase() +
-        jobCard.status.slice(1).replace("_", " ");
+    hasPaidInvoice || jobCard.status === "paid"
+      ? "paid"
+      : jobCard.assays && jobCard.assays.length > 0
+      ? "completed"
+      : jobCard.status;
+  const badgeText = (() => {
+    if (badgeStatus === "paid") return "Paid";
+    if (badgeStatus === "completed") return "Completed";
+    return (
+      badgeStatus.charAt(0).toUpperCase() +
+      badgeStatus.slice(1).replace("_", " ")
+    );
+  })();
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">

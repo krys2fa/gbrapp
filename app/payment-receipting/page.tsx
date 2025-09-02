@@ -112,9 +112,42 @@ function PaymentList() {
 
         const rows = Array.from(map.values());
         setItems(rows);
+        // fetch fees for these job cards to display receipt numbers
+        try {
+          const ids = rows
+            .map((r: any) => r.id)
+            .filter(Boolean)
+            .join(",");
+          if (ids) {
+            const feesRes = await fetch(`/api/fees?jobCardIds=${ids}`);
+            if (feesRes.ok) {
+              const feesData = await feesRes.json();
+              const latestByJob: Record<string, any> = {};
+              (feesData.fees || []).forEach((f: any) => {
+                if (!latestByJob[f.jobCardId]) latestByJob[f.jobCardId] = f;
+                else if (
+                  new Date(f.paymentDate) >
+                  new Date(latestByJob[f.jobCardId].paymentDate)
+                )
+                  latestByJob[f.jobCardId] = f;
+              });
+              // merge receipt numbers into rows
+              rows.forEach((r: any) => {
+                const fee = latestByJob[r.id];
+                if (fee) r.receipt = fee.receiptNumber || r.receipt || "";
+              });
+              setItems(rows);
+            }
+          }
+        } catch (feeErr) {
+          console.debug("Failed to fetch fees for receipts", feeErr);
+        }
         // fetch any existing fees for the displayed job cards to show receipt numbers
         try {
-          const ids = rows.map((r: any) => r.id).filter(Boolean).join(",");
+          const ids = rows
+            .map((r: any) => r.id)
+            .filter(Boolean)
+            .join(",");
           if (ids) {
             const feeRes = await fetch(`/api/fees?jobCardIds=${ids}`);
             if (feeRes.ok) {
@@ -127,7 +160,8 @@ function PaymentList() {
               // attach receipt into rows
               const rowsWithReceipt = rows.map((r: any) => ({
                 ...r,
-                receipt: latestByJob[r.id]?.receiptNumber || r.receipt || undefined,
+                receipt:
+                  latestByJob[r.id]?.receiptNumber || r.receipt || undefined,
               }));
               setItems(rowsWithReceipt);
             }
@@ -192,13 +226,13 @@ function PaymentList() {
       });
       if (!res.ok) throw new Error("Failed to record payment");
       const data = await res.json();
-  // close modal and refresh list
-  setShowPayModal(false);
-  setRefreshKey((k) => k + 1);
-  toast.success("Payment recorded");
+      // close modal and refresh list
+      setShowPayModal(false);
+      setRefreshKey((k) => k + 1);
+      toast.success("Payment recorded");
     } catch (e: any) {
-  console.error(e);
-  toast.error(e?.message || "Failed to save payment");
+      console.error(e);
+      toast.error(e?.message || "Failed to save payment");
     }
   }
 

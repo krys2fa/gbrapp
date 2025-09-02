@@ -184,9 +184,9 @@ export async function PUT(req: NextRequest) {
     if (requestData.numberOfPersons !== undefined) {
       updateData.numberOfPersons = parseInt(requestData.numberOfPersons);
     }
-  // exporterValueUsd / exporterValueGhs are not part of the JobCard model anymore.
-  // Keep using requestData.exporterValueUsd / exporterValueGhs when creating invoices
-  // but do not attempt to persist them on the JobCard to avoid Prisma errors.
+    // exporterValueUsd / exporterValueGhs are not part of the JobCard model anymore.
+    // Keep using requestData.exporterValueUsd / exporterValueGhs when creating invoices
+    // but do not attempt to persist them on the JobCard to avoid Prisma errors.
     if (requestData.graDeclarationNumber !== undefined) {
       updateData.graDeclarationNumber = requestData.graDeclarationNumber;
     }
@@ -318,9 +318,7 @@ export async function PUT(req: NextRequest) {
                   connect: createdAssayIds.map((aid) => ({ id: aid })),
                 },
                 assayUsdValue: Number(amountUsd) || 0,
-                assayGhsValue:
-                  Number(requestData.exporterValueGhs) ||
-                  0,
+                assayGhsValue: Number(requestData.exporterValueGhs) || 0,
                 rate: 1,
                 issueDate: new Date(),
                 status: "pending",

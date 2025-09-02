@@ -227,7 +227,7 @@ async function createJobCard(req: NextRequest) {
       numberOfPersons: cleaned.numberOfPersons
         ? Number(cleaned.numberOfPersons)
         : undefined,
-  // exporterValueUsd/exporterValueGhs are handled separately (not stored on JobCard)
+      // exporterValueUsd/exporterValueGhs are handled separately (not stored on JobCard)
       graDeclarationNumber: cleaned.graDeclarationNumber || undefined,
       numberOfBoxes: cleaned.numberOfBoxes
         ? Number(cleaned.numberOfBoxes)
