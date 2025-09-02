@@ -153,6 +153,12 @@ export default function AssayDetailPage() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header: centered title only (logo and coat omitted for now) */}
+      <div className="mb-4">
+        <div className="flex justify-center">
+          <h1 className="text-2xl font-bold tracking-wider">ASSAY REPORT</h1>
+        </div>
+      </div>
       <div className="mb-6 flex items-center justify-between">
         <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
         <div className="flex items-center gap-3">
@@ -369,16 +375,25 @@ export default function AssayDetailPage() {
             </div>
           </div>
 
-          {assay.comments && (
-            <div className="mt-4">
-              <dt className="text-sm font-medium text-gray-500">Comments</dt>
-              <dd className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
-                {typeof assay.comments === "string"
-                  ? assay.comments
-                  : JSON.stringify(assay.comments)}
-              </dd>
-            </div>
-          )}
+          {/* Comments intentionally omitted */}
+
+          <div className="mt-4">
+            <dt className="text-sm font-medium text-gray-500">
+              Total Net Weight (oz)
+            </dt>
+            <dd className="mt-1 text-sm text-gray-900">
+              {(() => {
+                const netWeightGrams =
+                  (assay.measurements || []).reduce(
+                    (acc: number, m: any) => acc + (Number(m.netWeight) || 0),
+                    0
+                  ) || Number(jobCard.totalNetWeight) || 0;
+                const GRAMS_PER_TROY_OUNCE = 31.1034768;
+                const oz = netWeightGrams / GRAMS_PER_TROY_OUNCE;
+                return oz > 0 ? oz.toFixed(3) : "-";
+              })()}
+            </dd>
+          </div>
 
           <div className="mt-6">
             <h4 className="text-sm font-medium text-gray-900 mb-2">

@@ -39,8 +39,7 @@ export default async function ReportsPage(props: any) {
       select: {
         id: true,
         createdAt: true,
-        totalNetWeight: true,
-        totalNetWeightOz: true,
+  totalNetWeight: true,
         exporter: { select: { id: true, name: true } },
         assays: {
           select: {

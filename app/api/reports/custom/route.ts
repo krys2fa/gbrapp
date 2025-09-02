@@ -62,9 +62,8 @@ export async function GET(req: Request) {
         createdAt: true,
         exporter: { select: { id: true, name: true, code: true } },
         destinationCountry: true,
-        totalGrossWeight: true,
-        totalNetWeight: true,
-        totalNetWeightOz: true,
+  totalGrossWeight: true,
+  totalNetWeight: true,
         assays: {
           select: {
             id: true,

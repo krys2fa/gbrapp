@@ -31,7 +31,7 @@ export async function fetchAndSaveCommodityPriceIfMissing(commodityId: string) {
         const body = await res.json().catch(() => null);
         if (body) {
           // Normalize several shapes into { metal, price }
-          let normalized: Array<{ metal: string; price: number }> = [];
+          const normalized: Array<{ metal: string; price: number }> = [];
           if (Array.isArray(body)) {
             for (const item of body) {
               if (item && typeof item === "object") {
