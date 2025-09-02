@@ -1,4 +1,5 @@
 import { Role } from "@/app/generated/prisma";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
@@ -102,16 +103,28 @@ async function createUser(req: NextRequest) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        role,
-        isActive: isActive !== undefined ? isActive : true,
-      },
-    });
+    // Create user (handle unique constraint races)
+    let user;
+    try {
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          role,
+          isActive: isActive !== undefined ? isActive : true,
+        },
+      });
+    } catch (e: any) {
+      // If another request created the same email concurrently, return 409
+      if (e && typeof e === "object" && (e as any).code === "P2002") {
+        return NextResponse.json(
+          { error: "A user with this email already exists" },
+          { status: 409 }
+        );
+      }
+      throw e;
+    }
 
     // Create a clean user object without sensitive data
     const userResponse = {

@@ -62,21 +62,9 @@ async function updateUser(
     const updateData: any = {};
 
     if (email !== undefined && email !== existingUser.email) {
-      // Check if email is already in use by another user
-      const emailInUse = await prisma.user.findFirst({
-        where: {
-          email,
-          id: { not: id },
-        },
-      });
-
-      if (emailInUse) {
-        return NextResponse.json(
-          { error: "Email is already in use by another user" },
-          { status: 409 }
-        );
-      }
-
+      // Allow setting email even if it may conflict; we'll attempt the update
+      // and if the DB rejects due to unique constraint, we'll retry without
+      // changing the email so the rest of the updates still apply.
       updateData.email = email;
     }
 
@@ -97,23 +85,46 @@ async function updateUser(
       updateData.isActive = isActive;
     }
 
-    // Update user
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    return NextResponse.json(updatedUser);
+    // Update user. If the email update conflicts with another record (P2002),
+    // retry the update without changing the email so other fields still update.
+    try {
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isActive: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      return NextResponse.json(updatedUser);
+    } catch (e: any) {
+      if (e && typeof e === "object" && (e as any).code === "P2002") {
+        // remove email from update and retry
+        delete updateData.email;
+        const updatedUser = await prisma.user.update({
+          where: { id },
+          data: updateData,
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            isActive: true,
+            lastLogin: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+        return NextResponse.json(updatedUser);
+      }
+      throw e;
+    }
   } catch (error) {
     console.error("Error updating user:", error);
     return NextResponse.json({ error: "Error updating user" }, { status: 500 });

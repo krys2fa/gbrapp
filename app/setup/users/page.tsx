@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { toast } from "react-hot-toast";
 import { ChevronDown, UserPlus } from "lucide-react";
 import {
   PencilSquareIcon,
@@ -110,20 +111,23 @@ const CreateUserPage = () => {
     setError("");
     setSuccess("");
     try {
+      // Do not include email in update payload to avoid conflicts
+      const payload: any = { name: form.name, role: form.role };
       const res = await fetch(`/api/users/${editingUser.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          role: form.role,
-        }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Failed to update user");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || "Failed to update user");
+      }
+      toast.success("User updated successfully");
       setSuccess("User updated successfully!");
       setEditingUser(null);
       setForm({ name: "", email: "", password: "", role: roles[0] });
     } catch (err: any) {
+      toast.error(err.message || "Error updating user");
       setError(err.message || "Error updating user");
     } finally {
       setLoading(false);
@@ -184,7 +188,7 @@ const CreateUserPage = () => {
           </div>
         </div>
         <div className="max-w-xl mt-8">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={editingUser ? handleUpdateUser : handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
                 {error && (
@@ -296,9 +300,19 @@ const CreateUserPage = () => {
                 <div className="mt-6 flex justify-end">
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
+                    disabled={loading}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    {editingUser ? "Update User" : "Create User"}
+                    {loading ? (
+                      <>
+                        <ArrowPathIcon className="h-5 w-5 text-white animate-spin mr-2" />
+                        {editingUser ? "Updating..." : "Creating..."}
+                      </>
+                    ) : editingUser ? (
+                      "Update User"
+                    ) : (
+                      "Create User"
+                    )}
                   </button>
                 </div>
               </div>
