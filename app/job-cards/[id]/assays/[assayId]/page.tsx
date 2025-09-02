@@ -387,7 +387,9 @@ export default function AssayDetailPage() {
                   (assay.measurements || []).reduce(
                     (acc: number, m: any) => acc + (Number(m.netWeight) || 0),
                     0
-                  ) || Number(jobCard.totalNetWeight) || 0;
+                  ) ||
+                  Number(jobCard.totalNetWeight) ||
+                  0;
                 const GRAMS_PER_TROY_OUNCE = 31.1034768;
                 const oz = netWeightGrams / GRAMS_PER_TROY_OUNCE;
                 return oz > 0 ? oz.toFixed(3) : "-";

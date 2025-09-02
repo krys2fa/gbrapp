@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       select: {
         id: true,
         createdAt: true,
-  totalNetWeight: true,
+        totalNetWeight: true,
         exporter: { select: { id: true, name: true } },
         assays: {
           select: {
