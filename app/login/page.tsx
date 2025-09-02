@@ -38,11 +38,11 @@ export default function LoginPage() {
       <div className="flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 w-full lg:w-2/3">
         <div className="mx-auto w-full max-w-sm lg:max-w-md">
           <div className="mb-10 ">
-            <div className="flex justify-center mb-6 bg-black">
+            <div className="flex justify-center mb-6 bg-[#2e7030]">
               <Image
                 src="/goldbod-logo.webp"
                 alt="GBR Logo"
-                width={120}
+                width={140}
                 height={120}
                 className="h-30 w-auto"
                 priority
