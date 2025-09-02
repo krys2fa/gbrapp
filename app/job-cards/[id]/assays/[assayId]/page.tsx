@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import { formatDate } from "@/app/lib/utils";
@@ -20,6 +21,24 @@ export default function AssayDetailPage() {
   const [exchangeRate, setExchangeRate] = useState<number | null>(null); // USD -> GHS
   const [totalUsd, setTotalUsd] = useState<number | null>(null);
   const [totalGhs, setTotalGhs] = useState<number | null>(null);
+
+  // Helper to normalize units and convert a numeric value to grams
+  const convertToGrams = (value: any, unit?: string) => {
+    const n = Number(value) || 0;
+    if (n === 0) return 0;
+    const u = (unit || jobCard?.unitOfMeasure || "")
+      .toString()
+      .toLowerCase()
+      .trim();
+    if (!u) return n; // assume grams
+    if (u === "kg" || u === "kilogram" || u === "kilograms") return n * 1000;
+    if (u === "g" || u === "gram" || u === "grams") return n;
+    // support common variations
+    if (u === "kgs") return n * 1000;
+    if (u === "lb" || u === "lbs" || u === "pound" || u === "pounds")
+      return n * 453.59237;
+    return n; // fallback: assume grams
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -84,26 +103,25 @@ export default function AssayDetailPage() {
       (a: any) => String(a.id) === String(assayId)
     );
     if (!assay) return;
-    // sum net weight from measurements; assume netWeight stored in grams
-    const netWeightGrams =
-      (assay.measurements || []).reduce(
-        (acc: number, m: any) => acc + (Number(m.netWeight) || 0),
-        0
-      ) ||
-      Number(jobCard.totalNetWeight) ||
-      0;
+    // sum net weight from measurements only, converting each measurement to grams
+    const measuredSum = (assay.measurements || []).reduce(
+      (acc: number, m: any) =>
+        acc +
+        convertToGrams(m.netWeight, m?.unitOfMeasure ?? jobCard?.unitOfMeasure),
+      0
+    );
+    const netWeightGrams = measuredSum; // do not fall back to jobCard values
     // commodityPrice is expected to be price per troy ounce. Convert grams -> troy ounces
     const GRAMS_PER_TROY_OUNCE = 31.1034768;
     if (commodityPrice != null && netWeightGrams > 0) {
       const ounces = netWeightGrams / GRAMS_PER_TROY_OUNCE;
       const usd = ounces * commodityPrice;
       setTotalUsd(usd);
+      // Only compute GHS if a valid exchangeRate is present; do not use jobCard values
       if (exchangeRate != null) {
         setTotalGhs(usd * exchangeRate);
-      } else if (jobCard.exporterValueGhs && jobCard.exporterValueUsd) {
-        const rate =
-          Number(jobCard.exporterValueGhs) / Number(jobCard.exporterValueUsd);
-        if (!isNaN(rate) && rate > 0) setTotalGhs(usd * rate);
+      } else {
+        setTotalGhs(null);
       }
     }
   }, [jobCard, assayId, commodityPrice, exchangeRate]);
@@ -111,7 +129,10 @@ export default function AssayDetailPage() {
   if (loading) {
     return (
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="animate-pulse h-40 bg-gray-100 rounded" />
+        <div className="flex items-center justify-center">
+          <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+          <span className="ml-2 text-gray-500">Loading assay...</span>
+        </div>
       </div>
     );
   }
@@ -324,6 +345,38 @@ export default function AssayDetailPage() {
                           )
                         )}
                       </tbody>
+                      <tfoot className="bg-gray-50">
+                        <tr>
+                          <td
+                            colSpan={4}
+                            className="px-4 py-2 text-sm font-medium text-gray-700"
+                          >
+                            Total Net Weight
+                          </td>
+                          <td className="px-4 py-2 text-sm text-gray-700">
+                            {(() => {
+                              const totalGrams = (
+                                assay.measurements || []
+                              ).reduce(
+                                (acc: number, m: any) =>
+                                  acc +
+                                  convertToGrams(
+                                    m.netWeight,
+                                    m?.unitOfMeasure ?? jobCard?.unitOfMeasure
+                                  ),
+                                0
+                              );
+                              const GRAMS_PER_TROY_OUNCE = 31.1034768;
+                              const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
+                              return totalGrams > 0
+                                ? `${totalGrams.toFixed(3)} g (${oz.toFixed(
+                                    3
+                                  )} oz)`
+                                : "-";
+                            })()}
+                          </td>
+                        </tr>
+                      </tfoot>
                     </table>
                   </div>
                 </div>
@@ -545,16 +598,20 @@ export default function AssayDetailPage() {
               </dt>
               <dd className="mt-1 text-sm text-gray-900">
                 {(() => {
-                  const netWeightGrams =
-                    (assay.measurements || []).reduce(
-                      (acc: number, m: any) => acc + (Number(m.netWeight) || 0),
-                      0
-                    ) ||
-                    Number(jobCard.totalNetWeight) ||
-                    0;
+                  // Accumulate net weight from assay measurements only,
+                  // converting each measurement into grams according to the job card unit
+                  const totalGrams = (assay.measurements || []).reduce(
+                    (acc: number, m: any) =>
+                      acc +
+                      convertToGrams(
+                        m.netWeight,
+                        m?.unitOfMeasure ?? jobCard?.unitOfMeasure
+                      ),
+                    0
+                  );
                   const GRAMS_PER_TROY_OUNCE = 31.1034768;
-                  const oz = netWeightGrams / GRAMS_PER_TROY_OUNCE;
-                  return oz > 0 ? oz.toFixed(3) : "-";
+                  const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
+                  return totalGrams > 0 ? oz.toFixed(3) : "-";
                 })()}
               </dd>
             </div>
