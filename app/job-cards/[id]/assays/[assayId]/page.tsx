@@ -311,9 +311,9 @@ export default function AssayDetailPage() {
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                             Gross Weight
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                             Water Weight
-                          </th>
+                          </th> */}
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                             Fineness
                           </th>
@@ -332,9 +332,9 @@ export default function AssayDetailPage() {
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
                                 {m.grossWeight ?? "-"}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                              {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
                                 {m.waterWeight ?? "-"}
-                              </td>
+                              </td> */}
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
                                 {m.fineness ?? "-"}
                               </td>
@@ -345,7 +345,7 @@ export default function AssayDetailPage() {
                           )
                         )}
                       </tbody>
-                      <tfoot className="bg-gray-50">
+                      {/* <tfoot className="bg-gray-50">
                         <tr>
                           <td
                             colSpan={4}
@@ -376,7 +376,7 @@ export default function AssayDetailPage() {
                             })()}
                           </td>
                         </tr>
-                      </tfoot>
+                      </tfoot> */}
                     </table>
                   </div>
                 </div>
@@ -389,7 +389,7 @@ export default function AssayDetailPage() {
             <h4 className="text-sm font-medium text-gray-900 mb-4">
               Assay Details
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               {/* <div>
                 <dt className="text-sm font-medium text-gray-500">Assay Date</dt>
                 <dd className="mt-1 text-sm text-gray-900">
@@ -406,6 +406,41 @@ export default function AssayDetailPage() {
                   {assay.signatory || assay.comments?.signatory || "-"}
                 </dd>
               </div>
+
+              <div >
+                <dt className="text-sm font-medium text-gray-500">
+                  Total Net Weight (oz)
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {(() => {
+                    // Accumulate net weight from assay measurements only,
+                    // converting each measurement into grams according to the job card unit
+                    const totalGrams = (assay.measurements || []).reduce(
+                      (acc: number, m: any) =>
+                        acc +
+                        convertToGrams(
+                          m.netWeight,
+                          m?.unitOfMeasure ?? jobCard?.unitOfMeasure
+                        ),
+                      0
+                    );
+                    const GRAMS_PER_TROY_OUNCE = 31.1034768;
+                    const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
+                    return totalGrams > 0 ? oz.toFixed(3) : "-";
+                  })()}
+                </dd>
+              </div>
+
+              <div>
+                <dt className="text-sm font-medium text-gray-500">PMMC Seal</dt>
+                <dd className="mt-1 text-sm text-gray-900">-</dd>
+              </div>
+
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Customs Seal</dt>
+                <dd className="mt-1 text-sm text-gray-900">-</dd>
+              </div>
+
               {/* <div>
                 <dt className="text-sm font-medium text-gray-500">
                   Gold / Silver
@@ -416,16 +451,16 @@ export default function AssayDetailPage() {
               </div> */}
             </div>
 
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* <div>
+            {/* <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4"> */}
+            {/* <div>
                 <dt className="text-sm font-medium text-gray-500">Shipment Type</dt>
                 <dd className="mt-1 text-sm text-gray-900">{jobCard?.shipmentType?.name || "-"}</dd>
               </div> */}
-              {/* <div>
+            {/* <div>
                 <dt className="text-sm font-medium text-gray-500">Job Card</dt>
                 <dd className="mt-1 text-sm text-gray-900">{jobCard?.referenceNumber || "-"}</dd>
               </div> */}
-              {/* <div>
+            {/* <div>
                 <dt className="text-sm font-medium text-gray-500">
                   Destination Country
                 </dt>
@@ -433,23 +468,9 @@ export default function AssayDetailPage() {
                   {jobCard?.destinationCountry || "-"}
                 </dd>
               </div> */}
-            </div>
+            {/* </div> */}
 
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* <div>
-                <dt className="text-sm font-medium text-gray-500">Exporter</dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {jobCard?.exporter?.name || "-"}
-                </dd>
-              </div> */}
-              {/* <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Assay Number
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {assay.certificateNumber || "-"}
-                </dd>
-              </div> */}
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div>
                 <dt className="text-sm font-medium text-gray-500">
                   Commodity Price (per oz)
@@ -505,9 +526,7 @@ export default function AssayDetailPage() {
                     : "-"}
                 </dd>
               </div>
-            </div>
 
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <dt className="text-sm font-medium text-gray-500">
                   Total Value (USD)
@@ -564,56 +583,6 @@ export default function AssayDetailPage() {
                     : "-"}
                 </dd>
               </div>
-              {/* <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Exchange Rate (USD→GHS)
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {assay.comments && typeof assay.comments === "string"
-                    ? (() => {
-                        try {
-                          const parsed = JSON.parse(assay.comments || "{}");
-                          const v = parsed?.meta?.dailyExchange;
-                          return v != null
-                            ? v
-                            : exchangeRate != null
-                            ? exchangeRate
-                            : "-";
-                        } catch {
-                          return exchangeRate != null ? exchangeRate : "-";
-                        }
-                      })()
-                    : assay.comments?.meta?.dailyExchange != null
-                    ? assay.comments.meta.dailyExchange
-                    : exchangeRate != null
-                    ? exchangeRate
-                    : "-"}
-                </dd>
-              </div> */}
-            </div>
-
-            <div className="mt-4">
-              <dt className="text-sm font-medium text-gray-500">
-                Total Net Weight (oz)
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {(() => {
-                  // Accumulate net weight from assay measurements only,
-                  // converting each measurement into grams according to the job card unit
-                  const totalGrams = (assay.measurements || []).reduce(
-                    (acc: number, m: any) =>
-                      acc +
-                      convertToGrams(
-                        m.netWeight,
-                        m?.unitOfMeasure ?? jobCard?.unitOfMeasure
-                      ),
-                    0
-                  );
-                  const GRAMS_PER_TROY_OUNCE = 31.1034768;
-                  const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                  return totalGrams > 0 ? oz.toFixed(3) : "-";
-                })()}
-              </dd>
             </div>
           </div>
         </div>
@@ -623,42 +592,68 @@ export default function AssayDetailPage() {
 }
 
 function downloadCertificate() {
-  // locate the assay and jobCard from the DOM by expecting the page to have global variables is not possible,
-  // so we'll read values from the opener window via document if available. Simpler: serialize content from the current window.
+  // Clone the visible certificate card, inline computed styles and open print window
   try {
-    const root = document.querySelector("main") || document.body;
-    // Build certificate HTML from visible content on the page
-    const certificateTitle =
-      document.querySelector("h3")?.textContent || "Certificate";
-    const detailsElems = Array.from(
-      document.querySelectorAll(".px-4.py-5, .border-t")
-    );
-    // We'll construct a clean certificate using the same visible fields
-    const assayHeader =
-      document.querySelector("h3")?.outerHTML || `<h3>${certificateTitle}</h3>`;
-    // build measurements table rows
-    let tableRows = "";
-    const rows = document.querySelectorAll("table tbody tr");
-    if (rows && rows.length) {
-      rows.forEach((r) => {
-        tableRows += `<tr>${Array.from(r.querySelectorAll("td"))
-          .map(
-            (td) =>
-              `<td style=\"padding:8px;border:1px solid #ccc\">${
-                td.textContent || ""
-              }</td>`
-          )
-          .join("")}</tr>`;
-      });
+    // Prefer the certificate card element (the white card containing the certificate)
+    const card =
+      document.querySelector(".bg-white.shadow") ||
+      document.querySelector("main") ||
+      document.body;
+    if (!card) {
+      alert("Certificate content not found on page.");
+      return;
     }
 
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${certificateTitle}</title><style>body{font-family:Segoe UI,Roboto,Arial,sans-serif;padding:24px;color:#111}h1,h2,h3{margin:0 0 8px}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #ccc;padding:8px;text-align:left} .meta{margin-top:12px}</style></head><body><div><h1>Valuation Certificate</h1>${assayHeader}<div class="meta">${Array.from(
-      document.querySelectorAll(".grid .text-sm.text-gray-900")
-    )
-      .map((el) => `<div>${el.textContent}</div>`)
-      .join("")}</div><div>${
-      document.querySelector("div[ class*='mt-6']")?.innerHTML || ""
-    }</div><table><thead><tr><th>Piece</th><th>Gross Weight</th><th>Water Weight</th><th>Fineness</th><th>Net Weight</th></tr></thead><tbody>${tableRows}</tbody></table></div></body></html>`;
+    // Deep-clone the node so we can mutate it safely
+    const cloned = card.cloneNode(true) as HTMLElement;
+
+    // Recursively inline computed styles for an element and its children
+    function inlineStyles(el: Element) {
+      try {
+        const cs = window.getComputedStyle(el);
+        let cssText = "";
+        for (let i = 0; i < cs.length; i++) {
+          const prop = cs[i];
+          const val = cs.getPropertyValue(prop);
+          // Skip empty values
+          if (val) cssText += `${prop}: ${val}; `;
+        }
+        (el as HTMLElement).setAttribute("style", cssText);
+      } catch (err) {
+        // ignore style inlining errors for this node
+      }
+      // Inline for children
+      Array.from(el.children).forEach((child) => inlineStyles(child));
+    }
+
+    inlineStyles(cloned as unknown as Element);
+
+    // Mark the two-column grid so we can force side-by-side layout in print
+    try {
+      const grids = Array.from(cloned.querySelectorAll("*")).filter(
+        (el) =>
+          el.classList &&
+          el.classList.contains &&
+          el.classList.contains("grid") &&
+          el.classList.contains("grid-cols-1") &&
+          el.classList.contains("sm:grid-cols-2")
+      );
+      if (grids.length) {
+        // add a class to force two-column print layout
+        grids[0].classList.add("print-two-column");
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // Prepare minimal head (fonts and print tweaks)
+    const title =
+      document.querySelector("h3")?.textContent?.trim() || "Certificate";
+    const printCss = `@page{size: auto; margin: 20mm;} body{margin:0;padding:12px;font-family:Segoe UI,Roboto,Arial,sans-serif;background:white;color:#111} table{border-collapse:collapse} th,td{border:1px solid #ccc;padding:8px;text-align:left} .print-two-column{display:flex;gap:16px;align-items:flex-start} .print-two-column > div{flex:1} .print-two-column table{width:100%}`;
+
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>${printCss}</style></head><body>${
+      (cloned as HTMLElement).outerHTML
+    }</body></html>`;
 
     const w = window.open("", "_blank");
     if (!w) {
@@ -669,10 +664,14 @@ function downloadCertificate() {
     w.document.write(html);
     w.document.close();
     w.focus();
-    // Delay slightly to ensure resources render then open print dialog
+    // ensure browser has rendered styles then open print
     setTimeout(() => {
-      w.print();
-    }, 250);
+      try {
+        w.print();
+      } catch (e) {
+        console.error(e);
+      }
+    }, 400);
   } catch (e) {
     console.error(e);
     alert("Failed to generate certificate.");
