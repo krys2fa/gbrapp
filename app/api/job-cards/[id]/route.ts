@@ -118,10 +118,13 @@ export async function PUT(req: NextRequest) {
       updateData.receivedDate = new Date(requestData.receivedDate);
     }
     if (requestData.exporterId !== undefined) {
-      updateData.exporterId = requestData.exporterId;
+      // Use relation connect form to update exporter reference to avoid
+      // runtime errors when the scalar relation field is not accepted by the client.
+      updateData.exporter = { connect: { id: requestData.exporterId } };
     }
     if (requestData.shipmentTypeId !== undefined) {
-      updateData.shipmentTypeId = requestData.shipmentTypeId;
+      // Use relation connect form to update shipment type reference
+      updateData.shipmentType = { connect: { id: requestData.shipmentTypeId } };
     }
     if (requestData.status !== undefined) {
       updateData.status = requestData.status;
@@ -169,17 +172,21 @@ export async function PUT(req: NextRequest) {
       updateData.totalNetWeight = parseFloat(requestData.totalNetWeight);
     }
     if (requestData.totalNetWeightOz !== undefined) {
-      updateData.totalNetWeightOz = parseFloat(requestData.totalNetWeightOz);
+      // The JobCard model does not have `totalNetWeightOz` field.
+      // Convert provided ounces to grams and store in `totalNetWeight` (grams)
+      // 1 ounce = 28.349523125 grams
+      const oz = parseFloat(requestData.totalNetWeightOz);
+      if (!Number.isNaN(oz)) {
+        const grams = oz * 28.349523125;
+        updateData.totalNetWeight = Number(grams.toFixed(4));
+      }
     }
     if (requestData.numberOfPersons !== undefined) {
       updateData.numberOfPersons = parseInt(requestData.numberOfPersons);
     }
-    if (requestData.exporterValueUsd !== undefined) {
-      updateData.exporterValueUsd = parseFloat(requestData.exporterValueUsd);
-    }
-    if (requestData.exporterValueGhs !== undefined) {
-      updateData.exporterValueGhs = parseFloat(requestData.exporterValueGhs);
-    }
+  // exporterValueUsd / exporterValueGhs are not part of the JobCard model anymore.
+  // Keep using requestData.exporterValueUsd / exporterValueGhs when creating invoices
+  // but do not attempt to persist them on the JobCard to avoid Prisma errors.
     if (requestData.graDeclarationNumber !== undefined) {
       updateData.graDeclarationNumber = requestData.graDeclarationNumber;
     }

@@ -105,13 +105,15 @@ export default function NewAssayPage() {
         } else {
           // fallback: fetch all commodity prices
           const cpRes = await fetch(`/api/daily-prices?type=COMMODITY`);
-          if (cpRes && cpRes.ok) commodityPrices = await cpRes.json().catch(() => []);
+          if (cpRes && cpRes.ok)
+            commodityPrices = await cpRes.json().catch(() => []);
         }
 
         // Fetch exchange prices (no itemId) and use latest/existing entries
         let exchangePrices: any[] = [];
         const exRes = await fetch(`/api/daily-prices?type=EXCHANGE`);
-        if (exRes && exRes.ok) exchangePrices = await exRes.json().catch(() => []);
+        if (exRes && exRes.ok)
+          exchangePrices = await exRes.json().catch(() => []);
 
         const latestByDate = (items: any[]) =>
           items
@@ -132,20 +134,32 @@ export default function NewAssayPage() {
         );
 
         const commodityEntry =
-          latestByDate(todayCommodityMatches.filter((p: any) => p.type === "COMMODITY")) ||
-          latestByDate((commodityPrices || []).filter((p: any) => p.type === "COMMODITY")) ||
+          latestByDate(
+            todayCommodityMatches.filter((p: any) => p.type === "COMMODITY")
+          ) ||
+          latestByDate(
+            (commodityPrices || []).filter((p: any) => p.type === "COMMODITY")
+          ) ||
           null;
 
         const exchangeEntry =
-          latestByDate(todaysExchangeMatches.filter((p: any) => p.type === "EXCHANGE")) ||
-          latestByDate((exchangePrices || []).filter((p: any) => p.type === "EXCHANGE")) ||
+          latestByDate(
+            todaysExchangeMatches.filter((p: any) => p.type === "EXCHANGE")
+          ) ||
+          latestByDate(
+            (exchangePrices || []).filter((p: any) => p.type === "EXCHANGE")
+          ) ||
           null;
 
         setMissingTodayCommodity(todayCommodityMatches.length === 0);
         setMissingTodayExchange(todaysExchangeMatches.length === 0);
 
-        setDailyPrice({ value: commodityEntry ? Number(commodityEntry.price) : null });
-        setDailyExchange({ value: exchangeEntry ? Number(exchangeEntry.price) : null });
+        setDailyPrice({
+          value: commodityEntry ? Number(commodityEntry.price) : null,
+        });
+        setDailyExchange({
+          value: exchangeEntry ? Number(exchangeEntry.price) : null,
+        });
       } catch (err) {
         console.error(err);
       } finally {
@@ -291,9 +305,12 @@ export default function NewAssayPage() {
       // If today's price or exchange are missing, block saving and show an error
       if (missingTodayCommodity || missingTodayExchange) {
         const parts: string[] = [];
-        if (missingTodayCommodity) parts.push("daily commodity price for today");
+        if (missingTodayCommodity)
+          parts.push("daily commodity price for today");
         if (missingTodayExchange) parts.push("daily exchange rate for today");
-        const msg = `Cannot save valuation: no ${parts.join(" and ")} set for today. Please add today's prices before saving.`;
+        const msg = `Cannot save valuation: no ${parts.join(
+          " and "
+        )} set for today. Please add today's prices before saving.`;
         setError(msg);
         toast(msg, { icon: "⚠️" });
         setSaving(false);

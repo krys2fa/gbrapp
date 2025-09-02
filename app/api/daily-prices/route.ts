@@ -30,7 +30,10 @@ export async function GET(req: Request) {
             createdAt: { gte: startOfToday, lt: startOfTomorrow },
           },
         });
-        if (!todayExists) await fetchAndSaveCommodityPriceIfMissing(itemId).catch((e) => console.error(e));
+        if (!todayExists)
+          await fetchAndSaveCommodityPriceIfMissing(itemId).catch((e) =>
+            console.error(e)
+          );
       } else {
         const commodities = await prisma.commodity.findMany();
         await Promise.all(
@@ -42,7 +45,10 @@ export async function GET(req: Request) {
                 createdAt: { gte: startOfToday, lt: startOfTomorrow },
               },
             });
-            if (!exists) await fetchAndSaveCommodityPriceIfMissing(c.id).catch((e) => console.error(e));
+            if (!exists)
+              await fetchAndSaveCommodityPriceIfMissing(c.id).catch((e) =>
+                console.error(e)
+              );
           })
         );
       }
@@ -57,12 +63,17 @@ export async function GET(req: Request) {
             createdAt: { gte: startOfToday, lt: startOfTomorrow },
           },
         });
-        if (!todayExists) await fetchAndSaveExchangeRateIfMissing(itemId).catch((e) => console.error(e));
+        if (!todayExists)
+          await fetchAndSaveExchangeRateIfMissing(itemId).catch((e) =>
+            console.error(e)
+          );
       } else {
         let exchanges = await prisma.exchange.findMany();
         if (!exchanges || exchanges.length === 0) {
           try {
-            const defaultGhs = await prisma.exchange.create({ data: { name: "Ghana Cedi", symbol: "GHS" } });
+            const defaultGhs = await prisma.exchange.create({
+              data: { name: "Ghana Cedi", symbol: "GHS" },
+            });
             exchanges = [defaultGhs];
           } catch (e) {
             console.warn("Could not create default GHS exchange:", e);
@@ -77,7 +88,10 @@ export async function GET(req: Request) {
                 createdAt: { gte: startOfToday, lt: startOfTomorrow },
               },
             });
-            if (!exists) await fetchAndSaveExchangeRateIfMissing(ex.id).catch((e) => console.error(e));
+            if (!exists)
+              await fetchAndSaveExchangeRateIfMissing(ex.id).catch((e) =>
+                console.error(e)
+              );
           })
         );
       }

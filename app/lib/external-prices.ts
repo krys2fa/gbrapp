@@ -12,9 +12,7 @@ const SYMBOL_TO_NAME: Record<string, string> = {
  * Try fetching a commodity spot price from a free API and persist it.
  * Returns the created DailyPrice record, or null if nothing was fetched.
  */
-export async function fetchAndSaveCommodityPriceIfMissing(
-  commodityId: string
-) {
+export async function fetchAndSaveCommodityPriceIfMissing(commodityId: string) {
   // find commodity to get its symbol
   const commodity = await prisma.commodity.findUnique({
     where: { id: commodityId },
@@ -38,12 +36,18 @@ export async function fetchAndSaveCommodityPriceIfMissing(
             for (const item of body) {
               if (item && typeof item === "object") {
                 if (typeof item.metal === "string" && item.price != null) {
-                  normalized.push({ metal: String(item.metal).toLowerCase(), price: Number(item.price) });
+                  normalized.push({
+                    metal: String(item.metal).toLowerCase(),
+                    price: Number(item.price),
+                  });
                 } else {
                   // maybe shape like { "gold": 1960.5 }
                   const keys = Object.keys(item);
                   if (keys.length === 1 && typeof item[keys[0]] === "number") {
-                    normalized.push({ metal: String(keys[0]).toLowerCase(), price: Number(item[keys[0]]) });
+                    normalized.push({
+                      metal: String(keys[0]).toLowerCase(),
+                      price: Number(item[keys[0]]),
+                    });
                   }
                 }
               }
@@ -52,7 +56,11 @@ export async function fetchAndSaveCommodityPriceIfMissing(
             // maybe object mapping metal->price
             for (const k of Object.keys(body)) {
               const v = (body as any)[k];
-              if (typeof v === "number") normalized.push({ metal: String(k).toLowerCase(), price: Number(v) });
+              if (typeof v === "number")
+                normalized.push({
+                  metal: String(k).toLowerCase(),
+                  price: Number(v),
+                });
             }
           }
 

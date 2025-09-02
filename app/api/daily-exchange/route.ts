@@ -21,14 +21,18 @@ export async function GET(req: Request) {
         },
       });
       if (!todayExists) {
-        await fetchAndSaveExchangeRateIfMissing(exchangeId).catch((e) => console.error(e));
+        await fetchAndSaveExchangeRateIfMissing(exchangeId).catch((e) =>
+          console.error(e)
+        );
       }
     } else {
       // ensure at least one exchange exists (create GHS if none)
       let exchanges = await prisma.exchange.findMany();
       if (!exchanges || exchanges.length === 0) {
         try {
-          const defaultGhs = await prisma.exchange.create({ data: { name: "Ghana Cedi", symbol: "GHS" } });
+          const defaultGhs = await prisma.exchange.create({
+            data: { name: "Ghana Cedi", symbol: "GHS" },
+          });
           exchanges = [defaultGhs];
         } catch (e) {
           console.warn("Could not create default GHS exchange:", e);
@@ -43,7 +47,10 @@ export async function GET(req: Request) {
               createdAt: { gte: startOfToday, lt: startOfTomorrow },
             },
           });
-          if (!exists) await fetchAndSaveExchangeRateIfMissing(ex.id).catch((e) => console.error(e));
+          if (!exists)
+            await fetchAndSaveExchangeRateIfMissing(ex.id).catch((e) =>
+              console.error(e)
+            );
         })
       );
     }
@@ -63,7 +70,13 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const body = await req.json();
   const { exchangeId, price } = body;
-  if (!exchangeId || price == null) return NextResponse.json({ error: "exchangeId and price required" }, { status: 400 });
-  const created = await prisma.dailyPrice.create({ data: { type: "EXCHANGE", exchangeId, price } });
+  if (!exchangeId || price == null)
+    return NextResponse.json(
+      { error: "exchangeId and price required" },
+      { status: 400 }
+    );
+  const created = await prisma.dailyPrice.create({
+    data: { type: "EXCHANGE", exchangeId, price },
+  });
   return NextResponse.json(created);
 }

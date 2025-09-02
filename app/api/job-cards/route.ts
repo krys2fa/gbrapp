@@ -212,19 +212,13 @@ async function createJobCard(req: NextRequest) {
       sourceOfGold: cleaned.sourceOfGold || undefined,
       totalNetWeight: cleaned.totalNetWeight
         ? Number(cleaned.totalNetWeight)
-        : undefined,
-      totalNetWeightOz: cleaned.totalNetWeightOz
-        ? Number(cleaned.totalNetWeightOz)
+        : cleaned.totalNetWeightOz
+        ? Number(cleaned.totalNetWeightOz) * 28.349523125
         : undefined,
       numberOfPersons: cleaned.numberOfPersons
         ? Number(cleaned.numberOfPersons)
         : undefined,
-      exporterValueUsd: cleaned.exporterValueUsd
-        ? Number(cleaned.exporterValueUsd)
-        : undefined,
-      exporterValueGhs: cleaned.exporterValueGhs
-        ? Number(cleaned.exporterValueGhs)
-        : undefined,
+  // exporterValueUsd/exporterValueGhs are handled separately (not stored on JobCard)
       graDeclarationNumber: cleaned.graDeclarationNumber || undefined,
       numberOfBoxes: cleaned.numberOfBoxes
         ? Number(cleaned.numberOfBoxes)

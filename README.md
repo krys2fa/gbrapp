@@ -221,6 +221,7 @@ gbrapp/
 ### Daily Prices & Exchange Rates (auto-fetch)
 
 - `GET /api/daily-prices` - List daily prices. Optional query params:
+
   - `type=COMMODITY|EXCHANGE` - filter by price type.
   - `itemId=<id>` - when provided with `type=COMMODITY` or `type=EXCHANGE` the server will return prices for that item.
 
@@ -230,13 +231,13 @@ gbrapp/
   - If the request omits `itemId`, the server will try to fetch today's price/rate for all commodities/exchanges that lack a price for today.
 
 Notes:
+
 - Default providers:
   - Commodities: `https://api.metals.live/v1/spot` (primary), `https://data-asg.goldprice.org/dbXRates/USD` (fallback).
   - Exchange rates: Bank of Ghana page (primary attempt via HTML parse), `https://api.exchangerate.host` (fallback).
 - Persisted prices are rounded to 2 decimal places before saving.
 - These external requests are performed server-side; they require outgoing network access from your deployment environment.
 - If you prefer a different provider (or an API key-based service), update `app/lib/external-prices.ts` and `app/lib/external-exchange.ts` to call the provider and store the result. You can store API keys in environment variables and use them inside these helpers.
-
 
 ## 🚀 Deployment
 
