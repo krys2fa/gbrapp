@@ -9,84 +9,92 @@ import { formatDate } from "@/app/lib/utils";
 
 export default function AssayDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const id = (params?.id as string) || "";
   const assayId = (params?.assayId as string) || "";
+  const router = useRouter();
 
+  const [jobCard, setJobCard] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [jobCard, setJobCard] = useState<any | null>(null);
   const [commodityPrice, setCommodityPrice] = useState<number | null>(null);
-  const [commodityName, setCommodityName] = useState<string | null>(null);
-  const [exchangeRate, setExchangeRate] = useState<number | null>(null); // USD -> GHS
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [totalUsd, setTotalUsd] = useState<number | null>(null);
   const [totalGhs, setTotalGhs] = useState<number | null>(null);
 
-  // Helper to normalize units and convert a numeric value to grams
-  const convertToGrams = (value: any, unit?: string) => {
-    const n = Number(value) || 0;
-    if (n === 0) return 0;
-    const u = (unit || jobCard?.unitOfMeasure || "")
-      .toString()
-      .toLowerCase()
-      .trim();
-    if (!u) return n; // assume grams
-    if (u === "kg" || u === "kilogram" || u === "kilograms") return n * 1000;
-    if (u === "g" || u === "gram" || u === "grams") return n;
-    // support common variations
-    if (u === "kgs") return n * 1000;
+  // helper: normalize common units to grams
+  function convertToGrams(v: any, unit?: string) {
+    const value = Number(v) || 0;
+    if (!value) return 0;
+    const u = (unit || "g").toString().toLowerCase();
+    if (u === "kg" || u === "kilogram" || u === "kilograms")
+      return value * 1000;
+    if (u === "g" || u === "gram" || u === "grams") return value;
     if (u === "lb" || u === "lbs" || u === "pound" || u === "pounds")
-      return n * 453.59237;
-    return n; // fallback: assume grams
-  };
+      return value * 453.59237;
+    // default: treat as grams
+    return value;
+  }
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
+      return;
+    }
     let mounted = true;
     (async () => {
-      setLoading(true);
       try {
         const res = await fetch(`/api/job-cards/${id}`);
-        if (!res.ok) throw new Error("Failed to load job card");
-        const jc = await res.json();
-        if (!mounted) return;
-        setJobCard(jc);
-        // After loading the job card, attempt to fetch commodity price and exchange rate
-        try {
-          // load available commodities
-          const comRes = await fetch(`/api/commodity`);
-          const comList = comRes.ok ? await comRes.json() : [];
-          // try to pick a commodity that looks like gold
-          const chosen =
-            comList.find((c: any) => /gold/i.test(c.name)) || comList[0];
-          if (chosen) {
-            setCommodityName(chosen.name || null);
-            const priceRes = await fetch(
-              `/api/daily-prices?type=COMMODITY&itemId=${chosen.id}`
+        if (!res.ok) throw new Error("Failed to fetch job card");
+        const data = await res.json();
+        if (mounted) setJobCard(data);
+
+        // fetch commodity price for this job card's commodity if present
+        if (data?.commodityId) {
+          try {
+            const cpRes = await fetch(
+              `/api/daily-prices?type=COMMODITY&itemId=${data.commodityId}`
             );
-            if (priceRes.ok) {
-              const prices = await priceRes.json();
-              const todayPrice = prices?.[0];
-              if (todayPrice) setCommodityPrice(Number(todayPrice.price));
+            if (cpRes.ok) {
+              const cpBody = await cpRes.json().catch(() => []);
+              const latest =
+                Array.isArray(cpBody) && cpBody.length
+                  ? cpBody
+                      .slice()
+                      .sort(
+                        (a: any, b: any) =>
+                          new Date(b.createdAt).getTime() -
+                          new Date(a.createdAt).getTime()
+                      )[0]
+                  : null;
+              if (mounted && latest) setCommodityPrice(Number(latest.price));
             }
+          } catch (e) {
+            // ignore
           }
-          // fetch latest exchange rate (USD->GHS) - fallback to jobCard provided values
+        }
+
+        // fetch latest exchange rates
+        try {
           const exRes = await fetch(`/api/daily-prices?type=EXCHANGE`);
           if (exRes.ok) {
-            const exPrices = await exRes.json();
-            // try to find an exchange with symbol GHS or name containing Ghana
-            const exPick =
-              exPrices.find((p: any) => p.exchange?.symbol === "GHS") ||
-              exPrices[0];
-            if (exPick) setExchangeRate(Number(exPick.price));
+            const exBody = await exRes.json().catch(() => []);
+            const latestEx =
+              Array.isArray(exBody) && exBody.length
+                ? exBody
+                    .slice()
+                    .sort(
+                      (a: any, b: any) =>
+                        new Date(b.createdAt).getTime() -
+                        new Date(a.createdAt).getTime()
+                    )[0]
+                : null;
+            if (mounted && latestEx) setExchangeRate(Number(latestEx.price));
           }
         } catch (e) {
-          // ignore optional pricing failures
-          console.debug("Failed to fetch commodity/exchange prices", e);
+          // ignore
         }
       } catch (e: any) {
-        console.error(e);
-        setError(e?.message || "Failed to load data");
+        if (mounted) setError(e?.message || "Failed to load data");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -407,7 +415,7 @@ export default function AssayDetailPage() {
                 </dd>
               </div>
 
-              <div >
+              <div>
                 <dt className="text-sm font-medium text-gray-500">
                   Total Net Weight (oz)
                 </dt>
@@ -437,7 +445,9 @@ export default function AssayDetailPage() {
               </div>
 
               <div>
-                <dt className="text-sm font-medium text-gray-500">Customs Seal</dt>
+                <dt className="text-sm font-medium text-gray-500">
+                  Customs Seal
+                </dt>
                 <dd className="mt-1 text-sm text-gray-900">-</dd>
               </div>
 
@@ -592,9 +602,8 @@ export default function AssayDetailPage() {
 }
 
 function downloadCertificate() {
-  // Clone the visible certificate card, inline computed styles and open print window
+  // Clone the visible certificate card and open a print window that includes the page's styles
   try {
-    // Prefer the certificate card element (the white card containing the certificate)
     const card =
       document.querySelector(".bg-white.shadow") ||
       document.querySelector("main") ||
@@ -604,54 +613,51 @@ function downloadCertificate() {
       return;
     }
 
-    // Deep-clone the node so we can mutate it safely
     const cloned = card.cloneNode(true) as HTMLElement;
 
-    // Recursively inline computed styles for an element and its children
-    function inlineStyles(el: Element) {
-      try {
-        const cs = window.getComputedStyle(el);
-        let cssText = "";
-        for (let i = 0; i < cs.length; i++) {
-          const prop = cs[i];
-          const val = cs.getPropertyValue(prop);
-          // Skip empty values
-          if (val) cssText += `${prop}: ${val}; `;
-        }
-        (el as HTMLElement).setAttribute("style", cssText);
-      } catch (err) {
-        // ignore style inlining errors for this node
-      }
-      // Inline for children
-      Array.from(el.children).forEach((child) => inlineStyles(child));
-    }
-
-    inlineStyles(cloned as unknown as Element);
-
-    // Mark the two-column grid so we can force side-by-side layout in print
+    // Find the two-column grid wrapper and mark it for print layout
     try {
-      const grids = Array.from(cloned.querySelectorAll("*")).filter(
-        (el) =>
+      const elements = Array.from(cloned.querySelectorAll("*"));
+      for (const el of elements) {
+        if (
           el.classList &&
-          el.classList.contains &&
           el.classList.contains("grid") &&
           el.classList.contains("grid-cols-1") &&
           el.classList.contains("sm:grid-cols-2")
-      );
-      if (grids.length) {
-        // add a class to force two-column print layout
-        grids[0].classList.add("print-two-column");
+        ) {
+          el.classList.add("print-two-column");
+          break;
+        }
+      }
+      // Also find the assay details 4-column grid and mark it so print forces 4 columns
+      try {
+        const assayGrids = Array.from(
+          cloned.querySelectorAll(".grid.grid-cols-1.sm\\:grid-cols-4")
+        );
+        assayGrids.forEach((g) => g.classList.add("print-grid-cols-4"));
+      } catch (e) {
+        // ignore
       }
     } catch (e) {
       // ignore
     }
 
-    // Prepare minimal head (fonts and print tweaks)
-    const title =
-      document.querySelector("h3")?.textContent?.trim() || "Certificate";
-    const printCss = `@page{size: auto; margin: 20mm;} body{margin:0;padding:12px;font-family:Segoe UI,Roboto,Arial,sans-serif;background:white;color:#111} table{border-collapse:collapse} th,td{border:1px solid #ccc;padding:8px;text-align:left} .print-two-column{display:flex;gap:16px;align-items:flex-start} .print-two-column > div{flex:1} .print-two-column table{width:100%}`;
+    // Collect stylesheet and style tags from the current document head to preserve page styles
+    const headStyles = Array.from(
+      document.querySelectorAll('link[rel="stylesheet"], style')
+    )
+      .map((n) => n.outerHTML)
+      .join("\n");
 
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>${printCss}</style></head><body>${
+    const title =
+      document.querySelector("h3")?.textContent?.trim() ||
+      document.title ||
+      "Certificate";
+
+    // Print-specific tweaks: force two-column flex for print, keep table borders
+    const printTweaks = `@page{size:auto;margin:20mm;} .print-two-column{display:flex;gap:16px;align-items:flex-start} .print-two-column > div{flex:1} table{border-collapse:collapse} th,td{border:1px solid #ccc;padding:8px;text-align:left} .print-grid-cols-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}`;
+
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>${headStyles}<style>${printTweaks}</style></head><body>${
       (cloned as HTMLElement).outerHTML
     }</body></html>`;
 
@@ -664,7 +670,6 @@ function downloadCertificate() {
     w.document.write(html);
     w.document.close();
     w.focus();
-    // ensure browser has rendered styles then open print
     setTimeout(() => {
       try {
         w.print();
