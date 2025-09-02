@@ -133,10 +133,19 @@ async function getAllJobCards(req: NextRequest) {
         assaysByJob[a.jobCardId].push(a);
       });
 
-      // attach assays and a simple seals array placeholder (if needed elsewhere)
+      // attach assays and fetch seals for each job card so the client can show seal numbers
+      const seals = await prisma.seal.findMany({
+        where: { jobCardId: { in: jobCardIds } },
+      });
+      const sealsByJob: Record<string, any[]> = {};
+      seals.forEach((s: any) => {
+        if (!sealsByJob[s.jobCardId]) sealsByJob[s.jobCardId] = [];
+        sealsByJob[s.jobCardId].push(s);
+      });
+
       jobCards.forEach((jc: any) => {
         jc.assays = assaysByJob[jc.id] || [];
-        jc.seals = []; // keep existing shape when client expects seals
+        jc.seals = sealsByJob[jc.id] || [];
       });
     }
 
