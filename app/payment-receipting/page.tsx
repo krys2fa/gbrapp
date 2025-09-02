@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Receipt, CreditCard, FileText } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 // temporary dummy data until backend wiring is available
 const DUMMY = [
@@ -111,6 +112,29 @@ function PaymentList() {
 
         const rows = Array.from(map.values());
         setItems(rows);
+        // fetch any existing fees for the displayed job cards to show receipt numbers
+        try {
+          const ids = rows.map((r: any) => r.id).filter(Boolean).join(",");
+          if (ids) {
+            const feeRes = await fetch(`/api/fees?jobCardIds=${ids}`);
+            if (feeRes.ok) {
+              const feeData = await feeRes.json();
+              const fees: any[] = feeData.fees || [];
+              const latestByJob: Record<string, any> = {};
+              fees.forEach((f) => {
+                if (!latestByJob[f.jobCardId]) latestByJob[f.jobCardId] = f;
+              });
+              // attach receipt into rows
+              const rowsWithReceipt = rows.map((r: any) => ({
+                ...r,
+                receipt: latestByJob[r.id]?.receiptNumber || r.receipt || undefined,
+              }));
+              setItems(rowsWithReceipt);
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
         const total = data.total || 0;
         setTotalCount(total);
         setTotalPages(Math.max(1, Math.ceil(total / itemsPerPage)));
@@ -168,14 +192,13 @@ function PaymentList() {
       });
       if (!res.ok) throw new Error("Failed to record payment");
       const data = await res.json();
-      // close modal and optionally refresh list
-      setShowPayModal(false);
-      // trigger a refresh of the list
-      setRefreshKey((k) => k + 1);
-      alert("Payment recorded");
+  // close modal and refresh list
+  setShowPayModal(false);
+  setRefreshKey((k) => k + 1);
+  toast.success("Payment recorded");
     } catch (e: any) {
-      console.error(e);
-      alert(e?.message || "Failed to save payment");
+  console.error(e);
+  toast.error(e?.message || "Failed to save payment");
     }
   }
 
