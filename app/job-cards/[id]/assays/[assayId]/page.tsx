@@ -182,11 +182,8 @@ export default function AssayDetailPage() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
-
       <div className="mb-6 flex items-center justify-between">
-
         <div className="flex items-center gap-3">
-
           <button
             onClick={() => {
               try {
@@ -224,12 +221,12 @@ export default function AssayDetailPage() {
           </div>
 
           <div className="flex justify-center">
-            <h1 className="text-2xl font-bold tracking-wider">ASSAY REPORT</h1>
+            <h1 className="text-2xl font-bold tracking-wider">ASSAY REPORT ANALYSIS</h1>
           </div>
 
           <div className="bg-white p-4">
             <img
-              src="/coat-of-arms.png"
+              src="/coat-of-arms.jpg"
               alt="Coat of Arms"
               className="h-20 w-auto"
             />
@@ -279,7 +276,7 @@ export default function AssayDetailPage() {
               <div className="bg-white border rounded overflow-hidden">
                 <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
                   <h4 className="text-sm font-medium text-gray-900">
-                    Exporter Values
+                    EXPORTER VALUES
                   </h4>
                 </div>
                 <div className="overflow-x-auto">
@@ -287,13 +284,13 @@ export default function AssayDetailPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Gross Weight (g)
+                          Gross Weight
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Fineness
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Net Weight (g)
+                          Net Weight
                         </th>
                       </tr>
                     </thead>
@@ -318,12 +315,65 @@ export default function AssayDetailPage() {
                 </div>
               </div>
 
+              {/* Job Card Summary under exporters table */}
+              <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                <h5 className="text-sm font-medium text-gray-900 mb-3">
+                  Job Card Summary
+                </h5>
+                <div className="space-y-3">
+                  {/* {Job card net weight converted to ounces}  */}
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Weight in Ounces
+                    </dt>
+                    <dd className="mt-1 text-lg font-semibold text-gray-900">
+                      {jobCard?.totalNetWeight != null
+                        ? (() => {
+                            const netWeightGrams = convertToGrams(
+                              jobCard.totalNetWeight,
+                              jobCard?.unitOfMeasure
+                            );
+                            const GRAMS_PER_TROY_OUNCE = 31.1034768;
+                            const oz = netWeightGrams / GRAMS_PER_TROY_OUNCE;
+                            return netWeightGrams > 0 ? oz.toFixed(3) : "0.000";
+                          })()
+                        : "0.000"}{" "}
+                      oz
+                    </dd>
+                  </div>
+
+                  {/* Job card price per ounce  */}
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Price per Ounce
+                    </dt>
+                    <dd className="mt-1 text-lg font-semibold text-gray-900">
+                      {jobCard?.pricePerOunce != null
+                        ? `$${Number(jobCard.pricePerOunce).toFixed(2)}`
+                        : "$0.00"}
+                    </dd>
+                  </div>
+
+                  {/* Job card total usd value  */}
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Total USD Value
+                    </dt>
+                    <dd className="mt-1 text-lg font-semibold text-gray-900">
+                      {jobCard?.totalUsdValue != null
+                        ? `$${Number(jobCard.totalUsdValue).toFixed(2)}`
+                        : "$0.00"}
+                    </dd>
+                  </div>
+                </div>
+              </div>
+
               {/* Measurements table (right) */}
               <div>
                 <div className="bg-white border rounded overflow-hidden">
                   <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
                     <h4 className="text-sm font-medium text-gray-900">
-                      GoldBod Values
+                      GOLDBOD VALUES
                     </h4>
                   </div>
                   <div className="overflow-x-auto">
@@ -403,6 +453,103 @@ export default function AssayDetailPage() {
                         </tr>
                       </tfoot> */}
                     </table>
+                  </div>
+                </div>
+
+                {/* GoldBod Summary under GoldBod table */}
+                <div className="mt-4 bg-blue-50 rounded-lg p-4">
+                  <h5 className="text-sm font-medium text-gray-900 mb-3">
+                    GoldBod Valuation Summary
+                  </h5>
+                  <div className="space-y-3">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Weight in Ounces
+                      </dt>
+                      <dd className="mt-1 text-lg font-semibold text-gray-900">
+                        {(() => {
+                          const totalGrams = (assay.measurements || []).reduce(
+                            (acc: number, m: any) =>
+                              acc +
+                              convertToGrams(
+                                m.netWeight,
+                                m?.unitOfMeasure ?? jobCard?.unitOfMeasure
+                              ),
+                            0
+                          );
+                          const GRAMS_PER_TROY_OUNCE = 31.1034768;
+                          const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
+                          return totalGrams > 0 ? oz.toFixed(3) : "0.000";
+                        })()}{" "}
+                        oz
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Price per Ounce
+                      </dt>
+                      <dd className="mt-1 text-lg font-semibold text-gray-900">
+                        {assay.comments && typeof assay.comments === "string"
+                          ? (() => {
+                              try {
+                                const parsed = JSON.parse(
+                                  assay.comments || "{}"
+                                );
+                                const mp = parsed?.meta?.dailyPrice;
+                                return mp != null
+                                  ? `$${Number(mp).toFixed(2)}`
+                                  : commodityPrice != null
+                                  ? `$${commodityPrice.toFixed(2)}`
+                                  : "$0.00";
+                              } catch {
+                                return commodityPrice != null
+                                  ? `$${commodityPrice.toFixed(2)}`
+                                  : "$0.00";
+                              }
+                            })()
+                          : assay.comments?.meta?.dailyPrice != null
+                          ? `$${Number(assay.comments.meta.dailyPrice).toFixed(
+                              2
+                            )}`
+                          : commodityPrice != null
+                          ? `$${commodityPrice.toFixed(2)}`
+                          : "$0.00"}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">
+                        Total USD Value
+                      </dt>
+                      <dd className="mt-1 text-lg font-semibold text-gray-900">
+                        {assay.comments && typeof assay.comments === "string"
+                          ? (() => {
+                              try {
+                                const parsed = JSON.parse(
+                                  assay.comments || "{}"
+                                );
+                                const v = parsed?.meta?.valueUsd;
+                                return v != null
+                                  ? `$${Number(v).toFixed(2)}`
+                                  : totalUsd != null
+                                  ? `$${totalUsd.toFixed(2)}`
+                                  : "$0.00";
+                              } catch {
+                                return totalUsd != null
+                                  ? `$${totalUsd.toFixed(2)}`
+                                  : "$0.00";
+                              }
+                            })()
+                          : assay.comments?.meta?.valueUsd != null
+                          ? `$${Number(assay.comments.meta.valueUsd).toFixed(
+                              2
+                            )}`
+                          : totalUsd != null
+                          ? `$${totalUsd.toFixed(2)}`
+                          : "$0.00"}
+                      </dd>
+                    </div>
                   </div>
                 </div>
               </div>
