@@ -206,9 +206,9 @@ export default function AssayDetailPage() {
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             Certificate #{assay.certificateNumber || "-"}
           </h3>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500">
+          {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">
             Assay details and measurements
-          </p>
+          </p> */}
         </div>
 
         <div className="flex items-center justify-between mb-2 px-8">
@@ -221,7 +221,9 @@ export default function AssayDetailPage() {
           </div>
 
           <div className="flex justify-center">
-            <h1 className="text-2xl font-bold tracking-wider">ASSAY REPORT ANALYSIS</h1>
+            <h1 className="text-2xl font-bold tracking-wider">
+              ASSAY REPORT ANALYSIS
+            </h1>
           </div>
 
           <div className="bg-white p-4">
@@ -272,7 +274,7 @@ export default function AssayDetailPage() {
 
           <div className="mt-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Exporter Values (left column) - styled table, only specific fields */}
+              {/* Exporter Values (top left) */}
               <div className="bg-white border rounded overflow-hidden">
                 <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
                   <h4 className="text-sm font-medium text-gray-900">
@@ -315,158 +317,117 @@ export default function AssayDetailPage() {
                 </div>
               </div>
 
-              {/* Job Card Summary under exporters table */}
-              <div className="mt-4 bg-gray-50 rounded-lg p-4">
+              {/* GoldBod Values (top right) */}
+              <div className="bg-white border rounded overflow-hidden">
+                <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+                  <h4 className="text-sm font-medium text-gray-900">
+                    GOLDBOD VALUES
+                  </h4>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Gross Weight
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Fineness
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Net Weight
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {(assay.measurements || []).map((m: any, idx: number) => (
+                        <tr key={m.id || idx}>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {m.grossWeight ?? "-"}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {m.fineness ?? "-"}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {m.netWeight ?? "-"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Exporter Summary (bottom left) */}
+              <div className="bg-gray-50 rounded-lg p-4">
                 <h5 className="text-sm font-medium text-gray-900 mb-3">
-                  Job Card Summary
+                  Exporter Valuation Summary
                 </h5>
                 <div className="space-y-3">
-                  {/* {Job card net weight converted to ounces}  */}
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Weight in Ounces
-                    </dt>
-                    <dd className="mt-1 text-lg font-semibold text-gray-900">
-                      {jobCard?.totalNetWeight != null
-                        ? (() => {
-                            const netWeightGrams = convertToGrams(
-                              jobCard.totalNetWeight,
-                              jobCard?.unitOfMeasure
-                            );
-                            const GRAMS_PER_TROY_OUNCE = 31.1034768;
-                            const oz = netWeightGrams / GRAMS_PER_TROY_OUNCE;
-                            return netWeightGrams > 0 ? oz.toFixed(3) : "0.000";
-                          })()
-                        : "0.000"}{" "}
-                      oz
-                    </dd>
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Weight in Ounces:
+                      </dt>
+                      <dd className="text-lg font-semibold text-gray-900">
+                        {jobCard?.totalNetWeight != null
+                          ? (() => {
+                              const netWeightGrams = convertToGrams(
+                                jobCard.totalNetWeight,
+                                jobCard?.unitOfMeasure
+                              );
+                              const GRAMS_PER_TROY_OUNCE = 31.1034768;
+                              const oz = netWeightGrams / GRAMS_PER_TROY_OUNCE;
+                              return netWeightGrams > 0
+                                ? oz.toFixed(3)
+                                : "0.000";
+                            })()
+                          : "0.000"}{" "}
+                        oz
+                      </dd>
+                    </div>
                   </div>
 
-                  {/* Job card price per ounce  */}
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Price per Ounce
-                    </dt>
-                    <dd className="mt-1 text-lg font-semibold text-gray-900">
-                      {jobCard?.pricePerOunce != null
-                        ? `$${Number(jobCard.pricePerOunce).toFixed(2)}`
-                        : "$0.00"}
-                    </dd>
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Price per Ounce:
+                      </dt>
+                      <dd className="text-lg font-semibold text-gray-900">
+                        {jobCard?.pricePerOunce != null
+                          ? `$${Number(jobCard.pricePerOunce).toFixed(2)}`
+                          : "$0.00"}
+                      </dd>
+                    </div>
                   </div>
 
-                  {/* Job card total usd value  */}
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Total USD Value
-                    </dt>
-                    <dd className="mt-1 text-lg font-semibold text-gray-900">
-                      {jobCard?.totalUsdValue != null
-                        ? `$${Number(jobCard.totalUsdValue).toFixed(2)}`
-                        : "$0.00"}
-                    </dd>
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Total USD Value:
+                      </dt>
+                      <dd className="text-lg font-semibold text-gray-900">
+                        {jobCard?.totalUsdValue != null
+                          ? `$${Number(jobCard.totalUsdValue).toFixed(2)}`
+                          : "$0.00"}
+                      </dd>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Measurements table (right) */}
-              <div>
-                <div className="bg-white border rounded overflow-hidden">
-                  <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
-                    <h4 className="text-sm font-medium text-gray-900">
-                      GOLDBOD VALUES
-                    </h4>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                            Piece
-                          </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                            Gross Weight
-                          </th>
-                          {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                            Water Weight
-                          </th> */}
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                            Fineness
-                          </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                            Net Weight
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {(assay.measurements || []).map(
-                          (m: any, idx: number) => (
-                            <tr key={m.id || idx}>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                                {m.piece ?? m.pieceNumber ?? idx + 1}
-                              </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                                {m.grossWeight ?? "-"}
-                              </td>
-                              {/* <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                                {m.waterWeight ?? "-"}
-                              </td> */}
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                                {m.fineness ?? "-"}
-                              </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                                {m.netWeight ?? "-"}
-                              </td>
-                            </tr>
-                          )
-                        )}
-                      </tbody>
-                      {/* <tfoot className="bg-gray-50">
-                        <tr>
-                          <td
-                            colSpan={4}
-                            className="px-4 py-2 text-sm font-medium text-gray-700"
-                          >
-                            Total Net Weight
-                          </td>
-                          <td className="px-4 py-2 text-sm text-gray-700">
-                            {(() => {
-                              const totalGrams = (
-                                assay.measurements || []
-                              ).reduce(
-                                (acc: number, m: any) =>
-                                  acc +
-                                  convertToGrams(
-                                    m.netWeight,
-                                    m?.unitOfMeasure ?? jobCard?.unitOfMeasure
-                                  ),
-                                0
-                              );
-                              const GRAMS_PER_TROY_OUNCE = 31.1034768;
-                              const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                              return totalGrams > 0
-                                ? `${totalGrams.toFixed(3)} g (${oz.toFixed(
-                                    3
-                                  )} oz)`
-                                : "-";
-                            })()}
-                          </td>
-                        </tr>
-                      </tfoot> */}
-                    </table>
-                  </div>
-                </div>
-
-                {/* GoldBod Summary under GoldBod table */}
-                <div className="mt-4 bg-blue-50 rounded-lg p-4">
-                  <h5 className="text-sm font-medium text-gray-900 mb-3">
-                    GoldBod Valuation Summary
-                  </h5>
-                  <div className="space-y-3">
-                    <div>
+              {/* GoldBod Valuation Summary (bottom right) */}
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h5 className="text-sm font-medium text-gray-900 mb-3">
+                  GOLDBOD Valuation Summary
+                </h5>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center gap-2">
                       <dt className="text-sm font-medium text-gray-500">
-                        Weight in Ounces
+                        Weight in Ounces:
                       </dt>
-                      <dd className="mt-1 text-lg font-semibold text-gray-900">
+                      <dd className="text-lg font-semibold text-gray-900">
                         {(() => {
                           const totalGrams = (assay.measurements || []).reduce(
                             (acc: number, m: any) =>
@@ -484,12 +445,14 @@ export default function AssayDetailPage() {
                         oz
                       </dd>
                     </div>
+                  </div>
 
-                    <div>
+                  <div>
+                    <div className="flex items-center gap-2">
                       <dt className="text-sm font-medium text-gray-500">
-                        Price per Ounce
+                        Price per Ounce:
                       </dt>
-                      <dd className="mt-1 text-lg font-semibold text-gray-900">
+                      <dd className="text-lg font-semibold text-gray-900">
                         {assay.comments && typeof assay.comments === "string"
                           ? (() => {
                               try {
@@ -517,12 +480,14 @@ export default function AssayDetailPage() {
                           : "$0.00"}
                       </dd>
                     </div>
+                  </div>
 
-                    <div>
+                  <div>
+                    <div className="flex items-center gap-2">
                       <dt className="text-sm font-medium text-gray-500">
-                        Total USD Value
+                        Total USD Value:
                       </dt>
-                      <dd className="mt-1 text-lg font-semibold text-gray-900">
+                      <dd className="text-lg font-semibold text-gray-900">
                         {assay.comments && typeof assay.comments === "string"
                           ? (() => {
                               try {
@@ -558,207 +523,100 @@ export default function AssayDetailPage() {
 
           {/* Assay details moved to bottom with labels */}
           <div className="mt-6 border-t pt-6">
-            <h4 className="text-sm font-medium text-gray-900 mb-4">
-              Assay Details
-            </h4>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              {/* <div>
-                <dt className="text-sm font-medium text-gray-500">Assay Date</dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {assay.assayDate
-                    ? formatDate(new Date(assay.assayDate))
-                    : formatDate(new Date(assay.createdAt || Date.now()))}
-                </dd>
-              </div> */}
               <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Authorized Signatory
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {assay.signatory || assay.comments?.signatory || "-"}
-                </dd>
+                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="flex flex-col gap-1">
+                  <dt className="text-sm font-medium text-gray-500 text-center">
+                    GOLDBOD Authorized Signatory
+                  </dt>
+                  <dd className="text-sm text-gray-900 text-center">
+                    {assay.signatory || assay.comments?.signatory || "-"}
+                  </dd>
+                </div>
               </div>
 
               <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Total Net Weight (oz)
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {(() => {
-                    // Accumulate net weight from assay measurements only,
-                    // converting each measurement into grams according to the job card unit
-                    const totalGrams = (assay.measurements || []).reduce(
-                      (acc: number, m: any) =>
-                        acc +
-                        convertToGrams(
-                          m.netWeight,
-                          m?.unitOfMeasure ?? jobCard?.unitOfMeasure
-                        ),
-                      0
-                    );
-                    const GRAMS_PER_TROY_OUNCE = 31.1034768;
-                    const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                    return totalGrams > 0 ? oz.toFixed(3) : "-";
-                  })()}
-                </dd>
+                <div className="flex items-center gap-2">
+                  <dt className="text-sm font-medium text-gray-500 text-center">
+                    Security Seal No.:
+                  </dt>
+                  <dd className="text-sm text-gray-900 text-center">-</dd>
+                </div>
               </div>
 
               <div>
-                <dt className="text-sm font-medium text-gray-500">PMMC Seal</dt>
-                <dd className="mt-1 text-sm text-gray-900">-</dd>
+                <div className="flex items-center gap-2">
+                  <dt className="text-sm font-medium text-gray-500 text-center">
+                    GOLDBOD Seal No.:
+                  </dt>
+                  <dd className="text-sm text-gray-900 text-center">-</dd>
+                </div>
               </div>
 
               <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Customs Seal
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">-</dd>
+                <div className="flex items-center gap-2">
+                  <dt className="text-sm font-medium text-gray-500 text-center">
+                    Customs Seal No.:
+                  </dt>
+                  <dd className="text-sm text-gray-900 text-center">-</dd>
+                </div>
               </div>
-
-              {/* <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Gold / Silver
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {assay.goldContent ?? "-"}% / {assay.silverContent ?? "-"}%
-                </dd>
-              </div> */}
             </div>
 
-            {/* <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4"> */}
-            {/* <div>
-                <dt className="text-sm font-medium text-gray-500">Shipment Type</dt>
-                <dd className="mt-1 text-sm text-gray-900">{jobCard?.shipmentType?.name || "-"}</dd>
-              </div> */}
-            {/* <div>
-                <dt className="text-sm font-medium text-gray-500">Job Card</dt>
-                <dd className="mt-1 text-sm text-gray-900">{jobCard?.referenceNumber || "-"}</dd>
-              </div> */}
-            {/* <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Destination Country
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {jobCard?.destinationCountry || "-"}
-                </dd>
-              </div> */}
-            {/* </div> */}
-
+            {/* Signatories */}
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Commodity Price (per oz)
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {assay.comments && typeof assay.comments === "string"
-                    ? (() => {
-                        try {
-                          const parsed = JSON.parse(assay.comments || "{}");
-                          const mp = parsed?.meta?.dailyPrice;
-                          return mp != null
-                            ? `$${Number(mp).toFixed(2)}`
-                            : commodityPrice != null
-                            ? `$${commodityPrice.toFixed(2)}`
-                            : "-";
-                        } catch {
-                          return commodityPrice != null
-                            ? `$${commodityPrice.toFixed(2)}`
-                            : "-";
-                        }
-                      })()
-                    : assay.comments?.meta?.dailyPrice != null
-                    ? `$${Number(assay.comments.meta.dailyPrice).toFixed(2)}`
-                    : commodityPrice != null
-                    ? `$${commodityPrice.toFixed(2)}`
-                    : "-"}
-                </dd>
+                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="flex flex-col gap-1">
+                  <dt className="text-sm font-medium text-gray-500 text-center">
+                    Exporter Authorized Signatory
+                  </dt>
+                  <dd className="text-sm text-gray-900 text-center">
+                    {jobCard?.exporter?.authorizedSignatory ||
+                      jobCard?.exporter?.contactPerson ||
+                      "-"}
+                  </dd>
+                </div>
               </div>
 
               <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Exchange Rate (USD→GHS)
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {assay.comments && typeof assay.comments === "string"
-                    ? (() => {
-                        try {
-                          const parsed = JSON.parse(assay.comments || "{}");
-                          const v = parsed?.meta?.dailyExchange;
-                          return v != null
-                            ? formatExchangeRate(v)
-                            : exchangeRate != null
-                            ? formatExchangeRate(exchangeRate)
-                            : "-";
-                        } catch {
-                          return exchangeRate != null
-                            ? formatExchangeRate(exchangeRate)
-                            : "-";
-                        }
-                      })()
-                    : assay.comments?.meta?.dailyExchange != null
-                    ? formatExchangeRate(assay.comments.meta.dailyExchange)
-                    : exchangeRate != null
-                    ? formatExchangeRate(exchangeRate)
-                    : "-"}
-                </dd>
+                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="flex flex-col gap-1">
+                  <dt className="text-sm font-medium text-gray-500 text-center">
+                    Customs Officer
+                  </dt>
+                  <dd className="text-sm text-gray-900 text-center">
+                    {jobCard?.customsOfficer || "-"}
+                  </dd>
+                </div>
               </div>
 
               <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Total Value (USD)
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {assay.comments && typeof assay.comments === "string"
-                    ? (() => {
-                        try {
-                          const parsed = JSON.parse(assay.comments || "{}");
-                          const v = parsed?.meta?.valueUsd;
-                          return v != null
-                            ? `$${Number(v).toFixed(2)}`
-                            : totalUsd != null
-                            ? `$${totalUsd.toFixed(2)}`
-                            : "-";
-                        } catch {
-                          return totalUsd != null
-                            ? `$${totalUsd.toFixed(2)}`
-                            : "-";
-                        }
-                      })()
-                    : assay.comments?.meta?.valueUsd != null
-                    ? `$${Number(assay.comments.meta.valueUsd).toFixed(2)}`
-                    : totalUsd != null
-                    ? `$${totalUsd.toFixed(2)}`
-                    : "-"}
-                </dd>
+                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="flex flex-col gap-1">
+                  <dt className="text-sm font-medium text-gray-500 text-center">
+                    Technical Director
+                  </dt>
+                  <dd className="text-sm text-gray-900 text-center">
+                    {jobCard?.technicalDirector || "-"}
+                  </dd>
+                </div>
               </div>
+
               <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Total Value (GHS)
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {assay.comments && typeof assay.comments === "string"
-                    ? (() => {
-                        try {
-                          const parsed = JSON.parse(assay.comments || "{}");
-                          const v = parsed?.meta?.valueGhs;
-                          return v != null
-                            ? `GHS ${Number(v).toFixed(2)}`
-                            : totalGhs != null
-                            ? `GHS ${totalGhs.toFixed(2)}`
-                            : "-";
-                        } catch {
-                          return totalGhs != null
-                            ? `GHS ${totalGhs.toFixed(2)}`
-                            : "-";
-                        }
-                      })()
-                    : assay.comments?.meta?.valueGhs != null
-                    ? `GHS ${Number(assay.comments.meta.valueGhs).toFixed(2)}`
-                    : totalGhs != null
-                    ? `GHS ${totalGhs.toFixed(2)}`
-                    : "-"}
-                </dd>
+                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="flex flex-col gap-1">
+                  <dt className="text-sm font-medium text-gray-500 text-center">
+                    Assay Officer
+                  </dt>
+                  <dd className="text-sm text-gray-900 text-center">
+                    {assay.signatory || assay.comments?.signatory || "-"}
+                  </dd>
+                </div>
               </div>
+
+              
             </div>
           </div>
         </div>
