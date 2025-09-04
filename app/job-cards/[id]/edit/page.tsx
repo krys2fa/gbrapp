@@ -108,12 +108,11 @@ function EditJobCardPage() {
     // Fetch job card data and reference data
     const fetchData = async () => {
       try {
-        const [jobCardRes, exportersRes, commoditiesRes] =
-          await Promise.all([
-            fetch(`/api/job-cards/${id}`),
-            fetch("/api/exporters"),
-            fetch("/api/commodity"),
-          ]);
+        const [jobCardRes, exportersRes, commoditiesRes] = await Promise.all([
+          fetch(`/api/job-cards/${id}`),
+          fetch("/api/exporters"),
+          fetch("/api/commodity"),
+        ]);
 
         if (jobCardRes.ok) {
           const jobCardData = await jobCardRes.json();
