@@ -163,13 +163,16 @@ export function JobCardList({ filters }: JobCardListProps) {
                           <EyeIcon className="h-4 w-4 mr-1" />
                           View
                         </Link>
-                        <Link
-                          href={`/job-cards/${jobCard.id}/edit`}
-                          className="inline-flex items-center p-1.5 border border-gray-300 rounded-md text-xs font-medium bg-white hover:bg-gray-50 text-gray-700"
-                        >
-                          <PencilSquareIcon className="h-4 w-4 mr-1" />
-                          Edit
-                        </Link>
+                        {(!jobCard._count?.assays ||
+                          jobCard._count.assays === 0) && (
+                          <Link
+                            href={`/job-cards/${jobCard.id}/edit`}
+                            className="inline-flex items-center p-1.5 border border-gray-300 rounded-md text-xs font-medium bg-white hover:bg-gray-50 text-gray-700"
+                          >
+                            <PencilSquareIcon className="h-4 w-4 mr-1" />
+                            Edit
+                          </Link>
+                        )}
                       </div>
                     </div>
                     <div className="mt-2 sm:flex sm:justify-between">
