@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import { prisma } from "@/app/lib/prisma";
 import InvoiceActions from "@/app/job-cards/[id]/invoices/InvoiceActions"; // client component
@@ -7,10 +6,11 @@ import InvoiceActions from "@/app/job-cards/[id]/invoices/InvoiceActions"; // cl
 function formatCurrency(value: number | null | undefined, code = "GHS") {
   const v = Number(value || 0);
   return (
+    `${code} ` +
     v.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }) + ` ${code}`
+    })
   );
 }
 
@@ -57,6 +57,7 @@ export default async function InvoicePage(props: any) {
           select: {
             id: true,
             referenceNumber: true,
+            destinationCountry: true,
             exporter: { select: { id: true, name: true } },
           },
         },
@@ -95,6 +96,7 @@ export default async function InvoicePage(props: any) {
   // Prefer per-assay saved meta if present
   let assayUsdValue = Number(invoice.assayUsdValue || 0);
   let assayGhsValue = Number(invoice.assayGhsValue || 0);
+  let exchangeRate = 0;
   if (
     (!assayUsdValue || !assayGhsValue) &&
     invoice.assays &&
@@ -114,22 +116,83 @@ export default async function InvoicePage(props: any) {
       if (meta) {
         if (meta.valueUsd) assayUsdValue = Number(meta.valueUsd);
         if (meta.valueGhs) assayGhsValue = Number(meta.valueGhs);
+        if (meta.exchangeRate) exchangeRate = Number(meta.exchangeRate);
       }
     } catch (e) {
       // ignore
     }
   }
 
-  // Fixed rate as requested
+  // Round assay values to 2 decimal places
+  assayUsdValue = Number(assayUsdValue.toFixed(2));
+  assayGhsValue = Number(assayGhsValue.toFixed(2));
+  exchangeRate = Number(exchangeRate.toFixed(2));
+
+  // If no exchange rate from assay, get daily exchange rate for invoice date
+  if (exchangeRate === 0) {
+    const invoiceDate = invoice.issueDate || invoice.createdAt;
+    try {
+      // Get the start and end of the invoice date
+      const startOfDay = new Date(invoiceDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(invoiceDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const dailyExchangeRate = await prisma.dailyPrice.findFirst({
+        where: {
+          createdAt: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (dailyExchangeRate) {
+        exchangeRate = Number(dailyExchangeRate.price);
+      }
+    } catch (error) {
+      console.error("Failed to fetch daily exchange rate:", error);
+    }
+  }
+
+  // Fixed rates
   const rate = 0.258;
-  const rateCharge = assayGhsValue * rate;
-  const totalInclusive = assayGhsValue + rateCharge;
+  const exclusiveRate = 0.820344544;
+  const nhilRate = 0.025; // 2.5%
+  const getfundRate = 0.025; // 2.5%
+  const covidRate = 0.01; // 1%
+  const vatRate = 0.15; // 15%
+  const totalInclusive = Number(((assayGhsValue * rate) / 100).toFixed(2));
+  const totalExclusive = Number((totalInclusive * exclusiveRate).toFixed(2));
+
+  // Assay Service Charge
+  const rateCharge = totalInclusive
 
   // Levies/Taxes (percentages of assay value in GHS)
-  const nhil = assayGhsValue * 0.025; // 2.5%
-  const getfund = assayGhsValue * 0.025; // 2.5%
-  const covid = assayGhsValue * 0.01; // 1%
-  const vat = assayGhsValue * 0.15; // 15%
+  const nhil = Number((totalExclusive * nhilRate).toFixed(2)); // 2.5%
+  const getfund = Number((totalExclusive * getfundRate).toFixed(2)); // 2.5%
+  const covid = Number((totalExclusive * covidRate).toFixed(2)); // 1%
+  const vat = Number((totalExclusive * vatRate).toFixed(2)); // 15%
+
+  // Calculate subtotal of all levies and taxes
+  const leviesTaxesSubtotal = Number((nhil + getfund + covid + vat).toFixed(2));
+
+  const amountDue = leviesTaxesSubtotal + totalInclusive;
+
+  // Update invoice amount if it doesn't match the calculated amount
+  if (invoice.amount !== amountDue) {
+    try {
+      await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: { amount: amountDue },
+      });
+      // Update the local invoice object to reflect the change
+      invoice.amount = amountDue;
+    } catch (error) {
+      console.error("Failed to update invoice amount:", error);
+    }
+  }
 
   // Assay number(s): join certificate numbers of linked assays if present
   const assayNumbers =
@@ -152,9 +215,9 @@ export default async function InvoicePage(props: any) {
 
   return (
     <>
-      <div className="my-4 ml-4">
+      {/* <div className="my-4 ml-4">
         <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
-      </div>
+      </div> */}
       <div className="max-w-4xl mx-auto py-10 px-4">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-semibold">
@@ -169,6 +232,33 @@ export default async function InvoicePage(props: any) {
         </div>
 
         <div className="bg-white shadow rounded-lg p-6" id="invoice-content">
+          <div className="flex items-center justify-between mb-1 px-8">
+            <div className="p-2">
+              <img
+                src="/goldbod-logo-black.png"
+                alt="GoldBod Logo"
+                className="h-12 w-auto"
+              />
+            </div>
+
+            <div className="flex justify-center">
+              <h1 className="text-xl font-bold tracking-wider">
+                ASSAY INVOICE
+              </h1>
+            </div>
+
+            <div className="bg-white p-4">
+              <img
+                src="/coat-of-arms.jpg"
+                alt="Coat of Arms"
+                className="h-20 w-auto"
+              />
+            </div>
+
+            <div className="bg-white p-4">
+              <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <p className="text-sm text-gray-500">Date</p>
@@ -176,6 +266,7 @@ export default async function InvoicePage(props: any) {
                 {formatDate(invoice.issueDate || invoice.createdAt)}
               </p>
             </div>
+
             <div>
               <p className="text-sm text-gray-500">Assay Number</p>
               <p className="font-medium">{assayNumbers}</p>
@@ -190,108 +281,104 @@ export default async function InvoicePage(props: any) {
             </div>
           </div>
 
-          <div className="mb-6">
-            <p className="text-sm text-gray-500">Description</p>
+          <div className="mb-6 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Assay Rate</p>
+              <p className="font-medium">{rate}</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">Destination</p>
+              <p className="font-medium">
+                {invoice.jobCard?.destinationCountry || "-"}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">Exchange Rate</p>
             <p className="font-medium">
-              {invoice.notes ||
-                invoice.invoiceType?.description ||
-                invoice.invoiceType?.name ||
-                "Assay Invoice"}
+              {exchangeRate}
             </p>
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-500">
-                Daily price ({dailyCommodityName})
-              </p>
-              <p className="font-medium">
-                {dailyRate.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Rate (fixed)</p>
-              <p className="font-medium">{rate}</p>
-            </div>
-          </div>
-
-          <table className="w-full mb-6 table-auto">
+          <table className="w-full mt-2 mb-6 table-auto border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
+                  Description
+                </th>
+                <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
+                  Assay value (USD)
+                </th>
+                <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
+                  Assay value (GHS)
+                </th>
+                <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
+                  Total - Inclusive
+                </th>
+              </tr>
+            </thead>
             <tbody>
               <tr>
-                <td className="py-2 text-sm text-gray-600">
-                  Assay value (USD)
+                <td className="py-2 px-4 font-medium items-center border border-gray-300">
+                  Assay Service Fee
                 </td>
-                <td className="py-2 font-medium text-right">
-                  {formatCurrency(
-                    assayUsdValue,
-                    invoice.currency?.code || "USD"
-                  )}
+                <td className="py-2 px-4 font-medium text-right border border-gray-300">
+                  {assayUsdValue.toLocaleString()}
                 </td>
-              </tr>
-              <tr>
-                <td className="py-2 text-sm text-gray-600">
-                  Assay value (GHS)
+                <td className="py-2 px-4 font-medium text-right border border-gray-300">
+                  {assayGhsValue.toLocaleString()}
                 </td>
-                <td className="py-2 font-medium text-right">
-                  {formatCurrency(
-                    assayGhsValue,
-                    invoice.currency?.code || "GHS"
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <td className="py-2 text-sm text-gray-600">
-                  Rate charge (rate * assay value GHS)
-                </td>
-                <td className="py-2 font-medium text-right">
-                  {formatCurrency(rateCharge, invoice.currency?.code || "GHS")}
-                </td>
-              </tr>
-              <tr>
-                <td className="py-2 text-sm text-gray-600">
-                  Total (inclusive of rate)
-                </td>
-                <td className="py-2 font-medium text-right">
-                  {formatCurrency(
-                    totalInclusive,
-                    invoice.currency?.code || "GHS"
-                  )}
+                <td className="py-2 px-4 font-medium text-right border border-gray-300">
+                  {rateCharge.toLocaleString()}
                 </td>
               </tr>
             </tbody>
           </table>
 
           <div className="mb-4">
-            <h3 className="text-sm font-medium mb-2">
-              Levies & Taxes (calculated from assay value in GHS)
+            <h3 className="text-sm font-medium mb-2 text-center">
+              Total - Exclusive (GHS)
+            </h3>
+            <div className="grid grid-cols-2 gap-2 text-sm mb-2">
+              <div className="text-gray-600 text">Total - Exclusive</div>
+              <div className="font-medium text-right">
+                {formatCurrency(totalExclusive, "GHS")}
+              </div>
+            </div>
+            <h3 className="text-sm font-medium mb-2 text-center">
+              Levies & Taxes
             </h3>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="text-gray-600">NHIL (2.5%)</div>
               <div className="font-medium text-right">
-                {formatCurrency(nhil, invoice.currency?.code || "GHS")}
+                {formatCurrency(nhil, "GHS")}
               </div>
               <div className="text-gray-600">GETFund (2.5%)</div>
               <div className="font-medium text-right">
-                {formatCurrency(getfund, invoice.currency?.code || "GHS")}
+                {formatCurrency(getfund, "GHS")}
               </div>
               <div className="text-gray-600">COVID (1%)</div>
               <div className="font-medium text-right">
-                {formatCurrency(covid, invoice.currency?.code || "GHS")}
+                {formatCurrency(covid, "GHS")}
               </div>
               <div className="text-gray-600">VAT (15%)</div>
               <div className="font-medium text-right">
-                {formatCurrency(vat, invoice.currency?.code || "GHS")}
+                {formatCurrency(vat, "GHS")}
+              </div>
+              <div className="text-gray-700 font-medium border-t border-gray-300 pt-2 mt-2">
+                Subtotal
+              </div>
+              <div className="font-semibold text-right border-t border-gray-300 pt-2 mt-2">
+                {formatCurrency(leviesTaxesSubtotal, "GHS")}
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t text-right">
-            <p className="text-sm text-gray-500">Amount due</p>
-            <p className="text-2xl font-semibold">
-              {formatCurrency(invoice.amount, invoice.currency?.code || "GHS")}
+          <div className="pt-4 border-t text-left">
+            <p className="text-lg font-bold flex justify-between">
+              <span>Total Amount Due:</span> {formatCurrency(amountDue, "GHS")}
             </p>
           </div>
         </div>

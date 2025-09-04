@@ -10,6 +10,9 @@ import {
   Settings,
   Globe,
   Repeat,
+  UserCircle2Icon,
+  UserCheck2Icon,
+  UserStarIcon,
 } from "lucide-react";
 
 const setupOptions = [
@@ -19,6 +22,13 @@ const setupOptions = [
     icon: <UserPlus className="h-6 w-6" />,
     href: "/setup/users",
     color: "bg-blue-600",
+  },
+  {
+    label: "Manage Officers",
+    description: "Add and manage officers.",
+    icon: <UserStarIcon className="h-6 w-6" />,
+    href: "/setup/officers",
+    color: "bg-blue-300",
   },
   {
     label: "Manage Exporters",

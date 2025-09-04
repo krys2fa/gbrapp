@@ -230,6 +230,39 @@ export async function PUT(req: NextRequest) {
       updateData.technicalDirectorId = technicalDirector.id;
     }
 
+    // Handle officer ID fields (for dropdown selections)
+    if (
+      requestData.customsOfficerId !== undefined &&
+      requestData.customsOfficerId !== ""
+    ) {
+      updateData.customsOfficerId = requestData.customsOfficerId;
+    }
+    if (
+      requestData.assayOfficerId !== undefined &&
+      requestData.assayOfficerId !== ""
+    ) {
+      updateData.assayOfficerId = requestData.assayOfficerId;
+    }
+    if (
+      requestData.technicalDirectorId !== undefined &&
+      requestData.technicalDirectorId !== ""
+    ) {
+      updateData.technicalDirectorId = requestData.technicalDirectorId;
+    }
+    if (
+      requestData.nacobOfficerId !== undefined &&
+      requestData.nacobOfficerId !== ""
+    ) {
+      updateData.nacobOfficerId = requestData.nacobOfficerId;
+    }
+    if (
+      requestData.nationalSecurityOfficerId !== undefined &&
+      requestData.nationalSecurityOfficerId !== ""
+    ) {
+      updateData.nationalSecurityOfficerId =
+        requestData.nationalSecurityOfficerId;
+    }
+
     console.log("Updating with data:", updateData);
 
     // If assays array is provided, persist any new/local assays to the DB

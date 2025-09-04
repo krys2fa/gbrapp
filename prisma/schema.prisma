@@ -52,12 +52,18 @@ enum Role {
   SUPERADMIN
   ADMIN
   USER
+  TELLER
+  CEO
+  DEPUTY_CEO
+  FINANCE
 }
 
 enum SealType {
   CUSTOMS_SEAL
   PMMC_SEAL
   OTHER_SEAL
+  SECURITY_SEAL
+  GOLDBOD_SEAL
 }
 
 enum FeeType {

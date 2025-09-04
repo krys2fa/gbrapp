@@ -23,6 +23,23 @@ function NewJobCardPage() {
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
   >([]);
+  const [officers, setOfficers] = useState<{
+    customsOfficers: { id: string; name: string; badgeNumber: string }[];
+    assayOfficers: { id: string; name: string; badgeNumber: string }[];
+    technicalDirectors: { id: string; name: string; badgeNumber: string }[];
+    nacobOfficers: { id: string; name: string; badgeNumber: string }[];
+    nationalSecurityOfficers: {
+      id: string;
+      name: string;
+      badgeNumber: string;
+    }[];
+  }>({
+    customsOfficers: [],
+    assayOfficers: [],
+    technicalDirectors: [],
+    nacobOfficers: [],
+    nationalSecurityOfficers: [],
+  });
 
   // Get countries list for the dropdown
   const countryOptions = useMemo(() => countryList().getData(), []);
@@ -98,17 +115,22 @@ function NewJobCardPage() {
     valueUsd: "",
     pricePerOunce: "",
     numberOfOunces: "",
+    customsOfficerId: "",
+    assayOfficerId: "",
+    technicalDirectorId: "",
+    nacobOfficerId: "",
+    nationalSecurityOfficerId: "",
   });
 
   useEffect(() => {
-    // Fetch exporters and commodities
+    // Fetch exporters, commodities, and officers
     const fetchData = async () => {
       try {
-        const [exportersRes, commoditiesRes] =
-          await Promise.all([
-            fetch("/api/exporters"),
-            fetch("/api/commodity"),
-          ]);
+        const [exportersRes, commoditiesRes, officersRes] = await Promise.all([
+          fetch("/api/exporters"),
+          fetch("/api/commodity"),
+          fetch("/api/officers"),
+        ]);
 
         if (exportersRes.ok) {
           const exportersData = await exportersRes.json();
@@ -118,6 +140,29 @@ function NewJobCardPage() {
         if (commoditiesRes.ok) {
           const commoditiesData = await commoditiesRes.json();
           setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
+        }
+
+        if (officersRes.ok) {
+          const officersData = await officersRes.json();
+          // Group officers by type
+          const groupedOfficers = {
+            customsOfficers: officersData.filter(
+              (o: any) => o.officerType === "CUSTOMS_OFFICER"
+            ),
+            assayOfficers: officersData.filter(
+              (o: any) => o.officerType === "ASSAY_OFFICER"
+            ),
+            technicalDirectors: officersData.filter(
+              (o: any) => o.officerType === "TECHNICAL_DIRECTOR"
+            ),
+            nacobOfficers: officersData.filter(
+              (o: any) => o.officerType === "NACOB_OFFICER"
+            ),
+            nationalSecurityOfficers: officersData.filter(
+              (o: any) => o.officerType === "NATIONAL_SECURITY_OFFICER"
+            ),
+          };
+          setOfficers(groupedOfficers);
         }
       } catch (error) {
         console.error("Error fetching form data:", error);
@@ -148,6 +193,52 @@ function NewJobCardPage() {
     setFormData((prev) => ({
       ...prev,
       destinationCountry: selectedOption ? selectedOption.label : "",
+    }));
+  };
+
+  // Handle officer selection from react-select
+  const handleCustomsOfficerChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      customsOfficerId: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleAssayOfficerChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      assayOfficerId: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleTechnicalDirectorChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      technicalDirectorId: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleNacobOfficerChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      nacobOfficerId: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleNationalSecurityOfficerChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      nationalSecurityOfficerId: selectedOption ? selectedOption.value : "",
     }));
   };
 
@@ -187,11 +278,6 @@ function NewJobCardPage() {
         delete (submissionData as any)[k];
       }
     });
-
-    // Remove empty id fields so backend can treat them as null/undefined
-    // ["exporterId", "shipmentTypeId", "commodityId"].forEach((k) => {
-    //   if (!submissionData[k]) delete submissionData[k];
-    // });
 
     // Remove empty strings for optional text fields
     Object.keys(submissionData).forEach((k) => {
@@ -317,30 +403,6 @@ function NewJobCardPage() {
                       />
                     </div>
 
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Buyer ID Number
-                      </label>
-                      <input
-                        name="buyerIdNumber"
-                        value={formData.buyerIdNumber}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div> */}
-
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Buyer Phone Number
-                      </label>
-                      <input
-                        name="buyerPhone"
-                        value={formData.buyerPhone}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div> */}
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Importer Address
@@ -389,19 +451,6 @@ function NewJobCardPage() {
                       />
                     </div>
 
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Number of People
-                      </label>
-                      <input
-                        type="number"
-                        name="numberOfPersons"
-                        value={formData.numberOfPersons}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div> */}
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Commodity
@@ -445,30 +494,6 @@ function NewJobCardPage() {
                         className="mt-1 form-control"
                       />
                     </div>
-
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        GRA Declaration Number
-                      </label>
-                      <input
-                        name="graDeclarationNumber"
-                        value={formData.graDeclarationNumber}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div> */}
-
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Remittance Type
-                      </label>
-                      <input
-                        name="remittanceType"
-                        value={formData.remittanceType}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div> */}
                   </div>
 
                   <div className="col-span-6 md:col-span-3 space-y-6">
@@ -484,25 +509,6 @@ function NewJobCardPage() {
                         className="mt-1 form-control"
                       />
                     </div>
-
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Shipment Type
-                      </label>
-                      <select
-                        name="shipmentTypeId"
-                        value={formData.shipmentTypeId}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      >
-                        <option value="">Select shipment type</option>
-                        {shipmentTypes.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div> */}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
@@ -609,120 +615,162 @@ function NewJobCardPage() {
                         className="mt-1 form-control"
                       />
                     </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Customs Officer
+                      </label>
+                      <Select
+                        options={officers.customsOfficers.map((officer) => ({
+                          value: officer.id,
+                          label: `${officer.name} (${officer.badgeNumber})`,
+                        }))}
+                        value={
+                          formData.customsOfficerId
+                            ? officers.customsOfficers
+                                .map((officer) => ({
+                                  value: officer.id,
+                                  label: `${officer.name} (${officer.badgeNumber})`,
+                                }))
+                                .find(
+                                  (o) => o.value === formData.customsOfficerId
+                                )
+                            : null
+                        }
+                        onChange={handleCustomsOfficerChange}
+                        className="mt-1 form-control-select"
+                        classNamePrefix="react-select"
+                        styles={customSelectStyles}
+                        isClearable
+                        placeholder="Select customs officer"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Assay Officer
+                      </label>
+                      <Select
+                        options={officers.assayOfficers.map((officer) => ({
+                          value: officer.id,
+                          label: `${officer.name} (${officer.badgeNumber})`,
+                        }))}
+                        value={
+                          formData.assayOfficerId
+                            ? officers.assayOfficers
+                                .map((officer) => ({
+                                  value: officer.id,
+                                  label: `${officer.name} (${officer.badgeNumber})`,
+                                }))
+                                .find(
+                                  (o) => o.value === formData.assayOfficerId
+                                )
+                            : null
+                        }
+                        onChange={handleAssayOfficerChange}
+                        className="mt-1 form-control-select"
+                        classNamePrefix="react-select"
+                        styles={customSelectStyles}
+                        isClearable
+                        placeholder="Select assay officer"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Technical Director
+                      </label>
+                      <Select
+                        options={officers.technicalDirectors.map((officer) => ({
+                          value: officer.id,
+                          label: `${officer.name} (${officer.badgeNumber})`,
+                        }))}
+                        value={
+                          formData.technicalDirectorId
+                            ? officers.technicalDirectors
+                                .map((officer) => ({
+                                  value: officer.id,
+                                  label: `${officer.name} (${officer.badgeNumber})`,
+                                }))
+                                .find(
+                                  (o) =>
+                                    o.value === formData.technicalDirectorId
+                                )
+                            : null
+                        }
+                        onChange={handleTechnicalDirectorChange}
+                        className="mt-1 form-control-select"
+                        classNamePrefix="react-select"
+                        styles={customSelectStyles}
+                        isClearable
+                        placeholder="Select technical director"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        NACOB Officer
+                      </label>
+                      <Select
+                        options={officers.nacobOfficers.map((officer) => ({
+                          value: officer.id,
+                          label: `${officer.name} (${officer.badgeNumber})`,
+                        }))}
+                        value={
+                          formData.nacobOfficerId
+                            ? officers.nacobOfficers
+                                .map((officer) => ({
+                                  value: officer.id,
+                                  label: `${officer.name} (${officer.badgeNumber})`,
+                                }))
+                                .find(
+                                  (o) => o.value === formData.nacobOfficerId
+                                )
+                            : null
+                        }
+                        onChange={handleNacobOfficerChange}
+                        className="mt-1 form-control-select"
+                        classNamePrefix="react-select"
+                        styles={customSelectStyles}
+                        isClearable
+                        placeholder="Select NACOB officer"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        National Security Officer
+                      </label>
+                      <Select
+                        options={officers.nationalSecurityOfficers.map(
+                          (officer) => ({
+                            value: officer.id,
+                            label: `${officer.name} (${officer.badgeNumber})`,
+                          })
+                        )}
+                        value={
+                          formData.nationalSecurityOfficerId
+                            ? officers.nationalSecurityOfficers
+                                .map((officer) => ({
+                                  value: officer.id,
+                                  label: `${officer.name} (${officer.badgeNumber})`,
+                                }))
+                                .find(
+                                  (o) =>
+                                    o.value ===
+                                    formData.nationalSecurityOfficerId
+                                )
+                            : null
+                        }
+                        onChange={handleNationalSecurityOfficerChange}
+                        className="mt-1 form-control-select"
+                        classNamePrefix="react-select"
+                        styles={customSelectStyles}
+                        isClearable
+                        placeholder="Select national security officer"
+                      />
+                    </div>
                   </div>
-                  {/* Exporter Value (USD) */}
-                  {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="exporterValueUsd"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Exporter Value (USD)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      name="exporterValueUsd"
-                      id="exporterValueUsd"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.exporterValueUsd}
-                      onChange={handleChange}
-                    />
-                  </div> */}
-
-                  {/* Exporter Value (GHS) */}
-                  {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="exporterValueGhs"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Exporter Value (GHS)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      name="exporterValueGhs"
-                      id="exporterValueGhs"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.exporterValueGhs}
-                      onChange={handleChange}
-                    />
-                  </div> */}
-
-                  {/* GRA Declaration Number */}
-                  {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="graDeclarationNumber"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      GRA Declaration Number
-                    </label>
-                    <input
-                      type="text"
-                      name="graDeclarationNumber"
-                      id="graDeclarationNumber"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.graDeclarationNumber}
-                      onChange={handleChange}
-                    />
-                  </div> */}
-
-                  {/* Number of Boxes */}
-                  {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="numberOfBoxes"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Number of Boxes
-                    </label>
-                    <input
-                      type="number"
-                      name="numberOfBoxes"
-                      id="numberOfBoxes"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.numberOfBoxes}
-                      onChange={handleChange}
-                    />
-                  </div> */}
-
-                  {/* Remittance Type */}
-                  {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="remittanceType"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Remittance Type
-                    </label>
-                    <input
-                      type="text"
-                      name="remittanceType"
-                      id="remittanceType"
-                      className="mt-1 form-control"
-                      value={formData.remittanceType}
-                      onChange={handleChange}
-                    />
-                  </div> */}
-
-                  {/* Status */}
-                  {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="status"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Status
-                    </label>
-                    <select
-                      id="status"
-                      name="status"
-                      className="mt-1 form-control"
-                      value={formData.status}
-                      onChange={handleChange}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="completed">Completed</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
-                  </div> */}
 
                   <div className="col-span-6">
                     <label

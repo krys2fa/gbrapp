@@ -28,6 +28,23 @@ function EditJobCardPage() {
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
   >([]);
+  const [officers, setOfficers] = useState<{
+    customsOfficers: { id: string; name: string; badgeNumber: string }[];
+    assayOfficers: { id: string; name: string; badgeNumber: string }[];
+    technicalDirectors: { id: string; name: string; badgeNumber: string }[];
+    nacobOfficers: { id: string; name: string; badgeNumber: string }[];
+    nationalSecurityOfficers: {
+      id: string;
+      name: string;
+      badgeNumber: string;
+    }[];
+  }>({
+    customsOfficers: [],
+    assayOfficers: [],
+    technicalDirectors: [],
+    nacobOfficers: [],
+    nationalSecurityOfficers: [],
+  });
 
   // Get countries list for the dropdown
   const countryOptions = useMemo(() => countryList().getData(), []);
@@ -104,19 +121,24 @@ function EditJobCardPage() {
     pricePerOunce: "",
     numberOfOunces: "",
     buyerAddress: "",
-    customsOfficer: "",
-    technicalDirector: "",
+    customsOfficerId: "",
+    assayOfficerId: "",
+    technicalDirectorId: "",
+    nacobOfficerId: "",
+    nationalSecurityOfficerId: "",
   });
 
   useEffect(() => {
     // Fetch job card data and reference data
     const fetchData = async () => {
       try {
-        const [jobCardRes, exportersRes, commoditiesRes] = await Promise.all([
-          fetch(`/api/job-cards/${id}`),
-          fetch("/api/exporters"),
-          fetch("/api/commodity"),
-        ]);
+        const [jobCardRes, exportersRes, commoditiesRes, officersRes] =
+          await Promise.all([
+            fetch(`/api/job-cards/${id}`),
+            fetch("/api/exporters"),
+            fetch("/api/commodity"),
+            fetch("/api/officers"),
+          ]);
 
         if (jobCardRes.ok) {
           const jobCardData = await jobCardRes.json();
@@ -167,8 +189,12 @@ function EditJobCardPage() {
             pricePerOunce: jobCardData.pricePerOunce?.toString() || "",
             numberOfOunces: jobCardData.numberOfOunces?.toString() || "",
             buyerAddress: jobCardData.buyerAddress || "",
-            customsOfficer: jobCardData.customsOfficer?.name || "",
-            technicalDirector: jobCardData.technicalDirector?.name || "",
+            customsOfficerId: jobCardData.customsOfficer?.id || "",
+            assayOfficerId: jobCardData.assayOfficer?.id || "",
+            technicalDirectorId: jobCardData.technicalDirector?.id || "",
+            nacobOfficerId: jobCardData.nacobOfficer?.id || "",
+            nationalSecurityOfficerId:
+              jobCardData.nationalSecurityOfficer?.id || "",
           });
         } else {
           throw new Error("Failed to fetch job card");
@@ -182,6 +208,29 @@ function EditJobCardPage() {
         if (commoditiesRes.ok) {
           const commoditiesData = await commoditiesRes.json();
           setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
+        }
+
+        if (officersRes.ok) {
+          const officersData = await officersRes.json();
+          // Group officers by type
+          const groupedOfficers = {
+            customsOfficers: officersData.filter(
+              (o: any) => o.officerType === "CUSTOMS_OFFICER"
+            ),
+            assayOfficers: officersData.filter(
+              (o: any) => o.officerType === "ASSAY_OFFICER"
+            ),
+            technicalDirectors: officersData.filter(
+              (o: any) => o.officerType === "TECHNICAL_DIRECTOR"
+            ),
+            nacobOfficers: officersData.filter(
+              (o: any) => o.officerType === "NACOB_OFFICER"
+            ),
+            nationalSecurityOfficers: officersData.filter(
+              (o: any) => o.officerType === "NATIONAL_SECURITY_OFFICER"
+            ),
+          };
+          setOfficers(groupedOfficers);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -202,6 +251,52 @@ function EditJobCardPage() {
     setFormData((prev) => ({
       ...prev,
       destinationCountry: selectedOption ? selectedOption.label : "",
+    }));
+  };
+
+  // Handle officer selection from react-select
+  const handleCustomsOfficerChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      customsOfficerId: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleAssayOfficerChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      assayOfficerId: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleTechnicalDirectorChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      technicalDirectorId: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleNacobOfficerChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      nacobOfficerId: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleNationalSecurityOfficerChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      nationalSecurityOfficerId: selectedOption ? selectedOption.value : "",
     }));
   };
 
@@ -464,12 +559,59 @@ function EditJobCardPage() {
                         <label className="block text-sm font-medium text-gray-700">
                           Customs Officer
                         </label>
-                        <input
-                          name="customsOfficer"
-                          value={formData.customsOfficer}
-                          onChange={handleChange}
-                          className="mt-1 form-control"
-                          placeholder="Enter customs officer name"
+                        <Select
+                          options={officers.customsOfficers.map((officer) => ({
+                            value: officer.id,
+                            label: `${officer.name} (${officer.badgeNumber})`,
+                          }))}
+                          value={
+                            formData.customsOfficerId
+                              ? officers.customsOfficers
+                                  .map((officer) => ({
+                                    value: officer.id,
+                                    label: `${officer.name} (${officer.badgeNumber})`,
+                                  }))
+                                  .find(
+                                    (o) => o.value === formData.customsOfficerId
+                                  )
+                              : null
+                          }
+                          onChange={handleCustomsOfficerChange}
+                          className="mt-1 form-control-select"
+                          classNamePrefix="react-select"
+                          styles={customSelectStyles}
+                          isClearable
+                          placeholder="Select customs officer"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Assay Officer
+                        </label>
+                        <Select
+                          options={officers.assayOfficers.map((officer) => ({
+                            value: officer.id,
+                            label: `${officer.name} (${officer.badgeNumber})`,
+                          }))}
+                          value={
+                            formData.assayOfficerId
+                              ? officers.assayOfficers
+                                  .map((officer) => ({
+                                    value: officer.id,
+                                    label: `${officer.name} (${officer.badgeNumber})`,
+                                  }))
+                                  .find(
+                                    (o) => o.value === formData.assayOfficerId
+                                  )
+                              : null
+                          }
+                          onChange={handleAssayOfficerChange}
+                          className="mt-1 form-control-select"
+                          classNamePrefix="react-select"
+                          styles={customSelectStyles}
+                          isClearable
+                          placeholder="Select assay officer"
                         />
                       </div>
 
@@ -477,12 +619,96 @@ function EditJobCardPage() {
                         <label className="block text-sm font-medium text-gray-700">
                           Technical Director
                         </label>
-                        <input
-                          name="technicalDirector"
-                          value={formData.technicalDirector}
-                          onChange={handleChange}
-                          className="mt-1 form-control"
-                          placeholder="Enter technical director name"
+                        <Select
+                          options={officers.technicalDirectors.map(
+                            (officer) => ({
+                              value: officer.id,
+                              label: `${officer.name} (${officer.badgeNumber})`,
+                            })
+                          )}
+                          value={
+                            formData.technicalDirectorId
+                              ? officers.technicalDirectors
+                                  .map((officer) => ({
+                                    value: officer.id,
+                                    label: `${officer.name} (${officer.badgeNumber})`,
+                                  }))
+                                  .find(
+                                    (o) =>
+                                      o.value === formData.technicalDirectorId
+                                  )
+                              : null
+                          }
+                          onChange={handleTechnicalDirectorChange}
+                          className="mt-1 form-control-select"
+                          classNamePrefix="react-select"
+                          styles={customSelectStyles}
+                          isClearable
+                          placeholder="Select technical director"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          NACOB Officer
+                        </label>
+                        <Select
+                          options={officers.nacobOfficers.map((officer) => ({
+                            value: officer.id,
+                            label: `${officer.name} (${officer.badgeNumber})`,
+                          }))}
+                          value={
+                            formData.nacobOfficerId
+                              ? officers.nacobOfficers
+                                  .map((officer) => ({
+                                    value: officer.id,
+                                    label: `${officer.name} (${officer.badgeNumber})`,
+                                  }))
+                                  .find(
+                                    (o) => o.value === formData.nacobOfficerId
+                                  )
+                              : null
+                          }
+                          onChange={handleNacobOfficerChange}
+                          className="mt-1 form-control-select"
+                          classNamePrefix="react-select"
+                          styles={customSelectStyles}
+                          isClearable
+                          placeholder="Select NACOB officer"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          National Security Officer
+                        </label>
+                        <Select
+                          options={officers.nationalSecurityOfficers.map(
+                            (officer) => ({
+                              value: officer.id,
+                              label: `${officer.name} (${officer.badgeNumber})`,
+                            })
+                          )}
+                          value={
+                            formData.nationalSecurityOfficerId
+                              ? officers.nationalSecurityOfficers
+                                  .map((officer) => ({
+                                    value: officer.id,
+                                    label: `${officer.name} (${officer.badgeNumber})`,
+                                  }))
+                                  .find(
+                                    (o) =>
+                                      o.value ===
+                                      formData.nationalSecurityOfficerId
+                                  )
+                              : null
+                          }
+                          onChange={handleNationalSecurityOfficerChange}
+                          className="mt-1 form-control-select"
+                          classNamePrefix="react-select"
+                          styles={customSelectStyles}
+                          isClearable
+                          placeholder="Select national security officer"
                         />
                       </div>
 

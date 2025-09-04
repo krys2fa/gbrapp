@@ -222,6 +222,11 @@ async function createJobCard(req: NextRequest) {
       "valueGhs",
       "numberOfOunces",
       "pricePerOunce",
+      "customsOfficerId",
+      "assayOfficerId",
+      "technicalDirectorId",
+      "nacobOfficerId",
+      "nationalSecurityOfficerId",
     ];
 
     const data: any = {};
@@ -304,6 +309,11 @@ async function createJobCard(req: NextRequest) {
       "valueGhs",
       "numberOfOunces",
       "pricePerOunce",
+      "customsOfficerId",
+      "assayOfficerId",
+      "technicalDirectorId",
+      "nacobOfficerId",
+      "nationalSecurityOfficerId",
     ];
 
     const createData: any = {};
