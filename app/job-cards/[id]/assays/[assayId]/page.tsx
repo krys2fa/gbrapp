@@ -203,7 +203,7 @@ export default function AssayDetailPage() {
 
       <div className="bg-white shadow sm:rounded-lg overflow-hidden">
         <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+          <h3 className="text-base leading-6 font-medium text-gray-900">
             Certificate #{assay.certificateNumber || "-"}
           </h3>
           {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -211,7 +211,7 @@ export default function AssayDetailPage() {
           </p> */}
         </div>
 
-        <div className="flex items-center justify-between mb-2 px-8">
+        <div className="flex items-center justify-between mb-1 px-8">
           <div className="bg-[#2e7030] p-2">
             <img
               src="/goldbod-logo.webp"
@@ -221,7 +221,7 @@ export default function AssayDetailPage() {
           </div>
 
           <div className="flex justify-center">
-            <h1 className="text-2xl font-bold tracking-wider">
+            <h1 className="text-xl font-bold tracking-wider">
               ASSAY REPORT ANALYSIS
             </h1>
           </div>
@@ -235,9 +235,9 @@ export default function AssayDetailPage() {
           </div>
         </div>
 
-        <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+        <div className="border-t border-gray-200 px-4 py-3 sm:p-4">
           {/* Top: show exporter and assay date above the measurements table */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <dt className="text-sm font-medium text-gray-500">Exporter</dt>
               <dd className="mt-1 text-sm text-gray-900">
@@ -254,7 +254,7 @@ export default function AssayDetailPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <dt className="text-sm font-medium text-gray-500">Reference</dt>
               <dd className="mt-1 text-sm text-gray-900">
@@ -272,7 +272,7 @@ export default function AssayDetailPage() {
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Exporter Values (top left) */}
               <div className="bg-white border rounded overflow-hidden">
@@ -413,7 +413,7 @@ export default function AssayDetailPage() {
                       <dt className="text-sm font-medium text-gray-500">
                         Weight in Ounces:
                       </dt>
-                      <dd className="text-lg font-semibold text-gray-900">
+                      <dd className="text-sm font-semibold text-gray-900">
                         {jobCard?.totalNetWeight != null
                           ? (() => {
                               const netWeightGrams = convertToGrams(
@@ -437,7 +437,7 @@ export default function AssayDetailPage() {
                       <dt className="text-sm font-medium text-gray-500">
                         Price per Ounce:
                       </dt>
-                      <dd className="text-lg font-semibold text-gray-900">
+                      <dd className="text-sm font-semibold text-gray-900">
                         {jobCard?.pricePerOunce != null
                           ? `$${Number(jobCard.pricePerOunce).toFixed(2)}`
                           : "$0.00"}
@@ -450,7 +450,7 @@ export default function AssayDetailPage() {
                       <dt className="text-sm font-medium text-gray-500">
                         Total USD Value:
                       </dt>
-                      <dd className="text-lg font-semibold text-gray-900">
+                      <dd className="text-sm font-semibold text-gray-900">
                         {jobCard?.totalUsdValue != null
                           ? `$${Number(jobCard.totalUsdValue).toFixed(2)}`
                           : "$0.00"}
@@ -471,7 +471,7 @@ export default function AssayDetailPage() {
                       <dt className="text-sm font-medium text-gray-500">
                         Weight in Ounces:
                       </dt>
-                      <dd className="text-lg font-semibold text-gray-900">
+                      <dd className="text-sm font-semibold text-gray-900">
                         {(() => {
                           const totalGrams = (assay.measurements || []).reduce(
                             (acc: number, m: any) =>
@@ -496,7 +496,7 @@ export default function AssayDetailPage() {
                       <dt className="text-sm font-medium text-gray-500">
                         Price per Ounce:
                       </dt>
-                      <dd className="text-lg font-semibold text-gray-900">
+                      <dd className="text-sm font-semibold text-gray-900">
                         {assay.comments && typeof assay.comments === "string"
                           ? (() => {
                               try {
@@ -531,7 +531,7 @@ export default function AssayDetailPage() {
                       <dt className="text-sm font-medium text-gray-500">
                         Total USD Value:
                       </dt>
-                      <dd className="text-lg font-semibold text-gray-900">
+                      <dd className="text-sm font-semibold text-gray-900">
                         {assay.comments && typeof assay.comments === "string"
                           ? (() => {
                               try {
@@ -566,15 +566,15 @@ export default function AssayDetailPage() {
           </div>
 
           {/* Assay details moved to bottom with labels */}
-          <div className="mt-6 border-t pt-6">
+          <div className="mt-4 border-t pt-4">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div>
                 <div className="border-b border-gray-400 mb-2"></div>
                 <div className="flex flex-col gap-1">
-                  <dt className="text-sm font-medium text-gray-500 text-center">
+                  <dt className="text-xs font-medium text-gray-500 text-center">
                     GOLDBOD Authorized Signatory
                   </dt>
-                  <dd className="text-sm text-gray-900 text-center">
+                  <dd className="text-xs text-gray-900 text-center">
                     {assay.signatory || assay.comments?.signatory || "-"}
                   </dd>
                 </div>
@@ -582,41 +582,41 @@ export default function AssayDetailPage() {
 
               <div>
                 <div className="flex items-center gap-2">
-                  <dt className="text-sm font-medium text-gray-500 text-center">
+                  <dt className="text-xs font-medium text-gray-500 text-center">
                     Security Seal No.:
                   </dt>
-                  <dd className="text-sm text-gray-900 text-center">-</dd>
+                  <dd className="text-xs text-gray-900 text-center">-</dd>
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center gap-2">
-                  <dt className="text-sm font-medium text-gray-500 text-center">
+                  <dt className="text-xs font-medium text-gray-500 text-center">
                     GOLDBOD Seal No.:
                   </dt>
-                  <dd className="text-sm text-gray-900 text-center">-</dd>
+                  <dd className="text-xs text-gray-900 text-center">-</dd>
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center gap-2">
-                  <dt className="text-sm font-medium text-gray-500 text-center">
+                  <dt className="text-xs font-medium text-gray-500 text-center">
                     Customs Seal No.:
                   </dt>
-                  <dd className="text-sm text-gray-900 text-center">-</dd>
+                  <dd className="text-xs text-gray-900 text-center">-</dd>
                 </div>
               </div>
             </div>
 
             {/* Signatories */}
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div>
                 <div className="border-b border-gray-400 mb-2"></div>
                 <div className="flex flex-col gap-1">
-                  <dt className="text-sm font-medium text-gray-500 text-center">
+                  <dt className="text-xs font-medium text-gray-500 text-center">
                     Exporter Authorized Signatory
                   </dt>
-                  <dd className="text-sm text-gray-900 text-center">
+                  <dd className="text-xs text-gray-900 text-center">
                     {jobCard?.exporter?.authorizedSignatory ||
                       jobCard?.exporter?.contactPerson ||
                       "-"}
@@ -627,10 +627,10 @@ export default function AssayDetailPage() {
               <div>
                 <div className="border-b border-gray-400 mb-2"></div>
                 <div className="flex flex-col gap-1">
-                  <dt className="text-sm font-medium text-gray-500 text-center">
+                  <dt className="text-xs font-medium text-gray-500 text-center">
                     Customs Officer
                   </dt>
-                  <dd className="text-sm text-gray-900 text-center">
+                  <dd className="text-xs text-gray-900 text-center">
                     {jobCard?.customsOfficer || "-"}
                   </dd>
                 </div>
@@ -639,10 +639,10 @@ export default function AssayDetailPage() {
               <div>
                 <div className="border-b border-gray-400 mb-2"></div>
                 <div className="flex flex-col gap-1">
-                  <dt className="text-sm font-medium text-gray-500 text-center">
+                  <dt className="text-xs font-medium text-gray-500 text-center">
                     Technical Director
                   </dt>
-                  <dd className="text-sm text-gray-900 text-center">
+                  <dd className="text-xs text-gray-900 text-center">
                     {jobCard?.technicalDirector || "-"}
                   </dd>
                 </div>
@@ -651,10 +651,10 @@ export default function AssayDetailPage() {
               <div>
                 <div className="border-b border-gray-400 mb-2"></div>
                 <div className="flex flex-col gap-1">
-                  <dt className="text-sm font-medium text-gray-500 text-center">
+                  <dt className="text-xs font-medium text-gray-500 text-center">
                     Assay Officer
                   </dt>
-                  <dd className="text-sm text-gray-900 text-center">
+                  <dd className="text-xs text-gray-900 text-center">
                     {assay.signatory || assay.comments?.signatory || "-"}
                   </dd>
                 </div>
