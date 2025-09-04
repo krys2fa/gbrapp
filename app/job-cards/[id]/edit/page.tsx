@@ -1,10 +1,17 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
+import Select from "react-select";
+import countryList from "react-select-country-list";
+
+enum UnitOfMeasure {
+  GRAMS = "g",
+  KILOGRAMS = "kg",
+}
 
 function EditJobCardPage() {
   const params = useParams();
@@ -16,62 +23,127 @@ function EditJobCardPage() {
   const [exporters, setExporters] = useState<
     { id: string; name: string; exporterType: { id: string; name: string } }[]
   >([]);
-  const [exporterTypes, setExporterTypes] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [shipmentTypes, setShipmentTypes] = useState<
+  const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
   >([]);
 
+  // Get countries list for the dropdown
+  const countryOptions = useMemo(() => countryList().getData(), []);
+
+  // Custom styles for React Select to match other form inputs
+  const customSelectStyles = {
+    container: (provided: Record<string, unknown>) => ({
+      ...provided,
+      height: "38px",
+    }),
+    control: (provided: Record<string, unknown>) => ({
+      ...provided,
+      minHeight: "38px",
+      height: "38px",
+      boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+      borderColor: "#D1D5DB",
+      "&:hover": {
+        borderColor: "#9CA3AF",
+      },
+    }),
+    valueContainer: (provided: Record<string, unknown>) => ({
+      ...provided,
+      height: "38px",
+      padding: "0 6px",
+      display: "flex",
+      alignItems: "center",
+    }),
+    input: (provided: Record<string, unknown>) => ({
+      ...provided,
+      margin: "0",
+      padding: "0",
+    }),
+    indicatorSeparator: () => ({
+      display: "none",
+    }),
+    indicatorsContainer: (provided: Record<string, unknown>) => ({
+      ...provided,
+      height: "38px",
+    }),
+    option: (
+      provided: Record<string, unknown>,
+      state: { isSelected: boolean; isFocused: boolean }
+    ) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? "#4F46E5"
+        : state.isFocused
+        ? "#EEF2FF"
+        : "white",
+      color: state.isSelected ? "white" : "#111827",
+      cursor: "pointer",
+      fontSize: "0.875rem",
+    }),
+  };
+
   const [formData, setFormData] = useState({
     referenceNumber: "",
-    receivedDate: "",
+    receivedDate: new Date().toISOString().split("T")[0], // Today's date as default
     exporterId: "",
-    exporterTypeId: "",
-    shipmentTypeId: "",
-    status: "",
+    commodityId: "",
+    unitOfMeasure: UnitOfMeasure.GRAMS,
+    buyerName: "",
+    teamLeader: "",
+    totalGrossWeight: "",
+    destinationCountry: "",
+    fineness: "",
+    sourceOfGold: "Ghana", // Default to Ghana
+    totalNetWeight: "",
+    numberOfBoxes: "",
+    status: "pending",
     notes: "",
+    valueGhs: "",
+    valueUsd: "",
+    pricePerOunce: "",
+    numberOfOunces: "",
+    buyerAddress: "",
   });
 
   useEffect(() => {
     // Fetch job card data and reference data
     const fetchData = async () => {
       try {
-        const [jobCardRes, exporterTypesRes, exportersRes, shipmentTypesRes] =
+        const [jobCardRes, exportersRes, commoditiesRes] =
           await Promise.all([
             fetch(`/api/job-cards/${id}`),
-            fetch("/api/exporter-types"),
             fetch("/api/exporters"),
-            fetch("/api/shipment-types"),
+            fetch("/api/commodity"),
           ]);
 
         if (jobCardRes.ok) {
           const jobCardData = await jobCardRes.json();
-          // Get the exporter type ID from the exporter data
-          let exporterTypeId = "";
-
-          if (jobCardData.exporter && jobCardData.exporter.exporterType) {
-            exporterTypeId = jobCardData.exporter.exporterType.id;
-          }
 
           setFormData({
-            referenceNumber: jobCardData.referenceNumber,
+            referenceNumber: jobCardData.referenceNumber || "",
             receivedDate: new Date(jobCardData.receivedDate)
               .toISOString()
               .split("T")[0],
-            exporterId: jobCardData.exporterId,
-            exporterTypeId: exporterTypeId,
-            shipmentTypeId: jobCardData.shipmentTypeId,
-            status: jobCardData.status,
+            exporterId: jobCardData.exporterId || "",
+            commodityId: jobCardData.commodityId || "",
+            unitOfMeasure: jobCardData.unitOfMeasure || UnitOfMeasure.GRAMS,
+            buyerName: jobCardData.buyerName || "",
+            teamLeader: jobCardData.teamLeader || "",
+            totalGrossWeight: jobCardData.totalGrossWeight?.toString() || "",
+            destinationCountry: jobCardData.destinationCountry || "",
+            fineness: jobCardData.fineness?.toString() || "",
+            sourceOfGold: jobCardData.sourceOfGold || "Ghana",
+            totalNetWeight: jobCardData.totalNetWeight?.toString() || "",
+            numberOfBoxes: jobCardData.numberOfBoxes?.toString() || "",
+            status: jobCardData.status || "pending",
             notes: jobCardData.notes || "",
+            valueGhs: jobCardData.valueGhs?.toString() || "",
+            valueUsd: jobCardData.valueUsd?.toString() || "",
+            pricePerOunce: jobCardData.pricePerOunce?.toString() || "",
+            numberOfOunces: jobCardData.numberOfOunces?.toString() || "",
+            buyerAddress: jobCardData.buyerAddress || "",
           });
         } else {
           throw new Error("Failed to fetch job card");
-        }
-
-        if (exporterTypesRes.ok) {
-          const exporterTypesData = await exporterTypesRes.json();
-          setExporterTypes(exporterTypesData);
         }
 
         if (exportersRes.ok) {
@@ -79,9 +151,9 @@ function EditJobCardPage() {
           setExporters(exportersData);
         }
 
-        if (shipmentTypesRes.ok) {
-          const shipmentTypesData = await shipmentTypesRes.json();
-          setShipmentTypes(shipmentTypesData);
+        if (commoditiesRes.ok) {
+          const commoditiesData = await commoditiesRes.json();
+          setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -94,33 +166,16 @@ function EditJobCardPage() {
     fetchData();
   }, [id]);
 
-  // Filter exporters when exporter type changes
-  useEffect(() => {
-    if (formData.exporterTypeId) {
-      const fetchFilteredExporters = async () => {
-        try {
-          const response = await fetch(
-            `/api/exporters?exporterTypeId=${formData.exporterTypeId}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setExporters(data);
-            // Clear selected exporter if it doesn't belong to this type
-            const exporterExists = data.some(
-              (exporter: { id: string }) => exporter.id === formData.exporterId
-            );
-            if (!exporterExists && formData.exporterId) {
-              setFormData((prev) => ({ ...prev, exporterId: "" }));
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching exporters by type:", error);
-        }
-      };
-
-      fetchFilteredExporters();
-    }
-  }, [formData.exporterTypeId, formData.exporterId]);
+  // Handle country selection from react-select
+  const handleCountryChange = (
+    selectedOption: { value: string; label: string } | null
+  ) => {
+    // Save the full country name (label) instead of the short code (value)
+    setFormData((prev) => ({
+      ...prev,
+      destinationCountry: selectedOption ? selectedOption.label : "",
+    }));
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -139,20 +194,65 @@ function EditJobCardPage() {
     setSaving(true);
     setError("");
 
+    // Basic client-side validation: commodity is required (DB has non-null constraint)
+    if (!formData.commodityId) {
+      setError("Please select a commodity before updating the job card.");
+      setSaving(false);
+      return;
+    }
+
+    // Prepare full submission payload from formData
+    const submissionData: any = { ...formData };
+
+    // Convert numeric-like fields to actual numbers when provided
+    const numericFields = [
+      "numberOfPersons",
+      "numberOfBoxes",
+      "totalGrossWeight",
+      "totalNetWeight",
+      "numberOfOunces",
+      "pricePerOunce",
+      "valueUsd",
+      "fineness",
+    ];
+
+    numericFields.forEach((k) => {
+      const v = (submissionData as any)[k];
+      if (v !== undefined && v !== null && v !== "") {
+        const n = Number(v);
+        (submissionData as any)[k] = Number.isNaN(n) ? v : n;
+      } else {
+        delete (submissionData as any)[k];
+      }
+    });
+
+    // Remove empty strings for optional text fields
+    Object.keys(submissionData).forEach((k) => {
+      if (submissionData[k] === "") delete submissionData[k];
+    });
+
+    console.log("Submitting data:", submissionData);
+
     try {
       const response = await fetch(`/api/job-cards/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
+
+      const responseData = await response.json();
+      console.log("Server response:", response.status, responseData);
 
       if (response.ok) {
         router.push(`/job-cards/${id}`);
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Failed to update job card");
+        setError(responseData.error || "Failed to update job card");
+        console.error("Server error details:", responseData);
+        if (responseData.details) {
+          setError(`${responseData.error}: ${responseData.details}`);
+        }
       }
     } catch (error) {
       console.error("Error updating job card:", error);
@@ -213,115 +313,350 @@ function EditJobCardPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="col-span-1">
+                {/* Reworked layout: two-column form sections */}
+                <div className="grid grid-cols-6 gap-6">
+                  <div className="col-span-6 md:col-span-3 space-y-6">
+                    {/* Left column fields */}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Exporter
+                      </label>
+                      <select
+                        name="exporterId"
+                        value={formData.exporterId}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      >
+                        <option value="">Select exporter</option>
+                        {exporters.map((ex) => (
+                          <option key={ex.id} value={ex.id}>
+                            {ex.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Importer Name
+                      </label>
+                      <input
+                        name="buyerName"
+                        value={formData.buyerName}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Importer Address
+                      </label>
+                      <input
+                        name="buyerAddress"
+                        value={formData.buyerAddress}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Destination Country
+                      </label>
+                      <Select
+                        inputId="destinationCountry"
+                        name="destinationCountry"
+                        options={countryOptions}
+                        value={
+                          formData.destinationCountry
+                            ? countryOptions.find(
+                                (o: any) =>
+                                  o.label === formData.destinationCountry
+                              )
+                            : null
+                        }
+                        onChange={handleCountryChange}
+                        className="mt-1 form-control-select"
+                        classNamePrefix="react-select"
+                        styles={customSelectStyles}
+                        isClearable
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Team Leader
+                      </label>
+                      <input
+                        name="teamLeader"
+                        value={formData.teamLeader}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Commodity
+                      </label>
+                      <select
+                        name="commodityId"
+                        value={formData.commodityId}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      >
+                        <option value="">Select commodity</option>
+                        {commodities.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Source of Commodity
+                      </label>
+                      <input
+                        name="sourceOfGold"
+                        value={formData.sourceOfGold}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Number of Boxes
+                      </label>
+                      <input
+                        type="number"
+                        name="numberOfBoxes"
+                        value={formData.numberOfBoxes}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-span-6 md:col-span-3 space-y-6">
+                    {/* Right column fields */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Job Reference Number
+                      </label>
+                      <input
+                        name="referenceNumber"
+                        value={formData.referenceNumber}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Unit of Measure
+                      </label>
+                      <select
+                        name="unitOfMeasure"
+                        value={formData.unitOfMeasure}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      >
+                        <option value={UnitOfMeasure.GRAMS}>Grams</option>
+                        <option value={UnitOfMeasure.KILOGRAMS}>
+                          Kilograms
+                        </option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Total Gross Weight
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="totalGrossWeight"
+                        value={formData.totalGrossWeight}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        % Fineness
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="fineness"
+                        value={formData.fineness}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Total Net Weight
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="totalNetWeight"
+                        value={formData.totalNetWeight}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Number of Ounces
+                      </label>
+                      <input
+                        name="numberOfOunces"
+                        value={formData.numberOfOunces}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Price per Ounce (USD)
+                      </label>
+                      <input
+                        name="pricePerOunce"
+                        value={formData.pricePerOunce}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Exporter Value (USD)
+                      </label>
+                      <input
+                        name="valueUsd"
+                        value={formData.valueUsd}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Exporter Value (GHS)
+                      </label>
+                      <input
+                        name="valueGhs"
+                        value={formData.valueGhs}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+                  </div>
+                  {/* Exporter Value (USD) */}
+                  {/* <div className="col-span-6 sm:col-span-3">
                     <label
-                      htmlFor="referenceNumber"
+                      htmlFor="exporterValueUsd"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Reference Number *
+                      Exporter Value (USD)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="exporterValueUsd"
+                      id="exporterValueUsd"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.exporterValueUsd}
+                      onChange={handleChange}
+                    />
+                  </div> */}
+
+                  {/* Exporter Value (GHS) */}
+                  {/* <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="exporterValueGhs"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Exporter Value (GHS)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="exporterValueGhs"
+                      id="exporterValueGhs"
+                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      value={formData.exporterValueGhs}
+                      onChange={handleChange}
+                    />
+                  </div> */}
+
+                  {/* GRA Declaration Number */}
+                  {/* <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="graDeclarationNumber"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      GRA Declaration Number
                     </label>
                     <input
                       type="text"
-                      name="referenceNumber"
-                      id="referenceNumber"
-                      required
+                      name="graDeclarationNumber"
+                      id="graDeclarationNumber"
                       className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.referenceNumber}
+                      value={formData.graDeclarationNumber}
                       onChange={handleChange}
                     />
-                  </div>
+                  </div> */}
 
-                  <div className="col-span-1">
+                  {/* Number of Boxes */}
+                  {/* <div className="col-span-6 sm:col-span-3">
                     <label
-                      htmlFor="receivedDate"
+                      htmlFor="numberOfBoxes"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Received Date *
+                      Number of Boxes
                     </label>
                     <input
-                      type="date"
-                      name="receivedDate"
-                      id="receivedDate"
-                      required
+                      type="number"
+                      name="numberOfBoxes"
+                      id="numberOfBoxes"
                       className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.receivedDate}
+                      value={formData.numberOfBoxes}
                       onChange={handleChange}
                     />
-                  </div>
+                  </div> */}
 
-                  <div className="col-span-1">
+                  {/* Remittance Type */}
+                  {/* <div className="col-span-6 sm:col-span-3">
                     <label
-                      htmlFor="exporterTypeId"
+                      htmlFor="remittanceType"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Exporter Type
+                      Remittance Type
                     </label>
-                    <select
-                      id="exporterTypeId"
-                      name="exporterTypeId"
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      value={formData.exporterTypeId}
+                    <input
+                      type="text"
+                      name="remittanceType"
+                      id="remittanceType"
+                      className="mt-1 form-control"
+                      value={formData.remittanceType}
                       onChange={handleChange}
-                    >
-                      <option value="">Select Exporter Type</option>
-                      {exporterTypes.map((type) => (
-                        <option key={type.id} value={type.id}>
-                          {type.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    />
+                  </div> */}
 
-                  <div className="col-span-1">
-                    <label
-                      htmlFor="exporterId"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Exporter *
-                    </label>
-                    <select
-                      id="exporterId"
-                      name="exporterId"
-                      required
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      value={formData.exporterId}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select an exporter</option>
-                      {exporters.map((exporter) => (
-                        <option key={exporter.id} value={exporter.id}>
-                          {exporter.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="col-span-1">
-                    <label
-                      htmlFor="shipmentTypeId"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Shipment Type *
-                    </label>
-                    <select
-                      id="shipmentTypeId"
-                      name="shipmentTypeId"
-                      required
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      value={formData.shipmentTypeId}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select a shipment type</option>
-                      {shipmentTypes.map((type) => (
-                        <option key={type.id} value={type.id}>
-                          {type.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="col-span-1">
+                  {/* Status */}
+                  {/* <div className="col-span-6 sm:col-span-3">
                     <label
                       htmlFor="status"
                       className="block text-sm font-medium text-gray-700"
@@ -331,7 +666,7 @@ function EditJobCardPage() {
                     <select
                       id="status"
                       name="status"
-                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 form-control"
                       value={formData.status}
                       onChange={handleChange}
                     >
@@ -340,9 +675,9 @@ function EditJobCardPage() {
                       <option value="completed">Completed</option>
                       <option value="rejected">Rejected</option>
                     </select>
-                  </div>
+                  </div> */}
 
-                  <div className="col-span-1">
+                  <div className="col-span-6">
                     <label
                       htmlFor="notes"
                       className="block text-sm font-medium text-gray-700"
@@ -353,7 +688,7 @@ function EditJobCardPage() {
                       id="notes"
                       name="notes"
                       rows={3}
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md"
+                      className="mt-1 form-control"
                       placeholder="Additional information or notes about this job card"
                       value={formData.notes}
                       onChange={handleChange}
