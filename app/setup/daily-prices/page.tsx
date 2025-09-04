@@ -4,6 +4,7 @@ import { Header } from "../../components/layout/header";
 import { ChevronDown } from "lucide-react";
 import { DollarSign } from "lucide-react";
 import BackLink from "@/app/components/ui/BackLink";
+import { formatExchangeRate } from "@/app/lib/utils";
 import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
@@ -336,7 +337,9 @@ export default function DailyPricesPage() {
                             </div>
                           </div>
                           <div className="text-sm font-semibold text-gray-900">
-                            {r.price}
+                            {r.type === "EXCHANGE"
+                              ? formatExchangeRate(r.price)
+                              : r.price}
                           </div>
                         </li>
                       );
@@ -442,7 +445,9 @@ export default function DailyPricesPage() {
                               {symbol}
                             </td>
                             <td className="px-4 py-2 text-gray-700">
-                              {priceObj.price}
+                              {priceObj.type === "EXCHANGE"
+                                ? formatExchangeRate(priceObj.price)
+                                : priceObj.price}
                             </td>
                             <td className="px-4 py-2 text-gray-700">
                               {new Date(
@@ -599,7 +604,10 @@ export default function DailyPricesPage() {
                   const symbol = isCommodity
                     ? viewingPrice.commodity?.symbol
                     : viewingPrice.exchange?.symbol;
-                  const price = viewingPrice.price ?? "-";
+                  const price =
+                    viewingPrice.type === "EXCHANGE"
+                      ? formatExchangeRate(viewingPrice.price)
+                      : viewingPrice.price ?? "-";
                   const date = viewingPrice.createdAt
                     ? new Date(viewingPrice.createdAt).toLocaleDateString()
                     : "-";

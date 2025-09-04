@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
+import { formatExchangeRate } from "@/app/lib/utils";
 
 type AssayMethod = "X_RAY" | "WATER_DENSITY";
 
@@ -431,9 +432,7 @@ export default function NewAssayPage() {
                   Daily Exchange (today)
                 </div>
                 <div className="font-medium text-gray-900">
-                  {dailyExchange?.value != null
-                    ? Number(dailyExchange.value).toFixed(2)
-                    : "-"}
+                  {formatExchangeRate(dailyExchange?.value)}
                 </div>
               </div>
 

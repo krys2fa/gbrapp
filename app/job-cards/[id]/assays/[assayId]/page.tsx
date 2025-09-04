@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
-import { formatDate } from "@/app/lib/utils";
+import { formatDate, formatExchangeRate } from "@/app/lib/utils";
 
 export default function AssayDetailPage() {
   const params = useParams();
@@ -270,21 +270,18 @@ export default function AssayDetailPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Net Weight (g)
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Gross Weight (g)
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Fineness
                         </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Net Weight (g)
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       <tr>
-                        <td className="px-4 py-2 text-sm text-gray-700">
-                          {jobCard?.totalNetWeight ?? "-"}
-                        </td>
                         <td className="px-4 py-2 text-sm text-gray-700">
                           {jobCard?.totalGrossWeight ??
                             jobCard?.grossWeight ??
@@ -294,6 +291,9 @@ export default function AssayDetailPage() {
                           {jobCard?.fineness ??
                             jobCard?.declaredFineness ??
                             "-"}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-700">
+                          {jobCard?.totalNetWeight ?? "-"}
                         </td>
                       </tr>
                     </tbody>
@@ -521,18 +521,20 @@ export default function AssayDetailPage() {
                           const parsed = JSON.parse(assay.comments || "{}");
                           const v = parsed?.meta?.dailyExchange;
                           return v != null
-                            ? v
+                            ? formatExchangeRate(v)
                             : exchangeRate != null
-                            ? exchangeRate
+                            ? formatExchangeRate(exchangeRate)
                             : "-";
                         } catch {
-                          return exchangeRate != null ? exchangeRate : "-";
+                          return exchangeRate != null
+                            ? formatExchangeRate(exchangeRate)
+                            : "-";
                         }
                       })()
                     : assay.comments?.meta?.dailyExchange != null
-                    ? assay.comments.meta.dailyExchange
+                    ? formatExchangeRate(assay.comments.meta.dailyExchange)
                     : exchangeRate != null
-                    ? exchangeRate
+                    ? formatExchangeRate(exchangeRate)
                     : "-"}
                 </dd>
               </div>

@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
+import { formatExchangeRate } from "@/app/lib/utils";
 
 const ExchangeSetupPage = () => {
   // Form state
@@ -210,7 +211,7 @@ const ExchangeSetupPage = () => {
                           {exchange.currency}
                         </td>
                         <td className="px-4 py-2 text-gray-700">
-                          {exchange.rate}
+                          {formatExchangeRate(exchange.rate)}
                         </td>
                         <td className="px-4 py-2 text-gray-700">
                           {exchange.createdAt
@@ -345,7 +346,7 @@ const ExchangeSetupPage = () => {
               </div>
               <div>
                 <span className="font-semibold">Rate:</span>{" "}
-                {viewingExchange.rate}
+                {formatExchangeRate(viewingExchange.rate)}
               </div>
               <div>
                 <span className="font-semibold">Date Added:</span>{" "}

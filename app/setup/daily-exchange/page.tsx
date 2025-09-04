@@ -4,6 +4,7 @@ import { Header } from "../../components/layout/header";
 import { ChevronDown } from "lucide-react";
 import { Repeat } from "lucide-react";
 import BackLink from "@/app/components/ui/BackLink";
+import { formatExchangeRate } from "@/app/lib/utils";
 import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
@@ -230,7 +231,7 @@ export default function DailyExchangePage() {
                         </div>
                       </div>
                       <div className="text-sm font-semibold text-gray-900">
-                        {r.price}
+                        {formatExchangeRate(r.price)}
                       </div>
                     </li>
                   ))}
@@ -323,7 +324,9 @@ export default function DailyExchangePage() {
                           <td className="px-4 py-2 text-gray-700">
                             {p.exchange?.symbol}
                           </td>
-                          <td className="px-4 py-2 text-gray-700">{p.price}</td>
+                          <td className="px-4 py-2 text-gray-700">
+                            {formatExchangeRate(p.price)}
+                          </td>
                           <td className="px-4 py-2 text-gray-700">
                             {p.createdAt
                               ? new Date(p.createdAt).toLocaleDateString()
@@ -541,7 +544,7 @@ export default function DailyExchangePage() {
                 </div>
                 <div>
                   <span className="font-semibold">Rate:</span>{" "}
-                  {viewingPrice.price}
+                  {formatExchangeRate(viewingPrice.price)}
                 </div>
                 <div>
                   <span className="font-semibold">Date:</span>{" "}
