@@ -212,9 +212,9 @@ export default function AssayDetailPage() {
         </div>
 
         <div className="flex items-center justify-between mb-1 px-8">
-          <div className="bg-[#2e7030] p-2">
+          <div className="p-2">
             <img
-              src="/goldbod-logo.webp"
+              src="/goldbod-logo-black.png"
               alt="GoldBod Logo"
               className="h-12 w-auto"
             />
@@ -230,6 +230,14 @@ export default function AssayDetailPage() {
             <img
               src="/coat-of-arms.jpg"
               alt="Coat of Arms"
+              className="h-20 w-auto"
+            />
+          </div>
+
+          <div className="bg-white p-4">
+            <img
+              src="/seal.png"
+              alt="Seal"
               className="h-20 w-auto"
             />
           </div>
@@ -299,9 +307,11 @@ export default function AssayDetailPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       <tr>
                         <td className="px-4 py-2 text-sm text-gray-700">
-                          {jobCard?.totalGrossWeight ??
-                            jobCard?.grossWeight ??
-                            "-"}
+                          {jobCard?.totalGrossWeight != null
+                            ? Number(jobCard.totalGrossWeight).toFixed(2)
+                            : jobCard?.grossWeight != null
+                            ? Number(jobCard.grossWeight).toFixed(2)
+                            : "-"}
                         </td>
                         <td className="px-4 py-2 text-sm text-gray-700">
                           {jobCard?.fineness ??
@@ -309,7 +319,9 @@ export default function AssayDetailPage() {
                             "-"}
                         </td>
                         <td className="px-4 py-2 text-sm text-gray-700">
-                          {jobCard?.totalNetWeight ?? "-"}
+                          {jobCard?.totalNetWeight != null
+                            ? Number(jobCard.totalNetWeight).toFixed(2)
+                            : "-"}
                         </td>
                       </tr>
                     </tbody>
@@ -343,13 +355,17 @@ export default function AssayDetailPage() {
                       {(assay.measurements || []).map((m: any, idx: number) => (
                         <tr key={m.id || idx}>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                            {m.grossWeight ?? "-"}
+                            {m.grossWeight != null
+                              ? Number(m.grossWeight).toFixed(2)
+                              : "-"}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
                             {m.fineness ?? "-"}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                            {m.netWeight ?? "-"}
+                            {m.netWeight != null
+                              ? Number(m.netWeight).toFixed(2)
+                              : "-"}
                           </td>
                         </tr>
                       ))}
@@ -362,7 +378,7 @@ export default function AssayDetailPage() {
                                 acc + (Number(m.grossWeight) || 0),
                               0
                             );
-                            return total > 0 ? total.toFixed(3) : "-";
+                            return total > 0 ? total.toFixed(2) : "-";
                           })()}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
@@ -393,7 +409,7 @@ export default function AssayDetailPage() {
                                 acc + (Number(m.netWeight) || 0),
                               0
                             );
-                            return total > 0 ? total.toFixed(3) : "-";
+                            return total > 0 ? total.toFixed(2) : "-";
                           })()}
                         </td>
                       </tr>
@@ -484,7 +500,7 @@ export default function AssayDetailPage() {
                           );
                           const GRAMS_PER_TROY_OUNCE = 31.1034768;
                           const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                          return totalGrams > 0 ? oz.toFixed(3) : "0.000";
+                          return totalGrams > 0 ? oz.toFixed(2) : "0.00";
                         })()}{" "}
                         oz
                       </dd>
@@ -569,7 +585,7 @@ export default function AssayDetailPage() {
           <div className="mt-4 border-t pt-4">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div>
-                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="border-b border-gray-400 mb-2 pt-4"></div>
                 <div className="flex flex-col gap-1">
                   <dt className="text-xs font-medium text-gray-500 text-center">
                     GOLDBOD Authorized Signatory
@@ -585,7 +601,9 @@ export default function AssayDetailPage() {
                   <dt className="text-xs font-medium text-gray-500 text-center">
                     Security Seal No.:
                   </dt>
-                  <dd className="text-xs text-gray-900 text-center">-</dd>
+                  <dd className="text-xs text-gray-900 text-center">
+                    {assay.securitySealNo || "-"}
+                  </dd>
                 </div>
               </div>
 
@@ -594,7 +612,9 @@ export default function AssayDetailPage() {
                   <dt className="text-xs font-medium text-gray-500 text-center">
                     GOLDBOD Seal No.:
                   </dt>
-                  <dd className="text-xs text-gray-900 text-center">-</dd>
+                  <dd className="text-xs text-gray-900 text-center">
+                    {assay.goldbodSealNo || "-"}
+                  </dd>
                 </div>
               </div>
 
@@ -603,7 +623,9 @@ export default function AssayDetailPage() {
                   <dt className="text-xs font-medium text-gray-500 text-center">
                     Customs Seal No.:
                   </dt>
-                  <dd className="text-xs text-gray-900 text-center">-</dd>
+                  <dd className="text-xs text-gray-900 text-center">
+                    {assay.customsSealNo || "-"}
+                  </dd>
                 </div>
               </div>
             </div>
@@ -611,7 +633,7 @@ export default function AssayDetailPage() {
             {/* Signatories */}
             <div className="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div>
-                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="border-b border-gray-400 mb-2 pt-4"></div>
                 <div className="flex flex-col gap-1">
                   <dt className="text-xs font-medium text-gray-500 text-center">
                     Exporter Authorized Signatory
@@ -625,7 +647,7 @@ export default function AssayDetailPage() {
               </div>
 
               <div>
-                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="border-b border-gray-400 mb-2 pt-4"></div>
                 <div className="flex flex-col gap-1">
                   <dt className="text-xs font-medium text-gray-500 text-center">
                     Customs Officer
@@ -637,7 +659,7 @@ export default function AssayDetailPage() {
               </div>
 
               <div>
-                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="border-b border-gray-400 mb-2 pt-4"></div>
                 <div className="flex flex-col gap-1">
                   <dt className="text-xs font-medium text-gray-500 text-center">
                     Technical Director
@@ -649,7 +671,7 @@ export default function AssayDetailPage() {
               </div>
 
               <div>
-                <div className="border-b border-gray-400 mb-2"></div>
+                <div className="border-b border-gray-400 mb-2 pt-4"></div>
                 <div className="flex flex-col gap-1">
                   <dt className="text-xs font-medium text-gray-500 text-center">
                     Assay Officer

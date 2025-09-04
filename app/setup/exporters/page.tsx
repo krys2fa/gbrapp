@@ -20,6 +20,7 @@ const ExportersPage = () => {
     contactPerson: "",
     phone: "",
     address: "",
+    authorizedSignatory: "",
     exporterTypeId: "",
   });
   const [loading, setLoading] = useState(false);
@@ -98,18 +99,23 @@ const ExportersPage = () => {
           contactPerson: form.contactPerson,
           phone: form.phone,
           address: form.address,
+          authorizedSignatory: form.authorizedSignatory,
           exporterTypeId: form.exporterTypeId || undefined,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create exporter");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to create exporter");
+      }
       setSuccess("Exporter created successfully!");
       setForm({
         name: "",
         email: "",
-  tin: "",
+        tin: "",
         contactPerson: "",
         phone: "",
         address: "",
+        authorizedSignatory: "",
         exporterTypeId: "",
       });
     } catch (err: any) {
@@ -128,6 +134,7 @@ const ExportersPage = () => {
       contactPerson: exporter.contactPerson || "",
       phone: exporter.phone || "",
       address: exporter.address || "",
+      authorizedSignatory: exporter.authorizedSignatory || "",
       exporterTypeId: exporter.exporterType?.id || "",
     });
   };
@@ -149,10 +156,14 @@ const ExportersPage = () => {
           contactPerson: form.contactPerson,
           phone: form.phone,
           address: form.address,
+          authorizedSignatory: form.authorizedSignatory,
           exporterTypeId: form.exporterTypeId || undefined,
         }),
       });
-      if (!res.ok) throw new Error("Failed to update exporter");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to update exporter");
+      }
       setSuccess("Exporter updated successfully!");
       setEditingExporter(null);
       setForm({
@@ -162,6 +173,7 @@ const ExportersPage = () => {
         contactPerson: "",
         phone: "",
         address: "",
+        authorizedSignatory: "",
         exporterTypeId: "",
       });
     } catch (err: any) {
@@ -220,7 +232,9 @@ const ExportersPage = () => {
       </div>
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-xl">
-          <form onSubmit={handleSubmit}>
+          <form
+            onSubmit={editingExporter ? handleUpdateExporter : handleSubmit}
+          >
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
                 {error && (
@@ -311,7 +325,6 @@ const ExportersPage = () => {
                     />
                   </div>
 
-
                   <div>
                     <label
                       htmlFor="email"
@@ -380,8 +393,46 @@ const ExportersPage = () => {
                       required
                     />
                   </div>
+                  <div>
+                    <label
+                      htmlFor="authorizedSignatory"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Authorized Signatory
+                    </label>
+                    <input
+                      type="text"
+                      name="authorizedSignatory"
+                      id="authorizedSignatory"
+                      value={form.authorizedSignatory}
+                      onChange={handleChange}
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter authorized signatory name"
+                    />
+                  </div>
                 </div>
-                <div className="mt-6 flex justify-end">
+                <div className="mt-6 flex justify-end gap-3">
+                  {editingExporter && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingExporter(null);
+                        setForm({
+                          name: "",
+                          tin: "",
+                          email: "",
+                          contactPerson: "",
+                          phone: "",
+                          address: "",
+                          authorizedSignatory: "",
+                          exporterTypeId: "",
+                        });
+                      }}
+                      className="bg-gray-500 text-white px-6 py-2 rounded-md shadow hover:bg-gray-600 transition"
+                    >
+                      Cancel
+                    </button>
+                  )}
                   <button
                     type="submit"
                     className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"

@@ -104,6 +104,8 @@ function EditJobCardPage() {
     pricePerOunce: "",
     numberOfOunces: "",
     buyerAddress: "",
+    customsOfficer: "",
+    technicalDirector: "",
   });
 
   useEffect(() => {
@@ -165,6 +167,8 @@ function EditJobCardPage() {
             pricePerOunce: jobCardData.pricePerOunce?.toString() || "",
             numberOfOunces: jobCardData.numberOfOunces?.toString() || "",
             buyerAddress: jobCardData.buyerAddress || "",
+            customsOfficer: jobCardData.customsOfficer?.name || "",
+            technicalDirector: jobCardData.technicalDirector?.name || "",
           });
         } else {
           throw new Error("Failed to fetch job card");
@@ -453,6 +457,32 @@ function EditJobCardPage() {
                           value={formData.teamLeader}
                           onChange={handleChange}
                           className="mt-1 form-control"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Customs Officer
+                        </label>
+                        <input
+                          name="customsOfficer"
+                          value={formData.customsOfficer}
+                          onChange={handleChange}
+                          className="mt-1 form-control"
+                          placeholder="Enter customs officer name"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Technical Director
+                        </label>
+                        <input
+                          name="technicalDirector"
+                          value={formData.technicalDirector}
+                          onChange={handleChange}
+                          className="mt-1 form-control"
+                          placeholder="Enter technical director name"
                         />
                       </div>
 

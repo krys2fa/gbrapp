@@ -264,19 +264,20 @@ model ShipmentType {
 }
 
 model Exporter {
-  id             String       @id @default(uuid())
-  name           String
-  tin            String?
-  exporterTypeId String
-  exporterType   ExporterType @relation(fields: [exporterTypeId], references: [id])
-  contactPerson  String?
-  email          String?
-  phone          String?
-  address        String?
-  licenseNumber  String?
-  jobCards       JobCard[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id                String       @id @default(uuid())
+  name              String
+  tin               String?
+  exporterTypeId    String
+  exporterType      ExporterType @relation(fields: [exporterTypeId], references: [id])
+  contactPerson     String?
+  email             String?
+  phone             String?
+  address           String?
+  licenseNumber     String?
+  authorizedSignatory String?
+  jobCards          JobCard[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 }
 
 model ExporterType {

@@ -38,6 +38,9 @@ export default function NewAssayPage() {
     signatory: "",
     comments: "",
     shipmentTypeId: "",
+    securitySealNo: "",
+    goldbodSealNo: "",
+    customsSealNo: "",
   });
 
   // rows for each piece: grossWeight, waterWeight, fineness (auto), netWeight
@@ -187,6 +190,28 @@ export default function NewAssayPage() {
 
     fetchMeta();
   }, [id]);
+
+  // Auto-populate signatory fields from job card data
+  useEffect(() => {
+    if (jobCard) {
+      setForm((prevForm) => ({
+        ...prevForm,
+        signatory:
+          jobCard.customsOfficer?.name ||
+          jobCard.assayOfficer?.name ||
+          prevForm.signatory,
+        securitySealNo:
+          jobCard.seals?.find((s: any) => s.sealType === "CUSTOMS_SEAL")
+            ?.sealNumber || prevForm.securitySealNo,
+        goldbodSealNo:
+          jobCard.seals?.find((s: any) => s.sealType === "PMMC_SEAL")
+            ?.sealNumber || prevForm.goldbodSealNo,
+        customsSealNo:
+          jobCard.seals?.find((s: any) => s.sealType === "OTHER_SEAL")
+            ?.sealNumber || prevForm.customsSealNo,
+      }));
+    }
+  }, [jobCard]);
 
   // adjust rows when pieces changes
   useEffect(() => {
@@ -395,6 +420,9 @@ export default function NewAssayPage() {
         method: form.method,
         pieces: Number(form.pieces),
         signatory: form.signatory,
+        securitySealNo: form.securitySealNo,
+        goldbodSealNo: form.goldbodSealNo,
+        customsSealNo: form.customsSealNo,
         measurements: rows.map((r, i) => ({
           piece: i + 1,
           grossWeight: r.grossWeight || 0,
@@ -622,6 +650,48 @@ export default function NewAssayPage() {
                   value={form.signatory}
                   onChange={handleFormChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Security Seal No.
+                </label>
+                <input
+                  name="securitySealNo"
+                  type="text"
+                  value={form.securitySealNo}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  placeholder="Enter security seal number"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  GOLDBOD Seal No.
+                </label>
+                <input
+                  name="goldbodSealNo"
+                  type="text"
+                  value={form.goldbodSealNo}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  placeholder="Enter GOLDBOD seal number"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Customs Seal No.
+                </label>
+                <input
+                  name="customsSealNo"
+                  type="text"
+                  value={form.customsSealNo}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  placeholder="Enter customs seal number"
                 />
               </div>
             </div>

@@ -189,8 +189,45 @@ export async function PUT(req: NextRequest) {
     if (requestData.numberOfBoxes !== undefined) {
       updateData.numberOfBoxes = parseInt(requestData.numberOfBoxes);
     }
-    if (requestData.remittanceType !== undefined) {
-      updateData.remittanceType = requestData.remittanceType;
+    if (
+      requestData.customsOfficer !== undefined &&
+      requestData.customsOfficer.trim() !== ""
+    ) {
+      // Find or create customs officer
+      let customsOfficer = await prisma.customsOfficer.findFirst({
+        where: { name: requestData.customsOfficer.trim() },
+      });
+      if (!customsOfficer) {
+        customsOfficer = await prisma.customsOfficer.create({
+          data: {
+            name: requestData.customsOfficer.trim(),
+            badgeNumber: `AUTO-${Date.now()}-${Math.random()
+              .toString(36)
+              .substr(2, 5)}`,
+          },
+        });
+      }
+      updateData.customsOfficerId = customsOfficer.id;
+    }
+    if (
+      requestData.technicalDirector !== undefined &&
+      requestData.technicalDirector.trim() !== ""
+    ) {
+      // Find or create technical director
+      let technicalDirector = await prisma.technicalDirector.findFirst({
+        where: { name: requestData.technicalDirector.trim() },
+      });
+      if (!technicalDirector) {
+        technicalDirector = await prisma.technicalDirector.create({
+          data: {
+            name: requestData.technicalDirector.trim(),
+            badgeNumber: `AUTO-${Date.now()}-${Math.random()
+              .toString(36)
+              .substr(2, 5)}`,
+          },
+        });
+      }
+      updateData.technicalDirectorId = technicalDirector.id;
     }
 
     console.log("Updating with data:", updateData);
