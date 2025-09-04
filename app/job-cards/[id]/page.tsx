@@ -125,12 +125,12 @@ function JobCardDetailPage() {
     }
   };
 
-  // If any invoice is paid or jobCard.status is 'paid', show Paid badge.
-  const hasPaidInvoice =
-    Array.isArray(jobCard.invoices) &&
-    jobCard.invoices.some((inv: any) => inv.status === "paid");
+  // Check if editing should be restricted
+  const hasAssays = jobCard.assays && jobCard.assays.length > 0;
+  const hasPaidInvoices = Array.isArray(jobCard.invoices) && jobCard.invoices.some((inv: any) => inv.status === "paid");
+  const canEdit = !hasAssays && !hasPaidInvoices;
   const badgeStatus =
-    hasPaidInvoice || jobCard.status === "paid"
+    hasPaidInvoices || jobCard.status === "paid"
       ? "paid"
       : jobCard.assays && jobCard.assays.length > 0
       ? "completed"
@@ -151,13 +151,15 @@ function JobCardDetailPage() {
         <div>
           <BackLink href="/job-cards" label="Back to Job Cards" />
         </div>
-        <Link
-          href={`/job-cards/${id}/edit`}
-          className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-        >
-          <PencilIcon className="h-4 w-4 mr-2" />
-          Edit Job Card
-        </Link>
+        {canEdit && (
+          <Link
+            href={`/job-cards/${id}/edit`}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          >
+            <PencilIcon className="h-4 w-4 mr-2" />
+            Edit Job Card
+          </Link>
+        )}
       </div>
 
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">

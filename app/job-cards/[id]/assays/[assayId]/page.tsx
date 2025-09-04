@@ -189,7 +189,7 @@ export default function AssayDetailPage() {
         </div>
       </div>
       <div className="mb-6 flex items-center justify-between">
-        <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
+        {/* <BackLink href={`/job-cards/${id}`} label="Back to Job Card" /> */}
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-medium">Valuation Details</h2>
           <button
