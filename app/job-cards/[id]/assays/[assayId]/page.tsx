@@ -182,16 +182,11 @@ export default function AssayDetailPage() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header: centered title only (logo and coat omitted for now) */}
-      <div className="mb-4">
-        <div className="flex justify-center">
-          <h1 className="text-2xl font-bold tracking-wider">ASSAY REPORT</h1>
-        </div>
-      </div>
+
       <div className="mb-6 flex items-center justify-between">
-        {/* <BackLink href={`/job-cards/${id}`} label="Back to Job Card" /> */}
+
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-medium">Valuation Details</h2>
+
           <button
             onClick={() => {
               try {
