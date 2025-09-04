@@ -15,6 +15,7 @@ const ExportersPage = () => {
   // Form state
   const [form, setForm] = useState({
     name: "",
+    tin: "",
     email: "",
     contactPerson: "",
     phone: "",
@@ -92,6 +93,7 @@ const ExportersPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: form.name,
+          tin: form.tin,
           email: form.email,
           contactPerson: form.contactPerson,
           phone: form.phone,
@@ -104,6 +106,7 @@ const ExportersPage = () => {
       setForm({
         name: "",
         email: "",
+  tin: "",
         contactPerson: "",
         phone: "",
         address: "",
@@ -121,6 +124,7 @@ const ExportersPage = () => {
     setForm({
       name: exporter.name || "",
       email: exporter.email || "",
+      tin: exporter.tin || "",
       contactPerson: exporter.contactPerson || "",
       phone: exporter.phone || "",
       address: exporter.address || "",
@@ -140,6 +144,7 @@ const ExportersPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: form.name,
+          tin: form.tin,
           email: form.email,
           contactPerson: form.contactPerson,
           phone: form.phone,
@@ -152,6 +157,7 @@ const ExportersPage = () => {
       setEditingExporter(null);
       setForm({
         name: "",
+        tin: "",
         email: "",
         contactPerson: "",
         phone: "",
@@ -205,7 +211,7 @@ const ExportersPage = () => {
   return (
     <>
       <Header
-        title="Manage Exporter"
+        title="Manage Exporters"
         icon={<Building2 className="h-5 w-5" />}
         subtitle="Register exporters and manage exporter details."
       />
@@ -213,7 +219,7 @@ const ExportersPage = () => {
         <BackLink href="/setup" label="Back to Settings" />
       </div>
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-xl mt-8">
+        <div className="max-w-xl">
           <form onSubmit={handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
@@ -287,6 +293,25 @@ const ExportersPage = () => {
                       ))}
                     </select>
                   </div>
+                  <div>
+                    <label
+                      htmlFor="tin"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      TIN
+                    </label>
+                    <input
+                      type="text"
+                      name="tin"
+                      id="tin"
+                      value={form.tin}
+                      onChange={handleChange}
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+
+
                   <div>
                     <label
                       htmlFor="email"
@@ -425,6 +450,9 @@ const ExportersPage = () => {
                           Name
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          TIN
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Email
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -440,12 +468,6 @@ const ExportersPage = () => {
                           Exporter Type
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Date Added
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Last Login
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Actions
                         </th>
                       </tr>
@@ -457,6 +479,9 @@ const ExportersPage = () => {
                           <tr key={exporter.id} className="hover:bg-gray-50">
                             <td className="px-4 py-2 text-gray-900">
                               {exporter.name}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {exporter.tin}
                             </td>
                             <td className="px-4 py-2 text-gray-700">
                               {exporter.email}
@@ -472,18 +497,6 @@ const ExportersPage = () => {
                             </td>
                             <td className="px-4 py-2 text-gray-700">
                               {exporter.exporterType?.name || "-"}
-                            </td>
-                            <td className="px-4 py-2 text-gray-700">
-                              {exporter.createdAt
-                                ? new Date(
-                                    exporter.createdAt
-                                  ).toLocaleDateString()
-                                : "-"}
-                            </td>
-                            <td className="px-4 py-2 text-gray-700">
-                              {exporter.lastLogin
-                                ? new Date(exporter.lastLogin).toLocaleString()
-                                : "Never"}
                             </td>
                             <td className="px-4 py-2 flex gap-2">
                               <button

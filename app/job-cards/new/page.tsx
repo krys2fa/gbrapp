@@ -20,9 +20,6 @@ function NewJobCardPage() {
   const [exporters, setExporters] = useState<
     { id: string; name: string; exporterType: { id: string; name: string } }[]
   >([]);
-  const [shipmentTypes, setShipmentTypes] = useState<
-    { id: string; name: string }[]
-  >([]);
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
   >([]);
@@ -85,46 +82,37 @@ function NewJobCardPage() {
     referenceNumber: "",
     receivedDate: new Date().toISOString().split("T")[0], // Today's date as default
     exporterId: "",
-    shipmentTypeId: "",
     commodityId: "",
     unitOfMeasure: UnitOfMeasure.GRAMS,
-    buyerIdNumber: "",
     buyerName: "",
-    buyerPhone: "",
-    exporterPricePerOz: "",
     teamLeader: "",
     totalGrossWeight: "",
     destinationCountry: "",
     fineness: "",
     sourceOfGold: "Ghana", // Default to Ghana
     totalNetWeight: "",
-    numberOfPersons: "",
-    graDeclarationNumber: "",
     numberOfBoxes: "",
-    remittanceType: "",
     status: "pending",
     notes: "",
+    valueGhs: "",
+    valueUsd: "",
+    pricePerOunce: "",
+    numberOfOunces: "",
   });
 
   useEffect(() => {
-    // Fetch exporters and shipment types
+    // Fetch exporters and commodities
     const fetchData = async () => {
       try {
-        const [exportersRes, shipmentTypesRes, commoditiesRes] =
+        const [exportersRes, commoditiesRes] =
           await Promise.all([
             fetch("/api/exporters"),
-            fetch("/api/shipment-types"),
             fetch("/api/commodity"),
           ]);
 
         if (exportersRes.ok) {
           const exportersData = await exportersRes.json();
           setExporters(exportersData);
-        }
-
-        if (shipmentTypesRes.ok) {
-          const shipmentTypesData = await shipmentTypesRes.json();
-          setShipmentTypes(shipmentTypesData);
         }
 
         if (commoditiesRes.ok) {
@@ -184,6 +172,9 @@ function NewJobCardPage() {
       "numberOfBoxes",
       "totalGrossWeight",
       "totalNetWeight",
+      "numberOfOunces",
+      "pricePerOunce",
+      "valueUsd",
       "fineness",
     ];
 
@@ -198,9 +189,9 @@ function NewJobCardPage() {
     });
 
     // Remove empty id fields so backend can treat them as null/undefined
-    ["exporterId", "shipmentTypeId", "commodityId"].forEach((k) => {
-      if (!submissionData[k]) delete submissionData[k];
-    });
+    // ["exporterId", "shipmentTypeId", "commodityId"].forEach((k) => {
+    //   if (!submissionData[k]) delete submissionData[k];
+    // });
 
     // Remove empty strings for optional text fields
     Object.keys(submissionData).forEach((k) => {
@@ -297,143 +288,6 @@ function NewJobCardPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Buyer Name
-                      </label>
-                      <input
-                        name="buyerName"
-                        value={formData.buyerName}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Buyer ID Number
-                      </label>
-                      <input
-                        name="buyerIdNumber"
-                        value={formData.buyerIdNumber}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Buyer Phone Number
-                      </label>
-                      <input
-                        name="buyerPhone"
-                        value={formData.buyerPhone}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Buyer Address
-                      </label>
-                      <input
-                        name="buyerAddress"
-                        value={(formData as any).buyerAddress || ""}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Team Leader
-                      </label>
-                      <input
-                        name="teamLeader"
-                        value={formData.teamLeader}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Number of People
-                      </label>
-                      <input
-                        type="number"
-                        name="numberOfPersons"
-                        value={formData.numberOfPersons}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Source of Commodity
-                      </label>
-                      <input
-                        name="sourceOfGold"
-                        value={(formData as any).sourceOfGold || ""}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Number of Bars
-                      </label>
-                      <input
-                        type="number"
-                        name="numberOfBoxes"
-                        value={formData.numberOfBoxes}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        GRA Declaration Number
-                      </label>
-                      <input
-                        name="graDeclarationNumber"
-                        value={formData.graDeclarationNumber}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Remittance Type
-                      </label>
-                      <input
-                        name="remittanceType"
-                        value={formData.remittanceType}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div> */}
-                  </div>
-
-                  <div className="col-span-6 md:col-span-3 space-y-6">
-                    {/* Right column fields */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Job Reference Number
-                      </label>
-                      <input
-                        name="referenceNumber"
-                        value={(formData as any).referenceNumber || ""}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
                         Exporter
                       </label>
                       <select
@@ -449,6 +303,54 @@ function NewJobCardPage() {
                           </option>
                         ))}
                       </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Importer Name
+                      </label>
+                      <input
+                        name="buyerName"
+                        value={formData.buyerName}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    {/* <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Buyer ID Number
+                      </label>
+                      <input
+                        name="buyerIdNumber"
+                        value={formData.buyerIdNumber}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div> */}
+
+                    {/* <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Buyer Phone Number
+                      </label>
+                      <input
+                        name="buyerPhone"
+                        value={formData.buyerPhone}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div> */}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Importer Address
+                      </label>
+                      <input
+                        name="buyerAddress"
+                        value={(formData as any).buyerAddress || ""}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
                     </div>
 
                     <div>
@@ -477,6 +379,114 @@ function NewJobCardPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
+                        Team Leader
+                      </label>
+                      <input
+                        name="teamLeader"
+                        value={formData.teamLeader}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    {/* <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Number of People
+                      </label>
+                      <input
+                        type="number"
+                        name="numberOfPersons"
+                        value={formData.numberOfPersons}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div> */}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Commodity
+                      </label>
+                      <select
+                        name="commodityId"
+                        value={(formData as any).commodityId || ""}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      >
+                        <option value="">Select commodity</option>
+                        {commodities.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Source of Commodity
+                      </label>
+                      <input
+                        name="sourceOfGold"
+                        value={(formData as any).sourceOfGold || ""}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Number of Boxes
+                      </label>
+                      <input
+                        type="number"
+                        name="numberOfBoxes"
+                        value={formData.numberOfBoxes}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    {/* <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        GRA Declaration Number
+                      </label>
+                      <input
+                        name="graDeclarationNumber"
+                        value={formData.graDeclarationNumber}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div> */}
+
+                    {/* <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Remittance Type
+                      </label>
+                      <input
+                        name="remittanceType"
+                        value={formData.remittanceType}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div> */}
+                  </div>
+
+                  <div className="col-span-6 md:col-span-3 space-y-6">
+                    {/* Right column fields */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Job Reference Number
+                      </label>
+                      <input
+                        name="referenceNumber"
+                        value={(formData as any).referenceNumber || ""}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    {/* <div>
+                      <label className="block text-sm font-medium text-gray-700">
                         Shipment Type
                       </label>
                       <select
@@ -492,7 +502,7 @@ function NewJobCardPage() {
                           </option>
                         ))}
                       </select>
-                    </div>
+                    </div> */}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
@@ -527,6 +537,20 @@ function NewJobCardPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
+                        % Fineness
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="fineness"
+                        value={formData.fineness}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
                         Total Net Weight
                       </label>
                       <input
@@ -541,38 +565,51 @@ function NewJobCardPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Commodity
+                        Number of Ounces
                       </label>
-                      <select
-                        name="commodityId"
-                        value={(formData as any).commodityId || ""}
+                      <input
+                        name="numberOfOunces"
+                        value={(formData as any).numberOfOunces || ""}
                         onChange={handleChange}
                         className="mt-1 form-control"
-                      >
-                        <option value="">Select commodity</option>
-                        {commodities.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        % Fineness
+                        Price per Ounce (USD)
                       </label>
                       <input
-                        type="number"
-                        step="0.01"
-                        name="fineness"
-                        value={formData.fineness}
+                        name="pricePerOunce"
+                        value={(formData as any).pricePerOunce || ""}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Exporter Value (USD)
+                      </label>
+                      <input
+                        name="valueUsd"
+                        value={(formData as any).valueUsd || ""}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Exporter Value (GHS)
+                      </label>
+                      <input
+                        name="valueGhs"
+                        value={(formData as any).valueGhs || ""}
                         onChange={handleChange}
                         className="mt-1 form-control"
                       />
                     </div>
                   </div>
-
                   {/* Exporter Value (USD) */}
                   {/* <div className="col-span-6 sm:col-span-3">
                     <label

@@ -16,8 +16,32 @@ interface JobCardData {
   createdAt: string;
   updatedAt: string;
   notes?: string;
+  
+  // Buyer/Importer information
+  buyerName?: string;
+  buyerIdNumber?: string;
+  buyerPhone?: string;
+  buyerAddress?: string;
+  
+  // Location and logistics
+  destinationCountry?: string;
+  teamLeader?: string;
+  sourceOfGold?: string;
+  numberOfBoxes?: number;
+  
+  // Measurements and values
+  unitOfMeasure?: string;
+  totalGrossWeight?: number;
+  totalNetWeight?: number;
+  fineness?: number;
+  numberOfOunces?: number;
+  pricePerOunce?: number;
+  valueUsd?: number;
+  valueGhs?: string | number;
+  
+  // Related data
   exporter: { name: string };
-  shipmentType: { name: string };
+  commodity?: { name: string };
   assays?: Array<Record<string, any>>;
   invoices?: Array<Record<string, any>>;
 }
@@ -154,86 +178,256 @@ function JobCardDetailPage() {
             {badgeText}
           </span>
         </div>
-        <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-          <dl className="sm:divide-y sm:divide-gray-200">
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">
-                Reference Number
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {jobCard.referenceNumber}
-              </dd>
-            </div>
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">
-                Received Date
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {formatDate(new Date(jobCard.receivedDate))}
-              </dd>
-            </div>
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Exporter</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {jobCard.exporter.name}
-              </dd>
-            </div>
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">
-                Shipment Type
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {jobCard.shipmentType.name}
-              </dd>
-            </div>
-            {jobCard.notes && (
+        <div className="border-t border-gray-200">
+          {/* Basic Information Section */}
+          <div className="bg-gray-50 px-4 py-3 sm:px-6">
+            <h3 className="text-sm font-medium text-gray-900">Basic Information</h3>
+          </div>
+          <div className="px-4 py-5 sm:p-0">
+            <dl className="sm:divide-y sm:divide-gray-200">
               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Notes</dt>
+                <dt className="text-sm font-medium text-gray-500">Reference Number</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {jobCard.notes}
+                  {jobCard.referenceNumber}
                 </dd>
               </div>
-            )}
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Created At</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {formatDate(new Date(jobCard.createdAt))}
-              </dd>
+              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className="text-sm font-medium text-gray-500">Received Date</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                  {formatDate(new Date(jobCard.receivedDate))}
+                </dd>
+              </div>
+              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className="text-sm font-medium text-gray-500">Status</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(badgeStatus)}`}>
+                    {badgeText}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          {/* Parties Information Section */}
+          <div className="bg-gray-50 px-4 py-3 sm:px-6 border-t border-gray-200">
+            <h3 className="text-sm font-medium text-gray-900">Parties Information</h3>
+          </div>
+          <div className="px-4 py-5 sm:p-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div className="space-y-4">
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Exporter</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard.exporter.name}
+                  </dd>
+                </div>
+                {jobCard.buyerName && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Importer Name</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {jobCard.buyerName}
+                    </dd>
+                  </div>
+                )}
+                {jobCard.buyerIdNumber && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Importer ID Number</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {jobCard.buyerIdNumber}
+                    </dd>
+                  </div>
+                )}
+                {jobCard.buyerAddress && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Importer Address</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {jobCard.buyerAddress}
+                    </dd>
+                  </div>
+                )}
+              </div>
+              
+              {/* Right Column */}
+              <div className="space-y-4">
+                {jobCard.buyerPhone && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Importer Phone</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {jobCard.buyerPhone}
+                    </dd>
+                  </div>
+                )}
+                {jobCard.destinationCountry && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Destination Country</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {jobCard.destinationCountry}
+                    </dd>
+                  </div>
+                )}
+                {jobCard.teamLeader && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Team Leader</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {jobCard.teamLeader}
+                    </dd>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Updated At</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {formatDate(new Date(jobCard.updatedAt))}
-              </dd>
-            </div>
-          </dl>
+          </div>
+
+          {/* Commodity Information Section */}
+          <div className="bg-gray-50 px-4 py-3 sm:px-6 border-t border-gray-200">
+            <h3 className="text-sm font-medium text-gray-900">Commodity Information</h3>
+          </div>
+          <div className="px-4 py-5 sm:p-0">
+            <dl className="sm:divide-y sm:divide-gray-200">
+              {jobCard.commodity && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Commodity</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard.commodity.name}
+                  </dd>
+                </div>
+              )}
+              {jobCard.sourceOfGold && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Source of Commodity</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard.sourceOfGold}
+                  </dd>
+                </div>
+              )}
+              {jobCard.numberOfBoxes !== null && jobCard.numberOfBoxes !== undefined && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Number of Boxes</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard.numberOfBoxes}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+
+          {/* Measurements & Quality Section */}
+          <div className="bg-gray-50 px-4 py-3 sm:px-6 border-t border-gray-200">
+            <h3 className="text-sm font-medium text-gray-900">Measurements & Quality</h3>
+          </div>
+          <div className="px-4 py-5 sm:p-0">
+            <dl className="sm:divide-y sm:divide-gray-200">
+              {jobCard.unitOfMeasure && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Unit of Measure</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard.unitOfMeasure === 'g' ? 'Grams' : jobCard.unitOfMeasure === 'kg' ? 'Kilograms' : jobCard.unitOfMeasure}
+                  </dd>
+                </div>
+              )}
+              {jobCard.totalGrossWeight !== null && jobCard.totalGrossWeight !== undefined && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Total Gross Weight</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard.totalGrossWeight?.toLocaleString()} {jobCard.unitOfMeasure || 'g'}
+                  </dd>
+                </div>
+              )}
+              {jobCard.fineness !== null && jobCard.fineness !== undefined && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">% Fineness</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard.fineness}%
+                  </dd>
+                </div>
+              )}
+              {jobCard.totalNetWeight !== null && jobCard.totalNetWeight !== undefined && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Total Net Weight</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard.totalNetWeight?.toLocaleString()} {jobCard.unitOfMeasure || 'g'}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+
+          {/* Valuation Section */}
+          <div className="bg-gray-50 px-4 py-3 sm:px-6 border-t border-gray-200">
+            <h3 className="text-sm font-medium text-gray-900">Valuation</h3>
+          </div>
+          <div className="px-4 py-5 sm:p-0">
+            <dl className="sm:divide-y sm:divide-gray-200">
+              {jobCard.numberOfOunces !== null && jobCard.numberOfOunces !== undefined && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Number of Ounces</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard.numberOfOunces}
+                  </dd>
+                </div>
+              )}
+              {jobCard.pricePerOunce !== null && jobCard.pricePerOunce !== undefined && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Price per Ounce (USD)</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    ${jobCard.pricePerOunce?.toLocaleString()}
+                  </dd>
+                </div>
+              )}
+              {jobCard.valueUsd !== null && jobCard.valueUsd !== undefined && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Exporter Value (USD)</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    ${jobCard.valueUsd?.toLocaleString()}
+                  </dd>
+                </div>
+              )}
+              {jobCard.valueGhs && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Exporter Value (GHS)</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    GHS {typeof jobCard.valueGhs === 'string' ? jobCard.valueGhs : jobCard.valueGhs?.toLocaleString()}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+
+          {/* Additional Information Section */}
+          {jobCard.notes && (
+            <>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 border-t border-gray-200">
+                <h3 className="text-sm font-medium text-gray-900">Additional Information</h3>
+              </div>
+              <div className="px-4 py-5 sm:p-0">
+                <dl className="sm:divide-y sm:divide-gray-200">
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Notes</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {jobCard.notes}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* Assays Section */}
-      <div className="mt-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Valuation
-          </h3>
-          {jobCard.assays && jobCard.assays.length > 0 ? (
+      {jobCard.assays && jobCard.assays.length > 0 ? (
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Valuation
+            </h3>
             <Link
               href={`/job-cards/${id}/assays/${jobCard.assays[0].id}`}
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
             >
               View Valuation
             </Link>
-          ) : (
-            <Link
-              href={`/job-cards/${id}/assays/new`}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              Perform Valuation
-            </Link>
-          )}
-        </div>
-
-        {jobCard.assays && jobCard.assays.length > 0 ? (
+          </div>
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200">
               {jobCard.assays.map((assay: any) => (
@@ -267,15 +461,28 @@ function JobCardDetailPage() {
               ))}
             </ul>
           </div>
-        ) : (
+        </div>
+      ) : (
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Valuation
+            </h3>
+            <Link
+              href={`/job-cards/${id}/assays/new`}
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+            >
+              Perform Valuation
+            </Link>
+          </div>
           <div className="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center text-gray-500">
             Valuation has not been performed for this job card yet.
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Invoices Section: only show after valuation (assays) exist */}
-      {jobCard.assays && jobCard.assays.length > 0 && (
+      {jobCard && jobCard.assays && jobCard.assays.length > 0 && (
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg leading-6 font-medium text-gray-900">

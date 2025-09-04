@@ -60,7 +60,7 @@ export async function GET(req: Request) {
         referenceNumber: true,
         receivedDate: true,
         createdAt: true,
-        exporter: { select: { id: true, name: true, code: true } },
+        exporter: { select: { id: true, name: true } },
         destinationCountry: true,
         totalGrossWeight: true,
         totalNetWeight: true,
@@ -75,7 +75,6 @@ export async function GET(req: Request) {
         },
         fees: true,
         seals: true,
-        shipmentType: { select: { id: true, name: true } },
       },
     }),
   ]);

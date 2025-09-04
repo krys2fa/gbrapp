@@ -90,8 +90,6 @@ model JobCard {
   receivedDate         DateTime
   exporterId           String
   exporter             Exporter                 @relation(fields: [exporterId], references: [id])
-  shipmentTypeId       String
-  shipmentType         ShipmentType             @relation(fields: [shipmentTypeId], references: [id])
   customsOfficerId     String?
   customsOfficer       CustomsOfficer?          @relation(fields: [customsOfficerId], references: [id])
   nacobOfficerId       String?
@@ -115,6 +113,10 @@ model JobCard {
   totalNetWeight       Float?
   commodityId          String?
   commodity            Commodity?               @relation(fields: [commodityId], references: [id])
+  numberOfOunces      Float?
+  pricePerOunce       Float?
+  valueUsd            Float?
+  valueGhs            Float?
   numberOfPersons      Int?
   graDeclarationNumber String?
   numberOfBoxes        Int?
@@ -254,18 +256,17 @@ model Assay {
 }
 
 model ShipmentType {
-  id          String    @id @default(uuid())
-  name        String    @unique
+  id          String   @id @default(uuid())
+  name        String   @unique
   description String?
-  jobCards    JobCard[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Exporter {
   id             String       @id @default(uuid())
   name           String
-  code           String       @unique
+  tin            String?
   exporterTypeId String
   exporterType   ExporterType @relation(fields: [exporterTypeId], references: [id])
   contactPerson  String?

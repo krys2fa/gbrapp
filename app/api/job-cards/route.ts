@@ -81,7 +81,6 @@ async function getAllJobCards(req: NextRequest) {
       receivedDate: true,
       status: true,
       exporterId: true,
-      shipmentTypeId: true,
       createdAt: true,
       updatedAt: true,
       // include lightweight relations via select to avoid selecting all job card columns
@@ -97,12 +96,7 @@ async function getAllJobCards(req: NextRequest) {
           },
         },
       },
-      shipmentType: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+
       _count: {
         select: {
           assays: true,
@@ -184,70 +178,99 @@ async function createJobCard(req: NextRequest) {
   try {
     const requestData = await req.json();
     console.log("Received data:", JSON.stringify(requestData, null, 2));
+    // Build a safe, explicit data object from a whitelist of allowed scalar fields.
+    // This prevents any nested relation objects (e.g. exporter:{...}) from being
+    // forwarded to Prisma where they would trigger validation errors.
+    const payload: any =
+      typeof requestData === "object" && requestData !== null
+        ? requestData
+        : {};
 
-    // Sanitize incoming payload: remove nested relation objects if present
-    // (client may send objects like `exporter` or `shipmentType` accidentally)
-    const cleaned: any = { ...requestData };
-    delete cleaned.exporter;
-    delete cleaned.shipmentType;
-    delete cleaned.shipmentTypeIdObj;
+    // Defensive: strip nested relation objects that clients might send by mistake
+    if (payload && typeof payload.exporter === "object")
+      delete payload.exporter;
 
-    // Build prisma data object from allowed scalar fields
-    const data: any = {
-      referenceNumber:
-        cleaned.referenceNumber ||
-        `JC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      receivedDate: cleaned.receivedDate
-        ? new Date(cleaned.receivedDate)
-        : new Date(),
-      exporterId: cleaned.exporterId || null,
-      shipmentTypeId: cleaned.shipmentTypeId || null,
-      status: cleaned.status || "pending",
-      // optional fields - include if provided
-      unitOfMeasure: cleaned.unitOfMeasure || undefined,
-      idType: cleaned.idType || undefined,
-      buyerIdNumber: cleaned.buyerIdNumber || undefined,
-      buyerName: cleaned.buyerName || undefined,
-      buyerPhone: cleaned.buyerPhone || undefined,
-      exporterPricePerOz: cleaned.exporterPricePerOz
-        ? Number(cleaned.exporterPricePerOz)
-        : undefined,
-      teamLeader: cleaned.teamLeader || undefined,
-      totalGrossWeight: cleaned.totalGrossWeight
-        ? Number(cleaned.totalGrossWeight)
-        : undefined,
-      destinationCountry: cleaned.destinationCountry || undefined,
-      fineness: cleaned.fineness ? Number(cleaned.fineness) : undefined,
-      sourceOfGold: cleaned.sourceOfGold || undefined,
-      totalNetWeight: cleaned.totalNetWeight
-        ? Number(cleaned.totalNetWeight)
-        : cleaned.totalNetWeightOz
-        ? Number(cleaned.totalNetWeightOz) * 28.349523125
-        : undefined,
-      numberOfPersons: cleaned.numberOfPersons
-        ? Number(cleaned.numberOfPersons)
-        : undefined,
-      // exporterValueUsd/exporterValueGhs are handled separately (not stored on JobCard)
-      graDeclarationNumber: cleaned.graDeclarationNumber || undefined,
-      numberOfBoxes: cleaned.numberOfBoxes
-        ? Number(cleaned.numberOfBoxes)
-        : undefined,
-      remittanceType: cleaned.remittanceType || undefined,
-      commodityId: cleaned.commodityId || undefined,
-      notes: cleaned.notes || undefined,
-    };
+    // Shallow sanitize: remove any properties whose value is an object (this
+    // prevents nested relation objects or arrays from being forwarded to Prisma)
+    // But allow Date objects since Prisma expects them for DateTime fields
+    for (const [k, v] of Object.entries(payload)) {
+      if (v !== null && typeof v === "object" && !(v instanceof Date)) {
+        delete (payload as any)[k];
+      }
+    }
 
-    // Validate required fields
-    if (!data.exporterId || !data.shipmentTypeId || !data.commodityId) {
+    console.log("Sanitized payload:", JSON.stringify(payload, null, 2));
+
+    const allowedKeys = [
+      "referenceNumber",
+      "receivedDate",
+      "exporterId",
+      "status",
+      "unitOfMeasure",
+      "idType",
+      "buyerName",
+      "teamLeader",
+      "totalGrossWeight",
+      "destinationCountry",
+      "fineness",
+      "sourceOfGold",
+      "totalNetWeight",
+      "numberOfBoxes",
+      "commodityId",
+      "notes",
+      "valueUsd",
+      "valueGhs",
+      "numberOfOunces",
+      "pricePerOunce",
+    ];
+
+    const data: any = {};
+
+    // Copy only allowed scalar values and coerce simple types (numbers/dates)
+    for (const k of allowedKeys) {
+      if (payload[k] === undefined || payload[k] === null) continue;
+      // strip out any nested objects accidentally passed
+      if (typeof payload[k] === "object") continue;
+      data[k] = payload[k];
+    }
+
+    // Ensure referenceNumber and receivedDate defaulting logic
+    data.referenceNumber =
+      data.referenceNumber ||
+      `JC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    data.receivedDate = data.receivedDate
+      ? new Date(String(data.receivedDate))
+      : new Date();
+
+    // Numeric coercions
+    if (data.exporterPricePerOz)
+      data.exporterPricePerOz = Number(data.exporterPricePerOz);
+    if (data.totalGrossWeight)
+      data.totalGrossWeight = Number(data.totalGrossWeight);
+    if (data.fineness) data.fineness = Number(data.fineness);
+    if (data.totalNetWeight) data.totalNetWeight = Number(data.totalNetWeight);
+    if (data.numberOfPersons)
+      data.numberOfPersons = Number(data.numberOfPersons);
+    if (data.numberOfBoxes) data.numberOfBoxes = Number(data.numberOfBoxes);
+    if (data.valueUsd) data.valueUsd = Number(data.valueUsd);
+    if (data.valueGhs) data.valueGhs = Number(data.valueGhs);
+    if (data.numberOfOunces) data.numberOfOunces = Number(data.numberOfOunces);
+    if (data.pricePerOunce) data.pricePerOunce = Number(data.pricePerOunce);
+
+    // Normalize exporterId/commodityId to be undefined if empty string
+    if (!data.exporterId) delete data.exporterId;
+    if (!data.commodityId) delete data.commodityId;
+
+    // Validate required fields (must match Prisma schema non-nullable fields)
+    if (!data.exporterId || !data.commodityId) {
       console.log("Missing required fields", {
         exporterId: data.exporterId,
-        shipmentTypeId: data.shipmentTypeId,
         commodityId: data.commodityId,
       });
       return NextResponse.json(
         {
           error:
-            "Missing required fields: exporterId, shipmentTypeId and commodityId are required",
+            "Missing required fields: exporterId and commodityId are required",
         },
         { status: 400 }
       );
@@ -256,17 +279,78 @@ async function createJobCard(req: NextRequest) {
     console.log("Creating job card with data:", JSON.stringify(data, null, 2));
 
     // Prepare the arguments we will pass to Prisma so we can log them exactly
+    // Build an explicit whitelist of scalar fields to avoid accidentally
+    // passing nested relation objects (e.g. exporter: {...}) to Prisma.
+    const allowedFields = [
+      "referenceNumber",
+      "receivedDate",
+      "exporterId",
+      "status",
+      "unitOfMeasure",
+      "idType",
+      "buyerName",
+      "teamLeader",
+      "totalGrossWeight",
+      "destinationCountry",
+      "fineness",
+      "sourceOfGold",
+      "totalNetWeight",
+      "numberOfPersons",
+      "numberOfBoxes",
+      "remittanceType",
+      "commodityId",
+      "notes",
+      "valueUsd",
+      "valueGhs",
+      "numberOfOunces",
+      "pricePerOunce",
+    ];
+
+    const createData: any = {};
+    for (const k of allowedFields) {
+      if ((data as any)[k] !== undefined) {
+        createData[k] = (data as any)[k];
+      }
+    }
+
+    // defensive: ensure no nested objects are present
+    if (createData.exporter && typeof createData.exporter === "object")
+      delete createData.exporter;
+
     const createArgs = {
-      data,
-      include: {
-        exporter: true,
-        shipmentType: true,
-      },
+      data: createData,
     } as const;
 
     // Log the exact create arguments to help debug Prisma validation errors
     try {
       console.log("Prisma create args:", JSON.stringify(createArgs, null, 2));
+      // Extra log for the raw create data we will pass to Prisma
+      console.log(
+        "createData object sent to Prisma:",
+        JSON.stringify(createData, null, 2)
+      );
+
+      // Fail-fast guard: if any property in createData is still an object,
+      // return it to the client so we can inspect exactly what Prisma would
+      // receive (helps locate who injected the nested relation).
+      // Allow Date objects since Prisma expects them for DateTime fields
+      const objectProps = Object.entries(createData).filter(
+        ([, v]) => v !== null && typeof v === "object" && !(v instanceof Date)
+      );
+      if (objectProps.length > 0) {
+        console.error(
+          "createData contains object-valued properties:",
+          objectProps.map(([k]) => k)
+        );
+        return NextResponse.json(
+          {
+            error: "createData contains object-valued properties",
+            keys: objectProps.map(([k]) => k),
+            createData,
+          },
+          { status: 400 }
+        );
+      }
 
       // Try the full create first
       const jobCard = await prisma.jobCard.create(createArgs as any);
@@ -281,7 +365,6 @@ async function createJobCard(req: NextRequest) {
           referenceNumber: data.referenceNumber,
           receivedDate: data.receivedDate,
           exporterId: data.exporterId,
-          shipmentTypeId: data.shipmentTypeId,
           status: data.status || "pending",
         };
         console.log(
@@ -290,7 +373,6 @@ async function createJobCard(req: NextRequest) {
         );
         const fallbackJobCard = await prisma.jobCard.create({
           data: minimalData,
-          include: { exporter: true, shipmentType: true },
         });
         console.log(
           "Fallback job card created successfully:",

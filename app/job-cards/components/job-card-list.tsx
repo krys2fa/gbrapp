@@ -18,10 +18,6 @@ interface JobCard {
     name: string;
     id: string;
   };
-  shipmentType: {
-    name: string;
-    id: string;
-  };
   _count?: {
     assays?: number;
   };
@@ -180,9 +176,6 @@ export function JobCardList({ filters }: JobCardListProps) {
                       <div className="sm:flex">
                         <p className="flex items-center text-sm text-gray-500">
                           Exporter: {jobCard.exporter.name}
-                        </p>
-                        <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                          Shipment Type: {jobCard.shipmentType.name}
                         </p>
                       </div>
                       <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">

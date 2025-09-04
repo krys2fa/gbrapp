@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
             exporterType: true,
           },
         },
-        shipmentType: true,
+        commodity: true,
         customsOfficer: true,
         nacobOfficer: true,
         securityOfficer: true,
@@ -122,10 +122,6 @@ export async function PUT(req: NextRequest) {
       // runtime errors when the scalar relation field is not accepted by the client.
       updateData.exporter = { connect: { id: requestData.exporterId } };
     }
-    if (requestData.shipmentTypeId !== undefined) {
-      // Use relation connect form to update shipment type reference
-      updateData.shipmentType = { connect: { id: requestData.shipmentTypeId } };
-    }
     if (requestData.status !== undefined) {
       updateData.status = requestData.status;
     }
@@ -184,9 +180,9 @@ export async function PUT(req: NextRequest) {
     if (requestData.numberOfPersons !== undefined) {
       updateData.numberOfPersons = parseInt(requestData.numberOfPersons);
     }
-  // exporterValueUsd / exporterValueGhs are not part of the JobCard model anymore.
-  // Keep using requestData.exporterValueUsd / exporterValueGhs when creating invoices
-  // but do not attempt to persist them on the JobCard to avoid Prisma errors.
+    // exporterValueUsd / exporterValueGhs are not part of the JobCard model anymore.
+    // Keep using requestData.exporterValueUsd / exporterValueGhs when creating invoices
+    // but do not attempt to persist them on the JobCard to avoid Prisma errors.
     if (requestData.graDeclarationNumber !== undefined) {
       updateData.graDeclarationNumber = requestData.graDeclarationNumber;
     }
@@ -318,9 +314,7 @@ export async function PUT(req: NextRequest) {
                   connect: createdAssayIds.map((aid) => ({ id: aid })),
                 },
                 assayUsdValue: Number(amountUsd) || 0,
-                assayGhsValue:
-                  Number(requestData.exporterValueGhs) ||
-                  0,
+                assayGhsValue: Number(requestData.exporterValueGhs) || 0,
                 rate: 1,
                 issueDate: new Date(),
                 status: "pending",
@@ -486,7 +480,6 @@ export async function PUT(req: NextRequest) {
         data: updateData,
         include: {
           exporter: true,
-          shipmentType: true,
         },
       });
 
@@ -496,7 +489,6 @@ export async function PUT(req: NextRequest) {
           where: { id },
           include: {
             exporter: true,
-            shipmentType: true,
             assays: true,
             invoices: true,
           },

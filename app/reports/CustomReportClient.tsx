@@ -30,7 +30,6 @@ export default function CustomReportClient() {
     { key: "createdAt", label: "Date" },
     { key: "referenceNumber", label: "JobCard Ref" },
     { key: "receivedDate", label: "Received Date" },
-    { key: "shipmentType", label: "Shipment Type" },
     { key: "destinationCountry", label: "Destination Country" },
     { key: "status", label: "Status" },
 

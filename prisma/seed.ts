@@ -216,7 +216,6 @@ async function main() {
   const exporter1 = await prisma.exporter.create({
     data: {
       name: "Gold Fields Ghana",
-      code: "GFG001",
       exporterTypeId: miningCompany.id,
       contactPerson: "John Smith",
       email: "jsmith@goldfields.com",
@@ -229,7 +228,6 @@ async function main() {
   const exporter2 = await prisma.exporter.create({
     data: {
       name: "Small Scale Mining Cooperative",
-      code: "SSMC002",
       exporterTypeId: smallScale.id,
       contactPerson: "Mary Johnson",
       email: "mjohnson@ssmcoop.com",
