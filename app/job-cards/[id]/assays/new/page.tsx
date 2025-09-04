@@ -50,6 +50,23 @@ export default function NewAssayPage() {
     }>
   >([{}]);
 
+  // Track fineness warnings with expected values and differences
+  const [finenessWarnings, setFinenessWarnings] = useState<
+    Array<{
+      hasWarning: boolean;
+      expectedFineness?: number;
+      difference?: number;
+    }>
+  >([{ hasWarning: false }]);
+
+  // Helper function to calculate expected fineness
+  const calculateExpectedFineness = (gross: number, net: number): number => {
+    if (typeof gross === "number" && gross > 0 && typeof net === "number") {
+      return Number(((net / gross) * 100).toFixed(2));
+    }
+    return 0;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -183,6 +200,15 @@ export default function NewAssayPage() {
       }
       return next;
     });
+    setFinenessWarnings((prev) => {
+      const next = [...prev];
+      if (n > next.length) {
+        for (let i = next.length; i < n; i++) next.push({ hasWarning: false });
+      } else if (n < next.length) {
+        next.length = n;
+      }
+      return next;
+    });
   }, [form.pieces]);
 
   const handleFormChange = (
@@ -206,28 +232,74 @@ export default function NewAssayPage() {
         [field]: parsed,
       };
 
-      // If grossWeight or netWeight changed, recompute fineness = (net / gross) * 100
-      const gross =
-        typeof next[index].grossWeight === "number"
-          ? next[index].grossWeight
-          : undefined;
-      const net =
-        typeof next[index].netWeight === "number"
-          ? next[index].netWeight
-          : undefined;
+      // Get current values for calculation
+      const gross = next[index].grossWeight;
+      const net = next[index].netWeight;
+      const manualFineness = next[index].fineness;
 
-      // Always auto-compute fineness when gross or net changes
+      // If grossWeight or netWeight changed, recompute expected fineness
       if (field === "netWeight" || field === "grossWeight") {
         if (typeof gross === "number" && gross > 0 && typeof net === "number") {
-          // set fineness to percentage with 2 decimals
-          next[index].fineness = Number(((net / gross) * 100).toFixed(2));
+          const expectedFineness = calculateExpectedFineness(gross, net);
+          // Only auto-set fineness if it hasn't been manually edited or if it matches expected
+          if (
+            typeof manualFineness !== "number" ||
+            manualFineness === expectedFineness
+          ) {
+            next[index].fineness = expectedFineness;
+          }
+          // Update warning state - check if manual fineness differs from expected
+          const hasDiscrepancy =
+            typeof manualFineness === "number" &&
+            manualFineness !== expectedFineness;
+          const difference = hasDiscrepancy
+            ? manualFineness! - expectedFineness
+            : 0;
+          setFinenessWarnings((prev) => {
+            const newWarnings = [...prev];
+            newWarnings[index] = {
+              hasWarning: hasDiscrepancy,
+              expectedFineness: expectedFineness,
+              difference: difference,
+            };
+            return newWarnings;
+          });
         } else {
-          // not enough info to compute
+          // Not enough info to compute
           next[index].fineness = undefined;
+          setFinenessWarnings((prev) => {
+            const newWarnings = [...prev];
+            newWarnings[index] = { hasWarning: false };
+            return newWarnings;
+          });
         }
       }
 
-      // fineness is not manually editable anymore; ignore edits to fineness field
+      // If fineness is manually edited, check for discrepancy
+      if (field === "fineness") {
+        if (typeof gross === "number" && gross > 0 && typeof net === "number") {
+          const expectedFineness = calculateExpectedFineness(gross, net);
+          const hasDiscrepancy =
+            typeof parsed === "number" && parsed !== expectedFineness;
+          const difference = hasDiscrepancy ? parsed! - expectedFineness : 0;
+          setFinenessWarnings((prev) => {
+            const newWarnings = [...prev];
+            newWarnings[index] = {
+              hasWarning: hasDiscrepancy,
+              expectedFineness: expectedFineness,
+              difference: difference,
+            };
+            return newWarnings;
+          });
+        } else {
+          // No gross/net to compare against, no warning
+          setFinenessWarnings((prev) => {
+            const newWarnings = [...prev];
+            newWarnings[index] = { hasWarning: false };
+            return newWarnings;
+          });
+        }
+      }
 
       return next;
     });
@@ -606,9 +678,50 @@ export default function NewAssayPage() {
                           type="number"
                           step="any"
                           value={r.fineness ?? ""}
-                          readOnly
-                          className="flex-1 rounded-md border-gray-100 bg-gray-50 text-gray-600 shadow-sm"
+                          onChange={(e) =>
+                            handleRowChange(i, "fineness", e.target.value)
+                          }
+                          className={`flex-1 rounded-md border-gray-300 shadow-sm ${
+                            finenessWarnings[i]?.hasWarning
+                              ? "border-yellow-400 bg-yellow-50"
+                              : ""
+                          }`}
                         />
+                        {finenessWarnings[i]?.hasWarning && (
+                          <div className="text-yellow-600 text-xs flex flex-col gap-1">
+                            <div className="flex items-center gap-1">
+                              <svg
+                                className="w-4 h-4"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              <span>Different from calculated</span>
+                            </div>
+                            <div className="text-xs text-yellow-700 ml-5">
+                              Expected:{" "}
+                              {finenessWarnings[i]?.expectedFineness?.toFixed(
+                                2
+                              )}
+                              %
+                              {finenessWarnings[i]?.difference !==
+                                undefined && (
+                                <span className="ml-2">
+                                  (
+                                  {finenessWarnings[i]!.difference > 0
+                                    ? "+"
+                                    : ""}
+                                  {finenessWarnings[i]!.difference.toFixed(2)}%)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div>

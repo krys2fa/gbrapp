@@ -219,6 +219,28 @@ export default function AssayDetailPage() {
           </p>
         </div>
 
+        <div className="flex items-center justify-between mb-2 px-8">
+          <div className="bg-[#2e7030] p-2">
+            <img
+              src="/goldbod-logo.webp"
+              alt="GoldBod Logo"
+              className="h-12 w-auto"
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <h1 className="text-2xl font-bold tracking-wider">ASSAY REPORT</h1>
+          </div>
+
+          <div className="bg-white p-4">
+            <img
+              src="/coat-of-arms.png"
+              alt="Coat of Arms"
+              className="h-20 w-auto"
+            />
+          </div>
+        </div>
+
         <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
           {/* Top: show exporter and assay date above the measurements table */}
           <div className="flex items-center justify-between mb-6">
