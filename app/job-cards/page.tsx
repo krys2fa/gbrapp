@@ -56,3 +56,6 @@ function JobCardsPage() {
 }
 
 export default withClientAuth(JobCardsPage);
+
+// Disable prerendering for this page to avoid SSR issues
+export const dynamic = "force-dynamic";

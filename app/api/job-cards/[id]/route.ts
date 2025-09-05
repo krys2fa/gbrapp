@@ -619,6 +619,21 @@ export async function DELETE(req: NextRequest) {
     // Check if job card exists
     const existingJobCard = await prisma.jobCard.findUnique({
       where: { id },
+      include: {
+        assays: {
+          include: {
+            measurements: true,
+          },
+        },
+        invoices: {
+          include: {
+            levies: true,
+          },
+        },
+        fees: true,
+        levies: true,
+        seals: true,
+      },
     });
 
     if (!existingJobCard) {
@@ -628,9 +643,59 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Delete the job card
-    await prisma.jobCard.delete({
-      where: { id },
+    // Check if job card has assays (business rule: cannot delete if assays exist)
+    if (existingJobCard.assays && existingJobCard.assays.length > 0) {
+      return NextResponse.json(
+        { error: "Cannot delete job card with existing assays" },
+        { status: 400 }
+      );
+    }
+
+    // Start transaction for cascade deletion
+    await prisma.$transaction(async (tx) => {
+      // Delete assay measurements (through assays, but assays should be empty due to business rule)
+      for (const assay of existingJobCard.assays) {
+        await tx.assayMeasurement.deleteMany({
+          where: { assayId: assay.id },
+        });
+      }
+
+      // Delete assays (should be empty due to business rule, but delete anyway)
+      await tx.assay.deleteMany({
+        where: { jobCardId: id },
+      });
+
+      // Delete levies related to invoices
+      for (const invoice of existingJobCard.invoices) {
+        await tx.levy.deleteMany({
+          where: { invoiceId: invoice.id },
+        });
+      }
+
+      // Delete invoices
+      await tx.invoice.deleteMany({
+        where: { jobCardId: id },
+      });
+
+      // Delete fees
+      await tx.fee.deleteMany({
+        where: { jobCardId: id },
+      });
+
+      // Delete levies directly related to job card
+      await tx.levy.deleteMany({
+        where: { jobCardId: id },
+      });
+
+      // Delete seals
+      await tx.seal.deleteMany({
+        where: { jobCardId: id },
+      });
+
+      // Finally, delete the job card
+      await tx.jobCard.delete({
+        where: { id },
+      });
     });
 
     return NextResponse.json(

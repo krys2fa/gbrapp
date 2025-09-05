@@ -119,6 +119,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
     },
   ];
 
+  // Role-based navigation filtering
+  const getFilteredNavigation = () => {
+    if (!user?.role) return navigation;
+
+    switch (user.role) {
+      case "FINANCE":
+        return navigation.filter(
+          (item) => item.id === "dashboard" || item.id === "reports"
+        );
+      case "TELLER":
+        return navigation.filter(
+          (item) => item.id === "dashboard" || item.id === "payment-receipting"
+        );
+      default:
+        return navigation;
+    }
+  };
+
+  const filteredNavigation = getFilteredNavigation();
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -223,7 +243,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               Main Menu
             </h2>
             <div className="space-y-1">
-              {navigation.map((item) => (
+              {filteredNavigation.map((item) => (
                 <NavItem
                   key={item.id}
                   icon={item.icon}

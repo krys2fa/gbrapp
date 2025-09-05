@@ -12,22 +12,24 @@ datasource db {
 }
 
 model Commodity {
-  id        String       @id @default(uuid())
-  name      String       @unique
-  symbol    String
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  prices    DailyPrice[]
-  JobCard   JobCard[]
+  id           String        @id @default(uuid())
+  name         String        @unique
+  symbol       String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  prices       DailyPrice[]
+  weeklyPrices WeeklyPrice[]
+  JobCard      JobCard[]
 }
 
 model Exchange {
-  id        String       @id @default(uuid())
-  name      String       @unique
-  symbol    String
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  rates     DailyPrice[]
+  id          String        @id @default(uuid())
+  name        String        @unique
+  symbol      String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  rates       DailyPrice[]
+  weeklyRates WeeklyPrice[]
 }
 
 model DailyPrice {
@@ -42,7 +44,29 @@ model DailyPrice {
   updatedAt   DateTime       @updatedAt
 }
 
+model WeeklyPrice {
+  id          String          @id @default(uuid())
+  type        WeeklyPriceType
+  commodityId String? // Only for type COMMODITY
+  commodity   Commodity?      @relation(fields: [commodityId], references: [id])
+  exchangeId  String? // Only for type EXCHANGE
+  exchange    Exchange?       @relation(fields: [exchangeId], references: [id])
+  price       Float
+  weekStartDate DateTime      // Start of the week (Monday)
+  weekEndDate   DateTime      // End of the week (Sunday)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@unique([type, commodityId, weekStartDate], name: "unique_weekly_commodity_price")
+  @@unique([type, exchangeId, weekStartDate], name: "unique_weekly_exchange_rate")
+}
+
 enum DailyPriceType {
+  COMMODITY
+  EXCHANGE
+}
+
+enum WeeklyPriceType {
   COMMODITY
   EXCHANGE
 }

@@ -158,13 +158,13 @@ export default async function InvoicePage(props: any) {
 
   // Fixed rates
   const rate = 0.258;
-  const exclusiveRate = 0.820344544;
+  const inclusiveVatRate = 1.219;
   const nhilRate = 0.025; // 2.5%
   const getfundRate = 0.025; // 2.5%
   const covidRate = 0.01; // 1%
   const vatRate = 0.15; // 15%
   const totalInclusive = Number(((assayGhsValue * rate) / 100).toFixed(2));
-  const totalExclusive = Number((totalInclusive * exclusiveRate).toFixed(2));
+  const totalExclusive = Number((totalInclusive / inclusiveVatRate).toFixed(2));
 
   // Assay Service Charge
   const rateCharge = totalInclusive
@@ -173,12 +173,14 @@ export default async function InvoicePage(props: any) {
   const nhil = Number((totalExclusive * nhilRate).toFixed(2)); // 2.5%
   const getfund = Number((totalExclusive * getfundRate).toFixed(2)); // 2.5%
   const covid = Number((totalExclusive * covidRate).toFixed(2)); // 1%
-  const vat = Number((totalExclusive * vatRate).toFixed(2)); // 15%
+  const subTotal = Number((totalExclusive + nhil + getfund + covid).toFixed(2));
+  console.log("Subtotal:", subTotal);   
+  const vat = Number((subTotal * vatRate).toFixed(2)); // 15%
 
   // Calculate subtotal of all levies and taxes
-  const leviesTaxesSubtotal = Number((nhil + getfund + covid + vat).toFixed(2));
+  const leviesTaxesSubtotal = Number((nhil + getfund + covid).toFixed(2));
 
-  const amountDue = leviesTaxesSubtotal + totalInclusive;
+  const amountDue = subTotal + vat;
 
   // Update invoice amount if it doesn't match the calculated amount
   if (invoice.amount !== amountDue) {
@@ -315,7 +317,7 @@ export default async function InvoicePage(props: any) {
                   Assay value (GHS)
                 </th>
                 <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
-                  Total - Inclusive
+                  Total - Inclusive (GHS)
                 </th>
               </tr>
             </thead>
@@ -363,22 +365,31 @@ export default async function InvoicePage(props: any) {
               <div className="font-medium text-right">
                 {formatCurrency(covid, "GHS")}
               </div>
+
+
+
+                 <div className="text-gray-700 font-medium border-t border-gray-300 pt-2 mt-2">
+                Subtotal
+              </div>
+              <div className="font-semibold text-right border-t border-gray-300 pt-2 mt-2">
+                {formatCurrency(leviesTaxesSubtotal, "GHS")}
+              </div>
               <div className="text-gray-600">VAT (15%)</div>
               <div className="font-medium text-right">
                 {formatCurrency(vat, "GHS")}
               </div>
               <div className="text-gray-700 font-medium border-t border-gray-300 pt-2 mt-2">
-                Subtotal
+                Total
               </div>
               <div className="font-semibold text-right border-t border-gray-300 pt-2 mt-2">
-                {formatCurrency(leviesTaxesSubtotal, "GHS")}
+                {formatCurrency(subTotal, "GHS")}
               </div>
             </div>
           </div>
 
           <div className="pt-4 border-t text-left">
             <p className="text-lg font-bold flex justify-between">
-              <span>Total Amount Due:</span> {formatCurrency(amountDue, "GHS")}
+              <span>Grand Total:</span> {formatCurrency(amountDue, "GHS")}
             </p>
           </div>
         </div>

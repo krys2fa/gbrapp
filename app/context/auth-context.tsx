@@ -38,6 +38,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Check if we're on the client side
+        if (typeof window === "undefined") return;
+
         const storedToken = localStorage.getItem("auth-token");
         const storedUser = localStorage.getItem("auth-user");
 
@@ -64,8 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error("Auth validation error:", error);
         // Clear invalid state
-        localStorage.removeItem("auth-token");
-        localStorage.removeItem("auth-user");
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("auth-token");
+          localStorage.removeItem("auth-user");
+        }
         setUser(null);
         setToken(null);
       } finally {

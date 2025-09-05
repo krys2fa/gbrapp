@@ -534,8 +534,8 @@ function DashboardPage() {
 
               {/* Quick Actions */}
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Quick Actions
-                </h3>
+                Quick Actions
+              </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6 gap-4">
                 {[
                   {
@@ -658,3 +658,6 @@ function DashboardPage() {
 
 // Protect this page - any authenticated user can access it
 export default withClientAuth(DashboardPage);
+
+// Disable prerendering for this page to avoid SSR issues
+export const dynamic = "force-dynamic";

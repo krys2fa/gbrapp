@@ -10,10 +10,9 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { Header } from "../../components/layout/header";
-import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 
-const roles = ["SUPERADMIN", "ADMIN", "USER"];
+const roles = ["SUPERADMIN", "ADMIN", "USER", "FINANCE", "CEO", "TELLER"];
 
 // Utility to capitalize only the first letter
 function capitalizeFirst(str: string) {

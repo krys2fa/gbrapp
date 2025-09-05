@@ -1,6 +1,7 @@
 import { ActionType } from "@/app/generated/prisma";
 import { AuditTrailService } from "@/app/lib/audit-trail";
 import { NextRequest, NextResponse } from "next/server";
+import * as jose from "jose";
 
 interface AuditableRouteOptions {
   entityType: string;
@@ -32,10 +33,19 @@ export function withAuditTrail<H extends AnyRouteHandler>(
     let userId = "unknown";
 
     if (authHeader?.startsWith("Bearer ")) {
-      // In a real app, you'd verify the token and extract the user ID
-      const token = authHeader.substring(7);
-      // This is a placeholder - replace with actual token verification
-      userId = token;
+      try {
+        // Verify the JWT token and extract user ID
+        const token = authHeader.substring(7);
+        const JWT_SECRET =
+          process.env.JWT_SECRET || "fallback-secret-for-development-only";
+        const secret = new TextEncoder().encode(JWT_SECRET);
+        const { payload } = await jose.jwtVerify(token, secret);
+        userId = payload.userId as string;
+      } catch (error) {
+        // If token verification fails, use "unknown"
+        console.warn("Failed to verify JWT token for audit trail:", error);
+        userId = "unknown";
+      }
     }
 
     // If we're handling a login request, we don't have a userId yet, so skip audit for now
@@ -80,7 +90,7 @@ export function withAuditTrail<H extends AnyRouteHandler>(
         }
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       // Fallback to parsing from URL as a last resort
       const parts = req.nextUrl.pathname.split("/").filter(Boolean);
       entityId = parts[parts.length - 1] ?? entityId;
@@ -101,7 +111,7 @@ export function withAuditTrail<H extends AnyRouteHandler>(
 
     // Call the original handler
     try {
-  const response = await handler(...(args as Parameters<H>));
+      const response = await handler(...(args as Parameters<H>));
 
       // Record successful audit trail
       await AuditTrailService.createAuditTrail({
