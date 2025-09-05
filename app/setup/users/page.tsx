@@ -33,8 +33,6 @@ const CreateUserPage = () => {
     role: roles[0],
   });
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -54,16 +52,18 @@ const CreateUserPage = () => {
           params.push(`search=${encodeURIComponent(emailFilter)}`);
         if (params.length) url += `?${params.join("&")}`;
         const res = await fetch(url);
+        if (!res.ok) throw new Error("Failed to load users");
         const data = await res.json();
         setUsers(data);
-      } catch {
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load users");
         setUsers([]);
       } finally {
         setUsersLoading(false);
       }
     }
     fetchUsers();
-  }, [success, filterTrigger]);
+  }, [filterTrigger]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -74,20 +74,18 @@ const CreateUserPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
-      // Replace with your actual API endpoint
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error("Failed to create user");
-      setSuccess("User created successfully!");
+      toast.success("User created successfully!");
       setForm({ name: "", email: "", password: "", role: roles[0] });
+      setFilterTrigger((prev) => prev + 1); // Refresh the users list
     } catch (err: any) {
-      setError(err.message || "Error creating user");
+      toast.error(err.message || "Error creating user");
     } finally {
       setLoading(false);
     }
@@ -107,8 +105,6 @@ const CreateUserPage = () => {
     e.preventDefault();
     if (!editingUser) return;
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       // Do not include email in update payload to avoid conflicts
       const payload: any = { name: form.name, role: form.role };
@@ -121,13 +117,12 @@ const CreateUserPage = () => {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error || "Failed to update user");
       }
-      toast.success("User updated successfully");
-      setSuccess("User updated successfully!");
+      toast.success("User updated successfully!");
       setEditingUser(null);
       setForm({ name: "", email: "", password: "", role: roles[0] });
+      setFilterTrigger((prev) => prev + 1); // Refresh the users list
     } catch (err: any) {
       toast.error(err.message || "Error updating user");
-      setError(err.message || "Error updating user");
     } finally {
       setLoading(false);
     }
@@ -136,16 +131,15 @@ const CreateUserPage = () => {
   const handleDeleteUser = async (userId: string) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       const res = await fetch(`/api/users/${userId}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete user");
-      setSuccess("User deleted successfully!");
+      toast.success("User deleted successfully!");
+      setFilterTrigger((prev) => prev + 1); // Refresh the users list
     } catch (err: any) {
-      setError(err.message || "Error deleting user");
+      toast.error(err.message || "Error deleting user");
     } finally {
       setLoading(false);
     }
@@ -159,7 +153,8 @@ const CreateUserPage = () => {
       const userDetails = await res.json();
       setViewingUser(userDetails);
       setViewModalOpen(true);
-    } catch {
+    } catch (err: any) {
+      toast.error(err.message || "Failed to fetch user details");
       setViewingUser(user);
       setViewModalOpen(true);
     }
@@ -190,35 +185,7 @@ const CreateUserPage = () => {
           <form onSubmit={editingUser ? handleUpdateUser : handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                {error && (
-                  <div className="rounded-md bg-red-50 p-4 mb-6">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        {/* Error icon */}
-                        <svg
-                          className="h-5 w-5 text-red-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                          />
-                        </svg>
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-red-800">
-                          Error Creating User
-                        </h3>
-                        <div className="mt-2 text-sm text-red-700 whitespace-pre-wrap">
-                          {error}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+               
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <label

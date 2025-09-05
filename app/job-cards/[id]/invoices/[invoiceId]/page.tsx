@@ -91,8 +91,6 @@ export default async function InvoicePage(props: any) {
     orderBy: { createdAt: "desc" },
   });
 
-  const dailyRate = dailyPrice?.price || 0;
-  const dailyCommodityName = dailyPrice?.commodity?.name || "Commodity";
 
   // Use invoice stored assay values (assayUsdValue and assayGhsValue)
   // Prefer per-assay saved meta if present
