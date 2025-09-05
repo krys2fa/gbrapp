@@ -65,10 +65,11 @@ export default async function InvoicePage(props: any) {
       },
     });
   } catch (e) {
-    console.error("Failed to load invoice for invoice page:", e);
+    // Log error server-side but don't expose to client
+    console.log("Failed to load invoice for invoice page:", e);
     return (
       <div className="max-w-4xl mx-auto py-10 px-4">
-        <p>Failed to load invoice data. See server logs for details.</p>
+        <p>Failed to load invoice data. Please try again later.</p>
         <HistoryBackLink label="Back" />
       </div>
     );
@@ -153,7 +154,8 @@ export default async function InvoicePage(props: any) {
         exchangeRate = Number(dailyExchangeRate.price);
       }
     } catch (error) {
-      console.error("Failed to fetch daily exchange rate:", error);
+      // Silently handle exchange rate fetch failure
+      // Rate will remain 0 if not found
     }
   }
 
@@ -175,12 +177,7 @@ export default async function InvoicePage(props: any) {
   const getfund = Number((totalExclusive * getfundRate).toFixed(2)); // 2.5%
   const covid = Number((totalExclusive * covidRate).toFixed(2)); // 1%
   const subTotal = Number((totalExclusive + nhil + getfund + covid).toFixed(2));
-  console.log("Subtotal:", subTotal);
   const vat = Number((subTotal * vatRate).toFixed(2)); // 15%
-
-  // Calculate subtotal of all levies and taxes
-  const leviesTaxesSubtotal = Number((nhil + getfund + covid).toFixed(2));
-
   const grandTotal = subTotal + vat;
 
   // Update invoice amount if it doesn't match the calculated amount
@@ -193,7 +190,8 @@ export default async function InvoicePage(props: any) {
       // Update the local invoice object to reflect the change
       invoice.amount = grandTotal;
     } catch (error) {
-      console.error("Failed to update invoice amount:", error);
+      // Silently handle invoice amount update failure
+      // Invoice will display with the calculated amount even if DB update fails
     }
   }
 
