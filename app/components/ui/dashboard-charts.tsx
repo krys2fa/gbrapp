@@ -14,6 +14,9 @@ import {
   Tooltip,
   Area,
   AreaChart,
+  LineChart,
+  Line,
+  Legend,
 } from "recharts";
 
 interface ChartData {
@@ -181,6 +184,181 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ data }) => {
       <div className="lg:col-span-2 xl:col-span-1">
         <TopExportersChart data={data.topExporters} />
       </div>
+    </div>
+  );
+};
+
+// New chart component for Exporter Monthly Invoice Amounts
+export const ExporterInvoiceChart: React.FC<{
+  data: Array<{
+    month: string;
+    [exporterName: string]: number | string;
+  }>;
+}> = ({ data }) => {
+  // console.log("ExporterInvoiceChart received data:", data);
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Monthly Invoice Payments by Exporter
+        </h3>
+        <div className="h-64 flex items-center justify-center">
+          <p className="text-gray-500 dark:text-gray-400">No data available</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Extract exporter names from the data (excluding 'month' key)
+  const exporterNames = Object.keys(data[0] || {}).filter(
+    (key) => key !== "month"
+  );
+
+  // console.log("Exporter names found:", exporterNames);
+
+  // Find months with non-zero values
+  const monthsWithData = data.filter((monthData) => {
+    return exporterNames.some((exporter) => {
+      const value = Number(monthData[exporter] || 0);
+      return value > 0;
+    });
+  });
+
+  // console.log("Months with non-zero data:", monthsWithData);
+
+  // Generate colors for each exporter
+  const exporterColors = exporterNames.reduce((colors, name, index) => {
+    colors[name] = COLORS[index % COLORS.length];
+    return colors;
+  }, {} as Record<string, string>);
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        Monthly Invoice Payments by Exporter (Payment Date - GHS)
+      </h3>
+
+      {/* Summary of payments */}
+      <div className="mb-6">
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          Payment Summary:
+        </h4>
+        {monthsWithData.length > 0 ? (
+          monthsWithData.map((monthData, index) => (
+            <div
+              key={index}
+              className="mb-2 p-3 bg-gray-50 dark:bg-gray-700 rounded"
+            >
+              <span className="font-semibold">{monthData.month}:</span>
+              {exporterNames.map((exporter) => {
+                const amount = Number(monthData[exporter] || 0);
+                if (amount > 0) {
+                  return (
+                    <div key={exporter} className="ml-4 text-sm">
+                      {exporter}:{" "}
+                      <span className="font-mono">
+                        ₵{amount.toLocaleString()}
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500 dark:text-gray-400">
+            No payments recorded yet
+          </p>
+        )}
+      </div>
+
+      {/* Show the chart only if we have data */}
+      {monthsWithData.length > 0 && (
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={data}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+              <XAxis
+                dataKey="month"
+                tick={{ fontSize: 12 }}
+                className="text-gray-600 dark:text-gray-400"
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                className="text-gray-600 dark:text-gray-400"
+                tickFormatter={(value) => `₵${(value / 1000).toFixed(0)}K`}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "8px",
+                }}
+                formatter={(value: any, name: string) => [
+                  `₵${Number(value).toLocaleString()}`,
+                  name,
+                ]}
+                labelFormatter={(label) => `Month: ${label}`}
+              />
+              <Legend />
+              {exporterNames.map((exporterName, index) => (
+                <Bar
+                  key={exporterName}
+                  dataKey={exporterName}
+                  fill={exporterColors[exporterName]}
+                  name={exporterName}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+      {/* <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+            <XAxis
+              dataKey="month"
+              tick={{ fontSize: 12 }}
+              className="text-gray-600 dark:text-gray-400"
+            />
+            <YAxis
+              tick={{ fontSize: 12 }}
+              className="text-gray-600 dark:text-gray-400"
+              tickFormatter={(value) => `₵${(value / 1000).toFixed(0)}K`}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
+              }}
+              formatter={(value: any, name: string) => [
+                `₵${Number(value).toLocaleString()}`,
+                name,
+              ]}
+              labelFormatter={(label) => `Month: ${label}`}
+            />
+            <Legend />
+            {exporterNames.map((exporterName, index) => (
+              <Bar
+                key={exporterName}
+                dataKey={exporterName}
+                fill={exporterColors[exporterName]}
+                name={exporterName}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div> */}
     </div>
   );
 };

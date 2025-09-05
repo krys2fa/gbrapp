@@ -182,6 +182,197 @@ export async function GET(req: NextRequest) {
     });
     const serviceFeesInclusive = serviceFeesResult._sum.amountPaid || 0;
 
+    // Get monthly invoice amounts by exporter for the current year (showing PAID invoices by payment date)
+    const currentYear = new Date().getFullYear();
+    const startOfYear = new Date(currentYear, 0, 1);
+    const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
+
+    console.log("Debug - Query date range:", {
+      currentYear,
+      startOfYear: startOfYear.toISOString(),
+      endOfYear: endOfYear.toISOString(),
+    });
+
+    // Updated query to show payments by payment date, not invoice issue date
+    const exporterInvoiceData = (await prisma.$queryRaw`
+      SELECT 
+        e.name as "exporterName",
+        EXTRACT(MONTH FROM f."paymentDate") as month,
+        SUM(f."amountPaid") as "paidAmount",
+        0 as "pendingAmount",
+        SUM(f."amountPaid") as "totalAmount"
+      FROM "Fee" f
+      JOIN "JobCard" jc ON f."jobCardId" = jc.id
+      JOIN "Exporter" e ON jc."exporterId" = e.id
+      WHERE f."paymentDate" >= ${startOfYear} 
+        AND f."paymentDate" <= ${endOfYear}
+        AND f.status = 'paid'
+      GROUP BY e.name, EXTRACT(MONTH FROM f."paymentDate")
+      
+      UNION ALL
+      
+      SELECT 
+        e.name as "exporterName",
+        EXTRACT(MONTH FROM i."issueDate") as month,
+        0 as "paidAmount",
+        SUM(i.amount) as "pendingAmount", 
+        SUM(i.amount) as "totalAmount"
+      FROM "Invoice" i
+      JOIN "JobCard" jc ON i."jobCardId" = jc.id
+      JOIN "Exporter" e ON jc."exporterId" = e.id
+      WHERE i."issueDate" >= ${startOfYear} 
+        AND i."issueDate" <= ${endOfYear}
+        AND i.status = 'pending'
+      GROUP BY e.name, EXTRACT(MONTH FROM i."issueDate")
+      
+      ORDER BY month, "exporterName"
+    `) as Array<{
+      exporterName: string;
+      month: number;
+      paidAmount: number;
+      pendingAmount: number;
+      totalAmount: number;
+    }>;
+
+    // Debug: Let's also check all invoices to see what we have
+    const allInvoicesDebug = await prisma.invoice.findMany({
+      include: {
+        jobCard: {
+          include: {
+            exporter: true,
+          },
+        },
+      },
+      take: 10, // Just first 10 for debugging
+    });
+    console.log(
+      "Debug - All invoices (first 10):",
+      allInvoicesDebug.map((inv) => ({
+        id: inv.id,
+        amount: inv.amount,
+        status: inv.status,
+        issueDate: inv.issueDate,
+        exporter: inv.jobCard.exporter.name,
+      }))
+    );
+
+    // Debug: Let's check what fees exist
+    const allFeesDebug = await prisma.fee.findMany({
+      include: {
+        jobCard: {
+          include: {
+            exporter: true,
+          },
+        },
+      },
+      take: 10, // Just first 10 for debugging
+    });
+    console.log(
+      "Debug - All fees (first 10):",
+      allFeesDebug.map((fee) => ({
+        id: fee.id,
+        amountPaid: fee.amountPaid,
+        status: fee.status,
+        paymentDate: fee.paymentDate,
+        exporter: fee.jobCard.exporter.name,
+        feeType: fee.feeType,
+      }))
+    );
+
+    console.log(
+      "Debug - Exporter invoice data for chart:",
+      exporterInvoiceData
+    );
+    console.log(
+      "Debug - Raw exporterInvoiceData length:",
+      exporterInvoiceData.length
+    );
+
+    // Let's also try a simpler query to see if data exists
+    const simpleInvoiceCheck = await prisma.invoice.findMany({
+      where: {
+        issueDate: {
+          gte: startOfYear,
+          lte: endOfYear,
+        },
+      },
+      include: {
+        jobCard: {
+          include: {
+            exporter: true,
+          },
+        },
+      },
+    });
+    console.log(
+      "Debug - Simple invoice check found:",
+      simpleInvoiceCheck.length,
+      "invoices"
+    );
+    simpleInvoiceCheck.forEach((inv) => {
+      console.log(
+        `  - ${inv.jobCard.exporter.name}: ₵${inv.amount} (${
+          inv.status
+        }) - ${inv.issueDate.toLocaleDateString()}`
+      );
+    });
+
+    // Transform the data for the chart - simplified approach
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    // Create chart data structure
+    const exporterInvoiceChart = monthNames.map((monthName, index) => {
+      const monthNumber = index + 1;
+      const monthData: any = { month: monthName };
+
+      // Find data for this month
+      const monthRecord = exporterInvoiceData.find(
+        (item) => Number(item.month) === monthNumber
+      );
+
+      console.log(
+        `Debug - Looking for month ${monthNumber}, found:`,
+        monthRecord
+      );
+
+      if (monthRecord) {
+        // Add the exporter's amount for this month
+        monthData[monthRecord.exporterName] = Number(monthRecord.totalAmount);
+        console.log(
+          `Debug - Adding ${monthRecord.exporterName}: ${monthRecord.totalAmount} to ${monthName}`
+        );
+      } else {
+        console.log(
+          `Debug - No data found for ${monthName} (month ${monthNumber})`
+        );
+      }
+
+      // Get all unique exporters and fill zeros for months without data
+      const allExporters = [
+        ...new Set(exporterInvoiceData.map((item) => item.exporterName)),
+      ];
+      allExporters.forEach((exporterName) => {
+        if (!(exporterName in monthData)) {
+          monthData[exporterName] = 0;
+        }
+      });
+
+      return monthData;
+    });
+
     // Fetch recent audit trail activities for specific management areas
     const recentActivities = await prisma.auditTrail.findMany({
       where: {
@@ -318,6 +509,7 @@ export async function GET(req: NextRequest) {
         ],
       },
       recentActivity: formattedActivities,
+      exporterInvoiceChart: exporterInvoiceChart,
       chartData: {
         jobCardStatus: [
           { name: "Active", value: activeJobCardsCount, color: "#FFD700" },
@@ -345,6 +537,11 @@ export async function GET(req: NextRequest) {
         ],
       },
     };
+
+    console.log(
+      "Debug - Final exporterInvoiceChart being returned:",
+      JSON.stringify(exporterInvoiceChart, null, 2)
+    );
 
     return NextResponse.json(stats);
   } catch (error) {

@@ -6,7 +6,10 @@ import {
   DashboardStats,
   RecentActivity,
 } from "@/app/components/ui/dashboard-stats";
-import { TopExportersChart } from "@/app/components/ui/dashboard-charts";
+import {
+  TopExportersChart,
+  ExporterInvoiceChart,
+} from "@/app/components/ui/dashboard-charts";
 import {
   BarChart3,
   PieChart,
@@ -63,6 +66,10 @@ interface DashboardData {
     action: string;
     time: Date | string;
     type: string;
+  }>;
+  exporterInvoiceChart?: Array<{
+    month: string;
+    [exporterName: string]: number | string;
   }>;
   financials?: {
     currentExchangeRateGhs?: number;
@@ -409,8 +416,8 @@ function DashboardPage() {
         {/* Additional Financial Stats */}
         {/* {dashboardData?.financials && (
           <div className="space-y-6"> */}
-            {/* Row 1: Gold, Silver, Export USD */}
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        {/* Row 1: Gold, Silver, Export USD */}
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {dashboardData.financials?.currentSilverPriceGhsPerOz &&
                 dashboardData.financials.currentSilverPriceGhsPerOz > 0 && (
                   <div
@@ -481,8 +488,8 @@ function DashboardPage() {
                 )}
             </div> */}
 
-            {/* Row 2: Fees and Taxes */}
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {/* Row 2: Fees and Taxes */}
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               {dashboardData.financials?.serviceFeesInclusive &&
                 dashboardData.financials.serviceFeesInclusive > 0 && (
                   <div
@@ -574,8 +581,8 @@ function DashboardPage() {
                 )}
             </div> */}
 
-            {/* Row 3: Additional levies */}
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        {/* Row 3: Additional levies */}
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {dashboardData?.financials?.totalCovidLevy &&
                 dashboardData?.financials.totalCovidLevy > 0 && (
                   <div
@@ -622,8 +629,13 @@ function DashboardPage() {
                   </div>
                 )}
             </div> */}
-          {/* </div>
+        {/* </div>
         )} */}
+
+          {/* Exporter Invoice Chart */}
+        {dashboardData?.exporterInvoiceChart && (
+          <ExporterInvoiceChart data={dashboardData.exporterInvoiceChart} />
+        )}
 
         {/* Quick Actions */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 w-full">
@@ -646,8 +658,8 @@ function DashboardPage() {
                 color: "bg-lime-600",
               },
               {
-                label: "Manage Daily Exchanges",
-                description: "Set up daily exchange rates.",
+                label: "Manage Weekly Exchange Rates",
+                description: "Set up weekly exchange rates.",
                 icon: <Repeat className="h-6 w-6" />,
                 href: "/setup/daily-exchange",
                 color: "bg-purple-600",
@@ -688,6 +700,8 @@ function DashboardPage() {
             ))}
           </div>
         </div>
+
+      
 
         {/* Charts + Sidebar Trio: Recent Activity | System Status | Top Exporters (single row) */}
         {/* {dashboardData && (

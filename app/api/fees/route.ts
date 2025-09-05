@@ -85,6 +85,48 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Update the corresponding invoice status to "paid"
+    try {
+      // Find the invoice for this job card that matches the fee type
+      const invoiceTypeMapping: Record<string, string[]> = {
+        ASSAY_FEE: ["assay", "valuation"],
+        WHT_FEE: ["wht", "withholding"],
+      };
+
+      const typeKeywords = invoiceTypeMapping[feeType] || [];
+
+      if (typeKeywords.length > 0) {
+        // Find invoices for this job card with matching type
+        const invoices = await prisma.invoice.findMany({
+          where: {
+            jobCardId: jobCardId,
+            invoiceType: {
+              name: {
+                contains: typeKeywords[0],
+                mode: "insensitive",
+              },
+            },
+          },
+        });
+
+        // Update all matching invoices to "paid" status
+        if (invoices.length > 0) {
+          await prisma.invoice.updateMany({
+            where: {
+              id: { in: invoices.map((inv) => inv.id) },
+            },
+            data: { status: "paid" },
+          });
+          console.log(
+            `Updated ${invoices.length} invoice(s) to paid status for job card ${jobCardId}`
+          );
+        }
+      }
+    } catch (e) {
+      // non-fatal: log and continue
+      console.error("Failed to update invoice status to paid:", e);
+    }
+
     // mark job card as paid so details page reflects paid status
     try {
       await prisma.jobCard.update({
@@ -96,7 +138,13 @@ export async function POST(req: NextRequest) {
       console.debug("Failed to update job card status to paid:", e);
     }
 
-    return NextResponse.json({ fee }, { status: 201 });
+    return NextResponse.json(
+      {
+        fee,
+        message: "Payment recorded and invoice status updated to paid",
+      },
+      { status: 201 }
+    );
   } catch (err) {
     console.error(err);
     return NextResponse.json(
