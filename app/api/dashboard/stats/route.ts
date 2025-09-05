@@ -1,7 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/app/lib/prisma";
 
 export async function GET(req: NextRequest) {
   try {
+    // Fetch actual counts from database
+    const totalJobCardsCount = await prisma.jobCard.count();
+    const activeJobCardsCount = await prisma.jobCard.count({
+      where: { status: "ACTIVE" },
+    });
+    const completedJobCardsCount = await prisma.jobCard.count({
+      where: { status: "COMPLETED" },
+    });
+    const pendingJobCardsCount = await prisma.jobCard.count({
+      where: { status: "PENDING" },
+    });
+
+    // Calculate this week's job cards
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const thisWeekJobCardsCount = await prisma.jobCard.count({
+      where: {
+        createdAt: {
+          gte: startOfWeek,
+        },
+      },
+    });
+
+    // Fetch actual users and exporters count
+    const totalUsersCount = await prisma.user.count();
+    const totalExportersCount = await prisma.exporter.count();
+
+    // Calculate total revenue from invoices
+    const totalRevenueResult = await prisma.invoice.aggregate({
+      _sum: {
+        amount: true,
+      },
+    });
+    const totalRevenueAmount = totalRevenueResult._sum.amount || 0;
+
     // Mock data structured to match dashboard expectations
     const stats = {
       // Financial & export metrics requested for dashboard stat cards
@@ -22,35 +59,35 @@ export async function GET(req: NextRequest) {
       },
       overview: {
         totalJobCards: {
-          value: 245,
+          value: totalJobCardsCount,
           change: "12.5",
           changeType: "positive" as const,
         },
         totalExporters: {
-          value: 78,
+          value: totalExportersCount,
           change: "5.2",
           changeType: "positive" as const,
         },
         totalUsers: {
-          value: 34,
+          value: totalUsersCount,
           change: "8.1",
           changeType: "positive" as const,
         },
         totalRevenue: {
-          value: 2456789.5,
+          value: totalRevenueAmount,
           change: "15.3",
           changeType: "positive" as const,
         },
-        activeJobCards: 45,
-        completedJobCards: 189,
-        pendingJobCards: 11,
-        thisWeekJobCards: 8,
+        activeJobCards: activeJobCardsCount,
+        completedJobCards: completedJobCardsCount,
+        pendingJobCards: pendingJobCardsCount,
+        thisWeekJobCards: thisWeekJobCardsCount,
       },
       charts: {
         jobCardsByStatus: [
-          { name: "Active", value: 45 },
-          { name: "Completed", value: 189 },
-          { name: "Pending", value: 11 },
+          { name: "Active", value: activeJobCardsCount },
+          { name: "Completed", value: completedJobCardsCount },
+          { name: "Pending", value: pendingJobCardsCount },
         ],
         monthlyTrend: [
           { month: "Jan", count: 18 },
@@ -107,9 +144,13 @@ export async function GET(req: NextRequest) {
       ],
       chartData: {
         jobCardStatus: [
-          { name: "Active", value: 45, color: "#FFD700" },
-          { name: "Completed", value: 189, color: "#000000" },
-          { name: "Pending", value: 11, color: "#666666" },
+          { name: "Active", value: activeJobCardsCount, color: "#FFD700" },
+          {
+            name: "Completed",
+            value: completedJobCardsCount,
+            color: "#000000",
+          },
+          { name: "Pending", value: pendingJobCardsCount, color: "#666666" },
         ],
         monthlyTrends: [
           { month: "Jan", jobCards: 18, revenue: 180000 },

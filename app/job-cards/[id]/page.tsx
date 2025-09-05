@@ -182,6 +182,49 @@ function JobCardDetailPage() {
     );
   })();
 
+  if (loading) {
+    return (
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">
+              Loading job card...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4">
+          <p className="text-red-700 dark:text-red-400 font-medium">
+            Error loading job card
+          </p>
+          <p className="text-red-600 dark:text-red-300 text-sm mt-1">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!jobCard) {
+    return (
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4">
+          <p className="text-yellow-700 dark:text-yellow-400 font-medium">
+            Job card not found
+          </p>
+          <p className="text-yellow-600 dark:text-yellow-300 text-sm mt-1">
+            The requested job card could not be found.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6 flex items-center justify-between">
@@ -241,7 +284,7 @@ function JobCardDetailPage() {
                   Reference Number
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {jobCard.referenceNumber}
+                  {jobCard!.referenceNumber}
                 </dd>
               </div>
               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -249,7 +292,7 @@ function JobCardDetailPage() {
                   Received Date
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {formatDate(new Date(jobCard.receivedDate))}
+                  {formatDate(new Date(jobCard!.receivedDate))}
                 </dd>
               </div>
               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -285,33 +328,33 @@ function JobCardDetailPage() {
                     {jobCard.exporter.name}
                   </dd>
                 </div>
-                {jobCard.buyerName && (
+                {jobCard!.buyerName && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
                       Importer Name
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.buyerName}
+                      {jobCard!.buyerName}
                     </dd>
                   </div>
                 )}
-                {jobCard.buyerIdNumber && (
+                {jobCard!.buyerIdNumber && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
                       Importer ID Number
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.buyerIdNumber}
+                      {jobCard!.buyerIdNumber}
                     </dd>
                   </div>
                 )}
-                {jobCard.buyerAddress && (
+                {jobCard!.buyerAddress && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
                       Importer Address
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.buyerAddress}
+                      {jobCard!.buyerAddress}
                     </dd>
                   </div>
                 )}
@@ -319,23 +362,23 @@ function JobCardDetailPage() {
 
               {/* Right Column */}
               <div className="space-y-4">
-                {jobCard.buyerPhone && (
+                {jobCard!.buyerPhone && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
                       Importer Phone
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.buyerPhone}
+                      {jobCard!.buyerPhone}
                     </dd>
                   </div>
                 )}
-                {jobCard.destinationCountry && (
+                {jobCard!.destinationCountry && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
                       Destination Country
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.destinationCountry}
+                      {jobCard!.destinationCountry}
                     </dd>
                   </div>
                 )}
@@ -817,7 +860,7 @@ function JobCardDetailPage() {
                     Exporter
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.exporter.name}
+                    {jobCard?.exporter?.name || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -825,7 +868,7 @@ function JobCardDetailPage() {
                     Commodity
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.commodity?.name || "Not specified"}
+                    {jobCard?.commodity?.name || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -833,7 +876,7 @@ function JobCardDetailPage() {
                     Buyer Name
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.buyerName || "Not specified"}
+                    {jobCard!.buyerName || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -841,7 +884,7 @@ function JobCardDetailPage() {
                     Buyer ID Number
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.buyerIdNumber || "Not specified"}
+                    {jobCard!.buyerIdNumber || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -849,7 +892,7 @@ function JobCardDetailPage() {
                     Buyer Phone
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.buyerPhone || "Not specified"}
+                    {jobCard?.buyerPhone || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -857,7 +900,7 @@ function JobCardDetailPage() {
                     Destination Country
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.destinationCountry || "Not specified"}
+                    {jobCard?.destinationCountry || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -865,7 +908,7 @@ function JobCardDetailPage() {
                     Team Leader
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.teamLeader || "Not specified"}
+                    {jobCard?.teamLeader || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -873,7 +916,7 @@ function JobCardDetailPage() {
                     Source of Gold
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.sourceOfGold || "Not specified"}
+                    {jobCard?.sourceOfGold || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -881,7 +924,7 @@ function JobCardDetailPage() {
                     Number of Boxes
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.numberOfBoxes || "Not specified"}
+                    {jobCard?.numberOfBoxes || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -889,7 +932,7 @@ function JobCardDetailPage() {
                     Unit of Measure
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.unitOfMeasure || "Not specified"}
+                    {jobCard?.unitOfMeasure || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -897,9 +940,9 @@ function JobCardDetailPage() {
                     Total Gross Weight
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.totalGrossWeight
-                      ? `${jobCard.totalGrossWeight} ${
-                          jobCard.unitOfMeasure || ""
+                    {jobCard?.totalGrossWeight
+                      ? `${jobCard?.totalGrossWeight} ${
+                          jobCard?.unitOfMeasure || ""
                         }`
                       : "Not specified"}
                   </dd>
@@ -909,9 +952,9 @@ function JobCardDetailPage() {
                     Total Net Weight
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.totalNetWeight
-                      ? `${jobCard.totalNetWeight} ${
-                          jobCard.unitOfMeasure || ""
+                    {jobCard?.totalNetWeight
+                      ? `${jobCard?.totalNetWeight} ${
+                          jobCard?.unitOfMeasure || ""
                         }`
                       : "Not specified"}
                   </dd>
@@ -921,8 +964,8 @@ function JobCardDetailPage() {
                     Fineness
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.fineness
-                      ? `${jobCard.fineness}%`
+                    {jobCard?.fineness
+                      ? `${jobCard?.fineness}%`
                       : "Not specified"}
                   </dd>
                 </div>
@@ -931,7 +974,7 @@ function JobCardDetailPage() {
                     Number of Ounces
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.numberOfOunces || "Not specified"}
+                    {jobCard?.numberOfOunces || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -939,8 +982,8 @@ function JobCardDetailPage() {
                     Price per Ounce
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.pricePerOunce
-                      ? `$${jobCard.pricePerOunce}`
+                    {jobCard?.pricePerOunce
+                      ? `$${jobCard?.pricePerOunce}`
                       : "Not specified"}
                   </dd>
                 </div>
@@ -949,8 +992,8 @@ function JobCardDetailPage() {
                     Value (USD)
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.valueUsd
-                      ? `$${jobCard.valueUsd}`
+                    {jobCard?.valueUsd
+                      ? `$${jobCard?.valueUsd}`
                       : "Not specified"}
                   </dd>
                 </div>
@@ -959,15 +1002,15 @@ function JobCardDetailPage() {
                     Value (GHS)
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.valueGhs
-                      ? `₵${jobCard.valueGhs}`
+                    {jobCard?.valueGhs
+                      ? `₵${jobCard?.valueGhs}`
                       : "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Notes</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.notes || "No notes"}
+                    {jobCard?.notes || "No notes"}
                   </dd>
                 </div>
               </dl>
@@ -979,10 +1022,10 @@ function JobCardDetailPage() {
             <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
               Assays
             </h3>
-            {jobCard.assays && jobCard.assays.length > 0 ? (
+            {jobCard!.assays && jobCard!.assays!.length > 0 ? (
               <div className="bg-white shadow overflow-hidden sm:rounded-md">
                 <ul role="list" className="divide-y divide-gray-200">
-                  {jobCard.assays.map((assay: any, index: number) => (
+                  {jobCard!.assays!.map((assay: any, index: number) => (
                     <li key={index}>
                       <div className="px-4 py-4 sm:px-6">
                         <div className="flex items-center justify-between">
@@ -1025,10 +1068,10 @@ function JobCardDetailPage() {
             <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
               Invoices
             </h3>
-            {jobCard.invoices && jobCard.invoices.length > 0 ? (
+            {jobCard!.invoices && jobCard!.invoices!.length > 0 ? (
               <div className="bg-white shadow overflow-hidden sm:rounded-md">
                 <ul role="list" className="divide-y divide-gray-200">
-                  {jobCard.invoices.map((invoice: any, index: number) => (
+                  {jobCard!.invoices!.map((invoice: any, index: number) => (
                     <li key={index}>
                       <div className="px-4 py-4 sm:px-6">
                         <div className="flex items-center justify-between">

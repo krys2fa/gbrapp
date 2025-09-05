@@ -255,7 +255,7 @@ function DashboardPage() {
                     <Calendar className="h-5 w-5 text-purple-600" />
                   </div>
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                    This Week
+                    Job Cards This Week
                   </span>
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">

@@ -709,7 +709,9 @@ export default function NewAssayPage() {
                 {rows.map((r, i) => (
                   <div
                     key={i}
-                    className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end"
+                    className={`grid grid-cols-1 sm:grid-cols-${
+                      form.method === "X_RAY" ? "3" : "4"
+                    } gap-3 items-end`}
                   >
                     <div>
                       <label className="block text-xs text-gray-600">
@@ -725,20 +727,22 @@ export default function NewAssayPage() {
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-600">
-                        Water weight
-                      </label>
-                      <input
-                        type="number"
-                        step="any"
-                        value={r.waterWeight ?? ""}
-                        onChange={(e) =>
-                          handleRowChange(i, "waterWeight", e.target.value)
-                        }
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                      />
-                    </div>
+                    {form.method !== "X_RAY" && (
+                      <div>
+                        <label className="block text-xs text-gray-600">
+                          Water weight
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={r.waterWeight ?? ""}
+                          onChange={(e) =>
+                            handleRowChange(i, "waterWeight", e.target.value)
+                          }
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                        />
+                      </div>
+                    )}
                     <div>
                       <label className="block text-xs text-gray-600">
                         Fineness

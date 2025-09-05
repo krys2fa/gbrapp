@@ -162,7 +162,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ data }) => {
         },
         {
           title: "Total Revenue",
-          value: `$${data.totalRevenue.value.toLocaleString()}`,
+          value: `GHS ${data.totalRevenue.value.toLocaleString()}`,
           change: `${data.totalRevenue.changeType === "positive" ? "+" : ""}${
             data.totalRevenue.change
           }%`,

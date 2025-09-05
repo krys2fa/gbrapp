@@ -4,10 +4,10 @@ import { getWeekBounds } from "@/app/lib/week-utils";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const weeklyPrice = await prisma.weeklyPrice.findUnique({
       where: { id },
@@ -36,10 +36,10 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { price, weekStartDate } = body;
 
@@ -90,10 +90,10 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Check if the record exists
     const existing = await prisma.weeklyPrice.findUnique({

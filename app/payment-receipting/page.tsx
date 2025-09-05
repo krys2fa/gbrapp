@@ -174,7 +174,7 @@ function PaymentList() {
         setTotalPages(Math.max(1, Math.ceil(total / itemsPerPage)));
       } catch (e) {
         console.error(e);
-        setItems(DUMMY);
+        // setItems(DUMMY);
       } finally {
         setLoading(false);
       }
