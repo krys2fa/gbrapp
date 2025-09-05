@@ -1,5 +1,6 @@
 import React from "react";
 import BackLink from "@/app/components/ui/BackLink";
+import HistoryBackLink from "@/app/components/ui/HistoryBackLink";
 import { prisma } from "@/app/lib/prisma";
 import InvoiceActions from "@/app/job-cards/[id]/invoices/InvoiceActions"; // client component
 
@@ -68,7 +69,7 @@ export default async function InvoicePage(props: any) {
     return (
       <div className="max-w-4xl mx-auto py-10 px-4">
         <p>Failed to load invoice data. See server logs for details.</p>
-        <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
+        <HistoryBackLink label="Back" />
       </div>
     );
   }
@@ -77,7 +78,7 @@ export default async function InvoicePage(props: any) {
     return (
       <div className="max-w-4xl mx-auto py-10 px-4">
         <p>Invoice not found.</p>
-        <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
+        <HistoryBackLink label="Back" />
       </div>
     );
   }
@@ -167,30 +168,30 @@ export default async function InvoicePage(props: any) {
   const totalExclusive = Number((totalInclusive / inclusiveVatRate).toFixed(2));
 
   // Assay Service Charge
-  const rateCharge = totalInclusive
+  const rateCharge = totalInclusive;
 
   // Levies/Taxes (percentages of assay value in GHS)
   const nhil = Number((totalExclusive * nhilRate).toFixed(2)); // 2.5%
   const getfund = Number((totalExclusive * getfundRate).toFixed(2)); // 2.5%
   const covid = Number((totalExclusive * covidRate).toFixed(2)); // 1%
   const subTotal = Number((totalExclusive + nhil + getfund + covid).toFixed(2));
-  console.log("Subtotal:", subTotal);   
+  console.log("Subtotal:", subTotal);
   const vat = Number((subTotal * vatRate).toFixed(2)); // 15%
 
   // Calculate subtotal of all levies and taxes
   const leviesTaxesSubtotal = Number((nhil + getfund + covid).toFixed(2));
 
-  const amountDue = subTotal + vat;
+  const grandTotal = subTotal + vat;
 
   // Update invoice amount if it doesn't match the calculated amount
-  if (invoice.amount !== amountDue) {
+  if (invoice.amount !== grandTotal) {
     try {
       await prisma.invoice.update({
         where: { id: invoiceId },
-        data: { amount: amountDue },
+        data: { amount: grandTotal },
       });
       // Update the local invoice object to reflect the change
-      invoice.amount = amountDue;
+      invoice.amount = grandTotal;
     } catch (error) {
       console.error("Failed to update invoice amount:", error);
     }
@@ -217,9 +218,9 @@ export default async function InvoicePage(props: any) {
 
   return (
     <>
-      {/* <div className="my-4 ml-4">
-        <BackLink href={`/job-cards/${jobCardId}`} label="Back to Job Card" />
-      </div> */}
+      <div className="my-4 ml-4">
+        <HistoryBackLink label="Back" />
+      </div>
       <div className="max-w-4xl mx-auto py-10 px-4">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-semibold">
@@ -299,9 +300,7 @@ export default async function InvoicePage(props: any) {
 
           <div>
             <p className="text-sm text-gray-500">Exchange Rate</p>
-            <p className="font-medium">
-              {exchangeRate}
-            </p>
+            <p className="font-medium">{exchangeRate}</p>
           </div>
 
           <table className="w-full mt-2 mb-6 table-auto border-collapse border border-gray-300">
@@ -366,13 +365,11 @@ export default async function InvoicePage(props: any) {
                 {formatCurrency(covid, "GHS")}
               </div>
 
-
-
-                 <div className="text-gray-700 font-medium border-t border-gray-300 pt-2 mt-2">
+              <div className="text-gray-700 font-medium border-t border-gray-300 pt-2 mt-2">
                 Subtotal
               </div>
               <div className="font-semibold text-right border-t border-gray-300 pt-2 mt-2">
-                {formatCurrency(leviesTaxesSubtotal, "GHS")}
+                {formatCurrency(subTotal, "GHS")}
               </div>
               <div className="text-gray-600">VAT (15%)</div>
               <div className="font-medium text-right">
@@ -382,14 +379,14 @@ export default async function InvoicePage(props: any) {
                 Total
               </div>
               <div className="font-semibold text-right border-t border-gray-300 pt-2 mt-2">
-                {formatCurrency(subTotal, "GHS")}
+                {formatCurrency(grandTotal, "GHS")}
               </div>
             </div>
           </div>
 
           <div className="pt-4 border-t text-left">
             <p className="text-lg font-bold flex justify-between">
-              <span>Grand Total:</span> {formatCurrency(amountDue, "GHS")}
+              <span>Grand Total:</span> {formatCurrency(grandTotal, "GHS")}
             </p>
           </div>
         </div>

@@ -8,32 +8,32 @@ import { Receipt, CreditCard, FileText } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 // temporary dummy data until backend wiring is available
-const DUMMY = [
-  {
-    id: "JC001",
-    reference: "REF-001",
-    exporter: "Acme Corp",
-    invoice: "INV-1001",
-    receipt: "RCPT-1001",
-    paymentDate: "2025-08-01",
-  },
-  {
-    id: "JC002",
-    reference: "REF-002",
-    exporter: "Beta Ltd",
-    invoice: "INV-1002",
-    receipt: "RCPT-1002",
-    paymentDate: "2025-08-05",
-  },
-  {
-    id: "JC003",
-    reference: "REF-003",
-    exporter: "Gamma Inc",
-    invoice: "INV-1003",
-    receipt: "RCPT-1003",
-    paymentDate: "2025-08-10",
-  },
-];
+// const DUMMY = [
+//   {
+//     id: "JC001",
+//     reference: "REF-001",
+//     exporter: "Acme Corp",
+//     invoice: "INV-1001",
+//     receipt: "RCPT-1001",
+//     paymentDate: "2025-08-01",
+//   },
+//   {
+//     id: "JC002",
+//     reference: "REF-002",
+//     exporter: "Beta Ltd",
+//     invoice: "INV-1002",
+//     receipt: "RCPT-1002",
+//     paymentDate: "2025-08-05",
+//   },
+//   {
+//     id: "JC003",
+//     reference: "REF-003",
+//     exporter: "Gamma Inc",
+//     invoice: "INV-1003",
+//     receipt: "RCPT-1003",
+//     paymentDate: "2025-08-10",
+//   },
+// ];
 
 function PaymentList() {
   const [items, setItems] = useState<any[]>([]);
