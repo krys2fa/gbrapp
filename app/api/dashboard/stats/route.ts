@@ -39,23 +39,235 @@ export async function GET(req: NextRequest) {
     });
     const totalRevenueAmount = totalRevenueResult._sum.amount || 0;
 
+    // Fetch current exchange rate (GHS per USD)
+    const latestExchangeRate = await prisma.dailyPrice.findFirst({
+      where: { type: "EXCHANGE" },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Fetch current gold price (GHS per troy ounce) - most recent
+    const latestGoldPrice = await prisma.dailyPrice.findFirst({
+      where: {
+        type: "COMMODITY",
+        commodity: {
+          symbol: "XAU", // Gold symbol
+        },
+      },
+      include: {
+        commodity: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // If no gold price found, try to get any recent commodity price as fallback
+    let goldPrice = latestGoldPrice?.price;
+    if (!goldPrice) {
+      const anyRecentCommodityPrice = await prisma.dailyPrice.findFirst({
+        where: {
+          type: "COMMODITY",
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      goldPrice = anyRecentCommodityPrice?.price;
+    }
+
+    // Fetch current silver price (GHS per troy ounce) - most recent
+    const latestSilverPrice = await prisma.dailyPrice.findFirst({
+      where: {
+        type: "COMMODITY",
+        commodity: {
+          symbol: "XAG", // Silver symbol
+        },
+      },
+      include: {
+        commodity: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // Fallback: If no XAG silver price found, get any recent commodity price
+    const silverPrice =
+      latestSilverPrice?.price ||
+      (
+        await prisma.dailyPrice.findFirst({
+          where: {
+            type: "COMMODITY",
+          },
+          include: {
+            commodity: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        })
+      )?.price;
+
+    // Calculate total withholding tax from fees
+    const withholdingTaxResult = await prisma.fee.aggregate({
+      _sum: {
+        whtTotal: true,
+      },
+    });
+    const totalWithholdingTax = withholdingTaxResult._sum.whtTotal || 0;
+
+    // Calculate total VAT from levies
+    const vatResult = await prisma.levy.aggregate({
+      _sum: {
+        calculatedAmount: true,
+      },
+      where: {
+        code: "VAT",
+      },
+    });
+    const totalVat = vatResult._sum.calculatedAmount || 0;
+
+    // Calculate total NHIL from levies
+    const nhilResult = await prisma.levy.aggregate({
+      _sum: {
+        calculatedAmount: true,
+      },
+      where: {
+        code: "NHIL",
+      },
+    });
+    const totalNhil = nhilResult._sum.calculatedAmount || 0;
+
+    // Calculate total COVID levy from levies
+    const covidLevyResult = await prisma.levy.aggregate({
+      _sum: {
+        calculatedAmount: true,
+      },
+      where: {
+        code: "COVID",
+      },
+    });
+    const totalCovidLevy = covidLevyResult._sum.calculatedAmount || 0;
+
+    // Calculate total GETFund from levies
+    const getFundResult = await prisma.levy.aggregate({
+      _sum: {
+        calculatedAmount: true,
+      },
+      where: {
+        code: "GETFUND",
+      },
+    });
+    const totalGetFund = getFundResult._sum.calculatedAmount || 0;
+
+    // Calculate total export values and quantities from job cards
+    const exportStats = await prisma.jobCard.aggregate({
+      _sum: {
+        totalNetWeight: true,
+        valueUsd: true,
+        valueGhs: true,
+      },
+    });
+
+    const totalExportValueUsd = exportStats._sum.valueUsd || 0;
+    const totalExportValueGhs = exportStats._sum.valueGhs || 0;
+    const totalQuantityKg = exportStats._sum.totalNetWeight || 0;
+    const totalQuantityLbs = totalQuantityKg * 2.20462; // Convert kg to lbs
+
+    // Calculate service fees from fees table
+    const serviceFeesResult = await prisma.fee.aggregate({
+      _sum: {
+        amountPaid: true,
+      },
+    });
+    const serviceFeesInclusive = serviceFeesResult._sum.amountPaid || 0;
+
+    // Fetch recent audit trail activities for specific management areas
+    const recentActivities = await prisma.auditTrail.findMany({
+      where: {
+        entityType: {
+          in: [
+            // "User",
+            "JobCard",
+            "Assay",
+            "Invoice",
+            "Commodity",
+            "Exchange",
+            "DailyPrice",
+            "WeeklyPrice",
+          ],
+        },
+      },
+      take: 10,
+      orderBy: {
+        timestamp: "desc",
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    // Map audit trail data to the expected format with meaningful descriptions
+    const formattedActivities = recentActivities.map((activity) => {
+      let actionDescription = "";
+
+      switch (activity.entityType) {
+        case "User":
+          actionDescription = `${activity.action.toLowerCase()} user account`;
+          break;
+        case "JobCard":
+          actionDescription = `${activity.action.toLowerCase()} job card ${
+            activity.entityId
+          }`;
+          break;
+        case "Assay":
+          actionDescription = `${activity.action.toLowerCase()} assay record`;
+          break;
+        case "Invoice":
+          actionDescription = `${activity.action.toLowerCase()} invoice`;
+          break;
+        case "Commodity":
+          actionDescription = `${activity.action.toLowerCase()} commodity`;
+          break;
+        case "Exchange":
+          actionDescription = `${activity.action.toLowerCase()} exchange rate`;
+          break;
+        case "DailyPrice":
+          actionDescription = `${activity.action.toLowerCase()} price data`;
+          break;
+        case "WeeklyPrice":
+          actionDescription = `${activity.action.toLowerCase()} price data`;
+          break;
+        default:
+          actionDescription = `${activity.action.toLowerCase()} ${activity.entityType.toLowerCase()}`;
+      }
+
+      return {
+        id: activity.id,
+        user: activity.user.name,
+        action: actionDescription,
+        time: activity.timestamp,
+        type: activity.action.toLowerCase(),
+      };
+    });
+
     // Mock data structured to match dashboard expectations
     const stats = {
       // Financial & export metrics requested for dashboard stat cards
       financials: {
-        currentExchangeRateGhs: 12.34, // GHS per USD (example)
-        currentGoldPriceGhsPerOz: 7400.5,
-        currentSilverPriceGhsPerOz: 88.75,
-        totalExportValueUsd: 1234567.89,
-        totalExportValueGhs: 15234567.45,
-        totalQuantityKg: 12345.67,
-        totalQuantityLbs: 27232.45,
-        serviceFeesInclusive: 23456.78,
-        withholdingTax: 3456.12,
-        totalVat: 4567.89,
-        totalNhil: 567.01,
-        totalCovidLevy: 78.9,
-        totalGetFund: 123.45,
+        currentExchangeRateGhs: latestExchangeRate?.price,
+        currentGoldPriceGhsPerOz: goldPrice,
+        currentSilverPriceGhsPerOz: silverPrice,
+        totalExportValueUsd: totalExportValueUsd,
+        totalExportValueGhs: totalExportValueGhs,
+        totalQuantityKg: totalQuantityKg,
+        totalQuantityLbs: totalQuantityLbs,
+        serviceFeesInclusive: serviceFeesInclusive,
+        withholdingTax: totalWithholdingTax,
+        totalVat: totalVat,
+        totalNhil: totalNhil,
+        totalCovidLevy: totalCovidLevy,
+        totalGetFund: totalGetFund,
       },
       overview: {
         totalJobCards: {
@@ -105,43 +317,7 @@ export async function GET(req: NextRequest) {
           { name: "Export Pro", code: "EP", jobCards: 24 },
         ],
       },
-      recentActivity: [
-        {
-          id: "1",
-          type: "Job Card Created",
-          action: "New job card for XYZ Corp",
-          time: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-          user: "John Doe",
-        },
-        {
-          id: "2",
-          type: "Invoice Generated",
-          action: "Invoice #INV-2024-001 generated",
-          time: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-          user: "Jane Smith",
-        },
-        {
-          id: "3",
-          type: "Job Card Completed",
-          action: "Job card #JC-2024-045 completed",
-          time: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
-          user: "Mike Johnson",
-        },
-        {
-          id: "4",
-          type: "User Registered",
-          action: "New user Sarah Wilson registered",
-          time: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
-          user: "System",
-        },
-        {
-          id: "5",
-          type: "Payment Received",
-          action: "Payment of $15,000 received",
-          time: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
-          user: "Accounts Team",
-        },
-      ],
+      recentActivity: formattedActivities,
       chartData: {
         jobCardStatus: [
           { name: "Active", value: activeJobCardsCount, color: "#FFD700" },

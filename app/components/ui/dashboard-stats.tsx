@@ -134,14 +134,15 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ data }) => {
   const stats = data
     ? [
         {
-          title: "Total Job Cards",
-          value: data.totalJobCards.value,
-          change: `${data.totalJobCards.changeType === "positive" ? "+" : ""}${
-            data.totalJobCards.change
+          title: "Total Revenue",
+          value: `GHS ${data.totalRevenue.value.toLocaleString()}`,
+          change: `${data.totalRevenue.changeType === "positive" ? "+" : ""}${
+            data.totalRevenue.change
           }%`,
-          changeType: data.totalJobCards.changeType,
-          icon: <Briefcase className="h-5 w-5 text-blue-600" />,
+          changeType: data.totalRevenue.changeType,
+          icon: <DollarSign className="h-5 w-5 text-orange-600" />,
         },
+
         {
           title: "Total Exporters",
           value: data.totalExporters.value,
@@ -152,6 +153,15 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ data }) => {
           icon: <Building className="h-5 w-5 text-green-600" />,
         },
         {
+          title: "Total Job Cards",
+          value: data.totalJobCards.value,
+          change: `${data.totalJobCards.changeType === "positive" ? "+" : ""}${
+            data.totalJobCards.change
+          }%`,
+          changeType: data.totalJobCards.changeType,
+          icon: <Briefcase className="h-5 w-5 text-blue-600" />,
+        },
+        {
           title: "Total Users",
           value: data.totalUsers.value,
           change: `${data.totalUsers.changeType === "positive" ? "+" : ""}${
@@ -159,15 +169,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ data }) => {
           }%`,
           changeType: data.totalUsers.changeType,
           icon: <Users className="h-5 w-5 text-purple-600" />,
-        },
-        {
-          title: "Total Revenue",
-          value: `GHS ${data.totalRevenue.value.toLocaleString()}`,
-          change: `${data.totalRevenue.changeType === "positive" ? "+" : ""}${
-            data.totalRevenue.change
-          }%`,
-          changeType: data.totalRevenue.changeType,
-          icon: <DollarSign className="h-5 w-5 text-orange-600" />,
         },
       ]
     : defaultStats;
