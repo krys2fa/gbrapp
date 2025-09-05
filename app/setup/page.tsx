@@ -66,13 +66,13 @@ const setupOptions = [
     href: "/setup/daily-prices",
     color: "bg-yellow-600",
   },
-  {
-    label: "Manage Daily Exchange Rates",
-    description: "Set up daily exchange rates.",
-    icon: <Repeat className="h-6 w-6" />,
-    href: "/setup/daily-exchange",
-    color: "bg-purple-600",
-  },
+  // {
+  //   label: "Manage Daily Exchange Rates",
+  //   description: "Set up daily exchange rates.",
+  //   icon: <Repeat className="h-6 w-6" />,
+  //   href: "/setup/daily-exchange",
+  //   color: "bg-purple-600",
+  // },
   {
     label: "Manage Weekly Exchange Rates",
     description: "Set up weekly exchange rates.",

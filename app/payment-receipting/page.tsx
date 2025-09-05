@@ -305,7 +305,16 @@ function PaymentList() {
             {items.map((d) => (
               <tr key={d.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                  <Link href={`/job-cards/${d.id}`} className="hover:underline">
+                  <Link
+                    href={
+                      d.assayInvoiceId
+                        ? `/job-cards/${d.id}/invoices/${d.assayInvoiceId}`
+                        : d.whtInvoiceId
+                        ? `/job-cards/${d.id}/invoices/${d.whtInvoiceId}`
+                        : `/job-cards/${d.id}`
+                    }
+                    className="hover:underline"
+                  >
                     {d.reference}
                   </Link>
                 </td>
