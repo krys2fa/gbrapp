@@ -690,14 +690,14 @@ function DashboardPage() {
         </div>
 
         {/* Charts + Sidebar Trio: Recent Activity | System Status | Top Exporters (single row) */}
-        {dashboardData && (
+        {/* {dashboardData && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <RecentActivity data={dashboardData?.recentActivity || []} />
             <TopExportersChart
               data={dashboardData?.charts?.topExporters || []}
             />
           </div>
-        )}
+        )} */}
       </main>
     </>
   );
