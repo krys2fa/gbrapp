@@ -71,3 +71,126 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { jobCardId, amount, currencyCode = "USD" } = body;
+
+    if (!jobCardId) {
+      return NextResponse.json(
+        { error: "Job card ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if an invoice already exists for this job card
+    const existingInvoice = await prisma.invoice.findFirst({
+      where: { jobCardId },
+    });
+
+    if (existingInvoice) {
+      return NextResponse.json(
+        { error: "An invoice already exists for this job card" },
+        { status: 400 }
+      );
+    }
+
+    // Get the job card with assays to calculate invoice amount
+    const jobCard = await prisma.jobCard.findUnique({
+      where: { id: jobCardId },
+      include: {
+        assays: true,
+        commodity: true,
+      },
+    });
+
+    if (!jobCard) {
+      return NextResponse.json(
+        { error: "Job card not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!jobCard.assays || jobCard.assays.length === 0) {
+      return NextResponse.json(
+        { error: "No assays found for this job card" },
+        { status: 400 }
+      );
+    }
+
+    // Calculate total value from assays
+    let totalUsdValue = 0;
+    let totalGhsValue = 0;
+
+    for (const assay of jobCard.assays) {
+      totalUsdValue += assay.totalUsdValue || 0;
+      totalGhsValue += assay.totalGhsValue || 0;
+    }
+
+    // Use provided amount or calculated total
+    const invoiceAmount = amount !== undefined ? Number(amount) : totalUsdValue;
+
+    // Get or create invoice type
+    let invoiceType = await prisma.invoiceType.findUnique({
+      where: { name: "Assay Invoice" },
+    });
+    if (!invoiceType) {
+      invoiceType = await prisma.invoiceType.create({
+        data: {
+          name: "Assay Invoice",
+          description: "Generated invoice for assay valuation",
+        },
+      });
+    }
+
+    // Get currency
+    let currency = await prisma.currency.findFirst({
+      where: { code: currencyCode },
+    });
+    if (!currency) {
+      currency = await prisma.currency.findFirst();
+    }
+
+    if (!currency) {
+      return NextResponse.json({ error: "No currency found" }, { status: 500 });
+    }
+
+    // Create the invoice
+    const invoice = await prisma.invoice.create({
+      data: {
+        invoiceNumber: `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        jobCardId,
+        invoiceTypeId: invoiceType.id,
+        amount: invoiceAmount,
+        currencyId: currency.id,
+        assays: {
+          connect: jobCard.assays.map((assay) => ({ id: assay.id })),
+        },
+        assayUsdValue: totalUsdValue,
+        assayGhsValue: totalGhsValue,
+        rate: 1,
+        issueDate: new Date(),
+        status: "pending",
+      },
+      include: {
+        currency: true,
+        jobCard: {
+          select: {
+            id: true,
+            referenceNumber: true,
+            exporter: { select: { name: true } },
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(invoice, { status: 201 });
+  } catch (err) {
+    console.error("Error creating invoice:", err);
+    return NextResponse.json(
+      { error: "Failed to create invoice" },
+      { status: 500 }
+    );
+  }
+}

@@ -427,64 +427,7 @@ export async function PUT(req: NextRequest) {
 
       // mark job card as completed unless a different status is provided
       updateData.status = requestData.status || "completed";
-      // Create an invoice for the created assays (if any)
-      try {
-        if (createdAssayIds.length > 0) {
-          // Determine invoice amount (prefer provided exporterValueUsd)
-          const amountUsd =
-            requestData.exporterValueUsd != null
-              ? Number(requestData.exporterValueUsd)
-              : 0;
-
-          // Ensure an InvoiceType exists for assay invoices
-          let invoiceType = await prisma.invoiceType.findUnique({
-            where: { name: "Assay Invoice" },
-          });
-          if (!invoiceType) {
-            invoiceType = await prisma.invoiceType.create({
-              data: {
-                name: "Assay Invoice",
-                description: "Automatically generated invoice for valuation",
-              },
-            });
-          }
-
-          // Prefer USD currency when available
-          let currency = await prisma.currency.findFirst({
-            where: { code: "USD" },
-          });
-          if (!currency) {
-            currency = await prisma.currency.findFirst();
-          }
-
-          if (currency) {
-            const invoice = await prisma.invoice.create({
-              data: {
-                invoiceNumber: `INV-${Date.now()}-${Math.floor(
-                  Math.random() * 1000
-                )}`,
-                jobCardId: id,
-                invoiceTypeId: invoiceType.id,
-                amount: Number(amountUsd) || 0,
-                currencyId: currency.id,
-                assays: {
-                  connect: createdAssayIds.map((aid) => ({ id: aid })),
-                },
-                assayUsdValue: Number(amountUsd) || 0,
-                assayGhsValue: Number(requestData.exporterValueGhs) || 0,
-                rate: 1,
-                issueDate: new Date(),
-                status: "pending",
-              },
-            });
-            console.debug("Created invoice for assays", invoice.id);
-          } else {
-            console.debug("No currency found - skipping invoice creation");
-          }
-        }
-      } catch (invoiceErr) {
-        console.error("Failed to create invoice for assays:", invoiceErr);
-      }
+      // Note: Invoice creation is now manual - removed auto-creation
     }
 
     // If seals array or officer names are provided, persist seals and/or update notes

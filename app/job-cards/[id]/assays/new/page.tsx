@@ -348,8 +348,11 @@ export default function NewAssayPage() {
   const totalNetWeightOzDisplay = Number.isFinite(totalNetWeightOz)
     ? totalNetWeightOz
     : 0;
-  const usdValue = (Number(dailyPrice?.value) || 0) * totalNetWeightOzDisplay;
-  const ghsValue = usdValue * (Number(dailyExchange?.value) || 0);
+
+  // Use existing job card values for meta display instead of current form calculations
+  const displayNetWeightOz = jobCard?.numberOfOunces || totalNetWeightOzDisplay;
+  const displayUsdValue = jobCard?.valueUsd || ((Number(dailyPrice?.value) || 0) * totalNetWeightOzDisplay);
+  const displayGhsValue = jobCard?.valueGhs || (displayUsdValue * (Number(dailyExchange?.value) || 0));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -376,8 +379,6 @@ export default function NewAssayPage() {
         metaMissing.push("reference number");
       if (!jobCard?.buyerName) metaMissing.push("buyer");
       if (!jobCard?.destinationCountry) metaMissing.push("destination");
-      if (!jobCard?.shipmentTypeId && !form.shipmentTypeId)
-        metaMissing.push("shipment type");
       if (!commodityName) metaMissing.push("commodity");
       if (jobCard?.numberOfBoxes == null) metaMissing.push("number of boxes");
       if (!jobCard?.unitOfMeasure) metaMissing.push("unit of measure");
@@ -436,8 +437,8 @@ export default function NewAssayPage() {
           meta: {
             unit: unitOfMeasure,
             totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(4)),
-            valueUsd: Number(usdValue.toFixed(4)),
-            valueGhs: Number(ghsValue.toFixed(4)),
+            valueUsd: Number(displayUsdValue.toFixed(4)),
+            valueGhs: Number(displayGhsValue.toFixed(4)),
             dailyExchange: Number(dailyExchange?.value) || null,
             dailyPrice: Number(dailyPrice?.value) || null,
           },
@@ -456,8 +457,8 @@ export default function NewAssayPage() {
         totalInputNetWeight || jobCard.totalNetWeight || 0;
       updated.totalNetWeightOz =
         totalNetWeightOzDisplay || jobCard.totalNetWeightOz || 0;
-      updated.exporterValueUsd = usdValue || jobCard.exporterValueUsd || 0;
-      updated.exporterValueGhs = ghsValue || jobCard.exporterValueGhs || 0;
+      updated.exporterValueUsd = displayUsdValue || jobCard.exporterValueUsd || 0;
+      updated.exporterValueGhs = displayGhsValue || jobCard.exporterValueGhs || 0;
 
       const put = await fetch(`/api/job-cards/${id}`, {
         method: "PUT",
@@ -539,8 +540,8 @@ export default function NewAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Net weight (oz)</div>
                 <div className="font-medium text-gray-900">
-                  {totalNetWeightOzDisplay
-                    ? totalNetWeightOzDisplay.toFixed(2)
+                  {displayNetWeightOz
+                    ? displayNetWeightOz.toFixed(2)
                     : "0.00"}
                 </div>
               </div>
@@ -548,14 +549,14 @@ export default function NewAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Value (USD)</div>
                 <div className="font-medium text-gray-900">
-                  {usdValue ? usdValue.toFixed(2) : "0.00"}
+                  {displayUsdValue ? displayUsdValue.toFixed(2) : "0.00"}
                 </div>
               </div>
 
               <div>
                 <div className="text-xs text-gray-500">Value (GHS)</div>
                 <div className="font-medium text-gray-900">
-                  {ghsValue ? ghsValue.toFixed(2) : "0.00"}
+                  {displayGhsValue ? displayGhsValue.toFixed(2) : "0.00"}
                 </div>
               </div>
 
@@ -582,16 +583,6 @@ export default function NewAssayPage() {
                 <div className="text-xs text-gray-500">Number of boxes</div>
                 <div className="font-medium text-gray-900">
                   {jobCard?.numberOfBoxes ?? "-"}
-                </div>
-              </div>
-
-              <div className="sm:col-span-2 lg:col-span-3">
-                <div className="text-xs text-gray-500">Shipment Type</div>
-                <div className="font-medium text-gray-900">
-                  {shipmentTypes.find((s) => s.id === jobCard?.shipmentTypeId)
-                    ?.name ||
-                    jobCard?.shipmentType?.name ||
-                    "-"}
                 </div>
               </div>
             </div>

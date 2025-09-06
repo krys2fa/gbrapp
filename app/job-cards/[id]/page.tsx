@@ -58,6 +58,7 @@ function JobCardDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
 
   useEffect(() => {
     const fetchJobCard = async () => {
@@ -106,6 +107,44 @@ function JobCardDetailPage() {
 
   const cancelDelete = () => {
     setDeleteModalOpen(false);
+  };
+
+  const handleGenerateInvoice = async () => {
+    if (!jobCard) return;
+
+    setGeneratingInvoice(true);
+    try {
+      const response = await fetch("/api/invoices", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobCardId: jobCard.id,
+        }),
+      });
+
+      if (response.ok) {
+        const newInvoice = await response.json();
+        // Refresh the job card data to show the new invoice
+        const updatedResponse = await fetch(`/api/job-cards/${id}`);
+        if (updatedResponse.ok) {
+          const updatedData = await updatedResponse.json();
+          setJobCard(updatedData);
+        }
+        alert("Invoice generated successfully!");
+      } else {
+        const errorData = await response.json();
+        alert(
+          `Failed to generate invoice: ${errorData.error || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+      alert("An error occurred while generating the invoice.");
+    } finally {
+      setGeneratingInvoice(false);
+    }
   };
 
   if (loading) {
@@ -656,12 +695,13 @@ function JobCardDetailPage() {
                 View Invoice
               </Link>
             ) : (
-              <Link
-                href={`/job-cards/${id}/invoices/new`}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              <button
+                onClick={handleGenerateInvoice}
+                disabled={generatingInvoice}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Invoice
-              </Link>
+                {generatingInvoice ? "Generating..." : "Generate Invoice"}
+              </button>
             )}
           </div>
 
