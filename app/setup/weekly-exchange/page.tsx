@@ -104,7 +104,13 @@ export default function WeeklyExchangePage() {
         throw new Error(errorData.error || "Failed to save rate");
       }
       toast.success(
-        editingPrice ? "Rate updated successfully!" : "Rate added successfully!"
+        editingPrice
+          ? `Rate for ${
+              exchanges.find((e) => e.id === exchangeId)?.name || "exchange"
+            } updated successfully!`
+          : `Rate for ${
+              exchanges.find((e) => e.id === exchangeId)?.name || "exchange"
+            } added successfully!`
       );
       setExchangeId(exchanges[0]?.id || "");
       setExchangeRate("");
@@ -126,6 +132,7 @@ export default function WeeklyExchangePage() {
     setExchangeId(p.exchange?.id || "");
     setExchangeRate(String(p.price));
     setWeekStartDate(new Date(p.weekStartDate).toISOString().split("T")[0]);
+    toast("Editing rate - make your changes and save", { icon: "✏️" });
   };
 
   const handleDeleteClick = (p: any) => {
@@ -141,7 +148,11 @@ export default function WeeklyExchangePage() {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete rate");
-      toast.success("Rate deleted successfully!");
+      toast.success(
+        `Rate for ${
+          deletingPrice.exchange?.name || "exchange"
+        } deleted successfully!`
+      );
       setDeleteModalOpen(false);
       setDeletingPrice(null);
       // Trigger reload
@@ -158,6 +169,7 @@ export default function WeeklyExchangePage() {
   const handleView = (priceObj: any) => {
     setViewingPrice(priceObj);
     setViewModalOpen(true);
+    toast("Viewing rate details", { icon: "👁️" });
   };
 
   const closeViewModal = () => {
@@ -305,6 +317,9 @@ export default function WeeklyExchangePage() {
                 onChange={(e) => {
                   setFilterItem(e.target.value);
                   setFilterTrigger((prev: number) => prev + 1);
+                  if (e.target.value) {
+                    toast("Filter applied", { icon: "🔍" });
+                  }
                 }}
                 className="block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
               >
@@ -326,10 +341,12 @@ export default function WeeklyExchangePage() {
                     const selectedDate = new Date(e.target.value);
                     const weekStart = getWeekStart(selectedDate);
                     setFilterWeek(weekStart.toISOString().split("T")[0]);
+                    setFilterTrigger((prev: number) => prev + 1);
+                    toast("Week filter applied", { icon: "📅" });
                   } else {
                     setFilterWeek("");
+                    setFilterTrigger((prev: number) => prev + 1);
                   }
-                  setFilterTrigger((prev: number) => prev + 1);
                 }}
                 placeholder="Filter by week"
                 className="block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
@@ -340,6 +357,7 @@ export default function WeeklyExchangePage() {
                 setFilterItem("");
                 setFilterWeek("");
                 setFilterTrigger((prev: number) => prev + 1);
+                toast("Filters cleared", { icon: "🧹" });
               }}
               className="text-blue-600 hover:text-blue-800 text-sm font-medium"
             >

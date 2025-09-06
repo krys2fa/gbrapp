@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
     // Round assay values to 2 decimal places
     assayUsdValue = Number(assayUsdValue.toFixed(2));
     assayGhsValue = Number(assayGhsValue.toFixed(2));
-    exchangeRate = Number(exchangeRate.toFixed(2));
+    exchangeRate = Number(exchangeRate.toFixed(4));
 
     // If no exchange rate from assay, get daily exchange rate
     if (exchangeRate === 0) {

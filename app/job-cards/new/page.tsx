@@ -7,6 +7,7 @@ import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import Select from "react-select";
 import countryList from "react-select-country-list";
+import toast from "react-hot-toast";
 
 enum UnitOfMeasure {
   GRAMS = "g",
@@ -167,7 +168,9 @@ function NewJobCardPage() {
         }
       } catch (error) {
         console.error("Error fetching form data:", error);
-        setError("Failed to load form data. Please try again.");
+        const errorMessage = "Failed to load form data. Please try again.";
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     };
 
@@ -250,7 +253,9 @@ function NewJobCardPage() {
 
     // Basic client-side validation: commodity is required (DB has non-null constraint)
     if (!formData.commodityId) {
-      setError("Please select a commodity before creating the job card.");
+      const errorMessage = "Please select a commodity before creating the job card.";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setLoading(false);
       return;
     }
@@ -300,17 +305,24 @@ function NewJobCardPage() {
       console.log("Server response:", response.status, responseData);
 
       if (response.ok) {
+        toast.success("Job card created successfully!");
         router.push(`/job-cards/${responseData.id}`);
       } else {
-        setError(responseData.error || "Failed to create job card");
+        const errorMessage = responseData.error || "Failed to create job card";
+        setError(errorMessage);
+        toast.error(errorMessage);
         console.error("Server error details:", responseData);
         if (responseData.details) {
-          setError(`${responseData.error}: ${responseData.details}`);
+          const detailedError = `${responseData.error}: ${responseData.details}`;
+          setError(detailedError);
+          toast.error(detailedError);
         }
       }
     } catch (error) {
       console.error("Error creating job card:", error);
-      setError("An unexpected error occurred. Please try again.");
+      const errorMessage = "An unexpected error occurred. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

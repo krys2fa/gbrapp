@@ -12,6 +12,7 @@ import {
 import BackLink from "@/app/components/ui/BackLink";
 import { formatDate } from "@/app/lib/utils";
 import { useParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface JobCardData {
   id: string;
@@ -91,17 +92,16 @@ function JobCardDetailPage() {
       });
 
       if (response.ok) {
+        toast.success("Job card deleted successfully!");
         // Redirect to job cards list
         window.location.href = "/job-cards";
       } else {
         const errorData = await response.json();
-        alert(
-          `Failed to delete job card: ${errorData.error || "Unknown error"}`
-        );
+        toast.error(`Failed to delete job card: ${errorData.error || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error deleting job card:", error);
-      alert("An error occurred while deleting the job card.");
+      toast.error("An error occurred while deleting the job card.");
     }
   };
 
@@ -113,6 +113,8 @@ function JobCardDetailPage() {
     if (!jobCard) return;
 
     setGeneratingInvoice(true);
+    toast.loading("Generating invoice...", { id: "invoice-generation" });
+
     try {
       const response = await fetch("/api/invoices", {
         method: "POST",
@@ -132,16 +134,17 @@ function JobCardDetailPage() {
           const updatedData = await updatedResponse.json();
           setJobCard(updatedData);
         }
-        alert("Invoice generated successfully!");
+        toast.dismiss("invoice-generation");
+        toast.success("Invoice generated successfully!");
       } else {
         const errorData = await response.json();
-        alert(
-          `Failed to generate invoice: ${errorData.error || "Unknown error"}`
-        );
+        toast.dismiss("invoice-generation");
+        toast.error(`Failed to generate invoice: ${errorData.error || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error generating invoice:", error);
-      alert("An error occurred while generating the invoice.");
+      toast.dismiss("invoice-generation");
+      toast.error("An error occurred while generating the invoice.");
     } finally {
       setGeneratingInvoice(false);
     }
@@ -549,7 +552,7 @@ function JobCardDetailPage() {
                       Number of Ounces
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.numberOfOunces}
+                      {Number(jobCard.numberOfOunces).toFixed(2)}
                     </dd>
                   </div>
                 )}

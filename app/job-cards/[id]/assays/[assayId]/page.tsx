@@ -704,7 +704,7 @@ export default function AssayDetailPage() {
                     Customs Officer
                   </dt>
                   <dd className="text-xs text-gray-900 text-center">
-                    {jobCard?.customsOfficer || "-"}
+                    {jobCard?.customsOfficer?.name || "-"}
                   </dd>
                 </div>
               </div>
@@ -716,7 +716,7 @@ export default function AssayDetailPage() {
                     Technical Director
                   </dt>
                   <dd className="text-xs text-gray-900 text-center">
-                    {jobCard?.technicalDirector || "-"}
+                    {jobCard?.technicalDirector?.name || "-"}
                   </dd>
                 </div>
               </div>

@@ -49,8 +49,37 @@ export async function GET(req: NextRequest) {
         technicalDirector: true,
         seals: true,
         assays: {
-          include: {
+          select: {
+            id: true,
+            jobCardId: true,
+            assayOfficerId: true,
+            technicalDirectorId: true,
+            goldContent: true,
+            silverContent: true,
+            comments: true,
+            assayDate: true,
+            certificateNumber: true,
+            remarks: true,
             measurements: true,
+            // Include calculated valuation fields
+            grossWeight: true,
+            fineness: true,
+            netWeight: true,
+            weightInOz: true,
+            pricePerOz: true,
+            totalUsdValue: true,
+            totalGhsValue: true,
+            commodityPrice: true,
+            // Include exchange rate
+            exchangeRate: true,
+            // Include seal and signatory information
+            securitySealNo: true,
+            goldbodSealNo: true,
+            customsSealNo: true,
+            exporterSignatory: true,
+            goldbodSignatory: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         invoices: true,
@@ -344,6 +373,16 @@ export async function PUT(req: NextRequest) {
             totalGhsValue = totalUsdValue * assayItem.exchangeRate;
           }
 
+          console.log("Assay calculation:", {
+            totalNetWeight,
+            weightInOz,
+            commodityPrice,
+            pricePerOz,
+            totalUsdValue,
+            exchangeRate: assayItem.exchangeRate,
+            totalGhsValue,
+          });
+
           const created = await prisma.assay.create({
             data: {
               jobCardId: id,
@@ -397,6 +436,9 @@ export async function PUT(req: NextRequest) {
               exporterSignatory: assayItem.exporterSignatory,
               goldbodSignatory:
                 assayItem.goldbodSignatory || assayItem.signatory,
+
+              // Store exchange rate
+              exchangeRate: assayItem.exchangeRate || null,
 
               // create measurement rows if provided
               measurements: Array.isArray(assayItem.measurements)

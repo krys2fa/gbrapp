@@ -137,6 +137,8 @@ export default function NewAssayPage() {
         if (exRes && exRes.ok)
           exchangePrices = await exRes.json().catch(() => []);
 
+        console.log("Exchange prices from API:", exchangePrices);
+
         const latestByDate = (items: any[]) =>
           items
             .slice()
@@ -150,6 +152,7 @@ export default function NewAssayPage() {
 
         // Calculate the start of the current week (Monday)
         const currentWeekStart = getWeekStart(new Date(today)).toISOString().split("T")[0];
+        console.log("Current week start:", currentWeekStart);
 
         const todayCommodityMatches = (commodityPrices || []).filter(
           (p: any) => String(p?.createdAt || "").split("T")[0] === today
@@ -157,6 +160,8 @@ export default function NewAssayPage() {
         const todaysExchangeMatches = (exchangePrices || []).filter(
           (p: any) => String(p?.weekStartDate || "").split("T")[0] === currentWeekStart
         );
+
+        console.log("Today's exchange matches:", todaysExchangeMatches);
 
         const commodityEntry =
           latestByDate(
@@ -176,6 +181,8 @@ export default function NewAssayPage() {
           ) ||
           null;
 
+        console.log("Selected exchange entry:", exchangeEntry);
+
         setMissingTodayCommodity(todayCommodityMatches.length === 0);
         setMissingTodayExchange(todaysExchangeMatches.length === 0);
 
@@ -185,6 +192,8 @@ export default function NewAssayPage() {
         setWeeklyExchange({
           value: exchangeEntry ? Number(exchangeEntry.price) : null,
         });
+
+        console.log("Setting weekly exchange value:", exchangeEntry ? Number(exchangeEntry.price) : null);
       } catch (err) {
         console.error(err);
       } finally {
@@ -383,7 +392,8 @@ export default function NewAssayPage() {
       const metaMissing: string[] = [];
       if (!jobCard?.exporter?.name) metaMissing.push("exporter");
       if (dailyPrice?.value == null) metaMissing.push("daily price");
-      if (weeklyExchange?.value == null) metaMissing.push("weekly exchange");
+      // Remove weekly exchange from required validation since we handle null case
+      // if (weeklyExchange?.value == null) metaMissing.push("weekly exchange");
       if (!(jobCard?.referenceNumber || jobCard?.reference))
         metaMissing.push("reference number");
       if (!jobCard?.buyerName) metaMissing.push("buyer");
@@ -413,21 +423,20 @@ export default function NewAssayPage() {
         return;
       }
 
-      // If today's price or exchange are missing, block saving and show an error
-      if (missingTodayCommodity || missingTodayExchange) {
-        const parts: string[] = [];
-        if (missingTodayCommodity)
-          parts.push("daily commodity price for today");
-        if (missingTodayExchange)
-          parts.push("weekly exchange rate for current week");
-        const msg = `Cannot save valuation: no ${parts.join(
-          " and "
-        )} set. Please add the required prices before saving.`;
+      // If today's price is missing, block saving and show an error
+      if (missingTodayCommodity) {
+        const msg = `Cannot save valuation: no daily commodity price for today set. Please add the required price before saving.`;
         setError(msg);
         toast.dismiss("assay-save");
         toast(msg, { icon: "⚠️" });
         setSaving(false);
         return;
+      }
+
+      // Allow saving even if weekly exchange is missing - we'll use null
+      if (missingTodayExchange) {
+        toast.dismiss("assay-save");
+        toast("Warning: No weekly exchange rate set for current week. Assay will be saved with null exchange rate.", { icon: "⚠️" });
       }
 
       const newAssay = {
@@ -438,6 +447,9 @@ export default function NewAssayPage() {
         securitySealNo: form.securitySealNo,
         goldbodSealNo: form.goldbodSealNo,
         customsSealNo: form.customsSealNo,
+        exchangeRate: Number(weeklyExchange?.value) || null,
+        commodityPrice: Number(dailyPrice?.value) || null,
+        pricePerOz: Number(dailyPrice?.value) || null,
         measurements: rows.map((r, i) => ({
           piece: i + 1,
           grossWeight: r.grossWeight || 0,
