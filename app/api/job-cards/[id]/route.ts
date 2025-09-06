@@ -171,24 +171,6 @@ export async function PUT(req: NextRequest) {
         updateData.totalNetWeight = Number(grams.toFixed(4));
       }
     }
-    if (requestData.numberOfPersons !== undefined) {
-      updateData.numberOfPersons = parseInt(requestData.numberOfPersons);
-    }
-    // exporterValueUsd / exporterValueGhs are not part of the JobCard model anymore.
-    // Keep using requestData.exporterValueUsd / exporterValueGhs when creating invoices
-    // but do not attempt to persist them on the JobCard to avoid Prisma errors.
-    if (requestData.graDeclarationNumber !== undefined) {
-      updateData.graDeclarationNumber = requestData.graDeclarationNumber;
-    }
-    if (requestData.numberOfPersons !== undefined) {
-      updateData.numberOfPersons = parseInt(requestData.numberOfPersons);
-    }
-    // exporterValueUsd / exporterValueGhs are not part of the JobCard model anymore.
-    // Keep using requestData.exporterValueUsd / exporterValueGhs when creating invoices
-    // but do not attempt to persist them on the JobCard to avoid Prisma errors.
-    if (requestData.graDeclarationNumber !== undefined) {
-      updateData.graDeclarationNumber = requestData.graDeclarationNumber;
-    }
     if (requestData.numberOfBoxes !== undefined) {
       updateData.numberOfBoxes = parseInt(requestData.numberOfBoxes);
     }
@@ -210,7 +192,7 @@ export async function PUT(req: NextRequest) {
           },
         });
       }
-      updateData.customsOfficerId = customsOfficer.id;
+            updateData.customsOfficer = { connect: { id: customsOfficer.id } };
     }
     if (
       requestData.technicalDirector !== undefined &&
@@ -230,7 +212,7 @@ export async function PUT(req: NextRequest) {
           },
         });
       }
-      updateData.technicalDirectorId = technicalDirector.id;
+      updateData.technicalDirector = { connect: { id: technicalDirector.id } };
     }
 
     // Handle officer ID fields (for dropdown selections)
@@ -238,32 +220,31 @@ export async function PUT(req: NextRequest) {
       requestData.customsOfficerId !== undefined &&
       requestData.customsOfficerId !== ""
     ) {
-      updateData.customsOfficerId = requestData.customsOfficerId;
+      updateData.customsOfficer = { connect: { id: requestData.customsOfficerId } };
     }
     if (
       requestData.assayOfficerId !== undefined &&
       requestData.assayOfficerId !== ""
     ) {
-      updateData.assayOfficerId = requestData.assayOfficerId;
+      updateData.assayOfficer = { connect: { id: requestData.assayOfficerId } };
     }
     if (
       requestData.technicalDirectorId !== undefined &&
       requestData.technicalDirectorId !== ""
     ) {
-      updateData.technicalDirectorId = requestData.technicalDirectorId;
+      updateData.technicalDirector = { connect: { id: requestData.technicalDirectorId } };
     }
     if (
       requestData.nacobOfficerId !== undefined &&
       requestData.nacobOfficerId !== ""
     ) {
-      updateData.nacobOfficerId = requestData.nacobOfficerId;
+      updateData.nacobOfficer = { connect: { id: requestData.nacobOfficerId } };
     }
     if (
       requestData.nationalSecurityOfficerId !== undefined &&
       requestData.nationalSecurityOfficerId !== ""
     ) {
-      updateData.nationalSecurityOfficerId =
-        requestData.nationalSecurityOfficerId;
+      updateData.securityOfficer = { connect: { id: requestData.nationalSecurityOfficerId } };
     }
 
     console.log("Updating with data:", updateData);
