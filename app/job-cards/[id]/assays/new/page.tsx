@@ -347,9 +347,9 @@ export default function NewAssayPage() {
   const toOunces = (value: number, unit: string) => {
     if (!value) return 0;
     const u = (unit || "g").toLowerCase();
-    if (u === "kg" || u === "kilograms") return value * 35.2739619495804;
-    // default grams
-    return value / 28.349523125;
+    if (u === "kg" || u === "kilograms") return (value * 1000) / 31.1035; // Convert kg to grams first, then to troy ounces
+    // default grams to troy ounces
+    return value / 31.1035;
   };
 
   const totalInputNetWeight = rows.reduce(

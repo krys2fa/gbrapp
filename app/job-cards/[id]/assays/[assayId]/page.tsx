@@ -135,7 +135,7 @@ export default function AssayDetailPage() {
         0
       );
       const netWeightGrams = measuredSum;
-      const GRAMS_PER_TROY_OUNCE = 31.1034768;
+      const GRAMS_PER_TROY_OUNCE = 31.1035;
       if (commodityPrice != null && netWeightGrams > 0) {
         const ounces = netWeightGrams / GRAMS_PER_TROY_OUNCE;
         const usd = ounces * commodityPrice;
@@ -288,7 +288,7 @@ export default function AssayDetailPage() {
                 Shipment Type
               </dt>
               <dd className="mt-1 text-sm text-gray-900">
-                {jobCard?.shipmentType?.name || "-"}
+                {assay?.shipmentType?.name || "-"}
               </dd>
             </div>
           </div>
@@ -320,24 +320,24 @@ export default function AssayDetailPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       <tr>
                         <td className="px-4 py-2 text-sm text-gray-700">
-                          {assay.jbGrossWeight != null
+                          {jobCard?.totalGrossWeight != null
+                            ? Number(jobCard.totalGrossWeight).toFixed(2)
+                            : assay.jbGrossWeight != null
                             ? Number(assay.jbGrossWeight).toFixed(2)
-                            : assay.grossWeight != null
-                            ? Number(assay.grossWeight).toFixed(2)
                             : "-"}
                         </td>
                         <td className="px-4 py-2 text-sm text-gray-700">
-                          {assay.jbFineness != null
+                          {jobCard?.fineness != null
+                            ? Number(jobCard.fineness).toFixed(2)
+                            : assay.jbFineness != null
                             ? Number(assay.jbFineness).toFixed(2)
-                            : assay.fineness != null
-                            ? Number(assay.fineness).toFixed(2)
                             : "-"}
                         </td>
                         <td className="px-4 py-2 text-sm text-gray-700">
-                          {assay.jbNetWeight != null
+                          {jobCard?.totalNetWeight != null
+                            ? Number(jobCard.totalNetWeight).toFixed(2)
+                            : assay.jbNetWeight != null
                             ? Number(assay.jbNetWeight).toFixed(2)
-                            : assay.netWeight != null
-                            ? Number(assay.netWeight).toFixed(2)
                             : "-"}
                         </td>
                       </tr>
@@ -447,11 +447,11 @@ export default function AssayDetailPage() {
                         Weight in Ounces:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay.jbWeightInOz != null
+                        {jobCard?.numberOfOunces != null
+                          ? Number(jobCard.numberOfOunces).toFixed(2)
+                          : assay.jbWeightInOz != null
                           ? Number(assay.jbWeightInOz).toFixed(4)
-                          : assay.weightInOz != null
-                          ? Number(assay.weightInOz).toFixed(4)
-                          : "0.0000"}{" "}
+                          : "0.00"}{" "}
                         oz
                       </dd>
                     </div>
@@ -463,10 +463,10 @@ export default function AssayDetailPage() {
                         Price per Ounce:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay.jbPricePerOz != null
+                        {jobCard?.pricePerOunce != null
+                          ? `$${Number(jobCard.pricePerOunce).toFixed(2)}`
+                          : assay.jbPricePerOz != null
                           ? `$${Number(assay.jbPricePerOz).toFixed(2)}`
-                          : assay.pricePerOz != null
-                          ? `$${Number(assay.pricePerOz).toFixed(2)}`
                           : "$0.00"}
                       </dd>
                     </div>
@@ -478,10 +478,10 @@ export default function AssayDetailPage() {
                         Total USD Value:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay.jbTotalUsdValue != null
+                        {jobCard?.valueUsd != null
+                          ? `$${Number(jobCard.valueUsd).toFixed(2)}`
+                          : assay.jbTotalUsdValue != null
                           ? `$${Number(assay.jbTotalUsdValue).toFixed(2)}`
-                          : assay.totalUsdValue != null
-                          ? `$${Number(assay.totalUsdValue).toFixed(2)}`
                           : "$0.00"}
                       </dd>
                     </div>
@@ -493,11 +493,11 @@ export default function AssayDetailPage() {
                         Total GHS Value:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay.jbTotalGhsValue != null
-                          ? `₵${Number(assay.jbTotalGhsValue).toFixed(2)}`
-                          : assay.totalGhsValue != null
-                          ? `₵${Number(assay.totalGhsValue).toFixed(2)}`
-                          : "₵0.00"}
+                        {jobCard?.valueGhs != null
+                          ? `GHS ${Number(jobCard.valueGhs).toFixed(2)}`
+                          : assay.jbTotalGhsValue != null
+                          ? `GHS ${Number(assay.jbTotalGhsValue).toFixed(2)}`
+                          : "GHS 0.00"}
                       </dd>
                     </div>
                   </div>
@@ -530,9 +530,9 @@ export default function AssayDetailPage() {
                                   ),
                                 0
                               );
-                              const GRAMS_PER_TROY_OUNCE = 31.1034768;
+                              const GRAMS_PER_TROY_OUNCE = 31.1035;
                               const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                              return totalGrams > 0 ? oz.toFixed(4) : "0.0000";
+                              return totalGrams > 0 ? oz.toFixed(2) : "0.00";
                             })()}{" "}
                         oz
                       </dd>

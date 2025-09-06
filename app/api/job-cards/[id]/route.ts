@@ -61,7 +61,6 @@ export async function GET(req: NextRequest) {
             certificateNumber: true,
             remarks: true,
             measurements: true,
-            // Include calculated valuation fields
             grossWeight: true,
             fineness: true,
             netWeight: true,
@@ -70,14 +69,14 @@ export async function GET(req: NextRequest) {
             totalUsdValue: true,
             totalGhsValue: true,
             commodityPrice: true,
-            // Include exchange rate
             exchangeRate: true,
-            // Include seal and signatory information
             securitySealNo: true,
             goldbodSealNo: true,
             customsSealNo: true,
             exporterSignatory: true,
             goldbodSignatory: true,
+            shipmentTypeId: true,
+            shipmentType: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -195,12 +194,11 @@ export async function PUT(req: NextRequest) {
       updateData.totalNetWeight = parseFloat(requestData.totalNetWeight);
     }
     if (requestData.totalNetWeightOz !== undefined) {
-      // The JobCard model does not have `totalNetWeightOz` field.
-      // Convert provided ounces to grams and store in `totalNetWeight` (grams)
-      // 1 ounce = 28.349523125 grams
+      // Convert provided ounces to grams and store in totalNetWeight (grams)
+      // 1 troy ounce = 31.1035 grams (precious metals standard)
       const oz = parseFloat(requestData.totalNetWeightOz);
       if (!Number.isNaN(oz)) {
-        const grams = oz * 28.349523125;
+        const grams = oz * 31.1035;
         updateData.totalNetWeight = Number(grams.toFixed(4));
       }
     }
@@ -355,7 +353,7 @@ export async function PUT(req: NextRequest) {
           }
 
           // Calculate weight in ounces and valuation
-          const GRAMS_PER_TROY_OUNCE = 31.1034768;
+          const GRAMS_PER_TROY_OUNCE = 31.1035;
           const weightInOz =
             totalNetWeight > 0 ? totalNetWeight / GRAMS_PER_TROY_OUNCE : 0;
 
@@ -439,6 +437,9 @@ export async function PUT(req: NextRequest) {
 
               // Store exchange rate
               exchangeRate: assayItem.exchangeRate || null,
+
+              // Store shipment type
+              shipmentTypeId: assayItem.shipmentTypeId || null,
 
               // create measurement rows if provided
               measurements: Array.isArray(assayItem.measurements)

@@ -152,6 +152,7 @@ model JobCard {
   fees                 Fee[]
   levies               Levy[]
   status               String                   @default("pending")
+  editCount            Int                      @default(0)
   notes                String?
   createdAt            DateTime                 @default(now())
   updatedAt            DateTime                 @updatedAt
@@ -318,6 +319,10 @@ model Assay {
   // Exchange rate field
   exchangeRate        Float?
   
+  // Shipment type field
+  shipmentTypeId      String?
+  shipmentType        ShipmentType?      @relation(fields: [shipmentTypeId], references: [id])
+  
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 }
@@ -326,6 +331,7 @@ model ShipmentType {
   id          String   @id @default(uuid())
   name        String   @unique
   description String?
+  assays      Assay[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

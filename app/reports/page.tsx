@@ -3,7 +3,7 @@ import { Header } from "@/app/components/layout/header";
 import { FileText } from "lucide-react";
 import { prisma } from "@/app/lib/prisma";
 
-const GRAMS_PER_TROY_OUNCE = 31.1034768;
+const GRAMS_PER_TROY_OUNCE = 31.1035;
 
 function formatNumber(v?: number) {
   if (v == null) return "-";

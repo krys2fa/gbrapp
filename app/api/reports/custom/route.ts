@@ -1,6 +1,6 @@
 import { prisma } from "@/app/lib/prisma";
 
-const GRAMS_PER_TROY_OUNCE = 31.1034768;
+const GRAMS_PER_TROY_OUNCE = 31.1035;
 
 function csvEscape(v: any) {
   if (v == null) return "";
