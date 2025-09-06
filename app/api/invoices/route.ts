@@ -119,17 +119,87 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Calculate total value from assays
-    let totalUsdValue = 0;
-    let totalGhsValue = 0;
+    // Calculate totals from all assays
+    let assayUsdValue = 0;
+    let assayGhsValue = 0;
+    let exchangeRate = 0;
 
     for (const assay of jobCard.assays) {
-      totalUsdValue += assay.totalUsdValue || 0;
-      totalGhsValue += assay.totalGhsValue || 0;
+      // Use stored assay values if available
+      if (assay.totalUsdValue) {
+        assayUsdValue += Number(assay.totalUsdValue);
+      }
+      if (assay.totalGhsValue) {
+        assayGhsValue += Number(assay.totalGhsValue);
+      }
+
+      // Try to extract exchange rate and values from assay comments if not available
+      if ((!assay.totalUsdValue || !assay.totalGhsValue) && assay.comments) {
+        try {
+          let meta: any = null;
+          if (typeof assay.comments === "string") {
+            meta = JSON.parse(assay.comments || "{}")?.meta;
+          } else {
+            meta = (assay.comments as any)?.meta;
+          }
+          if (meta) {
+            if (meta.valueUsd && !assay.totalUsdValue) assayUsdValue += Number(meta.valueUsd);
+            if (meta.valueGhs && !assay.totalGhsValue) assayGhsValue += Number(meta.valueGhs);
+            if (meta.weeklyExchange && exchangeRate === 0) exchangeRate = Number(meta.weeklyExchange);
+            if (meta.exchangeRate && exchangeRate === 0) exchangeRate = Number(meta.exchangeRate);
+          }
+        } catch (e) {
+          // ignore parsing errors
+        }
+      }
     }
 
-    // Use provided amount or calculated total
-    const invoiceAmount = amount !== undefined ? Number(amount) : totalUsdValue;
+    // Round assay values to 2 decimal places
+    assayUsdValue = Number(assayUsdValue.toFixed(2));
+    assayGhsValue = Number(assayGhsValue.toFixed(2));
+    exchangeRate = Number(exchangeRate.toFixed(2));
+
+    // If no exchange rate from assay, get daily exchange rate
+    if (exchangeRate === 0) {
+      try {
+        const dailyExchangeRate = await prisma.dailyPrice.findFirst({
+          where: { type: "EXCHANGE" },
+          orderBy: { createdAt: "desc" },
+        });
+        if (dailyExchangeRate) {
+          exchangeRate = Number(dailyExchangeRate.price);
+        }
+      } catch (error) {
+        // Silently handle exchange rate fetch failure
+        // Rate will remain 0 if not found
+      }
+    }
+
+    // Fixed rates for calculations
+    const rate = 0.258;
+    const inclusiveVatRate = 1.219;
+    const nhilRate = 0.025; // 2.5%
+    const getfundRate = 0.025; // 2.5%
+    const covidRate = 0.01; // 1%
+    const vatRate = 0.15; // 15%
+
+    // Perform calculations using assayGhsValue
+    const totalInclusive = Number(((assayGhsValue * rate) / 100).toFixed(2));
+    const totalExclusive = Number((totalInclusive / inclusiveVatRate).toFixed(2));
+
+    // Assay Service Charge
+    const rateCharge = 0.2580;
+
+    // Levies/Taxes (percentages of assay value in GHS)
+    const nhil = Number((totalExclusive * nhilRate).toFixed(2)); // 2.5%
+    const getfund = Number((totalExclusive * getfundRate).toFixed(2)); // 2.5%
+    const covid = Number((totalExclusive * covidRate).toFixed(2)); // 1%
+    const subTotal = Number((totalExclusive + nhil + getfund + covid).toFixed(2));
+    const vat = Number((subTotal * vatRate).toFixed(2)); // 15%
+    const grandTotal = subTotal + vat;
+
+    // Use calculated amount as the invoice amount
+    const invoiceAmount = grandTotal;
 
     // Get or create invoice type
     let invoiceType = await prisma.invoiceType.findUnique({
@@ -167,11 +237,22 @@ export async function POST(req: NextRequest) {
         assays: {
           connect: jobCard.assays.map((assay) => ({ id: assay.id })),
         },
-        assayUsdValue: totalUsdValue,
-        assayGhsValue: totalGhsValue,
-        rate: 1,
+        assayUsdValue: assayUsdValue,
+        assayGhsValue: assayGhsValue,
+        rate: rate,
         issueDate: new Date(),
         status: "pending",
+        // Save calculated fields
+        grandTotal: grandTotal,
+        subTotal: subTotal,
+        covid: covid,
+        getfund: getfund,
+        nhil: nhil,
+        rateCharge: rateCharge,
+        totalInclusive: totalInclusive,
+        totalExclusive: totalExclusive,
+        vat: vat,
+        exchangeRate: exchangeRate,
       },
       include: {
         currency: true,
@@ -179,6 +260,7 @@ export async function POST(req: NextRequest) {
           select: {
             id: true,
             referenceNumber: true,
+            destinationCountry: true,
             exporter: { select: { name: true } },
           },
         },

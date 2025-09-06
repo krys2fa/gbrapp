@@ -44,6 +44,17 @@ export default async function InvoicePage(props: any) {
         issueDate: true,
         createdAt: true,
         notes: true,
+        // Include calculated fields
+        grandTotal: true,
+        subTotal: true,
+        covid: true,
+        getfund: true,
+        nhil: true,
+        rateCharge: true,
+        totalInclusive: true,
+        totalExclusive: true,
+        vat: true,
+        exchangeRate: true,
         currency: { select: { id: true, code: true, symbol: true } },
         invoiceType: { select: { id: true, name: true, description: true } },
         assays: {
@@ -52,6 +63,9 @@ export default async function InvoicePage(props: any) {
             certificateNumber: true,
             assayDate: true,
             comments: true,
+            totalUsdValue: true,
+            totalGhsValue: true,
+            measurements: true,
           },
         },
         jobCard: {
@@ -84,114 +98,21 @@ export default async function InvoicePage(props: any) {
     );
   }
 
-  // Daily commodity price: pick latest commodity price (best-effort)
-  const dailyPrice = await prisma.dailyPrice.findFirst({
-    where: { type: "COMMODITY" },
-    include: { commodity: true },
-    orderBy: { createdAt: "desc" },
-  });
+  // Use stored values from database
+  const assayUsdValue = invoice.assayUsdValue || 0;
+  const assayGhsValue = invoice.assayGhsValue || 0;
+  const exchangeRate = invoice.exchangeRate || 0;
 
-
-  // Use invoice stored assay values (assayUsdValue and assayGhsValue)
-  // Prefer per-assay saved meta if present
-  let assayUsdValue = Number(invoice.assayUsdValue || 0);
-  let assayGhsValue = Number(invoice.assayGhsValue || 0);
-  let exchangeRate = 0;
-  if (
-    (!assayUsdValue || !assayGhsValue) &&
-    invoice.assays &&
-    invoice.assays.length
-  ) {
-    // try to use first linked assay's comments.meta
-    try {
-      const a = invoice.assays[0];
-      let meta: any = null;
-      if (a?.comments) {
-        if (typeof a.comments === "string") {
-          meta = JSON.parse(a.comments || "{}")?.meta;
-        } else {
-          meta = (a.comments as any)?.meta;
-        }
-      }
-      if (meta) {
-        if (meta.valueUsd) assayUsdValue = Number(meta.valueUsd);
-        if (meta.valueGhs) assayGhsValue = Number(meta.valueGhs);
-        if (meta.exchangeRate) exchangeRate = Number(meta.exchangeRate);
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  // Round assay values to 2 decimal places
-  assayUsdValue = Number(assayUsdValue.toFixed(2));
-  assayGhsValue = Number(assayGhsValue.toFixed(2));
-  exchangeRate = Number(exchangeRate.toFixed(2));
-
-  // If no exchange rate from assay, get daily exchange rate for invoice date
-  if (exchangeRate === 0) {
-    const invoiceDate = invoice.issueDate || invoice.createdAt;
-    try {
-      // Get the start and end of the invoice date
-      const startOfDay = new Date(invoiceDate);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(invoiceDate);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      const dailyExchangeRate = await prisma.dailyPrice.findFirst({
-        where: {
-          createdAt: {
-            gte: startOfDay,
-            lte: endOfDay,
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-
-      if (dailyExchangeRate) {
-        exchangeRate = Number(dailyExchangeRate.price);
-      }
-    } catch (error) {
-      // Silently handle exchange rate fetch failure
-      // Rate will remain 0 if not found
-    }
-  }
-
-  // Fixed rates
-  const rate = 0.258;
-  const inclusiveVatRate = 1.219;
-  const nhilRate = 0.025; // 2.5%
-  const getfundRate = 0.025; // 2.5%
-  const covidRate = 0.01; // 1%
-  const vatRate = 0.15; // 15%
-  const totalInclusive = Number(((assayGhsValue * rate) / 100).toFixed(2));
-  const totalExclusive = Number((totalInclusive / inclusiveVatRate).toFixed(2));
-
-  // Assay Service Charge
-  const rateCharge = totalInclusive;
-
-  // Levies/Taxes (percentages of assay value in GHS)
-  const nhil = Number((totalExclusive * nhilRate).toFixed(2)); // 2.5%
-  const getfund = Number((totalExclusive * getfundRate).toFixed(2)); // 2.5%
-  const covid = Number((totalExclusive * covidRate).toFixed(2)); // 1%
-  const subTotal = Number((totalExclusive + nhil + getfund + covid).toFixed(2));
-  const vat = Number((subTotal * vatRate).toFixed(2)); // 15%
-  const grandTotal = subTotal + vat;
-
-  // Update invoice amount if it doesn't match the calculated amount
-  if (invoice.amount !== grandTotal) {
-    try {
-      await prisma.invoice.update({
-        where: { id: invoiceId },
-        data: { amount: grandTotal },
-      });
-      // Update the local invoice object to reflect the change
-      invoice.amount = grandTotal;
-    } catch (error) {
-      // Silently handle invoice amount update failure
-      // Invoice will display with the calculated amount even if DB update fails
-    }
-  }
+  // Use calculated values from database
+  const grandTotal = invoice.grandTotal || 0;
+  const subTotal = invoice.subTotal || 0;
+  const covid = invoice.covid || 0;
+  const getfund = invoice.getfund || 0;
+  const nhil = invoice.nhil || 0;
+  const rate = invoice.rate || 0;
+  const totalInclusive = invoice.totalInclusive || 0;
+  const totalExclusive = invoice.totalExclusive || 0;
+  const vat = invoice.vat || 0;
 
   // Assay number(s): join certificate numbers of linked assays if present
   const assayNumbers =
@@ -312,6 +233,9 @@ export default async function InvoicePage(props: any) {
                   Assay value (GHS)
                 </th>
                 <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
+                 Rate %
+                </th>
+                <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
                   Total - Inclusive (GHS)
                 </th>
               </tr>
@@ -328,7 +252,10 @@ export default async function InvoicePage(props: any) {
                   {assayGhsValue.toLocaleString()}
                 </td>
                 <td className="py-2 px-4 font-medium text-right border border-gray-300">
-                  {rateCharge.toLocaleString()}
+                  {rate.toLocaleString()}
+                </td>
+                <td className="py-2 px-4 font-medium text-right border border-gray-300">
+                  {totalInclusive.toLocaleString()}
                 </td>
               </tr>
             </tbody>

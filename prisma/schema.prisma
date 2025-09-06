@@ -230,6 +230,18 @@ model Invoice {
   notes         String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  
+  // Additional calculated fields
+  grandTotal     Float?
+  subTotal       Float?
+  covid          Float?
+  getfund        Float?
+  nhil           Float?
+  rateCharge     Float?
+  totalInclusive Float?
+  totalExclusive Float?
+  vat            Float?
+  exchangeRate   Float?
 }
 
 model InvoiceType {
@@ -302,6 +314,9 @@ model Assay {
   customsSealNo       String?
   exporterSignatory   String?
   goldbodSignatory    String?
+  
+  // Exchange rate field
+  exchangeRate        Float?
   
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
