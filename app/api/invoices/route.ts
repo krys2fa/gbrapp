@@ -179,24 +179,12 @@ export async function POST(req: NextRequest) {
     assayGhsValue = Number(assayGhsValue.toFixed(2));
     exchangeRate = Number(exchangeRate.toFixed(4));
 
+    // If no exchange rate from assay, stop invoice generation
     if (exchangeRate === 0) {
-      try {
-        // Try daily exchange rate first
-        let exchangeRateRecord = await prisma.weeklyPrice.findFirst({
-          where: { type: "EXCHANGE" },
-          orderBy: { createdAt: "desc" },
-        });
-
-          if (exchangeRateRecord) {
-          exchangeRate = Number(exchangeRateRecord.price);
-        } else {
-          console.warn(
-            "No exchange rate found in database"
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching exchange rate:", error);
-      }
+      return NextResponse.json(
+        { error: "Invoice cannot be generated due to missing exchange rate from assay. Please ensure the assay has a valid exchange rate before generating an invoice." },
+        { status: 400 }
+      );
     }
 
     // Fixed rates for calculations
