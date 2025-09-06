@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
 import { formatExchangeRate } from "@/app/lib/utils";
+import { getWeekStart } from "@/app/lib/week-utils";
 
 type AssayMethod = "X_RAY" | "WATER_DENSITY";
 
@@ -147,11 +148,14 @@ export default function NewAssayPage() {
 
         const today = date;
 
+        // Calculate the start of the current week (Monday)
+        const currentWeekStart = getWeekStart(new Date(today)).toISOString().split("T")[0];
+
         const todayCommodityMatches = (commodityPrices || []).filter(
           (p: any) => String(p?.createdAt || "").split("T")[0] === today
         );
         const todaysExchangeMatches = (exchangePrices || []).filter(
-          (p: any) => String(p?.weekStartDate || "").split("T")[0] === today
+          (p: any) => String(p?.weekStartDate || "").split("T")[0] === currentWeekStart
         );
 
         const commodityEntry =
@@ -362,6 +366,8 @@ export default function NewAssayPage() {
     setSaving(true);
     setError("");
 
+    toast.loading("Saving assay...", { id: "assay-save" });
+
     try {
       // fetch current job card
       const res = await fetch(`/api/job-cards/${id}`);
@@ -399,7 +405,10 @@ export default function NewAssayPage() {
       if (!hasMeasurement) metaMissing.push("at least one measurement row");
 
       if (metaMissing.length > 0) {
-        setError(`Cannot save valuation. Missing: ${metaMissing.join(", ")}`);
+        const msg = `Cannot save valuation. Missing: ${metaMissing.join(", ")}`;
+        setError(msg);
+        toast.dismiss("assay-save");
+        toast.error(msg);
         setSaving(false);
         return;
       }
@@ -413,8 +422,9 @@ export default function NewAssayPage() {
           parts.push("weekly exchange rate for current week");
         const msg = `Cannot save valuation: no ${parts.join(
           " and "
-        )} set for today. Please add today's prices before saving.`;
+        )} set. Please add the required prices before saving.`;
         setError(msg);
+        toast.dismiss("assay-save");
         toast(msg, { icon: "⚠️" });
         setSaving(false);
         return;
@@ -477,10 +487,15 @@ export default function NewAssayPage() {
         throw new Error(err.error || "Failed to save assay");
       }
 
+      toast.dismiss("assay-save");
+      toast.success("Assay saved successfully!");
       router.push(`/job-cards/${id}`);
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || "An error occurred");
+      const errorMessage = err?.message || "An error occurred while saving the assay";
+      setError(errorMessage);
+      toast.dismiss("assay-save");
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }

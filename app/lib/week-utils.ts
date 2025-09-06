@@ -10,8 +10,9 @@
 export function getWeekStart(date: Date): Date {
   const d = new Date(date);
   const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-  const startOfWeek = new Date(d.setDate(diff));
+  const diff = day === 0 ? 6 : day - 1; // Sunday: go back 6 days, others: go back (day-1) days
+  const startOfWeek = new Date(d);
+  startOfWeek.setDate(d.getDate() - diff);
   startOfWeek.setHours(0, 0, 0, 0);
   return startOfWeek;
 }

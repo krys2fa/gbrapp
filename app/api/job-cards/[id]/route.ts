@@ -192,6 +192,7 @@ export async function PUT(req: NextRequest) {
     }
     if (
       requestData.customsOfficer !== undefined &&
+      typeof requestData.customsOfficer === "string" &&
       requestData.customsOfficer.trim() !== ""
     ) {
       // Find or create customs officer
@@ -212,6 +213,7 @@ export async function PUT(req: NextRequest) {
     }
     if (
       requestData.technicalDirector !== undefined &&
+      typeof requestData.technicalDirector === "string" &&
       requestData.technicalDirector.trim() !== ""
     ) {
       // Find or create technical director
