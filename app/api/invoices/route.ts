@@ -100,7 +100,15 @@ export async function POST(req: NextRequest) {
     const jobCard = await prisma.jobCard.findUnique({
       where: { id: jobCardId },
       include: {
-        assays: true,
+        assays: {
+          select: {
+            id: true,
+            totalUsdValue: true,
+            totalGhsValue: true,
+            exchangeRate: true,
+            comments: true,
+          },
+        },
         commodity: true,
       },
     });
@@ -133,8 +141,16 @@ export async function POST(req: NextRequest) {
         assayGhsValue += Number(assay.totalGhsValue);
       }
 
+      // Get exchange rate from assay (prioritize stored field over comments)
+      if (assay.exchangeRate && exchangeRate === 0) {
+        exchangeRate = Number(assay.exchangeRate);
+      }
+
       // Try to extract exchange rate and values from assay comments if not available
-      if ((!assay.totalUsdValue || !assay.totalGhsValue) && assay.comments) {
+      if (
+        (!assay.totalUsdValue || !assay.totalGhsValue || exchangeRate === 0) &&
+        assay.comments
+      ) {
         try {
           let meta: any = null;
           if (typeof assay.comments === "string") {
@@ -143,10 +159,14 @@ export async function POST(req: NextRequest) {
             meta = (assay.comments as any)?.meta;
           }
           if (meta) {
-            if (meta.valueUsd && !assay.totalUsdValue) assayUsdValue += Number(meta.valueUsd);
-            if (meta.valueGhs && !assay.totalGhsValue) assayGhsValue += Number(meta.valueGhs);
-            if (meta.weeklyExchange && exchangeRate === 0) exchangeRate = Number(meta.weeklyExchange);
-            if (meta.exchangeRate && exchangeRate === 0) exchangeRate = Number(meta.exchangeRate);
+            if (meta.valueUsd && !assay.totalUsdValue)
+              assayUsdValue += Number(meta.valueUsd);
+            if (meta.valueGhs && !assay.totalGhsValue)
+              assayGhsValue += Number(meta.valueGhs);
+            if (meta.weeklyExchange && exchangeRate === 0)
+              exchangeRate = Number(meta.weeklyExchange);
+            if (meta.exchangeRate && exchangeRate === 0)
+              exchangeRate = Number(meta.exchangeRate);
           }
         } catch (e) {
           // ignore parsing errors
@@ -159,19 +179,23 @@ export async function POST(req: NextRequest) {
     assayGhsValue = Number(assayGhsValue.toFixed(2));
     exchangeRate = Number(exchangeRate.toFixed(4));
 
-    // If no exchange rate from assay, get daily exchange rate
     if (exchangeRate === 0) {
       try {
-        const dailyExchangeRate = await prisma.dailyPrice.findFirst({
+        // Try daily exchange rate first
+        let exchangeRateRecord = await prisma.weeklyPrice.findFirst({
           where: { type: "EXCHANGE" },
           orderBy: { createdAt: "desc" },
         });
-        if (dailyExchangeRate) {
-          exchangeRate = Number(dailyExchangeRate.price);
+
+          if (exchangeRateRecord) {
+          exchangeRate = Number(exchangeRateRecord.price);
+        } else {
+          console.warn(
+            "No exchange rate found in database"
+          );
         }
       } catch (error) {
-        // Silently handle exchange rate fetch failure
-        // Rate will remain 0 if not found
+        console.error("Error fetching exchange rate:", error);
       }
     }
 
@@ -185,16 +209,20 @@ export async function POST(req: NextRequest) {
 
     // Perform calculations using assayGhsValue
     const totalInclusive = Number(((assayGhsValue * rate) / 100).toFixed(2));
-    const totalExclusive = Number((totalInclusive / inclusiveVatRate).toFixed(2));
+    const totalExclusive = Number(
+      (totalInclusive / inclusiveVatRate).toFixed(2)
+    );
 
     // Assay Service Charge
-    const rateCharge = 0.2580;
+    const rateCharge = 0.258;
 
     // Levies/Taxes (percentages of assay value in GHS)
     const nhil = Number((totalExclusive * nhilRate).toFixed(2)); // 2.5%
     const getfund = Number((totalExclusive * getfundRate).toFixed(2)); // 2.5%
     const covid = Number((totalExclusive * covidRate).toFixed(2)); // 1%
-    const subTotal = Number((totalExclusive + nhil + getfund + covid).toFixed(2));
+    const subTotal = Number(
+      (totalExclusive + nhil + getfund + covid).toFixed(2)
+    );
     const vat = Number((subTotal * vatRate).toFixed(2)); // 15%
     const grandTotal = subTotal + vat;
 

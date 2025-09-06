@@ -190,7 +190,7 @@ export default function NewAssayPage() {
           value: commodityEntry ? Number(commodityEntry.price) : null,
         });
         setWeeklyExchange({
-          value: exchangeEntry ? Number(exchangeEntry.price) : null,
+          value: exchangeEntry ? Number(exchangeEntry.price) : 0, // Default fallback rate
         });
 
         console.log("Setting weekly exchange value:", exchangeEntry ? Number(exchangeEntry.price) : null);
