@@ -26,7 +26,7 @@ export default function NewAssayPage() {
 
   const [jobCard, setJobCard] = useState<any | null>(null);
   const [dailyPrice, setDailyPrice] = useState<any | null>(null);
-  const [dailyExchange, setDailyExchange] = useState<any | null>(null);
+  const [weeklyExchange, setWeeklyExchange] = useState<any | null>(null);
   const [metaLoading, setMetaLoading] = useState(true);
   const [warning, setWarning] = useState("");
   const [missingTodayCommodity, setMissingTodayCommodity] = useState(false);
@@ -132,7 +132,7 @@ export default function NewAssayPage() {
 
         // Fetch exchange prices (no itemId) and use latest/existing entries
         let exchangePrices: any[] = [];
-        const exRes = await fetch(`/api/daily-prices?type=EXCHANGE`);
+        const exRes = await fetch(`/api/weekly-prices?type=EXCHANGE`);
         if (exRes && exRes.ok)
           exchangePrices = await exRes.json().catch(() => []);
 
@@ -151,7 +151,7 @@ export default function NewAssayPage() {
           (p: any) => String(p?.createdAt || "").split("T")[0] === today
         );
         const todaysExchangeMatches = (exchangePrices || []).filter(
-          (p: any) => String(p?.createdAt || "").split("T")[0] === today
+          (p: any) => String(p?.weekStartDate || "").split("T")[0] === today
         );
 
         const commodityEntry =
@@ -178,7 +178,7 @@ export default function NewAssayPage() {
         setDailyPrice({
           value: commodityEntry ? Number(commodityEntry.price) : null,
         });
-        setDailyExchange({
+        setWeeklyExchange({
           value: exchangeEntry ? Number(exchangeEntry.price) : null,
         });
       } catch (err) {
@@ -351,8 +351,11 @@ export default function NewAssayPage() {
 
   // Use existing job card values for meta display instead of current form calculations
   const displayNetWeightOz = jobCard?.numberOfOunces || totalNetWeightOzDisplay;
-  const displayUsdValue = jobCard?.valueUsd || ((Number(dailyPrice?.value) || 0) * totalNetWeightOzDisplay);
-  const displayGhsValue = jobCard?.valueGhs || (displayUsdValue * (Number(dailyExchange?.value) || 0));
+  const displayUsdValue =
+    jobCard?.valueUsd ||
+    (Number(dailyPrice?.value) || 0) * totalNetWeightOzDisplay;
+  const displayGhsValue =
+    jobCard?.valueGhs || displayUsdValue * (Number(weeklyExchange?.value) || 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -374,7 +377,7 @@ export default function NewAssayPage() {
       const metaMissing: string[] = [];
       if (!jobCard?.exporter?.name) metaMissing.push("exporter");
       if (dailyPrice?.value == null) metaMissing.push("daily price");
-      if (dailyExchange?.value == null) metaMissing.push("daily exchange");
+      if (weeklyExchange?.value == null) metaMissing.push("weekly exchange");
       if (!(jobCard?.referenceNumber || jobCard?.reference))
         metaMissing.push("reference number");
       if (!jobCard?.buyerName) metaMissing.push("buyer");
@@ -406,7 +409,8 @@ export default function NewAssayPage() {
         const parts: string[] = [];
         if (missingTodayCommodity)
           parts.push("daily commodity price for today");
-        if (missingTodayExchange) parts.push("daily exchange rate for today");
+        if (missingTodayExchange)
+          parts.push("weekly exchange rate for current week");
         const msg = `Cannot save valuation: no ${parts.join(
           " and "
         )} set for today. Please add today's prices before saving.`;
@@ -439,7 +443,7 @@ export default function NewAssayPage() {
             totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(4)),
             valueUsd: Number(displayUsdValue.toFixed(4)),
             valueGhs: Number(displayGhsValue.toFixed(4)),
-            dailyExchange: Number(dailyExchange?.value) || null,
+            weeklyExchange: Number(weeklyExchange?.value) || null,
             dailyPrice: Number(dailyPrice?.value) || null,
           },
         }),
@@ -457,8 +461,10 @@ export default function NewAssayPage() {
         totalInputNetWeight || jobCard.totalNetWeight || 0;
       updated.totalNetWeightOz =
         totalNetWeightOzDisplay || jobCard.totalNetWeightOz || 0;
-      updated.exporterValueUsd = displayUsdValue || jobCard.exporterValueUsd || 0;
-      updated.exporterValueGhs = displayGhsValue || jobCard.exporterValueGhs || 0;
+      updated.exporterValueUsd =
+        displayUsdValue || jobCard.exporterValueUsd || 0;
+      updated.exporterValueGhs =
+        displayGhsValue || jobCard.exporterValueGhs || 0;
 
       const put = await fetch(`/api/job-cards/${id}`, {
         method: "PUT",
@@ -521,7 +527,9 @@ export default function NewAssayPage() {
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-500">Daily Price (today)</div>
+                <div className="text-xs text-gray-500">
+                  Daily Commodity Price (today)
+                </div>
                 <div className="font-medium text-gray-900">
                   {dailyPrice?.value != null
                     ? Number(dailyPrice.value).toFixed(2)
@@ -530,19 +538,17 @@ export default function NewAssayPage() {
               </div>
               <div>
                 <div className="text-xs text-gray-500">
-                  Daily Exchange (today)
+                  Weekly Exchange Price (current week)
                 </div>
                 <div className="font-medium text-gray-900">
-                  {formatExchangeRate(dailyExchange?.value)}
+                  {formatExchangeRate(weeklyExchange?.value)}
                 </div>
               </div>
 
               <div>
                 <div className="text-xs text-gray-500">Net weight (oz)</div>
                 <div className="font-medium text-gray-900">
-                  {displayNetWeightOz
-                    ? displayNetWeightOz.toFixed(2)
-                    : "0.00"}
+                  {displayNetWeightOz ? displayNetWeightOz.toFixed(2) : "0.00"}
                 </div>
               </div>
 
