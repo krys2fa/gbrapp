@@ -50,26 +50,34 @@ export default function AssayDetailPage() {
 
         // fetch commodity price for this job card's commodity if present
         if (data?.commodityId) {
-          try {
-            const cpRes = await fetch(
-              `/api/daily-prices?type=COMMODITY&itemId=${data.commodityId}`
-            );
-            if (cpRes.ok) {
-              const cpBody = await cpRes.json().catch(() => []);
-              const latest =
-                Array.isArray(cpBody) && cpBody.length
-                  ? cpBody
-                      .slice()
-                      .sort(
-                        (a: any, b: any) =>
-                          new Date(b.createdAt).getTime() -
-                          new Date(a.createdAt).getTime()
-                      )[0]
-                  : null;
-              if (mounted && latest) setCommodityPrice(Number(latest.price));
+          // Use stored commodity price from assay if available
+          const assay = data?.assays?.find(
+            (a: any) => String(a.id) === String(assayId)
+          );
+          if (assay?.commodityPrice != null) {
+            setCommodityPrice(Number(assay.commodityPrice));
+          } else {
+            try {
+              const cpRes = await fetch(
+                `/api/daily-prices?type=COMMODITY&itemId=${data.commodityId}`
+              );
+              if (cpRes.ok) {
+                const cpBody = await cpRes.json().catch(() => []);
+                const latest =
+                  Array.isArray(cpBody) && cpBody.length
+                    ? cpBody
+                        .slice()
+                        .sort(
+                          (a: any, b: any) =>
+                            new Date(b.createdAt).getTime() -
+                            new Date(a.createdAt).getTime()
+                        )[0]
+                    : null;
+                if (mounted && latest) setCommodityPrice(Number(latest.price));
+              }
+            } catch (e) {
+              // ignore
             }
-          } catch (e) {
-            // ignore
           }
         }
 
@@ -111,28 +119,37 @@ export default function AssayDetailPage() {
       (a: any) => String(a.id) === String(assayId)
     );
     if (!assay) return;
-    // sum net weight from measurements only, converting each measurement to grams
-    const measuredSum = (assay.measurements || []).reduce(
-      (acc: number, m: any) =>
-        acc +
-        convertToGrams(m.netWeight, m?.unitOfMeasure ?? jobCard?.unitOfMeasure),
-      0
-    );
-    const netWeightGrams = measuredSum; // do not fall back to jobCard values
-    // commodityPrice is expected to be price per troy ounce. Convert grams -> troy ounces
-    const GRAMS_PER_TROY_OUNCE = 31.1034768;
-    if (commodityPrice != null && netWeightGrams > 0) {
-      const ounces = netWeightGrams / GRAMS_PER_TROY_OUNCE;
-      const usd = ounces * commodityPrice;
-      setTotalUsd(usd);
-      // Only compute GHS if a valid exchangeRate is present; do not use jobCard values
-      if (exchangeRate != null) {
-        setTotalGhs(usd * exchangeRate);
-      } else {
-        setTotalGhs(null);
+
+    // Use stored values from database if available, otherwise calculate
+    if (assay.totalUsdValue != null) {
+      setTotalUsd(assay.totalUsdValue);
+    } else {
+      // Fallback calculation if stored value not available
+      const measuredSum = (assay.measurements || []).reduce(
+        (acc: number, m: any) =>
+          acc +
+          convertToGrams(
+            m.netWeight,
+            m?.unitOfMeasure ?? jobCard?.unitOfMeasure
+          ),
+        0
+      );
+      const netWeightGrams = measuredSum;
+      const GRAMS_PER_TROY_OUNCE = 31.1034768;
+      if (commodityPrice != null && netWeightGrams > 0) {
+        const ounces = netWeightGrams / GRAMS_PER_TROY_OUNCE;
+        const usd = ounces * commodityPrice;
+        setTotalUsd(usd);
       }
     }
-  }, [jobCard, assayId, commodityPrice, exchangeRate]);
+
+    // Use stored GHS value if available
+    if (assay.totalGhsValue != null) {
+      setTotalGhs(assay.totalGhsValue);
+    } else if (exchangeRate != null && totalUsd != null) {
+      setTotalGhs(totalUsd * exchangeRate);
+    }
+  }, [jobCard, assayId, commodityPrice, exchangeRate, totalUsd]);
 
   if (loading) {
     return (
@@ -235,11 +252,7 @@ export default function AssayDetailPage() {
           </div>
 
           <div className="bg-white p-4">
-            <img
-              src="/seal.png"
-              alt="Seal"
-              className="h-20 w-auto"
-            />
+            <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
           </div>
         </div>
 
@@ -307,19 +320,25 @@ export default function AssayDetailPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       <tr>
                         <td className="px-4 py-2 text-sm text-gray-700">
-                          {jobCard?.totalGrossWeight != null
+                          {assay.grossWeight != null
+                            ? Number(assay.grossWeight).toFixed(2)
+                            : jobCard?.totalGrossWeight != null
                             ? Number(jobCard.totalGrossWeight).toFixed(2)
                             : jobCard?.grossWeight != null
                             ? Number(jobCard.grossWeight).toFixed(2)
                             : "-"}
                         </td>
                         <td className="px-4 py-2 text-sm text-gray-700">
-                          {jobCard?.fineness ??
-                            jobCard?.declaredFineness ??
-                            "-"}
+                          {assay.fineness != null
+                            ? Number(assay.fineness).toFixed(2)
+                            : jobCard?.fineness ??
+                              jobCard?.declaredFineness ??
+                              "-"}
                         </td>
                         <td className="px-4 py-2 text-sm text-gray-700">
-                          {jobCard?.totalNetWeight != null
+                          {assay.netWeight != null
+                            ? Number(assay.netWeight).toFixed(2)
+                            : jobCard?.totalNetWeight != null
                             ? Number(jobCard.totalNetWeight).toFixed(2)
                             : "-"}
                         </td>
@@ -430,7 +449,9 @@ export default function AssayDetailPage() {
                         Weight in Ounces:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {jobCard?.totalNetWeight != null
+                        {assay.weightInOz != null
+                          ? Number(assay.weightInOz).toFixed(4)
+                          : jobCard?.totalNetWeight != null
                           ? (() => {
                               const netWeightGrams = convertToGrams(
                                 jobCard.totalNetWeight,
@@ -439,10 +460,10 @@ export default function AssayDetailPage() {
                               const GRAMS_PER_TROY_OUNCE = 31.1034768;
                               const oz = netWeightGrams / GRAMS_PER_TROY_OUNCE;
                               return netWeightGrams > 0
-                                ? oz.toFixed(3)
-                                : "0.000";
+                                ? oz.toFixed(4)
+                                : "0.0000";
                             })()
-                          : "0.000"}{" "}
+                          : "0.0000"}{" "}
                         oz
                       </dd>
                     </div>
@@ -454,7 +475,9 @@ export default function AssayDetailPage() {
                         Price per Ounce:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {jobCard?.pricePerOunce != null
+                        {assay.pricePerOz != null
+                          ? `$${Number(assay.pricePerOz).toFixed(2)}`
+                          : jobCard?.pricePerOunce != null
                           ? `$${Number(jobCard.pricePerOunce).toFixed(2)}`
                           : "$0.00"}
                       </dd>
@@ -467,8 +490,23 @@ export default function AssayDetailPage() {
                         Total USD Value:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {jobCard?.totalUsdValue != null
+                        {assay.totalUsdValue != null
+                          ? `$${Number(assay.totalUsdValue).toFixed(2)}`
+                          : jobCard?.totalUsdValue != null
                           ? `$${Number(jobCard.totalUsdValue).toFixed(2)}`
+                          : "$0.00"}
+                      </dd>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Total GHS Value:
+                      </dt>
+                      <dd className="text-sm font-semibold text-gray-900">
+                        {assay.totalGhsValue != null
+                          ? `₵${Number(assay.totalGhsValue).toFixed(2)}`
                           : "$0.00"}
                       </dd>
                     </div>
@@ -488,20 +526,24 @@ export default function AssayDetailPage() {
                         Weight in Ounces:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {(() => {
-                          const totalGrams = (assay.measurements || []).reduce(
-                            (acc: number, m: any) =>
-                              acc +
-                              convertToGrams(
-                                m.netWeight,
-                                m?.unitOfMeasure ?? jobCard?.unitOfMeasure
-                              ),
-                            0
-                          );
-                          const GRAMS_PER_TROY_OUNCE = 31.1034768;
-                          const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                          return totalGrams > 0 ? oz.toFixed(2) : "0.00";
-                        })()}{" "}
+                        {assay.weightInOz != null
+                          ? Number(assay.weightInOz).toFixed(4)
+                          : (() => {
+                              const totalGrams = (
+                                assay.measurements || []
+                              ).reduce(
+                                (acc: number, m: any) =>
+                                  acc +
+                                  convertToGrams(
+                                    m.netWeight,
+                                    m?.unitOfMeasure ?? jobCard?.unitOfMeasure
+                                  ),
+                                0
+                              );
+                              const GRAMS_PER_TROY_OUNCE = 31.1034768;
+                              const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
+                              return totalGrams > 0 ? oz.toFixed(4) : "0.0000";
+                            })()}{" "}
                         oz
                       </dd>
                     </div>
@@ -513,7 +555,9 @@ export default function AssayDetailPage() {
                         Price per Ounce:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay.comments && typeof assay.comments === "string"
+                        {assay.pricePerOz != null
+                          ? `$${Number(assay.pricePerOz).toFixed(2)}`
+                          : assay.comments && typeof assay.comments === "string"
                           ? (() => {
                               try {
                                 const parsed = JSON.parse(
@@ -548,7 +592,9 @@ export default function AssayDetailPage() {
                         Total USD Value:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay.comments && typeof assay.comments === "string"
+                        {assay.totalUsdValue != null
+                          ? `$${Number(assay.totalUsdValue).toFixed(2)}`
+                          : assay.comments && typeof assay.comments === "string"
                           ? (() => {
                               try {
                                 const parsed = JSON.parse(
@@ -573,6 +619,21 @@ export default function AssayDetailPage() {
                           : totalUsd != null
                           ? `$${totalUsd.toFixed(2)}`
                           : "$0.00"}
+                      </dd>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Total GHS Value:
+                      </dt>
+                      <dd className="text-sm font-semibold text-gray-900">
+                        {assay.totalGhsValue != null
+                          ? `₵${Number(assay.totalGhsValue).toFixed(2)}`
+                          : totalGhs != null
+                          ? `₵${totalGhs.toFixed(2)}`
+                          : "₵0.00"}
                       </dd>
                     </div>
                   </div>

@@ -102,6 +102,7 @@ function NewJobCardPage() {
     commodityId: "",
     unitOfMeasure: UnitOfMeasure.GRAMS,
     buyerName: "",
+    buyerAddress: "",
     teamLeader: "",
     totalGrossWeight: "",
     destinationCountry: "",

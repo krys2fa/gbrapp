@@ -132,17 +132,11 @@ export async function PUT(req: NextRequest) {
     if (requestData.unitOfMeasure !== undefined) {
       updateData.unitOfMeasure = requestData.unitOfMeasure;
     }
-    if (requestData.idType !== undefined) {
-      updateData.idType = requestData.idType;
-    }
-    if (requestData.buyerIdNumber !== undefined) {
-      updateData.buyerIdNumber = requestData.buyerIdNumber;
-    }
     if (requestData.buyerName !== undefined) {
       updateData.buyerName = requestData.buyerName;
     }
-    if (requestData.buyerPhone !== undefined) {
-      updateData.buyerPhone = requestData.buyerPhone;
+    if (requestData.buyerAddress !== undefined) {
+      updateData.buyerAddress = requestData.buyerAddress;
     }
     if (requestData.exporterPricePerOz !== undefined) {
       updateData.exporterPricePerOz = parseFloat(
@@ -176,6 +170,15 @@ export async function PUT(req: NextRequest) {
         const grams = oz * 28.349523125;
         updateData.totalNetWeight = Number(grams.toFixed(4));
       }
+    }
+    if (requestData.numberOfPersons !== undefined) {
+      updateData.numberOfPersons = parseInt(requestData.numberOfPersons);
+    }
+    // exporterValueUsd / exporterValueGhs are not part of the JobCard model anymore.
+    // Keep using requestData.exporterValueUsd / exporterValueGhs when creating invoices
+    // but do not attempt to persist them on the JobCard to avoid Prisma errors.
+    if (requestData.graDeclarationNumber !== undefined) {
+      updateData.graDeclarationNumber = requestData.graDeclarationNumber;
     }
     if (requestData.numberOfPersons !== undefined) {
       updateData.numberOfPersons = parseInt(requestData.numberOfPersons);
@@ -277,6 +280,9 @@ export async function PUT(req: NextRequest) {
 
           // Compute average fineness from measurements if available
           let avgFineness = 0;
+          let totalGrossWeight = 0;
+          let totalNetWeight = 0;
+
           if (
             Array.isArray(assayItem.measurements) &&
             assayItem.measurements.length > 0
@@ -287,6 +293,36 @@ export async function PUT(req: NextRequest) {
             if (vals.length > 0)
               avgFineness =
                 vals.reduce((a: number, b: number) => a + b, 0) / vals.length;
+
+            // Calculate total weights
+            totalGrossWeight = assayItem.measurements.reduce(
+              (sum: number, m: any) => sum + (Number(m.grossWeight) || 0),
+              0
+            );
+
+            totalNetWeight = assayItem.measurements.reduce(
+              (sum: number, m: any) => sum + (Number(m.netWeight) || 0),
+              0
+            );
+          }
+
+          // Calculate weight in ounces and valuation
+          const GRAMS_PER_TROY_OUNCE = 31.1034768;
+          const weightInOz =
+            totalNetWeight > 0 ? totalNetWeight / GRAMS_PER_TROY_OUNCE : 0;
+
+          // Get commodity price from request or use default
+          const commodityPrice =
+            assayItem.commodityPrice || assayItem.pricePerOz || 0;
+          const pricePerOz = commodityPrice;
+
+          // Calculate USD value
+          const totalUsdValue = weightInOz * pricePerOz;
+
+          // Get exchange rate for GHS conversion
+          let totalGhsValue = null;
+          if (assayItem.exchangeRate && totalUsdValue > 0) {
+            totalGhsValue = totalUsdValue * assayItem.exchangeRate;
           }
 
           const created = await prisma.assay.create({
@@ -300,6 +336,12 @@ export async function PUT(req: NextRequest) {
                       pieces: assayItem.pieces,
                       signatory: assayItem.signatory,
                       measurements: assayItem.measurements,
+                      meta: {
+                        dailyPrice: commodityPrice,
+                        valueUsd: totalUsdValue,
+                        valueGhs: totalGhsValue,
+                        exchangeRate: assayItem.exchangeRate,
+                      },
                     }),
               assayDate: assayItem.createdAt
                 ? new Date(assayItem.createdAt)
@@ -309,6 +351,25 @@ export async function PUT(req: NextRequest) {
               certificateNumber: `CERT-${Date.now()}-${Math.floor(
                 Math.random() * 1000
               )}`,
+
+              // Store calculated valuation fields
+              grossWeight: totalGrossWeight > 0 ? totalGrossWeight : null,
+              fineness: avgFineness > 0 ? avgFineness : null,
+              netWeight: totalNetWeight > 0 ? totalNetWeight : null,
+              weightInOz: weightInOz > 0 ? weightInOz : null,
+              pricePerOz: pricePerOz > 0 ? pricePerOz : null,
+              totalUsdValue: totalUsdValue > 0 ? totalUsdValue : null,
+              totalGhsValue: totalGhsValue,
+              commodityPrice: commodityPrice > 0 ? commodityPrice : null,
+
+              // Store seal and signatory information
+              securitySealNo: assayItem.securitySealNo,
+              goldbodSealNo: assayItem.goldbodSealNo,
+              customsSealNo: assayItem.customsSealNo,
+              exporterSignatory: assayItem.exporterSignatory,
+              goldbodSignatory:
+                assayItem.goldbodSignatory || assayItem.signatory,
+
               // create measurement rows if provided
               measurements: Array.isArray(assayItem.measurements)
                 ? {

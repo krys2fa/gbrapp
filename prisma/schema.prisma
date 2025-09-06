@@ -131,10 +131,8 @@ model JobCard {
   technicalDirectorId  String?
   technicalDirector    TechnicalDirector?       @relation(fields: [technicalDirectorId], references: [id])
   unitOfMeasure        String?
-  idType               IdType?                  @default(TIN) // passport, TIN, ghana card, drivers license
-  buyerIdNumber        String?
   buyerName            String?
-  buyerPhone           String?
+  buyerAddress         String?
   teamLeader           String?
   totalGrossWeight     Float?
   destinationCountry   String?
@@ -147,10 +145,7 @@ model JobCard {
   pricePerOunce       Float?
   valueUsd            Float?
   valueGhs            Float?
-  numberOfPersons      Int?
-  graDeclarationNumber String?
   numberOfBoxes        Int?
-  remittanceType       String?
   seals                Seal[]
   assays               Assay[]
   invoices             Invoice[]
@@ -281,6 +276,24 @@ model Assay {
   certificateNumber   String?            @unique
   remarks             String?
   measurements        AssayMeasurement[]
+  
+  // Calculated valuation fields
+  grossWeight         Float?
+  fineness            Float?
+  netWeight           Float?
+  weightInOz          Float?
+  pricePerOz          Float?
+  totalUsdValue       Float?
+  totalGhsValue       Float?
+  commodityPrice      Float?
+  
+  // Seal and signatory fields
+  securitySealNo      String?
+  goldbodSealNo       String?
+  customsSealNo       String?
+  exporterSignatory   String?
+  goldbodSignatory    String?
+  
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 }

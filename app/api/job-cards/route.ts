@@ -207,8 +207,8 @@ async function createJobCard(req: NextRequest) {
       "exporterId",
       "status",
       "unitOfMeasure",
-      "idType",
       "buyerName",
+      "buyerAddress",
       "teamLeader",
       "totalGrossWeight",
       "destinationCountry",
@@ -256,6 +256,8 @@ async function createJobCard(req: NextRequest) {
     if (data.totalNetWeight) data.totalNetWeight = Number(data.totalNetWeight);
     if (data.numberOfPersons)
       data.numberOfPersons = Number(data.numberOfPersons);
+    if (data.numberOfPersons)
+      data.numberOfPersons = Number(data.numberOfPersons);
     if (data.numberOfBoxes) data.numberOfBoxes = Number(data.numberOfBoxes);
     if (data.valueUsd) data.valueUsd = Number(data.valueUsd);
     if (data.valueGhs) data.valueGhs = Number(data.valueGhs);
@@ -292,17 +294,15 @@ async function createJobCard(req: NextRequest) {
       "exporterId",
       "status",
       "unitOfMeasure",
-      "idType",
       "buyerName",
+      "buyerAddress",
       "teamLeader",
       "totalGrossWeight",
       "destinationCountry",
       "fineness",
       "sourceOfGold",
       "totalNetWeight",
-      "numberOfPersons",
       "numberOfBoxes",
-      "remittanceType",
       "commodityId",
       "notes",
       "valueUsd",
@@ -321,6 +321,12 @@ async function createJobCard(req: NextRequest) {
       if ((data as any)[k] !== undefined) {
         createData[k] = (data as any)[k];
       }
+    }
+
+    // Map nationalSecurityOfficerId to securityOfficerId for schema compatibility
+    if (createData.nationalSecurityOfficerId) {
+      createData.securityOfficerId = createData.nationalSecurityOfficerId;
+      delete createData.nationalSecurityOfficerId;
     }
 
     // defensive: ensure no nested objects are present
