@@ -45,6 +45,13 @@ export default async function ReportsPage(props: any) {
           select: {
             id: true,
             silverContent: true,
+            jbGrossWeight: true,
+            jbNetWeight: true,
+            jbFineness: true,
+            jbWeightInOz: true,
+            jbPricePerOz: true,
+            jbTotalUsdValue: true,
+            jbTotalGhsValue: true,
             measurements: { select: { id: true, netWeight: true } },
           },
         },
@@ -60,7 +67,10 @@ export default async function ReportsPage(props: any) {
   let rows: any[] = [];
 
   const computed = jobCards.map((jc: any) => {
-    const storedNet = Number(jc.totalNetWeight) || 0; // grams
+    // Use stored assay values if available, otherwise fall back to job card values
+    const assay = jc.assays && jc.assays.length > 0 ? jc.assays[0] : null;
+
+    const storedNet = assay?.jbNetWeight || Number(jc.totalNetWeight) || 0; // grams
     let netGoldGrams = storedNet;
 
     if (!storedNet || storedNet === 0) {
@@ -78,8 +88,10 @@ export default async function ReportsPage(props: any) {
       0
     );
 
-    const ounces = netGoldGrams / GRAMS_PER_TROY_OUNCE;
-    const estimatedValue = ounces * commodityPrice;
+    // Use stored assay values for calculations
+    const ounces = assay?.jbWeightInOz || netGoldGrams / GRAMS_PER_TROY_OUNCE;
+    const pricePerOunce = assay?.jbPricePerOz || commodityPrice;
+    const estimatedValue = assay?.jbTotalUsdValue || ounces * pricePerOunce;
 
     return {
       id: jc.id,
@@ -88,6 +100,15 @@ export default async function ReportsPage(props: any) {
       netGoldGrams,
       netSilverGrams,
       estimatedValue,
+      storedValues: {
+        grossWeight: assay?.jbGrossWeight,
+        netWeight: assay?.jbNetWeight,
+        fineness: assay?.jbFineness,
+        weightInOz: assay?.jbWeightInOz,
+        pricePerOz: assay?.jbPricePerOz,
+        totalUsdValue: assay?.jbTotalUsdValue,
+        totalGhsValue: assay?.jbTotalGhsValue,
+      },
     };
   });
 

@@ -287,6 +287,15 @@ model Assay {
   totalGhsValue       Float?
   commodityPrice      Float?
   
+  // Job card reference fields
+  jbGrossWeight       Float?
+  jbNetWeight         Float?
+  jbFineness          Float?
+  jbWeightInOz        Float?
+  jbPricePerOz        Float?
+  jbTotalUsdValue     Float?
+  jbTotalGhsValue     Float?
+  
   // Seal and signatory fields
   securitySealNo      String?
   goldbodSealNo       String?

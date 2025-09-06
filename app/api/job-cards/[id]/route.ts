@@ -122,6 +122,10 @@ export async function PUT(req: NextRequest) {
       // runtime errors when the scalar relation field is not accepted by the client.
       updateData.exporter = { connect: { id: requestData.exporterId } };
     }
+    if (requestData.commodityId !== undefined) {
+      // Use relation connect form to update commodity reference
+      updateData.commodity = { connect: { id: requestData.commodityId } };
+    }
     if (requestData.status !== undefined) {
       updateData.status = requestData.status;
     }
@@ -174,6 +178,18 @@ export async function PUT(req: NextRequest) {
     if (requestData.numberOfBoxes !== undefined) {
       updateData.numberOfBoxes = parseInt(requestData.numberOfBoxes);
     }
+    if (requestData.valueGhs !== undefined) {
+      updateData.valueGhs = parseFloat(requestData.valueGhs);
+    }
+    if (requestData.valueUsd !== undefined) {
+      updateData.valueUsd = parseFloat(requestData.valueUsd);
+    }
+    if (requestData.pricePerOunce !== undefined) {
+      updateData.pricePerOunce = parseFloat(requestData.pricePerOunce);
+    }
+    if (requestData.numberOfOunces !== undefined) {
+      updateData.numberOfOunces = parseFloat(requestData.numberOfOunces);
+    }
     if (
       requestData.customsOfficer !== undefined &&
       requestData.customsOfficer.trim() !== ""
@@ -192,7 +208,7 @@ export async function PUT(req: NextRequest) {
           },
         });
       }
-            updateData.customsOfficer = { connect: { id: customsOfficer.id } };
+      updateData.customsOfficer = { connect: { id: customsOfficer.id } };
     }
     if (
       requestData.technicalDirector !== undefined &&
@@ -220,7 +236,9 @@ export async function PUT(req: NextRequest) {
       requestData.customsOfficerId !== undefined &&
       requestData.customsOfficerId !== ""
     ) {
-      updateData.customsOfficer = { connect: { id: requestData.customsOfficerId } };
+      updateData.customsOfficer = {
+        connect: { id: requestData.customsOfficerId },
+      };
     }
     if (
       requestData.assayOfficerId !== undefined &&
@@ -232,7 +250,9 @@ export async function PUT(req: NextRequest) {
       requestData.technicalDirectorId !== undefined &&
       requestData.technicalDirectorId !== ""
     ) {
-      updateData.technicalDirector = { connect: { id: requestData.technicalDirectorId } };
+      updateData.technicalDirector = {
+        connect: { id: requestData.technicalDirectorId },
+      };
     }
     if (
       requestData.nacobOfficerId !== undefined &&
@@ -244,7 +264,9 @@ export async function PUT(req: NextRequest) {
       requestData.nationalSecurityOfficerId !== undefined &&
       requestData.nationalSecurityOfficerId !== ""
     ) {
-      updateData.securityOfficer = { connect: { id: requestData.nationalSecurityOfficerId } };
+      updateData.securityOfficer = {
+        connect: { id: requestData.nationalSecurityOfficerId },
+      };
     }
 
     console.log("Updating with data:", updateData);
@@ -252,6 +274,20 @@ export async function PUT(req: NextRequest) {
     // If assays array is provided, persist any new/local assays to the DB
     const createdAssayIds: string[] = [];
     if (Array.isArray(requestData.assays) && requestData.assays.length > 0) {
+      // Fetch the current job card data to populate assay reference fields
+      const jobCard = await prisma.jobCard.findUnique({
+        where: { id },
+        select: {
+          totalGrossWeight: true,
+          totalNetWeight: true,
+          fineness: true,
+          numberOfOunces: true,
+          pricePerOunce: true,
+          valueUsd: true,
+          valueGhs: true,
+        },
+      });
+
       for (const assayItem of requestData.assays) {
         try {
           // Only create assays that look local (no id or local- prefix)
@@ -342,6 +378,15 @@ export async function PUT(req: NextRequest) {
               totalUsdValue: totalUsdValue > 0 ? totalUsdValue : null,
               totalGhsValue: totalGhsValue,
               commodityPrice: commodityPrice > 0 ? commodityPrice : null,
+
+              // Job card reference fields
+              jbGrossWeight: jobCard?.totalGrossWeight || null,
+              jbNetWeight: jobCard?.totalNetWeight || null,
+              jbFineness: jobCard?.fineness || null,
+              jbWeightInOz: jobCard?.numberOfOunces || null,
+              jbPricePerOz: jobCard?.pricePerOunce || null,
+              jbTotalUsdValue: jobCard?.valueUsd || null,
+              jbTotalGhsValue: jobCard?.valueGhs || null,
 
               // Store seal and signatory information
               securitySealNo: assayItem.securitySealNo,

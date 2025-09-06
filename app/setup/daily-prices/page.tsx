@@ -183,7 +183,13 @@ export default function DailyPricesPage() {
 
   const handleEdit = (priceObj: any) => {
     setEditingPrice(priceObj);
-    // Cleaned up legacy code: no longer needed
+    if (priceObj.type === "COMMODITY") {
+      setCommodityId(priceObj.commodity?.id || "");
+      setCommodityPrice(String(priceObj.price));
+    } else if (priceObj.type === "EXCHANGE") {
+      setExchangeId(priceObj.exchange?.id || "");
+      setExchangeRate(String(priceObj.price));
+    }
   };
 
   const handleDelete = async (id: string) => {
