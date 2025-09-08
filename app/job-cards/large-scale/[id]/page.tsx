@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
+import toast from "react-hot-toast";
+import { formatDate } from "@/app/lib/utils";
 
 interface LargeScaleJobCard {
   id: string;
@@ -79,6 +81,23 @@ interface LargeScaleJobCard {
     pricePerOunce: number;
     numberOfOunces: number;
   }[];
+  assays?: {
+    id: string;
+    certificateNumber: string;
+    assayDate: string;
+    goldContent: number;
+    silverContent: number;
+  }[];
+  invoices?: {
+    id: string;
+    invoiceNumber: string;
+    amount: number;
+    currency: {
+      symbol: string;
+    };
+    status: string;
+    issueDate: string;
+  }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -89,6 +108,8 @@ function LargeScaleJobCardDetailPage() {
   const [jobCard, setJobCard] = useState<LargeScaleJobCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+  const id = (params?.id as string) || "";
 
   useEffect(() => {
     const fetchJobCard = async () => {
@@ -115,6 +136,51 @@ function LargeScaleJobCardDetailPage() {
 
     fetchJobCard();
   }, [params?.id]);
+
+  const handleGenerateInvoice = async () => {
+    if (!jobCard) return;
+
+    setGeneratingInvoice(true);
+    toast.loading("Generating invoice...", { id: "invoice-generation" });
+
+    try {
+      const response = await fetch("/api/invoices", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobCardId: jobCard.id,
+        }),
+      });
+
+      if (response.ok) {
+        const newInvoice = await response.json();
+        // Refresh the job card data to show the new invoice
+        const updatedResponse = await fetch(
+          `/api/large-scale-job-cards/${params?.id}`
+        );
+        if (updatedResponse.ok) {
+          const updatedData = await updatedResponse.json();
+          setJobCard(updatedData);
+        }
+        toast.dismiss("invoice-generation");
+        toast.success("Invoice generated successfully!");
+      } else {
+        const errorData = await response.json();
+        toast.dismiss("invoice-generation");
+        toast.error(
+          `Failed to generate invoice: ${errorData.error || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+      toast.dismiss("invoice-generation");
+      toast.error("An error occurred while generating the invoice.");
+    } finally {
+      setGeneratingInvoice(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -534,6 +600,158 @@ function LargeScaleJobCardDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Valuation Section */}
+          {jobCard && jobCard.assays && jobCard.assays.length > 0 ? (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Valuation
+                </h3>
+                <Link
+                  href={`/job-cards/large-scale/${id}/assays/${jobCard.assays[0].id}`}
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  View Valuation
+                </Link>
+              </div>
+              <div className="bg-white shadow overflow-hidden sm:rounded-md">
+                <ul className="divide-y divide-gray-200">
+                  {jobCard.assays.map((assay: any) => (
+                    <li key={assay.id}>
+                      <Link
+                        href={`/job-cards/large-scale/${id}/assays/${assay.id}`}
+                      >
+                        <div className="block hover:bg-gray-50">
+                          <div className="px-4 py-4 sm:px-6">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-medium text-indigo-600 truncate">
+                                Certificate #{assay.certificateNumber}
+                              </p>
+                              <div className="ml-2 flex-shrink-0 flex">
+                                <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                  Gold: {assay.goldContent}% | Silver:{" "}
+                                  {assay.silverContent}%
+                                </p>
+                              </div>
+                            </div>
+                            <div className="mt-2 sm:flex sm:justify-between">
+                              <div className="sm:flex">
+                                <p className="flex items-center text-sm text-gray-500">
+                                  Assay Date:{" "}
+                                  {formatDate(new Date(assay.assayDate))}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Valuation
+                </h3>
+                <Link
+                  href={`/job-cards/large-scale/${id}/assays/new`}
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Perform Valuation
+                </Link>
+              </div>
+              <div className="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center text-gray-500">
+                Valuation has not been performed for this job card yet.
+              </div>
+            </div>
+          )}
+
+          {/* Invoices Section: only show after valuation (assays) exist */}
+          {jobCard && jobCard.assays && jobCard.assays.length > 0 && (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Invoices
+                </h3>
+                {jobCard.invoices && jobCard.invoices.length > 0 ? (
+                  <Link
+                    href={`/job-cards/large-scale/${id}/invoices/${jobCard.invoices[0].id}`}
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    View Invoice
+                  </Link>
+                ) : (
+                  <button
+                    onClick={handleGenerateInvoice}
+                    disabled={generatingInvoice}
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {generatingInvoice ? "Generating..." : "Generate Invoice"}
+                  </button>
+                )}
+              </div>
+
+              {jobCard.invoices && jobCard.invoices.length > 0 ? (
+                <div className="bg-white shadow overflow-hidden sm:rounded-md">
+                  <ul className="divide-y divide-gray-200">
+                    {jobCard.invoices.map((invoice: any) => (
+                      <li key={invoice.id}>
+                        <Link
+                          href={`/job-cards/large-scale/${id}/invoices/${invoice.id}`}
+                        >
+                          <div className="block hover:bg-gray-50">
+                            <div className="px-4 py-4 sm:px-6">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium text-indigo-600 truncate">
+                                  Invoice #{invoice.invoiceNumber}
+                                </p>
+                                <div className="ml-2 flex-shrink-0 flex">
+                                  <p
+                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                      invoice.status === "paid"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-yellow-100 text-yellow-800"
+                                    }`}
+                                  >
+                                    {invoice.status.charAt(0).toUpperCase() +
+                                      invoice.status.slice(1)}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="mt-2 sm:flex sm:justify-between">
+                                <div className="sm:flex">
+                                  <p className="flex items-center text-sm text-gray-500">
+                                    Amount: {invoice.currency?.symbol || "$"}
+                                    {invoice.amount?.toLocaleString() || "0"}
+                                  </p>
+                                </div>
+                                <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                                  <p>
+                                    Issue Date:{" "}
+                                    {invoice.issueDate
+                                      ? formatDate(new Date(invoice.issueDate))
+                                      : "Not set"}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center text-gray-500">
+                  No invoices have been created for this job card yet.
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
