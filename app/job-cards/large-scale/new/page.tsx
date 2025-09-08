@@ -169,7 +169,8 @@ function NewLargeScaleJobCardPage() {
               (officer: any) => officer.officerType === "NACOB_OFFICER"
             ),
             nationalSecurityOfficers: officersData.filter(
-              (officer: any) => officer.officerType === "NATIONAL_SECURITY_OFFICER"
+              (officer: any) =>
+                officer.officerType === "NATIONAL_SECURITY_OFFICER"
             ),
           };
           setOfficers(groupedOfficers);

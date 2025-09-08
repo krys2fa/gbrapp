@@ -137,7 +137,9 @@ function LargeScaleJobCardDetailPage() {
           />
           <div className="mt-8">
             <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error || "Job card not found"}</div>
+              <div className="text-sm text-red-700">
+                {error || "Job card not found"}
+              </div>
             </div>
           </div>
         </div>
@@ -170,13 +172,15 @@ function LargeScaleJobCardDetailPage() {
               >
                 Edit
               </Link>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                jobCard.status === 'pending'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : jobCard.status === 'completed'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800'
-              }`}>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  jobCard.status === "pending"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : jobCard.status === "completed"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+              >
                 {jobCard.status}
               </span>
             </div>
@@ -192,32 +196,51 @@ function LargeScaleJobCardDetailPage() {
               </h3>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Reference Number</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{jobCard.referenceNumber}</dd>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Reference Number
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {jobCard.referenceNumber}
+                  </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Received Date</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Received Date
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {new Date(jobCard.receivedDate).toLocaleDateString()}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Exporter</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Exporter
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {jobCard.exporter.name} ({jobCard.exporter.exporterType.name})
+                    {jobCard.exporter.name} (
+                    {jobCard.exporter.exporterType.name})
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Unit of Measure</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{jobCard.unitOfMeasure}</dd>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Unit of Measure
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {jobCard.unitOfMeasure}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Status</dt>
-                  <dd className="mt-1 text-sm text-gray-900 capitalize">{jobCard.status}</dd>
+                  <dd className="mt-1 text-sm text-gray-900 capitalize">
+                    {jobCard.status}
+                  </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Source of Gold</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{jobCard.sourceOfGold}</dd>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Source of Gold
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {jobCard.sourceOfGold}
+                  </dd>
                 </div>
               </div>
             </div>
@@ -231,47 +254,66 @@ function LargeScaleJobCardDetailPage() {
               </h3>
               <div className="space-y-4">
                 {jobCard.commodities.map((item, index) => (
-                  <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+                  <div
+                    key={item.id}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
                     <h4 className="text-sm font-medium text-gray-900 mb-3">
                       {item.commodity.name} ({item.commodity.symbol})
                     </h4>
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                       <div>
-                        <dt className="text-xs font-medium text-gray-500">Gross Weight</dt>
+                        <dt className="text-xs font-medium text-gray-500">
+                          Gross Weight
+                        </dt>
                         <dd className="mt-1 text-sm text-gray-900">
                           {item.grossWeight} {jobCard.unitOfMeasure}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs font-medium text-gray-500">Net Weight</dt>
+                        <dt className="text-xs font-medium text-gray-500">
+                          Net Weight
+                        </dt>
                         <dd className="mt-1 text-sm text-gray-900">
                           {item.netWeight} {jobCard.unitOfMeasure}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs font-medium text-gray-500">Fineness</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{item.fineness}%</dd>
+                        <dt className="text-xs font-medium text-gray-500">
+                          Fineness
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {item.fineness}%
+                        </dd>
                       </div>
                       <div>
-                        <dt className="text-xs font-medium text-gray-500">Value (GHS)</dt>
+                        <dt className="text-xs font-medium text-gray-500">
+                          Value (GHS)
+                        </dt>
                         <dd className="mt-1 text-sm text-gray-900">
                           ₵{item.valueGhs?.toLocaleString()}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs font-medium text-gray-500">Value (USD)</dt>
+                        <dt className="text-xs font-medium text-gray-500">
+                          Value (USD)
+                        </dt>
                         <dd className="mt-1 text-sm text-gray-900">
                           ${item.valueUsd?.toLocaleString()}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs font-medium text-gray-500">Price per Ounce</dt>
+                        <dt className="text-xs font-medium text-gray-500">
+                          Price per Ounce
+                        </dt>
                         <dd className="mt-1 text-sm text-gray-900">
                           ${item.pricePerOunce?.toLocaleString()}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs font-medium text-gray-500">Number of Ounces</dt>
+                        <dt className="text-xs font-medium text-gray-500">
+                          Number of Ounces
+                        </dt>
                         <dd className="mt-1 text-sm text-gray-900">
                           {item.numberOfOunces?.toLocaleString()}
                         </dd>
@@ -291,48 +333,53 @@ function LargeScaleJobCardDetailPage() {
               </h3>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Customs Officer</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Customs Officer
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.customsOfficer
                       ? `${jobCard.customsOfficer.name} (${jobCard.customsOfficer.badgeNumber})`
-                      : "Not assigned"
-                    }
+                      : "Not assigned"}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Assay Officer</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Assay Officer
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.assayOfficer
                       ? `${jobCard.assayOfficer.name} (${jobCard.assayOfficer.badgeNumber})`
-                      : "Not assigned"
-                    }
+                      : "Not assigned"}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Technical Director</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Technical Director
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.technicalDirector
                       ? `${jobCard.technicalDirector.name} (${jobCard.technicalDirector.badgeNumber})`
-                      : "Not assigned"
-                    }
+                      : "Not assigned"}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">NACOB Officer</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    NACOB Officer
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.nacobOfficer
                       ? `${jobCard.nacobOfficer.name} (${jobCard.nacobOfficer.badgeNumber})`
-                      : "Not assigned"
-                    }
+                      : "Not assigned"}
                   </dd>
                 </div>
                 <div className="sm:col-span-2">
-                  <dt className="text-sm font-medium text-gray-500">National Security Officer</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    National Security Officer
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.nationalSecurityOfficer
                       ? `${jobCard.nationalSecurityOfficer.name} (${jobCard.nationalSecurityOfficer.badgeNumber})`
-                      : "Not assigned"
-                    }
+                      : "Not assigned"}
                   </dd>
                 </div>
               </div>
@@ -347,7 +394,9 @@ function LargeScaleJobCardDetailPage() {
               </h3>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Consignee</h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">
+                    Consignee
+                  </h4>
                   <div className="space-y-1 text-sm text-gray-600">
                     <p>{jobCard.consigneeAddress || "Not provided"}</p>
                     <p>{jobCard.consigneeTelephone || "Not provided"}</p>
@@ -356,7 +405,9 @@ function LargeScaleJobCardDetailPage() {
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Exporter Details</h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">
+                    Exporter Details
+                  </h4>
                   <div className="space-y-1 text-sm text-gray-600">
                     <p>{jobCard.deliveryLocation || "Not provided"}</p>
                     <p>{jobCard.exporterTelephone || "Not provided"}</p>
@@ -379,16 +430,22 @@ function LargeScaleJobCardDetailPage() {
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Name</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{jobCard.notifiedPartyName}</dd>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {jobCard.notifiedPartyName}
+                    </dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Contact Person</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Contact Person
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       {jobCard.notifiedPartyContactPerson || "Not provided"}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Address</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Address
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       {jobCard.notifiedPartyAddress || "Not provided"}
                     </dd>
@@ -400,13 +457,17 @@ function LargeScaleJobCardDetailPage() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Telephone</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Telephone
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       {jobCard.notifiedPartyTelephone || "Not provided"}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Mobile</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Mobile
+                    </dt>
                     <dd className="mt-1 text-sm text-gray-900">
                       {jobCard.notifiedPartyMobile || "Not provided"}
                     </dd>
@@ -424,13 +485,17 @@ function LargeScaleJobCardDetailPage() {
               </h3>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Destination Country</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Destination Country
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.destinationCountry || "Not specified"}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Number of Boxes</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Number of Boxes
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.numberOfBoxes || "Not specified"}
                   </dd>
@@ -459,7 +524,9 @@ function LargeScaleJobCardDetailPage() {
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Last Updated</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Last Updated
+                  </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {new Date(jobCard.updatedAt).toLocaleString()}
                   </dd>
