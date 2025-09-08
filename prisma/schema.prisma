@@ -232,38 +232,44 @@ model Seal {
 }
 
 model Invoice {
-  id            String      @id @default(uuid())
-  invoiceNumber String      @unique
-  jobCardId     String
-  jobCard       JobCard     @relation(fields: [jobCardId], references: [id])
-  invoiceTypeId String
-  invoiceType   InvoiceType @relation(fields: [invoiceTypeId], references: [id])
-  amount        Float
-  currencyId    String
-  currency      Currency    @relation(fields: [currencyId], references: [id])
-  assays        Assay[]
-  levies        Levy[]
-  assayUsdValue Float
-  assayGhsValue Float
-  rate          Float
-  issueDate     DateTime
-  dueDate       DateTime?
-  status        String      @default("pending")
-  notes         String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  
+  id                   String         @id @default(uuid())
+  invoiceNumber        String         @unique
+  jobCardId            String?
+  jobCard              JobCard?       @relation(fields: [jobCardId], references: [id])
+  largeScaleJobCardId  String?
+  largeScaleJobCard    LargeScaleJobCard? @relation(fields: [largeScaleJobCardId], references: [id])
+  invoiceTypeId        String
+  invoiceType          InvoiceType    @relation(fields: [invoiceTypeId], references: [id])
+  amount               Float
+  currencyId           String
+  currency             Currency       @relation(fields: [currencyId], references: [id])
+  assays               Assay[]
+  levies               Levy[]
+  assayUsdValue        Float
+  assayGhsValue        Float
+  rate                 Float
+  issueDate            DateTime
+  dueDate              DateTime?
+  status               String         @default("pending")
+  notes                String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
   // Additional calculated fields
-  grandTotal     Float?
-  subTotal       Float?
-  covid          Float?
-  getfund        Float?
-  nhil           Float?
-  rateCharge     Float?
-  totalInclusive Float?
-  totalExclusive Float?
-  vat            Float?
-  exchangeRate   Float?
+  grandTotal           Float?
+  subTotal             Float?
+  covid                Float?
+  getfund              Float?
+  nhil                 Float?
+  rateCharge           Float?
+  totalInclusive       Float?
+  totalExclusive       Float?
+  vat                  Float?
+  exchangeRate         Float?
+
+  // Ensure only one job card type is set
+  @@unique([jobCardId])
+  @@unique([largeScaleJobCardId])
 }
 
 model InvoiceType {
@@ -588,6 +594,7 @@ model LargeScaleJobCard {
   // Relations
   commodities               LargeScaleJobCardCommodity[]
   assays                    LargeScaleAssay[]
+  invoices                  Invoice[]
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
 }

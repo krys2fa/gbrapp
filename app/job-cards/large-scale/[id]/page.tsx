@@ -162,28 +162,49 @@ function LargeScaleJobCardDetailPage() {
     toast.loading("Generating invoice...", { id: "invoice-generation" });
 
     try {
-      const response = await fetch("/api/invoices", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          jobCardId: jobCard.id,
-        }),
-      });
+      const token = localStorage.getItem("auth-token");
+
+      if (!token) {
+        toast.dismiss("invoice-generation");
+        toast.error("Authentication required. Please log in again.");
+        router.push("/login");
+        return;
+      }
+
+      const response = await fetch(
+        `/api/large-scale-job-cards/${jobCard.id}/invoices`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            jobCardId: jobCard.id,
+          }),
+        }
+      );
 
       if (response.ok) {
         const newInvoice = await response.json();
-        // Refresh the job card data to show the new invoice
-        const updatedResponse = await fetch(
-          `/api/large-scale-job-cards/${params?.id}`
+        // Update the job card state to include the new invoice
+        setJobCard((prev) =>
+          prev
+            ? {
+                ...prev,
+                invoices: [newInvoice],
+              }
+            : null
         );
-        if (updatedResponse.ok) {
-          const updatedData = await updatedResponse.json();
-          setJobCard(updatedData);
-        }
         toast.dismiss("invoice-generation");
         toast.success("Invoice generated successfully!");
+      } else if (response.status === 401) {
+        // Token is invalid, clear it and redirect to login
+        localStorage.removeItem("auth-token");
+        localStorage.removeItem("auth-user");
+        toast.dismiss("invoice-generation");
+        toast.error("Session expired. Please log in again.");
+        router.push("/login");
       } else {
         const errorData = await response.json();
         toast.dismiss("invoice-generation");

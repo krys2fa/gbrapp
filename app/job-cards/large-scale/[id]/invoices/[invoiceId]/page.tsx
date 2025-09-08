@@ -1,7 +1,7 @@
 import React from "react";
 import HistoryBackLink from "@/app/components/ui/HistoryBackLink";
 import { prisma } from "@/app/lib/prisma";
-import InvoiceActions from "@/app/job-cards/[id]/invoices/InvoiceActions"; // client component
+import LargeScaleInvoiceActions from "../LargeScaleInvoiceActions"; // client component
 
 function formatCurrency(value: number | null | undefined, code = "GHS") {
   const v = Number(value || 0);
@@ -20,7 +20,7 @@ function formatDate(d?: Date | string | null) {
   return dt.toLocaleDateString();
 }
 
-export default async function InvoicePage(props: any) {
+export default async function LargeScaleInvoicePage(props: any) {
   // `params` may be a promise in Next.js server components; await before using
   const { id: jobCardId, invoiceId } = (await props.params) as {
     id: string;
@@ -35,7 +35,7 @@ export default async function InvoicePage(props: any) {
       select: {
         id: true,
         invoiceNumber: true,
-        jobCardId: true,
+        largeScaleJobCardId: true,
         assayUsdValue: true,
         assayGhsValue: true,
         amount: true,
@@ -56,38 +56,30 @@ export default async function InvoicePage(props: any) {
         exchangeRate: true,
         currency: { select: { id: true, code: true, symbol: true } },
         invoiceType: { select: { id: true, name: true, description: true } },
-        assays: {
-          select: {
-            id: true,
-            certificateNumber: true,
-            assayDate: true,
-            comments: true,
-            totalUsdValue: true,
-            totalGhsValue: true,
-            measurements: true,
-          },
-        },
-        jobCard: {
-          select: {
-            id: true,
-            referenceNumber: true,
-            destinationCountry: true,
-            exporter: { select: { id: true, name: true } },
-          },
-        },
         largeScaleJobCard: {
           select: {
             id: true,
             referenceNumber: true,
             destinationCountry: true,
             exporter: { select: { id: true, name: true } },
+            assays: {
+              select: {
+                id: true,
+                method: true,
+                dateOfAnalysis: true,
+                comments: true,
+                totalCombinedValue: true,
+                totalValueGhs: true,
+                measurements: true,
+              },
+            },
           },
         },
       },
     });
   } catch (e) {
     // Log error server-side but don't expose to client
-    console.log("Failed to load invoice for invoice page:", e);
+    console.log("Failed to load large scale invoice for invoice page:", e);
     return (
       <div className="max-w-4xl mx-auto py-10 px-4">
         <p>Failed to load invoice data. Please try again later.</p>
@@ -121,26 +113,26 @@ export default async function InvoicePage(props: any) {
   const totalExclusive = invoice.totalExclusive || 0;
   const vat = invoice.vat || 0;
 
-  // Assay number(s): join certificate numbers of linked assays if present
+  // Get job card data
+  const jobCardData = invoice.largeScaleJobCard;
+
+  // Assay number(s): join assay IDs of linked assays if present
   const assayNumbers =
-    (invoice.assays || [])
-      .map((a: any) => a.certificateNumber)
+    (jobCardData?.assays || [])
+      .map((a: any) => `Assay-${a.id.slice(-8)}`)
       .filter(Boolean)
       .join(", ") || "-";
 
-  // Determine which job card type this invoice belongs to
-  const jobCardData = invoice.jobCard || invoice.largeScaleJobCard;
   const exporterName = jobCardData?.exporter?.name || "-";
   const destinationCountry = jobCardData?.destinationCountry || "-";
   const referenceNumber =
-    jobCardData?.referenceNumber ||
-    invoice.jobCardId ||
-    invoice.largeScaleJobCardId ||
-    jobCardId;
+    jobCardData?.referenceNumber || invoice.largeScaleJobCardId || jobCardId;
 
   // derive signatory info from first linked assay if available
   const firstAssay: any =
-    invoice.assays && invoice.assays.length > 0 ? invoice.assays[0] : null;
+    jobCardData?.assays && jobCardData.assays.length > 0
+      ? jobCardData.assays[0]
+      : null;
   const signatoryName =
     firstAssay?.signatory || firstAssay?.comments?.signatory || null;
   const signatoryPosition =
@@ -159,7 +151,7 @@ export default async function InvoicePage(props: any) {
             Invoice #{invoice.invoiceNumber}
           </h1>
           {/* Client actions: back + download */}
-          <InvoiceActions
+          <LargeScaleInvoiceActions
             jobCardId={jobCardId}
             signatoryName={signatoryName}
             signatoryPosition={signatoryPosition}

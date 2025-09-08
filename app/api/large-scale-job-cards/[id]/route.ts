@@ -38,6 +38,20 @@ async function getLargeScaleJobCard(
             shipmentType: true,
           },
         },
+        invoices: {
+          select: {
+            id: true,
+            invoiceNumber: true,
+            amount: true,
+            status: true,
+            issueDate: true,
+            currency: {
+              select: {
+                symbol: true,
+              },
+            },
+          },
+        },
       },
     });
 
