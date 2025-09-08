@@ -80,17 +80,33 @@ export async function POST(req: Request) {
 
     // Extract and verify JWT token to get user information
     const authHeader = req.headers.get("authorization");
+    let token: string | undefined;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    // Check Authorization header first
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    } else {
+      // Fallback to cookie if no Authorization header
+      const cookieHeader = req.headers.get("cookie");
+      if (cookieHeader) {
+        const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
+          const [key, value] = cookie.trim().split("=");
+          acc[key] = value;
+          return acc;
+        }, {} as Record<string, string>);
+        token = cookies["auth-token"];
+      }
+    }
+
+    if (!token) {
       return NextResponse.json(
         {
-          error: "Unauthorized. Authentication required.",
+          error: "Unauthorized. Authentication required. Please login first.",
         },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring(7);
     const JWT_SECRET =
       process.env.JWT_SECRET || "fallback-secret-for-development-only";
     const secret = new TextEncoder().encode(JWT_SECRET);
