@@ -104,11 +104,6 @@ function NewLargeScaleJobCardPage() {
     consigneeTelephone: "",
     consigneeMobile: "",
     consigneeEmail: "",
-    // Consignor section
-    consignorAddress: "",
-    consignorEmail: "",
-    consignorContactPerson: "",
-    consignorTelephone: "",
     // Exporter details section
     deliveryLocation: "",
     exporterTelephone: "",
@@ -162,19 +157,19 @@ function NewLargeScaleJobCardPage() {
           // Group officers by type
           const groupedOfficers = {
             customsOfficers: officersData.filter(
-              (officer: any) => officer.type === "CUSTOMS"
+              (officer: any) => officer.officerType === "CUSTOMS_OFFICER"
             ),
             assayOfficers: officersData.filter(
-              (officer: any) => officer.type === "ASSAY"
+              (officer: any) => officer.officerType === "ASSAY_OFFICER"
             ),
             technicalDirectors: officersData.filter(
-              (officer: any) => officer.type === "TECHNICAL_DIRECTOR"
+              (officer: any) => officer.officerType === "TECHNICAL_DIRECTOR"
             ),
             nacobOfficers: officersData.filter(
-              (officer: any) => officer.type === "NACOB"
+              (officer: any) => officer.officerType === "NACOB_OFFICER"
             ),
             nationalSecurityOfficers: officersData.filter(
-              (officer: any) => officer.type === "NATIONAL_SECURITY"
+              (officer: any) => officer.officerType === "NATIONAL_SECURITY_OFFICER"
             ),
           };
           setOfficers(groupedOfficers);
@@ -194,25 +189,85 @@ function NewLargeScaleJobCardPage() {
 
     try {
       // Validate required fields
-      if (
-        !form.referenceNumber ||
-        !form.exporterId ||
-        !form.commodities.length ||
-        form.commodities.some((commodity) => !commodity.id)
-      ) {
+      if (!form.referenceNumber || !form.receivedDate || !form.exporterId) {
         setError(
-          "Please fill in all required fields and ensure all commodities have a selection."
+          "Please fill in all required fields: Reference Number, Received Date, and Exporter."
         );
         setLoading(false);
         return;
       }
 
+      // Validate that at least one commodity is selected with valid data
+      const validCommodities = form.commodities.filter(
+        (commodity) => commodity.id && commodity.id.trim() !== ""
+      );
+
+      if (validCommodities.length === 0) {
+        setError("Please select at least one commodity for the job card.");
+        setLoading(false);
+        return;
+      }
+
       const jobCardData = {
-        ...form,
-        type: "large_scale", // Mark as large scale job card
+        referenceNumber: form.referenceNumber,
+        receivedDate: form.receivedDate,
+        exporterId: form.exporterId,
+        unitOfMeasure: form.unitOfMeasure,
+        notes: form.notes,
+        destinationCountry: form.destinationCountry,
+        sourceOfGold: form.sourceOfGold,
+        numberOfBoxes: form.numberOfBoxes
+          ? parseInt(form.numberOfBoxes)
+          : undefined,
+        customsOfficerId: form.customsOfficerId || undefined,
+        assayOfficerId: form.assayOfficerId || undefined,
+        technicalDirectorId: form.technicalDirectorId || undefined,
+        nacobOfficerId: form.nacobOfficerId || undefined,
+        nationalSecurityOfficerId: form.nationalSecurityOfficerId || undefined,
+        consigneeAddress: form.consigneeAddress,
+        consigneeTelephone: form.consigneeTelephone,
+        consigneeMobile: form.consigneeMobile,
+        consigneeEmail: form.consigneeEmail,
+        deliveryLocation: form.deliveryLocation,
+        exporterTelephone: form.exporterTelephone,
+        exporterEmail: form.exporterEmail,
+        exporterWebsite: form.exporterWebsite,
+        exporterLicenseNumber: form.exporterLicenseNumber,
+        notifiedPartyName: form.notifiedPartyName,
+        notifiedPartyAddress: form.notifiedPartyAddress,
+        notifiedPartyEmail: form.notifiedPartyEmail,
+        notifiedPartyContactPerson: form.notifiedPartyContactPerson,
+        notifiedPartyTelephone: form.notifiedPartyTelephone,
+        notifiedPartyMobile: form.notifiedPartyMobile,
+        commodities: form.commodities
+          .filter((commodity) => commodity.id) // Only include commodities with IDs
+          .map((commodity) => ({
+            commodityId: commodity.id,
+            grossWeight: commodity.grossWeight
+              ? parseFloat(commodity.grossWeight)
+              : undefined,
+            netWeight: commodity.netWeight
+              ? parseFloat(commodity.netWeight)
+              : undefined,
+            fineness: commodity.fineness
+              ? parseFloat(commodity.fineness)
+              : undefined,
+            valueGhs: commodity.valueGhs
+              ? parseFloat(commodity.valueGhs)
+              : undefined,
+            valueUsd: commodity.valueUsd
+              ? parseFloat(commodity.valueUsd)
+              : undefined,
+            pricePerOunce: commodity.pricePerOunce
+              ? parseFloat(commodity.pricePerOunce)
+              : undefined,
+            numberOfOunces: commodity.numberOfOunces
+              ? parseFloat(commodity.numberOfOunces)
+              : undefined,
+          })),
       };
 
-      const response = await fetch("/api/job-cards", {
+      const response = await fetch("/api/large-scale-job-cards", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -496,7 +551,7 @@ function NewLargeScaleJobCardPage() {
                     value={form.exporterWebsite}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Enter exporter website"
+                    placeholder="Enter exporter website eg: https://www.acme.com"
                   />
                 </div>
 
