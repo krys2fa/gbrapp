@@ -116,15 +116,24 @@ function NewLargeScaleAssayPage() {
     securitySealNo: "",
     goldbodSealNo: "",
     customsSealNo: "",
+    shipmentNumber: "",
+    dateOfAnalysis: new Date().toISOString().split("T")[0],
+    dataSheetDates: "",
+    sampleBottleDates: "",
+    numberOfSamples: 1,
+    numberOfBars: 1,
+    sampleType: "capillary",
   });
 
-  // rows for each piece: grossWeight, waterWeight, fineness (auto), netWeight
+  // rows for each piece: bar number, gross weight, gold assay, net gold weight, silver assay, net silver weight
   const [rows, setRows] = useState<
     Array<{
+      barNumber?: string;
       grossWeight?: number;
-      waterWeight?: number;
-      fineness?: number;
-      netWeight?: number;
+      goldAssay?: number;
+      netGoldWeight?: number;
+      silverAssay?: number;
+      netSilverWeight?: number;
     }>
   >([{}]);
 
@@ -137,10 +146,39 @@ function NewLargeScaleAssayPage() {
     }>
   >([{ hasWarning: false }]);
 
-  // Helper function to calculate expected fineness
-  const calculateExpectedFineness = (gross: number, net: number): number => {
-    if (typeof gross === "number" && gross > 0 && typeof net === "number") {
-      return Number(((net / gross) * 100).toFixed(2));
+  // Update rows when pieces changes
+  useEffect(() => {
+    const currentPieces = Number(form.pieces) || 1;
+    setRows((prevRows) => {
+      const newRows = [...prevRows];
+      // If we need more rows, add them
+      while (newRows.length < currentPieces) {
+        newRows.push({});
+      }
+      // If we need fewer rows, remove them
+      while (newRows.length > currentPieces) {
+        newRows.pop();
+      }
+      return newRows;
+    });
+
+    // Also update fineness warnings array
+    setFinenessWarnings((prevWarnings) => {
+      const newWarnings = [...prevWarnings];
+      while (newWarnings.length < currentPieces) {
+        newWarnings.push({ hasWarning: false });
+      }
+      while (newWarnings.length > currentPieces) {
+        newWarnings.pop();
+      }
+      return newWarnings;
+    });
+  }, [form.pieces]);
+
+  // Helper function to calculate net weights from assays
+  const calculateNetWeight = (gross: number, assay: number): number => {
+    if (typeof gross === "number" && typeof assay === "number") {
+      return Number(((gross * assay) / 100).toFixed(4));
     }
     return 0;
   };
@@ -337,73 +375,42 @@ function NewLargeScaleAssayPage() {
     setRows((prev) => {
       const next = [...prev];
       if (!next[index]) next[index] = {};
-      next[index] = { ...next[index], [field]: parsed };
+      next[index] = {
+        ...next[index],
+        [field]: field === "barNumber" ? value : parsed,
+      };
 
-      const gross = next[index].grossWeight;
-      const net = next[index].netWeight;
-
-      // If grossWeight or netWeight changed, recompute expected fineness
-      if (field === "netWeight" || field === "grossWeight") {
-        if (typeof gross === "number" && gross > 0 && typeof net === "number") {
-          const expectedFineness = calculateExpectedFineness(gross, net);
-          // Only auto-set fineness if it hasn't been manually edited or if it matches expected
+      // Auto-calculate net gold weight when gross weight and gold assay are available (only if not manually set)
+      if (field === "grossWeight" || field === "goldAssay") {
+        const gross = next[index].grossWeight;
+        const goldAssay = next[index].goldAssay;
+        if (typeof gross === "number" && typeof goldAssay === "number") {
+          // Only auto-calculate if netGoldWeight hasn't been manually set
           if (
-            typeof next[index].fineness !== "number" ||
-            next[index].fineness === expectedFineness
+            next[index].netGoldWeight === undefined ||
+            next[index].netGoldWeight === null
           ) {
-            next[index].fineness = expectedFineness;
+            next[index].netGoldWeight = Number(
+              ((gross * goldAssay) / 100).toFixed(4)
+            );
           }
-          // Update warning state - check if manual fineness differs from expected
-          const manualFineness = next[index].fineness;
-          const hasDiscrepancy =
-            typeof manualFineness === "number" &&
-            manualFineness !== expectedFineness;
-          const difference = hasDiscrepancy
-            ? manualFineness! - expectedFineness
-            : 0;
-          setFinenessWarnings((prev) => {
-            const newWarnings = [...prev];
-            newWarnings[index] = {
-              hasWarning: hasDiscrepancy,
-              expectedFineness: expectedFineness,
-              difference: difference,
-            };
-            return newWarnings;
-          });
-        } else {
-          // Not enough info to compute
-          next[index].fineness = undefined;
-          setFinenessWarnings((prev) => {
-            const newWarnings = [...prev];
-            newWarnings[index] = { hasWarning: false };
-            return newWarnings;
-          });
         }
       }
 
-      // If fineness is manually edited, check for discrepancy
-      if (field === "fineness") {
-        if (typeof gross === "number" && gross > 0 && typeof net === "number") {
-          const expectedFineness = calculateExpectedFineness(gross, net);
-          const hasDiscrepancy =
-            typeof parsed === "number" && parsed !== expectedFineness;
-          const difference = hasDiscrepancy ? parsed! - expectedFineness : 0;
-          setFinenessWarnings((prev) => {
-            const newWarnings = [...prev];
-            newWarnings[index] = {
-              hasWarning: hasDiscrepancy,
-              expectedFineness: expectedFineness,
-              difference: difference,
-            };
-            return newWarnings;
-          });
-        } else {
-          // No gross/net to compare against, no warning
-          setFinenessWarnings((prev) => {
-            const newWarnings = [...prev];
-            newWarnings[index] = { hasWarning: false };
-            return newWarnings;
-          });
+      // Auto-calculate net silver weight when gross weight and silver assay are available (only if not manually set)
+      if (field === "grossWeight" || field === "silverAssay") {
+        const gross = next[index].grossWeight;
+        const silverAssay = next[index].silverAssay;
+        if (typeof gross === "number" && typeof silverAssay === "number") {
+          // Only auto-calculate if netSilverWeight hasn't been manually set
+          if (
+            next[index].netSilverWeight === undefined ||
+            next[index].netSilverWeight === null
+          ) {
+            next[index].netSilverWeight = Number(
+              ((gross * silverAssay) / 100).toFixed(4)
+            );
+          }
         }
       }
 
@@ -421,7 +428,7 @@ function NewLargeScaleAssayPage() {
   };
 
   const totalInputNetWeight = rows.reduce(
-    (s, r) => s + (Number(r.netWeight) || 0),
+    (s, r) => s + (Number(r.netGoldWeight) || 0),
     0
   );
   const unitOfMeasure = jobCard?.unitOfMeasure || "g"; // expect 'g' or 'kg' stored on jobCard
@@ -462,8 +469,8 @@ function NewLargeScaleAssayPage() {
         rows.some((r) => {
           return (
             typeof r.grossWeight === "number" ||
-            typeof r.netWeight === "number" ||
-            typeof r.waterWeight === "number"
+            typeof r.netGoldWeight === "number" ||
+            typeof r.netSilverWeight === "number"
           );
         });
       if (!hasMeasurement) {
@@ -509,6 +516,13 @@ function NewLargeScaleAssayPage() {
         securitySealNo: form.securitySealNo,
         goldbodSealNo: form.goldbodSealNo,
         customsSealNo: form.customsSealNo,
+        shipmentNumber: form.shipmentNumber,
+        dateOfAnalysis: form.dateOfAnalysis,
+        dataSheetDates: form.dataSheetDates,
+        sampleBottleDates: form.sampleBottleDates,
+        numberOfSamples: Number(form.numberOfSamples),
+        numberOfBars: Number(form.numberOfBars),
+        sampleType: form.sampleType,
         exchangeRate: Number(currentWeekExchangeEntry?.price) || null,
         commodityPrice:
           Number(
@@ -524,10 +538,12 @@ function NewLargeScaleAssayPage() {
           ) || null,
         measurements: rows.map((r, i) => ({
           piece: i + 1,
+          barNumber: r.barNumber || "",
           grossWeight: r.grossWeight || 0,
-          waterWeight: r.waterWeight || 0,
-          fineness: r.fineness || 0,
-          netWeight: r.netWeight || 0,
+          goldAssay: r.goldAssay || 0,
+          netGoldWeight: r.netGoldWeight || 0,
+          silverAssay: r.silverAssay || 0,
+          netSilverWeight: r.netSilverWeight || 0,
         })),
         // persist a JSON blob in comments so server can store structured metadata
         comments: JSON.stringify({
@@ -811,7 +827,7 @@ function NewLargeScaleAssayPage() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Authorized Signatory
                 </label>
@@ -822,6 +838,104 @@ function NewLargeScaleAssayPage() {
                   onChange={handleFormChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 />
+              </div> */}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Shipment Number
+                </label>
+                <input
+                  name="shipmentNumber"
+                  type="text"
+                  value={form.shipmentNumber}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  placeholder="Enter shipment number"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Date of Analysis
+                </label>
+                <input
+                  name="dateOfAnalysis"
+                  type="date"
+                  value={form.dateOfAnalysis}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Data Sheet Dates
+                </label>
+                <input
+                  name="dataSheetDates"
+                  type="date"
+                  value={form.dataSheetDates}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Sample Bottle Dates
+                </label>
+                <input
+                  name="sampleBottleDates"
+                  type="date"
+                  value={form.sampleBottleDates}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Number of Samples
+                </label>
+                <input
+                  name="numberOfSamples"
+                  type="number"
+                  min={1}
+                  value={form.numberOfSamples}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Number of Bars
+                </label>
+                <input
+                  name="numberOfBars"
+                  type="number"
+                  min={1}
+                  value={form.numberOfBars}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Sample Type
+                </label>
+                <select
+                  name="sampleType"
+                  value={form.sampleType}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                >
+                  <option value="capillary">Capillary</option>
+                  <option value="bulk">Bulk</option>
+                  <option value="powder">Powder</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
 
               <div>
@@ -872,21 +986,30 @@ function NewLargeScaleAssayPage() {
                 Piece measurements
               </h4>
               <p className="text-xs text-gray-500">
-                Provide measurements for each piece saved.
+                Provide measurements for each bar including assay percentages
+                and calculated net weights.
               </p>
-              {/* fineness is always auto-calculated from gross/net */}
 
               <div className="mt-3 space-y-2">
                 {rows.map((r, i) => (
-                  <div
-                    key={i}
-                    className={`grid grid-cols-1 sm:grid-cols-${
-                      form.method === "X_RAY" ? "3" : "4"
-                    } gap-3 items-end`}
-                  >
+                  <div key={i} className="grid grid-cols-6 gap-3 items-end">
                     <div>
                       <label className="block text-xs text-gray-600">
-                        Gross weight
+                        Bar Number (NGGL)
+                      </label>
+                      <input
+                        type="text"
+                        value={r.barNumber ?? ""}
+                        onChange={(e) =>
+                          handleRowChange(i, "barNumber", e.target.value)
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                        placeholder="Enter bar number"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600">
+                        Gross Weight
                       </label>
                       <input
                         type="number"
@@ -898,89 +1021,80 @@ function NewLargeScaleAssayPage() {
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                       />
                     </div>
-                    {form.method !== "X_RAY" && (
-                      <div>
-                        <label className="block text-xs text-gray-600">
-                          Water weight
-                        </label>
-                        <input
-                          type="number"
-                          step="any"
-                          value={r.waterWeight ?? ""}
-                          onChange={(e) =>
-                            handleRowChange(i, "waterWeight", e.target.value)
-                          }
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                        />
-                      </div>
-                    )}
                     <div>
                       <label className="block text-xs text-gray-600">
-                        Fineness
-                      </label>
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="number"
-                          step="any"
-                          value={r.fineness ?? ""}
-                          onChange={(e) =>
-                            handleRowChange(i, "fineness", e.target.value)
-                          }
-                          className={`flex-1 rounded-md border-gray-300 shadow-sm ${
-                            finenessWarnings[i]?.hasWarning
-                              ? "border-yellow-400 bg-yellow-50"
-                              : ""
-                          }`}
-                        />
-                        {finenessWarnings[i]?.hasWarning && (
-                          <div className="text-yellow-600 text-xs flex flex-col gap-1">
-                            <div className="flex items-center gap-1">
-                              <svg
-                                className="w-4 h-4"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              <span>Different from calculated</span>
-                            </div>
-                            <div className="text-xs text-yellow-700 ml-5">
-                              Expected:{" "}
-                              {finenessWarnings[i]?.expectedFineness?.toFixed(
-                                2
-                              )}
-                              %
-                              {finenessWarnings[i]?.difference !==
-                                undefined && (
-                                <span className="ml-2">
-                                  (
-                                  {finenessWarnings[i]!.difference > 0
-                                    ? "+"
-                                    : ""}
-                                  {finenessWarnings[i]!.difference.toFixed(2)}%)
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-600">
-                        Net weight
+                        GOLDBOD Gold Assay (%)
                       </label>
                       <input
                         type="number"
                         step="any"
-                        value={r.netWeight ?? ""}
+                        min="0"
+                        max="100"
+                        value={r.goldAssay ?? ""}
                         onChange={(e) =>
-                          handleRowChange(i, "netWeight", e.target.value)
+                          handleRowChange(i, "goldAssay", e.target.value)
                         }
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600">
+                        Net Gold Weight
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={r.netGoldWeight ?? ""}
+                        onChange={(e) =>
+                          handleRowChange(i, "netGoldWeight", e.target.value)
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                        placeholder={
+                          r.grossWeight && r.goldAssay
+                            ? Number(
+                                ((r.grossWeight * r.goldAssay) / 100).toFixed(4)
+                              ).toString()
+                            : "Auto-calculated from gross × assay"
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600">
+                        GOLDBOD Silver Assay (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        min="0"
+                        max="100"
+                        value={r.silverAssay ?? ""}
+                        onChange={(e) =>
+                          handleRowChange(i, "silverAssay", e.target.value)
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600">
+                        Net Silver Weight
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={r.netSilverWeight ?? ""}
+                        onChange={(e) =>
+                          handleRowChange(i, "netSilverWeight", e.target.value)
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                        placeholder={
+                          r.grossWeight && r.silverAssay
+                            ? Number(
+                                ((r.grossWeight * r.silverAssay) / 100).toFixed(
+                                  4
+                                )
+                              ).toString()
+                            : "Auto-calculated from gross × assay"
+                        }
                       />
                     </div>
                   </div>
