@@ -179,10 +179,12 @@ export async function POST(req: NextRequest) {
     assayGhsValue = Number(assayGhsValue.toFixed(2));
     exchangeRate = Number(exchangeRate.toFixed(4));
 
-    // If no exchange rate from assay, stop invoice generation
     if (exchangeRate === 0) {
       return NextResponse.json(
-        { error: "Invoice cannot be generated due to missing exchange rate from assay. Please ensure the assay has a valid exchange rate before generating an invoice." },
+        {
+          error:
+            "Invoice cannot be generated due to missing exchange rate from assay. Please ensure the assay has a valid exchange rate before generating an invoice.",
+        },
         { status: 400 }
       );
     }
