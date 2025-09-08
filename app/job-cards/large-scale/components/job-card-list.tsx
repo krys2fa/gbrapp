@@ -19,6 +19,24 @@ interface LargeScaleJobCard {
     name: string;
     id: string;
   };
+  commodities?: string[];
+  unitOfMeasure?: string;
+  assaySummary?: {
+    id: string;
+    method: string;
+    pieces: number;
+    totalNetGoldWeight: number;
+    totalNetSilverWeight: number;
+    totalNetGoldWeightOz: number;
+    totalNetSilverWeightOz: number;
+    totalGoldValue: number;
+    totalSilverValue: number;
+    totalCombinedValue: number;
+    totalValueGhs: number;
+    dateOfAnalysis: string;
+    signatory: string;
+    measurementCount: number;
+  } | null;
   _count?: {
     assays?: number;
   };
@@ -39,6 +57,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [jobCardToDelete, setJobCardToDelete] = useState<string | null>(null);
   const itemsPerPage = 10;
@@ -73,14 +92,21 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
       queryParams.append("page", currentPage.toString());
       queryParams.append("limit", itemsPerPage.toString());
 
+      const token = localStorage.getItem("auth-token");
       const response = await fetch(
-        `/api/large-scale-job-cards?${queryParams.toString()}`
+        `/api/large-scale-job-cards/assays/summaries?${queryParams.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (response.ok) {
         const data = await response.json();
-        setJobCards(data.jobCards || []);
-        setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
+        setJobCards(data.assaySummaries || []);
+        setTotalPages(data.totalPages || 1);
+        setTotalItems(data.total || 0);
       } else {
         console.error("Failed to fetch large scale job cards");
       }
@@ -181,7 +207,60 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                         <span>
                           {formatDate(new Date(jobCard.receivedDate))}
                         </span>
+                        {jobCard.commodities &&
+                          jobCard.commodities.length > 0 && (
+                            <span>{jobCard.commodities.join(", ")}</span>
+                          )}
                       </div>
+                      {jobCard.assaySummary && (
+                        <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                            <div>
+                              <span className="font-medium text-gray-700">
+                                Assay Date:
+                              </span>
+                              <div className="text-gray-600">
+                                {formatDate(
+                                  new Date(jobCard.assaySummary.dateOfAnalysis)
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-700">
+                                Gold (oz):
+                              </span>
+                              <div className="text-gray-600">
+                                {jobCard.assaySummary.totalNetGoldWeightOz.toFixed(
+                                  4
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-700">
+                                Silver (oz):
+                              </span>
+                              <div className="text-gray-600">
+                                {jobCard.assaySummary.totalNetSilverWeightOz.toFixed(
+                                  4
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-700">
+                                Total Value (GHS):
+                              </span>
+                              <div className="text-gray-600">
+                                {jobCard.assaySummary.totalValueGhs.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-2 text-xs text-gray-500">
+                            Method: {jobCard.assaySummary.method} | Pieces:{" "}
+                            {jobCard.assaySummary.pieces} | Signatory:{" "}
+                            {jobCard.assaySummary.signatory}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -247,10 +326,9 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                 </span>{" "}
                 to{" "}
                 <span className="font-medium">
-                  {Math.min(currentPage * itemsPerPage, jobCards.length)}
+                  {Math.min(currentPage * itemsPerPage, totalItems)}
                 </span>{" "}
-                of <span className="font-medium">{jobCards.length}</span>{" "}
-                results
+                of <span className="font-medium">{totalItems}</span> results
               </p>
             </div>
             <div>

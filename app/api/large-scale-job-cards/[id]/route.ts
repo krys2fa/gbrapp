@@ -30,6 +30,14 @@ async function getLargeScaleJobCard(
             commodity: true,
           },
         },
+        assays: {
+          include: {
+            measurements: {
+              orderBy: { piece: "asc" },
+            },
+            shipmentType: true,
+          },
+        },
       },
     });
 

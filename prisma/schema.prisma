@@ -353,6 +353,7 @@ model ShipmentType {
   name        String   @unique
   description String?
   assays      Assay[]
+  largeScaleAssays LargeScaleAssay[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -662,17 +663,6 @@ model LargeScaleAssayMeasurement {
   updatedAt         DateTime           @updatedAt
 
   @@unique([assayId, piece])
-}
-
-model ShipmentType {
-  id          String             @id @default(uuid())
-  name        String             @unique
-  description String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-
-  // Relations
-  assays      LargeScaleAssay[]
 }
 
 model LargeScaleJobCardCommodity {

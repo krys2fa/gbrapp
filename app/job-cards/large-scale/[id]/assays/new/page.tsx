@@ -558,11 +558,12 @@ function NewLargeScaleAssayPage() {
         return;
       }
 
-      const newAssay = {
-        id: `local-${Date.now()}`,
+      const assayData = {
         method: form.method,
         pieces: Number(form.pieces),
         signatory: form.signatory,
+        comments: form.comments || "",
+        shipmentTypeId: form.shipmentTypeId || null,
         securitySealNo: form.securitySealNo,
         goldbodSealNo: form.goldbodSealNo,
         customsSealNo: form.customsSealNo,
@@ -586,6 +587,14 @@ function NewLargeScaleAssayPage() {
               (p) => p.commodityId === jobCard?.commodities?.[0]?.commodity?.id
             )?.price
           ) || null,
+        totalNetGoldWeight: totalNetGoldWeight,
+        totalNetSilverWeight: totalNetSilverWeight,
+        totalNetGoldWeightOz: totalNetGoldWeightOz,
+        totalNetSilverWeightOz: totalNetSilverWeightOz,
+        totalGoldValue: totalGoldValue,
+        totalSilverValue: totalSilverValue,
+        totalCombinedValue: totalCombinedValue,
+        totalValueGhs: totalValueGhs,
         measurements: rows.map((r, i) => ({
           piece: i + 1,
           barNumber: r.barNumber || "",
@@ -595,55 +604,21 @@ function NewLargeScaleAssayPage() {
           silverAssay: r.silverAssay || 0,
           netSilverWeight: r.netSilverWeight || 0,
         })),
-        // persist a JSON blob in comments so server can store structured metadata
-        comments: JSON.stringify({
-          note: form.comments || "",
-          meta: {
-            unit: unitOfMeasure,
-            totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(4)),
-            valueUsd: Number(displayUsdValue.toFixed(4)),
-            valueGhs: Number(displayGhsValue.toFixed(4)),
-            weeklyExchange: Number(currentWeekExchangeEntry?.price) || null,
-            dailyPrice:
-              Number(
-                commodityPrices.find(
-                  (p) =>
-                    p.commodityId === jobCard?.commodities?.[0]?.commodity?.id
-                )?.price
-              ) || null,
-          },
-        }),
-        shipmentTypeId: form.shipmentTypeId || null,
-        createdAt: new Date().toISOString(),
       };
 
-      // For now, we'll store the assay data in the job card's notes or a separate field
-      // In a full implementation, you'd want to create a separate Assay model for large scale
-      const updatedJobCard = {
-        ...jobCard,
-        notes: jobCard?.notes
-          ? `${
-              jobCard.notes
-            }\n\n[ASSAY DATA - ${new Date().toISOString()}]\n${JSON.stringify(
-              newAssay,
-              null,
-              2
-            )}`
-          : `[ASSAY DATA - ${new Date().toISOString()}]\n${JSON.stringify(
-              newAssay,
-              null,
-              2
-            )}`,
-      };
-
-      const put = await fetch(`/api/large-scale-job-cards/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedJobCard),
+      // Save assay data to database via API
+      const token = localStorage.getItem("auth-token");
+      const response = await fetch(`/api/large-scale-job-cards/${id}/assays`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(assayData),
       });
 
-      if (!put.ok) {
-        const err = await put.json().catch(() => ({}));
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
         throw new Error(err.error || "Failed to save assay");
       }
 

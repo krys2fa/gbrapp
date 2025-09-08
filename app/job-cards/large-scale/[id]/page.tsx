@@ -83,10 +83,28 @@ interface LargeScaleJobCard {
   }[];
   assays?: {
     id: string;
-    certificateNumber: string;
-    assayDate: string;
-    goldContent: number;
-    silverContent: number;
+    method: string;
+    pieces: number;
+    signatory: string;
+    dateOfAnalysis: string;
+    totalNetGoldWeight: number;
+    totalNetSilverWeight: number;
+    totalNetGoldWeightOz: number;
+    totalNetSilverWeightOz: number;
+    totalGoldValue: number;
+    totalSilverValue: number;
+    totalCombinedValue: number;
+    totalValueGhs: number;
+    measurements: {
+      id: string;
+      piece: number;
+      barNumber: string;
+      grossWeight: number;
+      goldAssay: number;
+      silverAssay: number;
+      netGoldWeight: number;
+      netSilverWeight: number;
+    }[];
   }[];
   invoices?: {
     id: string;
@@ -601,8 +619,8 @@ function LargeScaleJobCardDetailPage() {
             </div>
           </div>
 
-          {/* Valuation Section */}
-          {jobCard && jobCard.assays && jobCard.assays.length > 0 ? (
+          {/* Valuation Section: only show after valuation (assays) exist */}
+          {jobCard && jobCard.assays && jobCard.assays.length > 0 && (
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -615,9 +633,10 @@ function LargeScaleJobCardDetailPage() {
                   View Valuation
                 </Link>
               </div>
+
               <div className="bg-white shadow overflow-hidden sm:rounded-md">
                 <ul className="divide-y divide-gray-200">
-                  {jobCard.assays.map((assay: any) => (
+                  {jobCard.assays.map((assay: any, index: number) => (
                     <li key={assay.id}>
                       <Link
                         href={`/job-cards/large-scale/${id}/assays/${assay.id}`}
@@ -626,20 +645,26 @@ function LargeScaleJobCardDetailPage() {
                           <div className="px-4 py-4 sm:px-6">
                             <div className="flex items-center justify-between">
                               <p className="text-sm font-medium text-indigo-600 truncate">
-                                Certificate #{assay.certificateNumber}
+                                Assay #{index + 1} - {assay.method}
                               </p>
                               <div className="ml-2 flex-shrink-0 flex">
-                                <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                  Gold: {assay.goldContent}% | Silver:{" "}
-                                  {assay.silverContent}%
+                                <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                  {assay.pieces} piece
+                                  {assay.pieces !== 1 ? "s" : ""}
                                 </p>
                               </div>
                             </div>
                             <div className="mt-2 sm:flex sm:justify-between">
                               <div className="sm:flex">
                                 <p className="flex items-center text-sm text-gray-500">
-                                  Assay Date:{" "}
-                                  {formatDate(new Date(assay.assayDate))}
+                                  Total Value: ₵
+                                  {assay.totalValueGhs?.toLocaleString()}
+                                </p>
+                              </div>
+                              <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                                <p>
+                                  Date:{" "}
+                                  {formatDate(new Date(assay.dateOfAnalysis))}
                                 </p>
                               </div>
                             </div>
@@ -649,23 +674,6 @@ function LargeScaleJobCardDetailPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Valuation
-                </h3>
-                <Link
-                  href={`/job-cards/large-scale/${id}/assays/new`}
-                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                  Perform Valuation
-                </Link>
-              </div>
-              <div className="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center text-gray-500">
-                Valuation has not been performed for this job card yet.
               </div>
             </div>
           )}
