@@ -103,6 +103,9 @@ function NewLargeScaleAssayPage() {
   const [metaLoading, setMetaLoading] = useState(true);
   const [missingTodayCommodity, setMissingTodayCommodity] = useState(false);
   const [missingTodayExchange, setMissingTodayExchange] = useState(false);
+  const [currentWeekExchangeEntry, setCurrentWeekExchangeEntry] = useState<
+    any | null
+  >(null);
 
   const [form, setForm] = useState({
     method: "X_RAY" as AssayMethod,
@@ -263,11 +266,22 @@ function NewLargeScaleAssayPage() {
               )
             : null; // No approved rate for current week
 
+        // Fallback to most recent approved exchange rate for display purposes
+        const fallbackExchangeEntry =
+          exchangeEntry ||
+          latestByDate(
+            (exchangePrices || []).filter(
+              (p: any) => p.type === "EXCHANGE" && p.status === "APPROVED"
+            )
+          );
+
         console.log("Selected exchange entry:", exchangeEntry);
+        console.log("Fallback exchange entry:", fallbackExchangeEntry);
         console.log("Current week start:", currentWeekStart);
 
         setCommodityPrices(commodityPrices);
-        setWeeklyExchange(exchangeEntry);
+        setWeeklyExchange(fallbackExchangeEntry);
+        setCurrentWeekExchangeEntry(exchangeEntry);
 
         // Set missing flags - check if we have prices for all commodities in the job card
         const hasAllCommodityPrices =
@@ -277,7 +291,7 @@ function NewLargeScaleAssayPage() {
             )
           ) || false;
         setMissingTodayCommodity(!hasAllCommodityPrices);
-        setMissingTodayExchange(!exchangeEntry);
+        setMissingTodayExchange(!currentWeekExchangeEntry); // Updated to use current week logic
       } catch (error) {
         console.error("Error fetching meta data:", error);
       } finally {
@@ -414,7 +428,7 @@ function NewLargeScaleAssayPage() {
     ) || 0) * totalNetWeightOzDisplay;
   const displayGhsValue =
     jobCard?.commodities?.reduce((sum, com) => sum + (com.valueGhs || 0), 0) ||
-    displayUsdValue * (Number(weeklyExchange?.value) || 0);
+    displayUsdValue * (Number(currentWeekExchangeEntry?.price) || 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -453,8 +467,8 @@ function NewLargeScaleAssayPage() {
         return;
       }
 
-      // Block saving if weekly exchange rate is missing - this ensures data integrity
-      if (missingTodayExchange) {
+      // Block saving if weekly exchange rate for current week is not approved
+      if (!currentWeekExchangeEntry) {
         const msg = `Cannot create assay: No approved exchange rate available for the current week. Please contact a super admin to approve the pending exchange rate before proceeding.`;
         setError(msg);
         toast.dismiss("assay-save");
@@ -471,7 +485,7 @@ function NewLargeScaleAssayPage() {
         securitySealNo: form.securitySealNo,
         goldbodSealNo: form.goldbodSealNo,
         customsSealNo: form.customsSealNo,
-        exchangeRate: Number(weeklyExchange?.value) || null,
+        exchangeRate: Number(currentWeekExchangeEntry?.price) || null,
         commodityPrice:
           Number(
             commodityPrices.find(
@@ -499,7 +513,7 @@ function NewLargeScaleAssayPage() {
             totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(4)),
             valueUsd: Number(displayUsdValue.toFixed(4)),
             valueGhs: Number(displayGhsValue.toFixed(4)),
-            weeklyExchange: Number(weeklyExchange?.value) || null,
+            weeklyExchange: Number(currentWeekExchangeEntry?.price) || null,
             dailyPrice:
               Number(
                 commodityPrices.find(
@@ -569,7 +583,7 @@ function NewLargeScaleAssayPage() {
 
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">
-          New Assay - Large Scale Job Card
+          New Assay - Large Scale
         </h1>
         <p className="mt-2 text-sm text-gray-600">
           Create a new assay valuation for large scale job card:{" "}
@@ -657,23 +671,27 @@ function NewLargeScaleAssayPage() {
                 </div>
                 <div
                   className={`font-medium ${
-                    missingTodayExchange ? "text-red-600" : "text-gray-900"
+                    !currentWeekExchangeEntry ? "text-red-600" : "text-gray-900"
                   }`}
                 >
-                  {missingTodayExchange ? (
+                  {!currentWeekExchangeEntry ? (
                     <span className="flex items-center">
                       <span className="mr-1">❌</span>
                       Not Approved
                     </span>
-                  ) : weeklyExchange?.value ? (
-                    formatExchangeRate(weeklyExchange.value)
+                  ) : currentWeekExchangeEntry?.price ? (
+                    <div>
+                      <div>
+                        {formatExchangeRate(currentWeekExchangeEntry.price)}
+                      </div>
+                    </div>
                   ) : (
                     <span className="text-gray-400">No Rate</span>
                   )}
                 </div>
-                {missingTodayExchange && (
+                {!currentWeekExchangeEntry && (
                   <div className="text-xs text-red-500 mt-1">
-                    Contact super admin to approve pending rate
+                    Contact super admin to approve current week's rate
                   </div>
                 )}
               </div>
