@@ -9,6 +9,7 @@ import {
   X,
   Settings,
   ChevronRight,
+  ChevronDown,
   FileText,
   Award,
   CreditCard,
@@ -30,6 +31,32 @@ interface NavItemProps {
   href: string;
   isActive?: boolean;
   onClick?: () => void;
+}
+
+interface NavItemWithSubmenuProps {
+  icon: React.ReactNode;
+  label: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  isActive?: boolean;
+  subItems: Array<{
+    label: string;
+    href: string;
+    isActive?: boolean;
+  }>;
+  onSubItemClick?: () => void;
+}
+
+interface NavigationItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+  hasSubmenu?: boolean;
+  subItems?: Array<{
+    label: string;
+    href: string;
+  }>;
 }
 
 const NavItem: React.FC<NavItemProps> = ({
@@ -69,12 +96,73 @@ const NavItem: React.FC<NavItemProps> = ({
   );
 };
 
+const NavItemWithSubmenu: React.FC<NavItemWithSubmenuProps> = ({
+  icon,
+  label,
+  isExpanded,
+  onToggle,
+  isActive,
+  subItems,
+  onSubItemClick,
+}) => {
+  return (
+    <div>
+      <button
+        onClick={onToggle}
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group w-full text-left",
+          isActive
+            ? "bg-[#2e7030] text-white border-l-4 border-amber-500 shadow-md"
+            : "text-white hover:text-white/90 hover:bg-[#2e7030]"
+        )}
+      >
+        <div
+          className={cn(
+            "transition-transform duration-200",
+            isActive ? "text-amber-400" : "text-white/90 group-hover:text-white"
+          )}
+        >
+          {icon}
+        </div>
+        <span className="font-medium">{label}</span>
+        <ChevronDown
+          className={cn(
+            "ml-auto h-4 w-4 transition-transform duration-200",
+            isExpanded && "rotate-180",
+            isActive ? "text-amber-400" : "text-white/80 group-hover:text-white"
+          )}
+        />
+      </button>
+      {isExpanded && (
+        <div className="ml-6 mt-1 space-y-1">
+          {subItems.map((subItem, index) => (
+            <Link
+              key={index}
+              href={subItem.href}
+              onClick={onSubItemClick}
+              className={cn(
+                "flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 group",
+                subItem.isActive
+                  ? "bg-[#2e7030] text-white border-l-4 border-amber-500 shadow-md"
+                  : "text-white/80 hover:text-white hover:bg-[#2e7030]"
+              )}
+            >
+              <span className="font-medium">{subItem.label}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
   const pathname = usePathname();
   const { user } = useAuth();
 
-  const navigation = [
+  const navigation: NavigationItem[] = [
     {
       id: "dashboard",
       label: "Dashboard",
@@ -86,6 +174,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       label: "Job Cards",
       href: "/job-cards",
       icon: <FileText className="h-5 w-5" />,
+      hasSubmenu: true,
+      subItems: [
+        {
+          label: "Large Scale Operations",
+          href: "/job-cards/large-scale",
+        },
+        {
+          label: "Small Scale Operations",
+          href: "/job-cards",
+        },
+      ],
     },
     {
       id: "valuations",
@@ -141,6 +240,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const toggleMenuExpansion = (menuId: string) => {
+    setExpandedMenus((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(menuId)) {
+        newSet.delete(menuId);
+      } else {
+        newSet.add(menuId);
+      }
+      return newSet;
+    });
   };
 
   const handleNavClick = () => {
@@ -243,19 +354,50 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
               Main Menu
             </h2>
             <div className="space-y-1">
-              {filteredNavigation.map((item) => (
-                <NavItem
-                  key={item.id}
-                  icon={item.icon}
-                  label={item.label}
-                  href={item.href}
-                  isActive={
-                    pathname === item.href ||
-                    pathname?.startsWith(`${item.href}/`)
-                  }
-                  onClick={handleNavClick}
-                />
-              ))}
+              {filteredNavigation.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  pathname?.startsWith(`${item.href}/`);
+                const isExpanded = expandedMenus.has(item.id);
+
+                if (item.hasSubmenu && item.subItems) {
+                  // Check if any sub-item is active
+                  const hasActiveSubItem = item.subItems.some(
+                    (subItem) =>
+                      pathname === subItem.href ||
+                      pathname?.startsWith(`${subItem.href}/`)
+                  );
+
+                  return (
+                    <NavItemWithSubmenu
+                      key={item.id}
+                      icon={item.icon}
+                      label={item.label}
+                      isExpanded={isExpanded}
+                      onToggle={() => toggleMenuExpansion(item.id)}
+                      isActive={isActive || hasActiveSubItem}
+                      subItems={item.subItems.map((subItem) => ({
+                        ...subItem,
+                        isActive:
+                          pathname === subItem.href ||
+                          pathname?.startsWith(`${subItem.href}/`),
+                      }))}
+                      onSubItemClick={handleNavClick}
+                    />
+                  );
+                }
+
+                return (
+                  <NavItem
+                    key={item.id}
+                    icon={item.icon}
+                    label={item.label}
+                    href={item.href}
+                    isActive={isActive}
+                    onClick={handleNavClick}
+                  />
+                );
+              })}
             </div>
           </div>
         </nav>

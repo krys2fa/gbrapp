@@ -12,14 +12,15 @@ datasource db {
 }
 
 model Commodity {
-  id           String        @id @default(uuid())
-  name         String        @unique
-  symbol       String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  prices       DailyPrice[]
-  weeklyPrices WeeklyPrice[]
-  JobCard      JobCard[]
+  id                 String               @id @default(uuid())
+  name               String               @unique
+  symbol             String
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  prices             DailyPrice[]
+  weeklyPrices       WeeklyPrice[]
+  JobCard            JobCard[]
+  largeScaleJobCards LargeScaleJobCardCommodity[]
 }
 
 model Exchange {
@@ -40,6 +41,7 @@ model DailyPrice {
   exchangeId  String? // Only for type EXCHANGE
   exchange    Exchange?      @relation(fields: [exchangeId], references: [id])
   price       Float
+  date        DateTime       // Date of the price
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 }
@@ -101,7 +103,6 @@ enum Role {
 
 enum SealType {
   CUSTOMS_SEAL
-  PMMC_SEAL
   OTHER_SEAL
   SECURITY_SEAL
   GOLDBOD_SEAL
@@ -176,42 +177,45 @@ model JobCard {
 }
 
 model CustomsOfficer {
-  id          String    @id @default(uuid())
-  name        String
-  badgeNumber String    @unique
-  email       String?   @unique
-  phone       String?
-  jobCards    JobCard[]
-  userId      String?   @unique
-  user        User?     @relation(fields: [userId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                String             @id @default(uuid())
+  name              String
+  badgeNumber       String             @unique
+  email             String?            @unique
+  phone             String?
+  jobCards          JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+  userId            String?            @unique
+  user              User?              @relation(fields: [userId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 model NACOBOfficer {
-  id          String    @id @default(uuid())
-  name        String
-  badgeNumber String    @unique
-  email       String?   @unique
-  phone       String?
-  jobCards    JobCard[]
-  userId      String?   @unique
-  user        User?     @relation(fields: [userId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                String             @id @default(uuid())
+  name              String
+  badgeNumber       String             @unique
+  email             String?            @unique
+  phone             String?
+  jobCards          JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+  userId            String?            @unique
+  user              User?              @relation(fields: [userId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 model NationalSecurityOfficer {
-  id          String    @id @default(uuid())
-  name        String
-  badgeNumber String    @unique
-  email       String?   @unique
-  phone       String?
-  jobCards    JobCard[]
-  userId      String?   @unique
-  user        User?     @relation(fields: [userId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                String             @id @default(uuid())
+  name              String
+  badgeNumber       String             @unique
+  email             String?            @unique
+  phone             String?
+  jobCards          JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+  userId            String?            @unique
+  user              User?              @relation(fields: [userId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 model Seal {
@@ -366,6 +370,7 @@ model Exporter {
   licenseNumber     String?
   authorizedSignatory String?
   jobCards          JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 }
@@ -449,17 +454,18 @@ model LevyType {
 }
 
 model AssayOfficer {
-  id          String    @id @default(uuid())
-  name        String
-  badgeNumber String    @unique
-  email       String?   @unique
-  phone       String?
-  jobCards    JobCard[]
-  assays      Assay[]
-  userId      String?   @unique
-  user        User?     @relation(fields: [userId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                String             @id @default(uuid())
+  name              String
+  badgeNumber       String             @unique
+  email             String?            @unique
+  phone             String?
+  jobCards          JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+  assays            Assay[]
+  userId            String?            @unique
+  user              User?              @relation(fields: [userId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 model AssayMeasurement {
@@ -476,17 +482,18 @@ model AssayMeasurement {
 }
 
 model TechnicalDirector {
-  id          String    @id @default(uuid())
-  name        String
-  badgeNumber String    @unique
-  email       String?   @unique
-  phone       String?
-  jobCards    JobCard[]
-  assays      Assay[]
-  userId      String?   @unique
-  user        User?     @relation(fields: [userId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                String             @id @default(uuid())
+  name              String
+  badgeNumber       String             @unique
+  email             String?            @unique
+  phone             String?
+  jobCards          JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+  assays            Assay[]
+  userId            String?            @unique
+  user              User?              @relation(fields: [userId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 model User {
@@ -527,4 +534,77 @@ model AuditTrail {
   userAgent  String?
   timestamp  DateTime   @default(now())
   metadata   String? // Additional JSON metadata if needed
+}
+
+model LargeScaleJobCard {
+  id                        String                   @id @default(uuid())
+  referenceNumber           String                   @unique
+  receivedDate              DateTime
+  exporterId                String
+  exporter                  Exporter                 @relation(fields: [exporterId], references: [id])
+  unitOfMeasure             String?
+  status                    String                   @default("pending")
+  notes                     String?
+
+  // Location Information
+  destinationCountry        String?
+  sourceOfGold              String?                  @default("Ghana")
+  numberOfBoxes             Int?
+
+  // Officer Assignments
+  customsOfficerId          String?
+  customsOfficer            CustomsOfficer?          @relation(fields: [customsOfficerId], references: [id])
+  assayOfficerId            String?
+  assayOfficer              AssayOfficer?            @relation(fields: [assayOfficerId], references: [id])
+  technicalDirectorId       String?
+  technicalDirector         TechnicalDirector?       @relation(fields: [technicalDirectorId], references: [id])
+  nacobOfficerId            String?
+  nacobOfficer              NACOBOfficer?            @relation(fields: [nacobOfficerId], references: [id])
+  nationalSecurityOfficerId String?
+  nationalSecurityOfficer   NationalSecurityOfficer? @relation(fields: [nationalSecurityOfficerId], references: [id])
+
+  // Consignee Information
+  consigneeAddress          String?
+  consigneeTelephone        String?
+  consigneeMobile           String?
+  consigneeEmail            String?
+
+  // Exporter Details
+  deliveryLocation          String?
+  exporterTelephone         String?
+  exporterEmail             String?
+  exporterWebsite           String?
+  exporterLicenseNumber     String?
+
+  // Notified Party Information
+  notifiedPartyName         String?
+  notifiedPartyAddress      String?
+  notifiedPartyEmail        String?
+  notifiedPartyContactPerson String?
+  notifiedPartyTelephone    String?
+  notifiedPartyMobile       String?
+
+  // Relations
+  commodities               LargeScaleJobCardCommodity[]
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+}
+
+model LargeScaleJobCardCommodity {
+  id                String             @id @default(uuid())
+  jobCardId         String
+  jobCard           LargeScaleJobCard  @relation(fields: [jobCardId], references: [id], onDelete: Cascade)
+  commodityId       String
+  commodity         Commodity          @relation(fields: [commodityId], references: [id])
+  grossWeight       Float?
+  netWeight         Float?
+  fineness          Float? // Percentage
+  valueGhs          Float?
+  valueUsd          Float?
+  pricePerOunce     Float?
+  numberOfOunces    Float?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([jobCardId, commodityId])
 }
