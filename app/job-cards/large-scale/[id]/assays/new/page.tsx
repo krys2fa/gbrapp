@@ -98,7 +98,7 @@ function NewLargeScaleAssayPage() {
   >([]);
 
   const [jobCard, setJobCard] = useState<LargeScaleJobCard | null>(null);
-  const [dailyPrice, setDailyPrice] = useState<any | null>(null);
+  const [commodityPrices, setCommodityPrices] = useState<any[]>([]);
   const [weeklyExchange, setWeeklyExchange] = useState<any | null>(null);
   const [metaLoading, setMetaLoading] = useState(true);
   const [missingTodayCommodity, setMissingTodayCommodity] = useState(false);
@@ -176,14 +176,18 @@ function NewLargeScaleAssayPage() {
         // Fetch commodity prices - for large scale, we need to get prices for all commodities in the job card
         let commodityPrices: any[] = [];
         if (jobBody?.commodities && jobBody.commodities.length > 0) {
-          // Get prices for the first commodity as a reference
-          const firstCommodityId = jobBody.commodities[0].commodity.id;
-          const cpRes = await fetch(
-            `/api/daily-prices?type=COMMODITY&itemId=${firstCommodityId}`
+          // Get prices for all commodities in the job card
+          const commodityIds = jobBody.commodities.map(
+            (c: any) => c.commodity.id
           );
-          if (cpRes && cpRes.ok) {
-            commodityPrices = await cpRes.json().catch(() => []);
-          }
+          const pricePromises = commodityIds.map((commodityId: string) =>
+            fetch(`/api/daily-prices?type=COMMODITY&itemId=${commodityId}`)
+              .then((res) => (res.ok ? res.json().catch(() => []) : []))
+              .catch(() => [])
+          );
+
+          const priceResults = await Promise.all(pricePromises);
+          commodityPrices = priceResults.flat(); // Flatten all results into one array
         } else {
           // fallback: fetch all commodity prices
           const cpRes = await fetch(`/api/daily-prices?type=COMMODITY`);
@@ -262,11 +266,17 @@ function NewLargeScaleAssayPage() {
         console.log("Selected exchange entry:", exchangeEntry);
         console.log("Current week start:", currentWeekStart);
 
-        setDailyPrice(commodityEntry);
+        setCommodityPrices(commodityPrices);
         setWeeklyExchange(exchangeEntry);
 
-        // Set missing flags
-        setMissingTodayCommodity(!commodityEntry);
+        // Set missing flags - check if we have prices for all commodities in the job card
+        const hasAllCommodityPrices =
+          jobBody?.commodities?.every((commodityItem) =>
+            commodityPrices.some(
+              (price) => price.commodityId === commodityItem.commodity.id
+            )
+          ) || false;
+        setMissingTodayCommodity(!hasAllCommodityPrices);
         setMissingTodayExchange(!exchangeEntry);
       } catch (error) {
         console.error("Error fetching meta data:", error);
@@ -397,7 +407,11 @@ function NewLargeScaleAssayPage() {
     ) || totalNetWeightOzDisplay;
   const displayUsdValue =
     jobCard?.commodities?.reduce((sum, com) => sum + (com.valueUsd || 0), 0) ||
-    (Number(dailyPrice?.value) || 0) * totalNetWeightOzDisplay;
+    (Number(
+      commodityPrices.find(
+        (p) => p.commodityId === jobCard?.commodities?.[0]?.commodity?.id
+      )?.price
+    ) || 0) * totalNetWeightOzDisplay;
   const displayGhsValue =
     jobCard?.commodities?.reduce((sum, com) => sum + (com.valueGhs || 0), 0) ||
     displayUsdValue * (Number(weeklyExchange?.value) || 0);
@@ -458,8 +472,18 @@ function NewLargeScaleAssayPage() {
         goldbodSealNo: form.goldbodSealNo,
         customsSealNo: form.customsSealNo,
         exchangeRate: Number(weeklyExchange?.value) || null,
-        commodityPrice: Number(dailyPrice?.value) || null,
-        pricePerOz: Number(dailyPrice?.value) || null,
+        commodityPrice:
+          Number(
+            commodityPrices.find(
+              (p) => p.commodityId === jobCard?.commodities?.[0]?.commodity?.id
+            )?.price
+          ) || null,
+        pricePerOz:
+          Number(
+            commodityPrices.find(
+              (p) => p.commodityId === jobCard?.commodities?.[0]?.commodity?.id
+            )?.price
+          ) || null,
         measurements: rows.map((r, i) => ({
           piece: i + 1,
           grossWeight: r.grossWeight || 0,
@@ -476,7 +500,13 @@ function NewLargeScaleAssayPage() {
             valueUsd: Number(displayUsdValue.toFixed(4)),
             valueGhs: Number(displayGhsValue.toFixed(4)),
             weeklyExchange: Number(weeklyExchange?.value) || null,
-            dailyPrice: Number(dailyPrice?.value) || null,
+            dailyPrice:
+              Number(
+                commodityPrices.find(
+                  (p) =>
+                    p.commodityId === jobCard?.commodities?.[0]?.commodity?.id
+                )?.price
+              ) || null,
           },
         }),
         shipmentTypeId: form.shipmentTypeId || null,
@@ -584,12 +614,41 @@ function NewLargeScaleAssayPage() {
               </div>
               <div>
                 <div className="text-xs text-gray-500">
-                  Daily Commodity Price (today)
+                  Daily Commodity Prices (today)
                 </div>
                 <div className="font-medium text-gray-900">
-                  {dailyPrice?.value != null
-                    ? Number(dailyPrice.value).toFixed(2)
-                    : "-"}
+                  {jobCard?.commodities && jobCard.commodities.length > 0 ? (
+                    <div className="space-y-1">
+                      {jobCard.commodities.map(
+                        (commodityItem: any, index: number) => {
+                          // Find the latest price for this commodity
+                          const commodityPrice = commodityPrices
+                            .filter(
+                              (p: any) =>
+                                p.commodityId === commodityItem.commodity.id
+                            )
+                            .sort(
+                              (a: any, b: any) =>
+                                new Date(b.createdAt).getTime() -
+                                new Date(a.createdAt).getTime()
+                            )[0];
+
+                          return (
+                            <div key={commodityItem.id} className="text-xs">
+                              <span className="font-medium">
+                                {commodityItem.commodity.name}:
+                              </span>{" "}
+                              {commodityPrice?.price != null
+                                ? `$${Number(commodityPrice.price).toFixed(2)}`
+                                : "-"}
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  ) : (
+                    "-"
+                  )}
                 </div>
               </div>
               <div>

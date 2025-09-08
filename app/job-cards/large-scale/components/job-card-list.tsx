@@ -73,10 +73,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
       queryParams.append("page", currentPage.toString());
       queryParams.append("limit", itemsPerPage.toString());
 
-      // Add type filter for large scale
-      queryParams.append("type", "large_scale");
-
-      const response = await fetch(`/api/job-cards?${queryParams.toString()}`);
+      const response = await fetch(`/api/large-scale-job-cards?${queryParams.toString()}`);
 
       if (response.ok) {
         const data = await response.json();
