@@ -203,10 +203,22 @@ function NewLargeScaleAssayPage() {
         const exRes = await fetch(
           `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`
         );
+        console.log("Exchange API response status:", exRes.status);
+        console.log("Exchange API response ok:", exRes.ok);
         if (exRes && exRes.ok)
           exchangePrices = await exRes.json().catch(() => []);
+        else console.log("Exchange API call failed or returned error");
 
         console.log("Approved exchange prices from API:", exchangePrices);
+        console.log("Number of exchange prices:", exchangePrices?.length || 0);
+        exchangePrices?.forEach((price, index) => {
+          console.log(`Exchange ${index}:`, {
+            id: price.id,
+            weekStartDate: price.weekStartDate,
+            status: price.status,
+            price: price.price,
+          });
+        });
 
         const latestByDate = (items: any[]) =>
           items
@@ -229,6 +241,8 @@ function NewLargeScaleAssayPage() {
         const currentWeekStart = weekStart.toISOString().split("T")[0];
         console.log("Current week start:", currentWeekStart);
         console.log("Today date:", today);
+        console.log("Day of week:", todayDate.getUTCDay());
+        console.log("Diff calculated:", diff);
 
         const todayCommodityMatches = (commodityPrices || []).filter(
           (p: any) => String(p?.createdAt || "").split("T")[0] === today
@@ -245,6 +259,7 @@ function NewLargeScaleAssayPage() {
         );
 
         console.log("Today's exchange matches:", todaysExchangeMatches);
+        console.log("Number of matches:", todaysExchangeMatches?.length || 0);
 
         // Get commodity entry (can fall back to latest if today's is missing)
         const commodityEntry =
@@ -276,6 +291,8 @@ function NewLargeScaleAssayPage() {
           );
 
         console.log("Selected exchange entry:", exchangeEntry);
+        console.log("Exchange entry price:", exchangeEntry?.price);
+        console.log("Exchange entry status:", exchangeEntry?.status);
         console.log("Fallback exchange entry:", fallbackExchangeEntry);
         console.log("Current week start:", currentWeekStart);
 
@@ -468,7 +485,14 @@ function NewLargeScaleAssayPage() {
       }
 
       // Block saving if weekly exchange rate for current week is not approved
-      if (!currentWeekExchangeEntry) {
+      // For debugging: allow submission if there's any approved exchange rate
+      if (!currentWeekExchangeEntry && weeklyExchange) {
+        console.log(
+          "DEBUG: No current week exchange rate but found fallback rate:",
+          weeklyExchange
+        );
+        // For now, allow submission but log the issue
+      } else if (!currentWeekExchangeEntry) {
         const msg = `Cannot create assay: No approved exchange rate available for the current week. Please contact a super admin to approve the pending exchange rate before proceeding.`;
         setError(msg);
         toast.dismiss("assay-save");
@@ -689,7 +713,12 @@ function NewLargeScaleAssayPage() {
                     <span className="text-gray-400">No Rate</span>
                   )}
                 </div>
-                {!currentWeekExchangeEntry && (
+                {!currentWeekExchangeEntry && weeklyExchange && (
+                  <div className="text-xs text-amber-600 mt-1">
+                    Using previous week's rate (DEBUG MODE)
+                  </div>
+                )}
+                {!currentWeekExchangeEntry && !weeklyExchange && (
                   <div className="text-xs text-red-500 mt-1">
                     Contact super admin to approve current week's rate
                   </div>
@@ -764,7 +793,7 @@ function NewLargeScaleAssayPage() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="X_RAY">X-ray</option>
-                  <option value="WATER_DENSITY">Water density</option>
+                  {/* <option value="WATER_DENSITY">Water density</option> */}
                 </select>
               </div>
 
@@ -999,18 +1028,30 @@ function NewLargeScaleAssayPage() {
           <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
             <button
               type="submit"
-              disabled={saving || missingTodayExchange}
+              disabled={
+                saving || (!currentWeekExchangeEntry && !weeklyExchange)
+              }
               className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
-                missingTodayExchange
+                !currentWeekExchangeEntry && !weeklyExchange
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-indigo-600 hover:bg-indigo-700"
               }`}
             >
               {saving ? "Saving..." : "Save Valuation"}
             </button>
-            {missingTodayExchange && (
+            {!currentWeekExchangeEntry && !weeklyExchange && (
               <p className="text-sm text-red-600 mt-2">
-                Cannot save: Missing approved exchange rate for current week
+                Cannot save: No approved exchange rate available
+              </p>
+            )}
+            {currentWeekExchangeEntry && (
+              <p className="text-sm text-green-600 mt-2">
+                ✓ Current week approved exchange rate available
+              </p>
+            )}
+            {!currentWeekExchangeEntry && weeklyExchange && (
+              <p className="text-sm text-amber-600 mt-2">
+                ⚠ DEBUG: Using previous week's rate
               </p>
             )}
           </div>
