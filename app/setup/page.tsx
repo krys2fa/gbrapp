@@ -80,6 +80,13 @@ const setupOptions = [
     href: "/setup/weekly-exchange",
     color: "bg-indigo-600",
   },
+  {
+    label: "Pending Approvals",
+    description: "Review and approve exchange rates.",
+    icon: <UserCheck2Icon className="h-6 w-6" />,
+    href: "/setup/pending-approvals",
+    color: "bg-orange-600",
+  },
 ];
 
 const SetupPage = () => {

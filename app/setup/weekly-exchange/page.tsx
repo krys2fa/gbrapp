@@ -42,6 +42,11 @@ export default function WeeklyExchangePage() {
   const [viewingPrice, setViewingPrice] = useState<any>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingPrice, setDeletingPrice] = useState<any>(null);
+  const [approveModalOpen, setApproveModalOpen] = useState(false);
+  const [approvingPrice, setApprovingPrice] = useState<any>(null);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectingPrice, setRejectingPrice] = useState<any>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   // Set default week to current week on component mount
   useEffect(() => {
@@ -166,6 +171,92 @@ export default function WeeklyExchangePage() {
     }
   };
 
+  const handleApproveClick = (rate: any) => {
+    setApprovingPrice(rate);
+    setApproveModalOpen(true);
+  };
+
+  const handleRejectClick = (rate: any) => {
+    setRejectingPrice(rate);
+    setRejectModalOpen(true);
+    setRejectionReason("");
+  };
+
+  const handleApproveConfirm = async () => {
+    if (!approvingPrice) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("auth-token");
+      const res = await fetch(
+        `/api/weekly-prices/${approvingPrice.id}/approve`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: "approve" }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to approve rate");
+      toast.success(
+        `Rate for ${
+          approvingPrice.exchange?.name || "exchange"
+        } approved successfully!`
+      );
+      setApproveModalOpen(false);
+      setApprovingPrice(null);
+      // Trigger reload
+      setFilterTrigger((prev: number) => prev + 1);
+    } catch (err: any) {
+      toast.error(err.message || "Error approving rate");
+      setApproveModalOpen(false);
+      setApprovingPrice(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectConfirm = async () => {
+    if (!rejectingPrice || !rejectionReason.trim()) {
+      toast.error("Please provide a rejection reason");
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("auth-token");
+      const res = await fetch(
+        `/api/weekly-prices/${rejectingPrice.id}/approve`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: "reject", reason: rejectionReason }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to reject rate");
+      toast.success(
+        `Rate for ${
+          rejectingPrice.exchange?.name || "exchange"
+        } rejected successfully!`
+      );
+      setRejectModalOpen(false);
+      setRejectingPrice(null);
+      setRejectionReason("");
+      // Trigger reload
+      setFilterTrigger((prev: number) => prev + 1);
+    } catch (err: any) {
+      toast.error(err.message || "Error rejecting rate");
+      setRejectModalOpen(false);
+      setRejectingPrice(null);
+      setRejectionReason("");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleView = (priceObj: any) => {
     setViewingPrice(priceObj);
     setViewModalOpen(true);
@@ -270,12 +361,12 @@ export default function WeeklyExchangePage() {
           {/* Right-side: recent rates (last 3) */}
           <div className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6">
             <h2 className="text-lg font-semibold mb-4">Recent Rates</h2>
-            {prices.length === 0 ? (
+            {!prices || prices.length === 0 ? (
               <p className="text-sm text-gray-500">No recent rates.</p>
             ) : (
               <ul className="space-y-3">
-                {prices
-                  .slice()
+                {(prices || [])
+                  ?.slice()
                   .sort(
                     (a, b) =>
                       new Date(b.createdAt).getTime() -
@@ -386,6 +477,9 @@ export default function WeeklyExchangePage() {
                         Rate
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
                         Created
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
@@ -394,7 +488,7 @@ export default function WeeklyExchangePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {prices
+                    {(prices || [])
                       .slice((page - 1) * pageSize, page * pageSize)
                       .map((rate: any) => (
                         <tr key={rate.id} className="hover:bg-gray-50">
@@ -410,6 +504,19 @@ export default function WeeklyExchangePage() {
                           <td className="px-4 py-2 text-gray-900 font-semibold border border-gray-200">
                             {formatExchangeRate(rate.price)}
                           </td>
+                          <td className="px-4 py-2 border border-gray-200">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                rate.status === "APPROVED"
+                                  ? "bg-green-100 text-green-800"
+                                  : rate.status === "REJECTED"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {rate.status || "PENDING"}
+                            </span>
+                          </td>
                           <td className="px-4 py-2 text-gray-700 border border-gray-200">
                             {new Date(rate.createdAt).toLocaleDateString()}
                           </td>
@@ -420,6 +527,22 @@ export default function WeeklyExchangePage() {
                             >
                               <EyeIcon className="h-4 w-4 mr-1" /> View
                             </button>
+                            {rate.status === "PENDING" && (
+                              <>
+                                <button
+                                  className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs flex items-center"
+                                  onClick={() => handleApproveClick(rate)}
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
+                                  onClick={() => handleRejectClick(rate)}
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            )}
                             <button
                               className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
                               onClick={() => handleEdit(rate)}
@@ -438,7 +561,7 @@ export default function WeeklyExchangePage() {
                   </tbody>
                 </table>
               </div>
-              {prices.length === 0 && (
+              {(!prices || prices.length === 0) && (
                 <div className="text-center py-8">
                   <p className="text-sm text-gray-500">
                     No weekly rates found.
@@ -455,9 +578,10 @@ export default function WeeklyExchangePage() {
                       </span>{" "}
                       to{" "}
                       <span className="font-medium">
-                        {Math.min(page * pageSize, prices.length)}
+                        {Math.min(page * pageSize, prices?.length || 0)}
                       </span>{" "}
-                      of <span className="font-medium">{prices.length}</span>{" "}
+                      of{" "}
+                      <span className="font-medium">{prices?.length || 0}</span>{" "}
                       results
                     </p>
                   </div>
@@ -481,7 +605,7 @@ export default function WeeklyExchangePage() {
                         {
                           length: Math.max(
                             1,
-                            Math.ceil(prices.length / pageSize)
+                            Math.ceil((prices?.length || 0) / pageSize)
                           ),
                         },
                         (_, i) => i + 1
@@ -502,14 +626,16 @@ export default function WeeklyExchangePage() {
                         onClick={() =>
                           setPage((prev) =>
                             Math.min(
-                              Math.ceil(prices.length / pageSize),
+                              Math.ceil((prices?.length || 0) / pageSize),
                               prev + 1
                             )
                           )
                         }
-                        disabled={page >= Math.ceil(prices.length / pageSize)}
+                        disabled={
+                          page >= Math.ceil((prices?.length || 0) / pageSize)
+                        }
                         className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                          page >= Math.ceil(prices.length / pageSize)
+                          page >= Math.ceil((prices?.length || 0) / pageSize)
                             ? "text-gray-300 cursor-not-allowed"
                             : "text-gray-500 hover:bg-gray-50"
                         }`}
@@ -608,6 +734,142 @@ export default function WeeklyExchangePage() {
                 disabled={loading}
               >
                 {loading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approve Confirmation Modal */}
+      {approveModalOpen && approvingPrice && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Approve Exchange Rate
+            </h3>
+            <div className="space-y-3 mb-6">
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Exchange
+                </label>
+                <p className="text-sm text-gray-900">
+                  {approvingPrice.exchange?.name} (
+                  {approvingPrice.exchange?.symbol})
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Rate
+                </label>
+                <p className="text-sm text-gray-900 font-semibold">
+                  {formatExchangeRate(approvingPrice.price)}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Week Period
+                </label>
+                <p className="text-sm text-gray-900">
+                  {formatWeekDisplay(new Date(approvingPrice.weekStartDate))}
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to approve this exchange rate? Once
+              approved, it will be available for use in assays and invoicing.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setApproveModalOpen(false);
+                  setApprovingPrice(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApproveConfirm}
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700"
+                disabled={loading}
+              >
+                {loading ? "Approving..." : "Approve"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Confirmation Modal */}
+      {rejectModalOpen && rejectingPrice && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Reject Exchange Rate
+            </h3>
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Exchange
+                </label>
+                <p className="text-sm text-gray-900">
+                  {rejectingPrice.exchange?.name} (
+                  {rejectingPrice.exchange?.symbol})
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Rate
+                </label>
+                <p className="text-sm text-gray-900 font-semibold">
+                  {formatExchangeRate(rejectingPrice.price)}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Week Period
+                </label>
+                <p className="text-sm text-gray-900">
+                  {formatWeekDisplay(new Date(rejectingPrice.weekStartDate))}
+                </p>
+              </div>
+            </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Rejection Reason *
+              </label>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Please provide a reason for rejecting this rate..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                rows={3}
+                required
+              />
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to reject this exchange rate? The submitter
+              will be notified of the rejection reason.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setRejectModalOpen(false);
+                  setRejectingPrice(null);
+                  setRejectionReason("");
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectConfirm}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+                disabled={loading || !rejectionReason.trim()}
+              >
+                {loading ? "Rejecting..." : "Reject"}
               </button>
             </div>
           </div>

@@ -14,7 +14,6 @@ export default function NewAssayPage() {
   const id = (params?.id as string) || "";
   const router = useRouter();
 
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [shipmentTypes, setShipmentTypes] = useState<
@@ -29,7 +28,6 @@ export default function NewAssayPage() {
   const [dailyPrice, setDailyPrice] = useState<any | null>(null);
   const [weeklyExchange, setWeeklyExchange] = useState<any | null>(null);
   const [metaLoading, setMetaLoading] = useState(true);
-  const [warning, setWarning] = useState("");
   const [missingTodayCommodity, setMissingTodayCommodity] = useState(false);
   const [missingTodayExchange, setMissingTodayExchange] = useState(false);
 
@@ -80,8 +78,6 @@ export default function NewAssayPage() {
         }
       } catch (e) {
         console.error(e);
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
@@ -131,13 +127,15 @@ export default function NewAssayPage() {
             commodityPrices = await cpRes.json().catch(() => []);
         }
 
-        // Fetch exchange prices (no itemId) and use latest/existing entries
+        // Fetch exchange prices (only approved ones for production)
         let exchangePrices: any[] = [];
-        const exRes = await fetch(`/api/weekly-prices?type=EXCHANGE`);
+        const exRes = await fetch(
+          `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`
+        );
         if (exRes && exRes.ok)
           exchangePrices = await exRes.json().catch(() => []);
 
-        console.log("Exchange prices from API:", exchangePrices);
+        console.log("Approved exchange prices from API:", exchangePrices);
 
         const latestByDate = (items: any[]) =>
           items
@@ -151,18 +149,30 @@ export default function NewAssayPage() {
         const today = date;
 
         // Calculate the start of the current week (Monday)
-        const currentWeekStart = getWeekStart(new Date(today)).toISOString().split("T")[0];
+        const currentWeekStart = getWeekStart(new Date(today))
+          .toISOString()
+          .split("T")[0];
         console.log("Current week start:", currentWeekStart);
+        console.log("Today date:", today);
+        console.log("Week calculation for:", new Date(today).toISOString());
 
         const todayCommodityMatches = (commodityPrices || []).filter(
           (p: any) => String(p?.createdAt || "").split("T")[0] === today
         );
         const todaysExchangeMatches = (exchangePrices || []).filter(
-          (p: any) => String(p?.weekStartDate || "").split("T")[0] === currentWeekStart
+          (p: any) => {
+            const priceWeekStart = String(p?.weekStartDate || "").split("T")[0];
+            const matches = priceWeekStart === currentWeekStart;
+            console.log(
+              `Exchange rate ${p?.id}: weekStart=${priceWeekStart}, currentWeek=${currentWeekStart}, matches=${matches}`
+            );
+            return matches;
+          }
         );
 
         console.log("Today's exchange matches:", todaysExchangeMatches);
 
+        // Get commodity entry (can fall back to latest if today's is missing)
         const commodityEntry =
           latestByDate(
             todayCommodityMatches.filter((p: any) => p.type === "COMMODITY")
@@ -172,16 +182,27 @@ export default function NewAssayPage() {
           ) ||
           null;
 
+        // Only use exchange rates from the current week - don't fall back to old rates
         const exchangeEntry =
-          latestByDate(
-            todaysExchangeMatches.filter((p: any) => p.type === "EXCHANGE")
-          ) ||
-          latestByDate(
-            (exchangePrices || []).filter((p: any) => p.type === "EXCHANGE")
-          ) ||
-          null;
+          todaysExchangeMatches.length > 0
+            ? latestByDate(
+                todaysExchangeMatches.filter(
+                  (p: any) => p.type === "EXCHANGE" && p.status === "APPROVED"
+                )
+              )
+            : null; // No approved rate for current week
 
         console.log("Selected exchange entry:", exchangeEntry);
+        console.log("Current week start:", currentWeekStart);
+        console.log(
+          "Available exchange rates:",
+          exchangePrices?.map((p) => ({
+            id: p.id,
+            weekStartDate: p.weekStartDate,
+            price: p.price,
+            status: p.status,
+          }))
+        );
 
         setMissingTodayCommodity(todayCommodityMatches.length === 0);
         setMissingTodayExchange(todaysExchangeMatches.length === 0);
@@ -190,10 +211,13 @@ export default function NewAssayPage() {
           value: commodityEntry ? Number(commodityEntry.price) : null,
         });
         setWeeklyExchange({
-          value: exchangeEntry ? Number(exchangeEntry.price) : 0, // Default fallback rate
+          value: exchangeEntry ? Number(exchangeEntry.price) : null, // null when no approved rate for current week
         });
 
-        console.log("Setting weekly exchange value:", exchangeEntry ? Number(exchangeEntry.price) : null);
+        console.log(
+          "Setting weekly exchange value:",
+          exchangeEntry ? Number(exchangeEntry.price) : null
+        );
       } catch (err) {
         console.error(err);
       } finally {
@@ -392,8 +416,7 @@ export default function NewAssayPage() {
       const metaMissing: string[] = [];
       if (!jobCard?.exporter?.name) metaMissing.push("exporter");
       if (dailyPrice?.value == null) metaMissing.push("daily price");
-      // Remove weekly exchange from required validation since we handle null case
-      // if (weeklyExchange?.value == null) metaMissing.push("weekly exchange");
+      // Weekly exchange is now required for data integrity - block saving if missing
       if (!(jobCard?.referenceNumber || jobCard?.reference))
         metaMissing.push("reference number");
       if (!jobCard?.buyerName) metaMissing.push("buyer");
@@ -433,10 +456,14 @@ export default function NewAssayPage() {
         return;
       }
 
-      // Allow saving even if weekly exchange is missing - we'll use null
+      // Block saving if weekly exchange rate is missing - this ensures data integrity
       if (missingTodayExchange) {
+        const msg = `Cannot create assay: No approved exchange rate available for the current week. Please contact a super admin to approve the pending exchange rate before proceeding.`;
+        setError(msg);
         toast.dismiss("assay-save");
-        toast("Warning: No weekly exchange rate set for current week. Assay will be saved with null exchange rate.", { icon: "⚠️" });
+        toast.error(msg);
+        setSaving(false);
+        return;
       }
 
       const newAssay = {
@@ -504,7 +531,8 @@ export default function NewAssayPage() {
       router.push(`/job-cards/${id}`);
     } catch (err: any) {
       console.error(err);
-      const errorMessage = err?.message || "An error occurred while saving the assay";
+      const errorMessage =
+        err?.message || "An error occurred while saving the assay";
       setError(errorMessage);
       toast.dismiss("assay-save");
       toast.error(errorMessage);
@@ -567,9 +595,27 @@ export default function NewAssayPage() {
                 <div className="text-xs text-gray-500">
                   Weekly Exchange Price (current week)
                 </div>
-                <div className="font-medium text-gray-900">
-                  {formatExchangeRate(weeklyExchange?.value)}
+                <div
+                  className={`font-medium ${
+                    missingTodayExchange ? "text-red-600" : "text-gray-900"
+                  }`}
+                >
+                  {missingTodayExchange ? (
+                    <span className="flex items-center">
+                      <span className="mr-1">❌</span>
+                      Not Approved
+                    </span>
+                  ) : weeklyExchange?.value ? (
+                    formatExchangeRate(weeklyExchange.value)
+                  ) : (
+                    <span className="text-gray-400">No Rate</span>
+                  )}
                 </div>
+                {missingTodayExchange && (
+                  <div className="text-xs text-red-500 mt-1">
+                    Contact super admin to approve pending rate
+                  </div>
+                )}
               </div>
 
               <div>
@@ -881,11 +927,20 @@ export default function NewAssayPage() {
           <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
             <button
               type="submit"
-              disabled={saving}
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              disabled={saving || missingTodayExchange}
+              className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
+                missingTodayExchange
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
             >
               {saving ? "Saving..." : "Save Valuation"}
             </button>
+            {missingTodayExchange && (
+              <p className="text-sm text-red-600 mt-2">
+                Cannot save: Missing approved exchange rate for current week
+              </p>
+            )}
           </div>
         </div>
       </form>

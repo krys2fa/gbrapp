@@ -1,18 +1,25 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { getWeekBounds } from "@/app/lib/week-utils";
+import { NotificationService } from "../../../lib/notification-service";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type");
   const itemId = searchParams.get("itemId");
   const week = searchParams.get("week"); // optional week parameter in YYYY-MM-DD format
+  const approvedOnly = searchParams.get("approvedOnly") === "true"; // New parameter
 
   const where: any = {};
   if (type) where.type = type;
   if (itemId) {
     if (type === "COMMODITY") where.commodityId = itemId;
     if (type === "EXCHANGE") where.exchangeId = itemId;
+  }
+
+  // Filter by approval status if requested
+  if (approvedOnly) {
+    where.status = "APPROVED";
   }
 
   // If week is specified, filter by that week
@@ -31,6 +38,20 @@ export async function GET(req: Request) {
       include: {
         commodity: true,
         exchange: true,
+        submittedByUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        approvedByUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
       },
       orderBy: { weekStartDate: "desc" },
     });
@@ -56,6 +77,10 @@ export async function POST(req: Request) {
       );
     }
 
+    // Get current user from headers (assuming JWT token contains user info)
+    // For now, we'll use a placeholder - this should be replaced with proper auth
+    const submittedBy = req.headers.get("x-user-id") || "system";
+
     // If weekStartDate is not provided, use current week
     let startDate: Date;
     if (weekStartDate) {
@@ -72,6 +97,9 @@ export async function POST(req: Request) {
       price,
       weekStartDate: startDate,
       weekEndDate: endOfWeek,
+      status: "PENDING", // New rates start as pending approval
+      submittedBy,
+      notificationSent: false,
     };
 
     if (type === "COMMODITY") data.commodityId = itemId;
@@ -100,8 +128,34 @@ export async function POST(req: Request) {
       include: {
         commodity: true,
         exchange: true,
+        submittedByUser: true,
       },
     });
+
+    // Send notification to super admins for approval
+    if (type === "EXCHANGE" && weeklyPrice.exchange) {
+      try {
+        await NotificationService.notifyExchangeRateApproval(
+          weeklyPrice.id,
+          weeklyPrice.exchange.name,
+          weeklyPrice.price,
+          weeklyPrice.weekStartDate.toISOString().split("T")[0],
+          weeklyPrice.submittedByUser?.name || "Unknown User"
+        );
+
+        // Mark notification as sent
+        await prisma.weeklyPrice.update({
+          where: { id: weeklyPrice.id },
+          data: { notificationSent: true },
+        });
+      } catch (notificationError) {
+        console.error(
+          "Failed to send approval notification:",
+          notificationError
+        );
+        // Don't fail the request if notification fails
+      }
+    }
 
     return NextResponse.json(weeklyPrice);
   } catch (error) {

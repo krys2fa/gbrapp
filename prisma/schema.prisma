@@ -54,6 +54,17 @@ model WeeklyPrice {
   price       Float
   weekStartDate DateTime      // Start of the week (Monday)
   weekEndDate   DateTime      // End of the week (Sunday)
+
+  // Approval workflow fields
+  status      ApprovalStatus  @default(PENDING)
+  submittedBy String?         // User ID who submitted the rate
+  submittedByUser User?       @relation("SubmittedRates", fields: [submittedBy], references: [id])
+  approvedBy  String?         // User ID who approved/rejected
+  approvedByUser User?        @relation("ApprovedRates", fields: [approvedBy], references: [id])
+  approvedAt  DateTime?
+  rejectionReason String?
+  notificationSent Boolean    @default(false)
+
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
@@ -69,6 +80,12 @@ enum DailyPriceType {
 enum WeeklyPriceType {
   COMMODITY
   EXCHANGE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 // Define enums
@@ -478,12 +495,20 @@ model User {
   email             String                   @unique
   password          String
   role              Role                     @default(USER)
+  phone             String?                  // For SMS notifications
+  emailNotifications Boolean                 @default(true)
+  smsNotifications  Boolean                  @default(false)
   customsOfficer    CustomsOfficer?
   nacobOfficer      NACOBOfficer?
   securityOfficer   NationalSecurityOfficer?
   assayOfficer      AssayOfficer?
   technicalDirector TechnicalDirector?
   auditTrails       AuditTrail[]
+
+  // Exchange rate approval relations
+  submittedRates    WeeklyPrice[]            @relation("SubmittedRates")
+  approvedRates     WeeklyPrice[]            @relation("ApprovedRates")
+
   isActive          Boolean                  @default(true)
   lastLogin         DateTime?
   createdAt         DateTime                 @default(now())
