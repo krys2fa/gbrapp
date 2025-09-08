@@ -58,11 +58,12 @@ export async function POST(
       );
     }
 
-    // Only allow super admins to approve/reject rates
-    if (userRole !== "SUPERADMIN") {
+    // Only allow super admins and admins to approve/reject rates
+    if (!["SUPERADMIN", "ADMIN"].includes(userRole)) {
       return NextResponse.json(
         {
-          error: "Unauthorized. Only super admins can approve or reject rates.",
+          error:
+            "Unauthorized. Only admins and super admins can approve or reject rates.",
         },
         { status: 403 }
       );

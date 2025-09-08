@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { getWeekBounds } from "@/app/lib/week-utils";
 import { NotificationService } from "../../../lib/notification-service";
+import * as jose from "jose";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -77,9 +78,35 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get current user from headers (assuming JWT token contains user info)
-    // For now, we'll use a placeholder - this should be replaced with proper auth
-    const submittedBy = req.headers.get("x-user-id") || "system";
+    // Extract and verify JWT token to get user information
+    const authHeader = req.headers.get("authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized. Authentication required.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const JWT_SECRET =
+      process.env.JWT_SECRET || "fallback-secret-for-development-only";
+    const secret = new TextEncoder().encode(JWT_SECRET);
+
+    let submittedBy: string;
+    try {
+      const { payload } = await jose.jwtVerify(token, secret);
+      submittedBy = payload.userId as string;
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized. Invalid token.",
+        },
+        { status: 401 }
+      );
+    }
 
     // If weekStartDate is not provided, use current week
     let startDate: Date;
