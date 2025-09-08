@@ -53,13 +53,32 @@ function AssayDetailPage() {
       if (!params?.id || !params?.assayId) return;
 
       try {
+        const token = localStorage.getItem("auth-token");
+
+        if (!token) {
+          setError("Authentication required. Please log in again.");
+          router.push("/login");
+          return;
+        }
+
         const response = await fetch(
-          `/api/large-scale-job-cards/${params.id}/assays/${params.assayId}`
+          `/api/large-scale-job-cards/${params.id}/assays/${params.assayId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         if (response.ok) {
           const data = await response.json();
           setAssay(data);
+        } else if (response.status === 401) {
+          // Token is invalid, clear it and redirect to login
+          localStorage.removeItem("auth-token");
+          localStorage.removeItem("auth-user");
+          setError("Session expired. Please log in again.");
+          router.push("/login");
         } else if (response.status === 404) {
           setError("Assay not found");
         } else {
@@ -74,7 +93,7 @@ function AssayDetailPage() {
     };
 
     fetchAssay();
-  }, [params?.id, params?.assayId]);
+  }, [params?.id, params?.assayId, router]);
 
   if (loading) {
     return (
