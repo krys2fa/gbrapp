@@ -454,6 +454,56 @@ function NewLargeScaleAssayPage() {
     jobCard?.commodities?.reduce((sum, com) => sum + (com.valueGhs || 0), 0) ||
     displayUsdValue * (Number(currentWeekExchangeEntry?.price) || 0);
 
+  // Summary calculations for measurement totals
+  const totalNetGoldWeight = rows.reduce(
+    (sum, r) => sum + (Number(r.netGoldWeight) || 0),
+    0
+  );
+  const totalNetSilverWeight = rows.reduce(
+    (sum, r) => sum + (Number(r.netSilverWeight) || 0),
+    0
+  );
+
+  const totalNetGoldWeightOz = toOunces(totalNetGoldWeight, unitOfMeasure);
+  const totalNetSilverWeightOz = toOunces(totalNetSilverWeight, unitOfMeasure);
+
+  // Find daily prices for gold and silver commodities
+  const goldCommodity = jobCard?.commodities?.find(
+    (c) =>
+      c.commodity.name.toLowerCase().includes("gold") ||
+      c.commodity.symbol.toLowerCase().includes("au")
+  );
+  const silverCommodity = jobCard?.commodities?.find(
+    (c) =>
+      c.commodity.name.toLowerCase().includes("silver") ||
+      c.commodity.symbol.toLowerCase().includes("ag")
+  );
+
+  const goldDailyPrice = goldCommodity
+    ? commodityPrices.find((p) => p.commodityId === goldCommodity.commodity.id)
+        ?.price
+    : null;
+
+  const silverDailyPrice = silverCommodity
+    ? commodityPrices.find(
+        (p) => p.commodityId === silverCommodity.commodity.id
+      )?.price
+    : null;
+
+  const totalGoldValue =
+    goldDailyPrice && totalNetGoldWeightOz
+      ? Number(goldDailyPrice) * totalNetGoldWeightOz
+      : 0;
+  const totalSilverValue =
+    silverDailyPrice && totalNetSilverWeightOz
+      ? Number(silverDailyPrice) * totalNetSilverWeightOz
+      : 0;
+
+  // Calculate combined total value and GHS conversion
+  const totalCombinedValue = totalGoldValue + totalSilverValue;
+  const totalValueGhs =
+    totalCombinedValue * (Number(currentWeekExchangeEntry?.price) || 0);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -1099,6 +1149,84 @@ function NewLargeScaleAssayPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Summary section for measurement totals */}
+            <div className="pt-4 border-t">
+              <h4 className="text-sm font-medium text-gray-900">
+                Measurement Summary
+              </h4>
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                <div className="bg-gray-50 p-3 rounded-md">
+                  <div className="text-xs text-gray-500">
+                    Total Net Gold Weight
+                  </div>
+                  <div className="text-lg font-semibold text-gray-900">
+                    {totalNetGoldWeightOz.toFixed(4)} oz
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    ({totalNetGoldWeight.toFixed(2)} {unitOfMeasure})
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-md">
+                  <div className="text-xs text-gray-500">
+                    Total Net Silver Weight
+                  </div>
+                  <div className="text-lg font-semibold text-gray-900">
+                    {totalNetSilverWeightOz.toFixed(4)} oz
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    ({totalNetSilverWeight.toFixed(2)} {unitOfMeasure})
+                  </div>
+                </div>
+                <div className="bg-blue-50 p-3 rounded-md">
+                  <div className="text-xs text-gray-500">Gold Value (USD)</div>
+                  <div className="text-lg font-semibold text-blue-900">
+                    ${totalGoldValue.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    @ $
+                    {goldDailyPrice ? Number(goldDailyPrice).toFixed(2) : "N/A"}
+                    /oz
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-md">
+                  <div className="text-xs text-gray-500">
+                    Silver Value (USD)
+                  </div>
+                  <div className="text-lg font-semibold text-gray-900">
+                    ${totalSilverValue.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    @ $
+                    {silverDailyPrice
+                      ? Number(silverDailyPrice).toFixed(2)
+                      : "N/A"}
+                    /oz
+                  </div>
+                </div>
+                <div className="bg-green-50 p-3 rounded-md">
+                  <div className="text-xs text-gray-500">Total Value (USD)</div>
+                  <div className="text-lg font-semibold text-green-900">
+                    ${totalCombinedValue.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Gold + Silver combined
+                  </div>
+                </div>
+                <div className="bg-purple-50 p-3 rounded-md">
+                  <div className="text-xs text-gray-500">Total Value (GHS)</div>
+                  <div className="text-lg font-semibold text-purple-900">
+                    ₵{totalValueGhs.toFixed(2)}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    @{" "}
+                    {currentWeekExchangeEntry
+                      ? formatExchangeRate(currentWeekExchangeEntry.price)
+                      : "N/A"}
+                  </div>
+                </div>
               </div>
             </div>
 

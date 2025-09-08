@@ -586,8 +586,93 @@ model LargeScaleJobCard {
 
   // Relations
   commodities               LargeScaleJobCardCommodity[]
+  assays                    LargeScaleAssay[]
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
+}
+
+model LargeScaleAssay {
+  id                String             @id @default(uuid())
+  jobCardId         String
+  jobCard           LargeScaleJobCard  @relation(fields: [jobCardId], references: [id], onDelete: Cascade)
+
+  // Assay Basic Information
+  method            String             // X_RAY, WATER_DENSITY
+  pieces            Int
+  signatory         String?
+  comments          String?
+
+  // Shipment Information
+  shipmentTypeId    String?
+  shipmentType      ShipmentType?      @relation(fields: [shipmentTypeId], references: [id])
+  securitySealNo    String?
+  goldbodSealNo     String?
+  customsSealNo     String?
+  shipmentNumber    String?
+
+  // Analysis Details
+  dateOfAnalysis    DateTime
+  dataSheetDates    DateTime?
+  sampleBottleDates DateTime?
+  numberOfSamples   Int                @default(1)
+  numberOfBars      Int                @default(1)
+  sampleType        String             @default("capillary")
+
+  // Pricing Information (at time of assay)
+  exchangeRate      Float?
+  commodityPrice    Float?
+  pricePerOz        Float?
+
+  // Summary Calculations
+  totalNetGoldWeight    Float?
+  totalNetSilverWeight  Float?
+  totalNetGoldWeightOz  Float?
+  totalNetSilverWeightOz Float?
+  totalGoldValue        Float?
+  totalSilverValue      Float?
+  totalCombinedValue    Float?
+  totalValueGhs         Float?
+
+  // Relations
+  measurements      LargeScaleAssayMeasurement[]
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([jobCardId]) // One assay per job card
+}
+
+model LargeScaleAssayMeasurement {
+  id                String             @id @default(uuid())
+  assayId           String
+  assay             LargeScaleAssay    @relation(fields: [assayId], references: [id], onDelete: Cascade)
+
+  // Piece Information
+  piece             Int                // Piece number (1, 2, 3, etc.)
+
+  // Measurement Data
+  barNumber         String?
+  grossWeight       Float?
+  goldAssay         Float?             // Percentage
+  netGoldWeight     Float?
+  silverAssay       Float?             // Percentage
+  netSilverWeight   Float?
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([assayId, piece])
+}
+
+model ShipmentType {
+  id          String             @id @default(uuid())
+  name        String             @unique
+  description String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  // Relations
+  assays      LargeScaleAssay[]
 }
 
 model LargeScaleJobCardCommodity {
