@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   const created = await prisma.dailyPrice.create({
-    data: { type: "EXCHANGE", exchangeId, price },
+    data: { type: "EXCHANGE", exchangeId, price, date: new Date() },
   });
   return NextResponse.json(created);
 }

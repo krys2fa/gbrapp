@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
-  const data: any = { type, price };
+  const data: any = { type, price, date: new Date() };
   if (type === "COMMODITY") data.commodityId = itemId;
   if (type === "EXCHANGE") data.exchangeId = itemId;
   const dailyPrice = await prisma.dailyPrice.create({ data });

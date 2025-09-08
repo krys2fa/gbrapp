@@ -98,6 +98,7 @@ export async function fetchAndSaveExchangeRateIfMissing(exchangeId: string) {
                 type: "EXCHANGE",
                 price: rounded,
                 exchangeId,
+                date: new Date(),
               },
             });
             return created;
@@ -127,6 +128,7 @@ export async function fetchAndSaveExchangeRateIfMissing(exchangeId: string) {
             type: "EXCHANGE",
             price: rounded,
             exchangeId,
+            date: new Date(),
           },
         });
         return created;

@@ -73,6 +73,7 @@ export async function fetchAndSaveCommodityPriceIfMissing(commodityId: string) {
                 type: "COMMODITY",
                 price: rounded,
                 commodityId,
+                date: new Date(),
               },
             });
             return created;
@@ -109,6 +110,7 @@ export async function fetchAndSaveCommodityPriceIfMissing(commodityId: string) {
                   type: "COMMODITY",
                   price: rounded,
                   commodityId,
+                  date: new Date(),
                 },
               });
               return created;

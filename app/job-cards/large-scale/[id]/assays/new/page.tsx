@@ -6,7 +6,6 @@ import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
 import { formatExchangeRate } from "@/app/lib/utils";
-import { getWeekStart } from "@/app/lib/week-utils";
 
 type AssayMethod = "X_RAY" | "WATER_DENSITY";
 
@@ -213,10 +212,14 @@ function NewLargeScaleAssayPage() {
 
         const today = date;
 
-        // Calculate the start of the current week (Monday)
-        const currentWeekStart = getWeekStart(new Date(today))
-          .toISOString()
-          .split("T")[0];
+        // Calculate the start of the current week (Monday) in UTC
+        const todayDate = new Date(today + "T00:00:00.000Z");
+        const dayOfWeek = todayDate.getUTCDay();
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const weekStart = new Date(todayDate);
+        weekStart.setUTCDate(todayDate.getUTCDate() - diff);
+        weekStart.setUTCHours(0, 0, 0, 0);
+        const currentWeekStart = weekStart.toISOString().split("T")[0];
         console.log("Current week start:", currentWeekStart);
         console.log("Today date:", today);
 
