@@ -756,12 +756,12 @@ function NewLargeScaleAssayPage() {
                 </div>
                 {!currentWeekExchangeEntry && weeklyExchange && (
                   <div className="text-xs text-amber-600 mt-1">
-                    Using previous week's rate (DEBUG MODE)
+                    Using previous week&apos;s rate (DEBUG MODE)
                   </div>
                 )}
                 {!currentWeekExchangeEntry && !weeklyExchange && (
                   <div className="text-xs text-red-500 mt-1">
-                    Contact super admin to approve current week's rate
+                    Contact super admin to approve current week&apos;s rate
                   </div>
                 )}
               </div>
@@ -1268,7 +1268,7 @@ function NewLargeScaleAssayPage() {
             )}
             {!currentWeekExchangeEntry && weeklyExchange && (
               <p className="text-sm text-amber-600 mt-2">
-                ⚠ DEBUG: Using previous week's rate
+                ⚠ DEBUG: Using previous week&apos;s rate
               </p>
             )}
           </div>
