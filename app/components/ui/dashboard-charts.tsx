@@ -258,7 +258,7 @@ export const ExporterInvoiceChart: React.FC<{
                     <div key={exporter} className="ml-4 text-sm">
                       {exporter}:{" "}
                       <span className="font-mono">
-                        ₵{amount.toLocaleString()}
+                        GHS {amount.toLocaleString()}
                       </span>
                     </div>
                   );
@@ -291,7 +291,7 @@ export const ExporterInvoiceChart: React.FC<{
               <YAxis
                 tick={{ fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
-                tickFormatter={(value) => `₵${(value / 1000).toFixed(0)}K`}
+                tickFormatter={(value) => `GHS ${(value / 1000).toFixed(0)}K`}
               />
               <Tooltip
                 contentStyle={{
@@ -300,7 +300,7 @@ export const ExporterInvoiceChart: React.FC<{
                   borderRadius: "8px",
                 }}
                 formatter={(value: any, name: string) => [
-                  `₵${Number(value).toLocaleString()}`,
+                  `GHS ${Number(value).toLocaleString()}`,
                   name,
                 ]}
                 labelFormatter={(label) => `Month: ${label}`}

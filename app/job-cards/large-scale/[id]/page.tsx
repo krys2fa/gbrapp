@@ -396,7 +396,7 @@ function LargeScaleJobCardDetailPage() {
                           Value (GHS)
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900">
-                          ₵{item.valueGhs?.toLocaleString()}
+                          GHS {item.valueGhs?.toLocaleString()}
                         </dd>
                       </div>
                       <div>
@@ -678,7 +678,7 @@ function LargeScaleJobCardDetailPage() {
                             <div className="mt-2 sm:flex sm:justify-between">
                               <div className="sm:flex">
                                 <p className="flex items-center text-sm text-gray-500">
-                                  Total Value: ₵
+                                  Total Value: GHS
                                   {assay.totalValueGhs?.toLocaleString()}
                                 </p>
                               </div>

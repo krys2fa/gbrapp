@@ -1,6 +1,7 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
+import { formatCurrency, formatDate } from "@/app/lib/utils";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -10,7 +11,6 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
-import { formatDate } from "@/app/lib/utils";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -1046,7 +1046,7 @@ function JobCardDetailPage() {
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                     {jobCard?.valueGhs
-                      ? `₵${jobCard?.valueGhs}`
+                      ? `GHS ${jobCard?.valueGhs}`
                       : "Not specified"}
                   </dd>
                 </div>

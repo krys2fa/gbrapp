@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatCurrency } from "@/app/lib/utils";
 
 type Row = {
   id: string;
@@ -336,11 +337,11 @@ export default function CustomReportClient() {
                           : "";
                       case "estimatedValue":
                         return typeof r.estimatedValue === "number"
-                          ? r.estimatedValue.toFixed(2)
+                          ? formatCurrency(r.estimatedValue, "USD", false)
                           : "";
                       case "feesTotal":
                         return typeof r.feesTotal === "number"
-                          ? r.feesTotal.toFixed(2)
+                          ? formatCurrency(r.feesTotal, "USD", false)
                           : "-";
                       default:
                         return (r as any)[col] ?? "";

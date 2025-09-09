@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
-import { formatExchangeRate } from "@/app/lib/utils";
+import { formatExchangeRate, formatCurrency } from "@/app/lib/utils";
 
 type AssayMethod = "X_RAY" | "WATER_DENSITY";
 
@@ -718,7 +718,7 @@ function NewLargeScaleAssayPage() {
                                 {commodityItem.commodity.name}:
                               </span>{" "}
                               {commodityPrice?.price != null
-                                ? `$${Number(commodityPrice.price).toFixed(2)}`
+                                ? formatCurrency(commodityPrice.price, "USD")
                                 : "-"}
                             </div>
                           );
@@ -776,14 +776,14 @@ function NewLargeScaleAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Value (USD)</div>
                 <div className="font-medium text-gray-900">
-                  {displayUsdValue ? displayUsdValue.toFixed(2) : "0.00"}
+                  {displayUsdValue ? formatCurrency(displayUsdValue, "USD", false) : "0.00"}
                 </div>
               </div>
 
               <div>
                 <div className="text-xs text-gray-500">Value (GHS)</div>
                 <div className="font-medium text-gray-900">
-                  {displayGhsValue ? displayGhsValue.toFixed(2) : "0.00"}
+                  {displayGhsValue ? formatCurrency(displayGhsValue, "GHS", false) : "0.00"}
                 </div>
               </div>
 
@@ -1158,12 +1158,10 @@ function NewLargeScaleAssayPage() {
                 <div className="bg-blue-50 p-3 rounded-md">
                   <div className="text-xs text-gray-500">Gold Value (USD)</div>
                   <div className="text-lg font-semibold text-blue-900">
-                    ${totalGoldValue.toFixed(2)}
+                    {formatCurrency(totalGoldValue, "USD")}
                   </div>
                   <div className="text-xs text-gray-500">
-                    @ $
-                    {goldDailyPrice ? Number(goldDailyPrice).toFixed(2) : "N/A"}
-                    /oz
+                    @ {formatCurrency(goldDailyPrice || 0, "USD", false)}/oz
                   </div>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-md">
@@ -1171,20 +1169,16 @@ function NewLargeScaleAssayPage() {
                     Silver Value (USD)
                   </div>
                   <div className="text-lg font-semibold text-gray-900">
-                    ${totalSilverValue.toFixed(2)}
+                    {formatCurrency(totalSilverValue, "USD")}
                   </div>
                   <div className="text-xs text-gray-500">
-                    @ $
-                    {silverDailyPrice
-                      ? Number(silverDailyPrice).toFixed(2)
-                      : "N/A"}
-                    /oz
+                    @ {formatCurrency(silverDailyPrice || 0, "USD", false)}/oz
                   </div>
                 </div>
                 <div className="bg-green-50 p-3 rounded-md">
                   <div className="text-xs text-gray-500">Total Value (USD)</div>
                   <div className="text-lg font-semibold text-green-900">
-                    ${totalCombinedValue.toFixed(2)}
+                    {formatCurrency(totalCombinedValue, "USD")}
                   </div>
                   <div className="text-xs text-gray-500">
                     Gold + Silver combined
@@ -1193,7 +1187,7 @@ function NewLargeScaleAssayPage() {
                 <div className="bg-purple-50 p-3 rounded-md">
                   <div className="text-xs text-gray-500">Total Value (GHS)</div>
                   <div className="text-lg font-semibold text-purple-900">
-                    ₵{totalValueGhs.toFixed(2)}
+                    {formatCurrency(totalValueGhs, "GHS")}
                   </div>
                   <div className="text-xs text-gray-500">
                     @{" "}

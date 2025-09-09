@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
-import { formatExchangeRate } from "@/app/lib/utils";
+import { formatExchangeRate, formatCurrency } from "@/app/lib/utils";
 
 type AssayMethod = "X_RAY" | "WATER_DENSITY";
 
@@ -590,7 +590,7 @@ export default function NewAssayPage() {
                 </div>
                 <div className="font-medium text-gray-900">
                   {dailyPrice?.value != null
-                    ? Number(dailyPrice.value).toFixed(2)
+                    ? formatCurrency(dailyPrice.value, "USD", false)
                     : "-"}
                 </div>
               </div>
@@ -631,14 +631,14 @@ export default function NewAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Value (USD)</div>
                 <div className="font-medium text-gray-900">
-                  {displayUsdValue ? displayUsdValue.toFixed(2) : "0.00"}
+                  {displayUsdValue ? formatCurrency(displayUsdValue, "USD", false) : formatCurrency(0, "USD", false)}
                 </div>
               </div>
 
               <div>
                 <div className="text-xs text-gray-500">Value (GHS)</div>
                 <div className="font-medium text-gray-900">
-                  {displayGhsValue ? displayGhsValue.toFixed(2) : "0.00"}
+                  {displayGhsValue ? formatCurrency(displayGhsValue, "GHS", false) : formatCurrency(0, "GHS", false)}
                 </div>
               </div>
 

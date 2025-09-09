@@ -270,7 +270,7 @@ async function importReferenceData(prisma: PrismaClient) {
   await prisma.currency.createMany({
     data: [
       { code: "USD", name: "US Dollar", symbol: "$" },
-      { code: "GHS", name: "Ghanaian Cedi", symbol: "₵" },
+      { code: "GHS", name: "Ghanaian Cedi", symbol: "GHS" },
     ],
     skipDuplicates: true,
   });

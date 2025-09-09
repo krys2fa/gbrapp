@@ -35,3 +35,26 @@ export function formatExchangeRate(
 
   return numRate.toFixed(4);
 }
+
+export function formatCurrency(
+  value: number | string | null | undefined,
+  currencyCode = "USD",
+  showSymbol = true
+): string {
+  if (value === null || value === undefined || value === "") {
+    return showSymbol ? `${currencyCode} 0.00` : "0.00";
+  }
+
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+
+  if (isNaN(numValue)) {
+    return showSymbol ? `${currencyCode} 0.00` : "0.00";
+  }
+
+  const formatted = numValue.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return showSymbol ? `${currencyCode === "USD" ? "$" : currencyCode === "GHS" ? "GHS" : currencyCode} ${formatted}` : formatted;
+}

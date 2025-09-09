@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { FileText } from "lucide-react";
 import { prisma } from "@/app/lib/prisma";
+import { formatCurrency } from "@/app/lib/utils";
 
 const GRAMS_PER_TROY_OUNCE = 31.1035;
 
@@ -263,7 +264,7 @@ export default async function ReportsPage(props: any) {
                       {formatNumber(r.netSilverGrams)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                      {formatNumber(r.estimatedValue)} USD
+                      {formatCurrency(r.estimatedValue, "USD", false)}
                     </td>
                   </tr>
                 ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { formatCurrency } from "@/app/lib/utils";
 
 interface DashboardData {
   overview: {
@@ -77,7 +78,7 @@ export default function FinancialMetrics({ data }: { data: DashboardData }) {
             </span>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {data.financials?.currentExchangeRateGhs?.toFixed(2)}
+            {data.financials?.currentExchangeRateGhs ? formatCurrency(data.financials.currentExchangeRateGhs, "GHS", false) : "N/A"}
           </p>
         </div>
 
@@ -113,7 +114,7 @@ export default function FinancialMetrics({ data }: { data: DashboardData }) {
             </span>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {data.financials?.currentSilverPriceGhsPerOz?.toFixed(2)}
+            {data.financials?.currentSilverPriceGhsPerOz ? formatCurrency(data.financials.currentSilverPriceGhsPerOz, "GHS", false) : "N/A"}
           </p>
         </div>
 

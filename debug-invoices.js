@@ -66,7 +66,7 @@ async function debugInvoices() {
       
       console.log(`\nPaid invoices in ${currentYear}: ${paidInvoicesThisYear.length}`);
       paidInvoicesThisYear.forEach((invoice, index) => {
-        console.log(`${index + 1}. ${invoice.jobCard.exporter.name} - ₵${invoice.amount} (${invoice.issueDate.toLocaleDateString()})`);
+        console.log(`${index + 1}. ${invoice.jobCard.exporter.name} - GHS ${invoice.amount} (${invoice.issueDate.toLocaleDateString()})`);
       });
       
     } else {

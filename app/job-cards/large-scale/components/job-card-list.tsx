@@ -8,7 +8,7 @@ import {
   PencilSquareIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { formatDate } from "@/app/lib/utils";
+import { formatDate, formatCurrency } from "@/app/lib/utils";
 
 interface LargeScaleJobCard {
   id: string;
@@ -250,7 +250,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                                 Total Value (GHS):
                               </span>
                               <div className="text-gray-600">
-                                {jobCard.assaySummary.totalValueGhs.toFixed(2)}
+                                {formatCurrency(jobCard.assaySummary.totalValueGhs, "GHS", false)}
                               </div>
                             </div>
                           </div>

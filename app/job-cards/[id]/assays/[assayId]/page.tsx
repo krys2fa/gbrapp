@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
-import { formatDate, formatExchangeRate } from "@/app/lib/utils";
+import { formatDate, formatExchangeRate, formatCurrency } from "@/app/lib/utils";
 
 export default function AssayDetailPage() {
   const params = useParams();
@@ -464,10 +464,10 @@ export default function AssayDetailPage() {
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
                         {jobCard?.pricePerOunce != null
-                          ? `$${Number(jobCard.pricePerOunce).toFixed(2)}`
+                          ? formatCurrency(jobCard.pricePerOunce, "USD")
                           : assay.jbPricePerOz != null
-                          ? `$${Number(assay.jbPricePerOz).toFixed(2)}`
-                          : "$0.00"}
+                          ? formatCurrency(assay.jbPricePerOz, "USD")
+                          : formatCurrency(0, "USD")}
                       </dd>
                     </div>
                   </div>
@@ -479,28 +479,28 @@ export default function AssayDetailPage() {
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
                         {jobCard?.valueUsd != null
-                          ? `$${Number(jobCard.valueUsd).toFixed(2)}`
+                          ? formatCurrency(jobCard.valueUsd, "USD")
                           : assay.jbTotalUsdValue != null
-                          ? `$${Number(assay.jbTotalUsdValue).toFixed(2)}`
-                          : "$0.00"}
+                          ? formatCurrency(assay.jbTotalUsdValue, "USD")
+                          : formatCurrency(0, "USD")}
                       </dd>
                     </div>
                   </div>
 
-                  <div>
+                  {/* <div>
                     <div className="flex items-center gap-2">
                       <dt className="text-sm font-medium text-gray-500">
                         Total GHS Value:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
                         {jobCard?.valueGhs != null
-                          ? `GHS ${Number(jobCard.valueGhs).toFixed(2)}`
+                          ? formatCurrency(jobCard.valueGhs, "GHS")
                           : assay.jbTotalGhsValue != null
-                          ? `GHS ${Number(assay.jbTotalGhsValue).toFixed(2)}`
-                          : "GHS 0.00"}
+                          ? formatCurrency(assay.jbTotalGhsValue, "GHS")
+                          : formatCurrency(0, "GHS")}
                       </dd>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
@@ -546,7 +546,7 @@ export default function AssayDetailPage() {
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
                         {assay.pricePerOz != null
-                          ? `$${Number(assay.pricePerOz).toFixed(2)}`
+                          ? formatCurrency(assay.pricePerOz, "USD")
                           : assay.comments && typeof assay.comments === "string"
                           ? (() => {
                               try {
@@ -555,23 +555,21 @@ export default function AssayDetailPage() {
                                 );
                                 const mp = parsed?.meta?.dailyPrice;
                                 return mp != null
-                                  ? `$${Number(mp).toFixed(2)}`
+                                  ? formatCurrency(mp, "USD")
                                   : commodityPrice != null
-                                  ? `$${commodityPrice.toFixed(2)}`
-                                  : "$0.00";
+                                  ? formatCurrency(commodityPrice, "USD")
+                                  : formatCurrency(0, "USD");
                               } catch {
                                 return commodityPrice != null
-                                  ? `$${commodityPrice.toFixed(2)}`
-                                  : "$0.00";
+                                  ? formatCurrency(commodityPrice, "USD")
+                                  : formatCurrency(0, "USD");
                               }
                             })()
                           : assay.comments?.meta?.dailyPrice != null
-                          ? `$${Number(assay.comments.meta.dailyPrice).toFixed(
-                              2
-                            )}`
+                          ? formatCurrency(assay.comments.meta.dailyPrice, "USD")
                           : commodityPrice != null
-                          ? `$${commodityPrice.toFixed(2)}`
-                          : "$0.00"}
+                          ? formatCurrency(commodityPrice, "USD")
+                          : formatCurrency(0, "USD")}
                       </dd>
                     </div>
                   </div>
@@ -583,7 +581,7 @@ export default function AssayDetailPage() {
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
                         {assay.totalUsdValue != null
-                          ? `$${Number(assay.totalUsdValue).toFixed(2)}`
+                          ? formatCurrency(assay.totalUsdValue, "USD")
                           : assay.comments && typeof assay.comments === "string"
                           ? (() => {
                               try {
@@ -592,41 +590,39 @@ export default function AssayDetailPage() {
                                 );
                                 const v = parsed?.meta?.valueUsd;
                                 return v != null
-                                  ? `$${Number(v).toFixed(2)}`
+                                  ? formatCurrency(v, "USD")
                                   : totalUsd != null
-                                  ? `$${totalUsd.toFixed(2)}`
-                                  : "$0.00";
+                                  ? formatCurrency(totalUsd, "USD")
+                                  : formatCurrency(0, "USD");
                               } catch {
                                 return totalUsd != null
-                                  ? `$${totalUsd.toFixed(2)}`
-                                  : "$0.00";
+                                  ? formatCurrency(totalUsd, "USD")
+                                  : formatCurrency(0, "USD");
                               }
                             })()
                           : assay.comments?.meta?.valueUsd != null
-                          ? `$${Number(assay.comments.meta.valueUsd).toFixed(
-                              2
-                            )}`
+                          ? formatCurrency(assay.comments.meta.valueUsd, "USD")
                           : totalUsd != null
-                          ? `$${totalUsd.toFixed(2)}`
-                          : "$0.00"}
+                          ? formatCurrency(totalUsd, "USD")
+                          : formatCurrency(0, "USD")}
                       </dd>
                     </div>
                   </div>
 
-                  <div>
+                  {/* <div>
                     <div className="flex items-center gap-2">
                       <dt className="text-sm font-medium text-gray-500">
                         Total GHS Value:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
                         {assay.totalGhsValue != null
-                          ? `₵${Number(assay.totalGhsValue).toFixed(2)}`
+                          ? formatCurrency(assay.totalGhsValue, "GHS")
                           : totalGhs != null
-                          ? `₵${totalGhs.toFixed(2)}`
-                          : "₵0.00"}
+                          ? formatCurrency(totalGhs, "GHS")
+                          : formatCurrency(0, "GHS")}
                       </dd>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

@@ -237,14 +237,14 @@ function AssayDetailPage() {
                     ${assay.totalCombinedValue?.toLocaleString()}
                   </dd>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg sm:col-span-2">
+                {/* <div className="bg-purple-50 p-4 rounded-lg sm:col-span-2">
                   <dt className="text-sm font-medium text-purple-800">
                     Total Value (GHS)
                   </dt>
                   <dd className="mt-1 text-3xl font-bold text-purple-900">
-                    ₵{assay.totalValueGhs?.toLocaleString()}
+                    GHS {assay.totalValueGhs?.toLocaleString()}
                   </dd>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

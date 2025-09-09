@@ -344,7 +344,7 @@ export async function GET(req: NextRequest) {
         inv.largeScaleJobCard?.exporter?.name ??
         "-";
       console.log(
-        `  - ${exporterName}: ₵${inv.amount} (${
+        `  - ${exporterName}: GHS ${inv.amount} (${
           inv.status
         }) - ${inv.issueDate.toLocaleDateString()}`
       );
