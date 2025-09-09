@@ -225,6 +225,22 @@ export async function GET(req: NextRequest) {
         AND i.status = 'pending'
       GROUP BY e.name, EXTRACT(MONTH FROM i."issueDate")
       
+      UNION ALL
+      
+      SELECT 
+        e.name as "exporterName",
+        EXTRACT(MONTH FROM i."issueDate") as month,
+        0 as "paidAmount",
+        SUM(i.amount) as "pendingAmount", 
+        SUM(i.amount) as "totalAmount"
+      FROM "Invoice" i
+      JOIN "LargeScaleJobCard" ljc ON i."largeScaleJobCardId" = ljc.id
+      JOIN "Exporter" e ON ljc."exporterId" = e.id
+      WHERE i."issueDate" >= ${startOfYear} 
+        AND i."issueDate" <= ${endOfYear}
+        AND i.status = 'pending'
+      GROUP BY e.name, EXTRACT(MONTH FROM i."issueDate")
+      
       ORDER BY month, "exporterName"
     `) as Array<{
       exporterName: string;
@@ -242,6 +258,11 @@ export async function GET(req: NextRequest) {
             exporter: true,
           },
         },
+        largeScaleJobCard: {
+          include: {
+            exporter: true,
+          },
+        },
       },
       take: 10, // Just first 10 for debugging
     });
@@ -252,7 +273,10 @@ export async function GET(req: NextRequest) {
         amount: inv.amount,
         status: inv.status,
         issueDate: inv.issueDate,
-        exporter: inv.jobCard.exporter.name,
+        exporter:
+          inv.jobCard?.exporter?.name ??
+          inv.largeScaleJobCard?.exporter?.name ??
+          "-",
       }))
     );
 
@@ -302,6 +326,11 @@ export async function GET(req: NextRequest) {
             exporter: true,
           },
         },
+        largeScaleJobCard: {
+          include: {
+            exporter: true,
+          },
+        },
       },
     });
     console.log(
@@ -310,8 +339,12 @@ export async function GET(req: NextRequest) {
       "invoices"
     );
     simpleInvoiceCheck.forEach((inv) => {
+      const exporterName =
+        inv.jobCard?.exporter?.name ??
+        inv.largeScaleJobCard?.exporter?.name ??
+        "-";
       console.log(
-        `  - ${inv.jobCard.exporter.name}: ₵${inv.amount} (${
+        `  - ${exporterName}: ₵${inv.amount} (${
           inv.status
         }) - ${inv.issueDate.toLocaleDateString()}`
       );
