@@ -420,7 +420,7 @@ function LargeScaleJobCardDetailPage() {
                           Number of Ounces
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900">
-                          {item.numberOfOunces?.toLocaleString()}
+                          {item.numberOfOunces?.toFixed(3)}
                         </dd>
                       </div>
                     </div>

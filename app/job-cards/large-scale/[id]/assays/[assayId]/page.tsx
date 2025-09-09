@@ -202,7 +202,7 @@ function AssayDetailPage() {
                     Gold Weight (oz)
                   </dt>
                   <dd className="mt-1 text-2xl font-semibold text-yellow-900">
-                    {assay.totalNetGoldWeightOz?.toFixed(4)}
+                    {assay.totalNetGoldWeightOz?.toFixed(3)}
                   </dd>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -210,7 +210,7 @@ function AssayDetailPage() {
                     Silver Weight (oz)
                   </dt>
                   <dd className="mt-1 text-2xl font-semibold text-gray-900">
-                    {assay.totalNetSilverWeightOz?.toFixed(4)}
+                    {assay.totalNetSilverWeightOz?.toFixed(3)}
                   </dd>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg">

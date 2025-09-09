@@ -448,10 +448,10 @@ export default function AssayDetailPage() {
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
                         {jobCard?.numberOfOunces != null
-                          ? Number(jobCard.numberOfOunces).toFixed(2)
+                          ? Number(jobCard.numberOfOunces).toFixed(3)
                           : assay.jbWeightInOz != null
-                          ? Number(assay.jbWeightInOz).toFixed(4)
-                          : "0.00"}{" "}
+                          ? Number(assay.jbWeightInOz).toFixed(3)
+                          : "0.000"}{" "}
                         oz
                       </dd>
                     </div>
@@ -517,7 +517,7 @@ export default function AssayDetailPage() {
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
                         {assay.weightInOz != null
-                          ? Number(assay.weightInOz).toFixed(4)
+                          ? Number(assay.weightInOz).toFixed(3)
                           : (() => {
                               const totalGrams = (
                                 assay.measurements || []
@@ -532,7 +532,7 @@ export default function AssayDetailPage() {
                               );
                               const GRAMS_PER_TROY_OUNCE = 31.1035;
                               const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                              return totalGrams > 0 ? oz.toFixed(2) : "0.00";
+                              return totalGrams > 0 ? oz.toFixed(3) : "0.000";
                             })()}{" "}
                         oz
                       </dd>

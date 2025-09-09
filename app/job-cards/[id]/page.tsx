@@ -552,7 +552,7 @@ function JobCardDetailPage() {
                       Number of Ounces
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {Number(jobCard.numberOfOunces).toFixed(2)}
+                      {Number(jobCard.numberOfOunces).toFixed(3)}
                     </dd>
                   </div>
                 )}

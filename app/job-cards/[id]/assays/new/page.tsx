@@ -492,7 +492,7 @@ export default function NewAssayPage() {
           note: form.comments || "",
           meta: {
             unit: unitOfMeasure,
-            totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(4)),
+            totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(3)),
             valueUsd: Number(displayUsdValue.toFixed(4)),
             valueGhs: Number(displayGhsValue.toFixed(4)),
             weeklyExchange: Number(weeklyExchange?.value) || null,
@@ -624,7 +624,7 @@ export default function NewAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Net weight (oz)</div>
                 <div className="font-medium text-gray-900">
-                  {displayNetWeightOz ? displayNetWeightOz.toFixed(2) : "0.00"}
+                  {displayNetWeightOz ? displayNetWeightOz.toFixed(3) : "0.000"}
                 </div>
               </div>
 

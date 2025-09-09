@@ -345,7 +345,7 @@ function PaymentList() {
                     >
                       <FileText className="h-4 w-4 mr-1" /> Assay Invoice
                     </Link>
-                    <Link
+                    {/* <Link
                       href={
                         d.whtInvoiceId
                           ? `/job-cards/${d.id}/invoices/${d.whtInvoiceId}`
@@ -358,19 +358,19 @@ function PaymentList() {
                       }`}
                     >
                       <FileText className="h-4 w-4 mr-1" /> WHT Invoice
-                    </Link>
+                    </Link> */}
                     <button
                       onClick={() => openPayModal(d.id, "assay")}
                       className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700"
                     >
                       <CreditCard className="h-4 w-4 mr-1" /> Pay Assay
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => openPayModal(d.id, "wht")}
                       className="inline-flex items-center px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700"
                     >
                       <Receipt className="h-4 w-4 mr-1" /> Pay WHT
-                    </button>
+                    </button> */}
                   </div>
                 </td>
               </tr>

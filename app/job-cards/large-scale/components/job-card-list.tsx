@@ -231,7 +231,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                               </span>
                               <div className="text-gray-600">
                                 {jobCard.assaySummary.totalNetGoldWeightOz.toFixed(
-                                  4
+                                  3
                                 )}
                               </div>
                             </div>
@@ -241,7 +241,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                               </span>
                               <div className="text-gray-600">
                                 {jobCard.assaySummary.totalNetSilverWeightOz.toFixed(
-                                  4
+                                  3
                                 )}
                               </div>
                             </div>

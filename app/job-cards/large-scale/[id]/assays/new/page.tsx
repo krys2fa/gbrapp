@@ -769,7 +769,7 @@ function NewLargeScaleAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Net weight (oz)</div>
                 <div className="font-medium text-gray-900">
-                  {displayNetWeightOz ? displayNetWeightOz.toFixed(2) : "0.00"}
+                  {displayNetWeightOz ? displayNetWeightOz.toFixed(3) : "0.000"}
                 </div>
               </div>
 
@@ -1138,7 +1138,7 @@ function NewLargeScaleAssayPage() {
                     Total Net Gold Weight
                   </div>
                   <div className="text-lg font-semibold text-gray-900">
-                    {totalNetGoldWeightOz.toFixed(4)} oz
+                    {totalNetGoldWeightOz.toFixed(3)} oz
                   </div>
                   <div className="text-xs text-gray-500">
                     ({totalNetGoldWeight.toFixed(2)} {unitOfMeasure})
@@ -1149,7 +1149,7 @@ function NewLargeScaleAssayPage() {
                     Total Net Silver Weight
                   </div>
                   <div className="text-lg font-semibold text-gray-900">
-                    {totalNetSilverWeightOz.toFixed(4)} oz
+                    {totalNetSilverWeightOz.toFixed(3)} oz
                   </div>
                   <div className="text-xs text-gray-500">
                     ({totalNetSilverWeight.toFixed(2)} {unitOfMeasure})
