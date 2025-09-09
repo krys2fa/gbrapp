@@ -678,8 +678,8 @@ function LargeScaleJobCardDetailPage() {
                             <div className="mt-2 sm:flex sm:justify-between">
                               <div className="sm:flex">
                                 <p className="flex items-center text-sm text-gray-500">
-                                  Total Value: GHS
-                                  {assay.totalValueGhs?.toLocaleString()}
+                                  Total Value: $
+                                  {assay.totalCombinedValue?.toLocaleString()}
                                 </p>
                               </div>
                               <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
@@ -754,7 +754,7 @@ function LargeScaleJobCardDetailPage() {
                               <div className="mt-2 sm:flex sm:justify-between">
                                 <div className="sm:flex">
                                   <p className="flex items-center text-sm text-gray-500">
-                                    Amount: {invoice.currency?.symbol || "$"}
+                                    Amount: GHS
                                     {invoice.amount?.toLocaleString() || "0"}
                                   </p>
                                 </div>
