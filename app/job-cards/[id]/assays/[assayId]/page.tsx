@@ -631,7 +631,7 @@ export default function AssayDetailPage() {
           {/* Assay details moved to bottom with labels */}
           <div className="mt-4 border-t pt-4">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div>
+              {/* <div>
                 <div className="border-b border-gray-400 mb-2 pt-4"></div>
                 <div className="flex flex-col gap-1">
                   <dt className="text-xs font-medium text-gray-500 text-center">
@@ -641,7 +641,7 @@ export default function AssayDetailPage() {
                     {assay.signatory || assay.comments?.signatory || "-"}
                   </dd>
                 </div>
-              </div>
+              </div> */}
 
               <div>
                 <div className="flex items-center gap-2">
