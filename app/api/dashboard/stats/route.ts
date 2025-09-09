@@ -160,8 +160,8 @@ export async function GET(req: NextRequest) {
     });
     const totalGetFund = getFundResult._sum.calculatedAmount || 0;
 
-    // Calculate total export values and quantities from job cards
-    const exportStats = await prisma.jobCard.aggregate({
+    // Calculate total export values and quantities from job cards (both regular and large scale)
+    const regularJobCardStats = await prisma.jobCard.aggregate({
       _sum: {
         totalNetWeight: true,
         valueUsd: true,
@@ -169,9 +169,24 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const totalExportValueUsd = exportStats._sum.valueUsd || 0;
-    const totalExportValueGhs = exportStats._sum.valueGhs || 0;
-    const totalQuantityKg = exportStats._sum.totalNetWeight || 0;
+    const largeScaleJobCardStats =
+      await prisma.largeScaleJobCardCommodity.aggregate({
+        _sum: {
+          netWeight: true,
+          valueUsd: true,
+          valueGhs: true,
+        },
+      });
+
+    const totalExportValueUsd =
+      (regularJobCardStats._sum.valueUsd || 0) +
+      (largeScaleJobCardStats._sum.valueUsd || 0);
+    const totalExportValueGhs =
+      (regularJobCardStats._sum.valueGhs || 0) +
+      (largeScaleJobCardStats._sum.valueGhs || 0);
+    const totalQuantityKg =
+      (regularJobCardStats._sum.totalNetWeight || 0) +
+      (largeScaleJobCardStats._sum.netWeight || 0);
     const totalQuantityLbs = totalQuantityKg * 2.20462; // Convert kg to lbs
 
     // Calculate service fees from fees table
@@ -204,6 +219,22 @@ export async function GET(req: NextRequest) {
       FROM "Fee" f
       JOIN "JobCard" jc ON f."jobCardId" = jc.id
       JOIN "Exporter" e ON jc."exporterId" = e.id
+      WHERE f."paymentDate" >= ${startOfYear} 
+        AND f."paymentDate" <= ${endOfYear}
+        AND f.status = 'paid'
+      GROUP BY e.name, EXTRACT(MONTH FROM f."paymentDate")
+      
+      UNION ALL
+      
+      SELECT 
+        e.name as "exporterName",
+        EXTRACT(MONTH FROM f."paymentDate") as month,
+        SUM(f."amountPaid") as "paidAmount",
+        0 as "pendingAmount",
+        SUM(f."amountPaid") as "totalAmount"
+      FROM "Fee" f
+      JOIN "LargeScaleJobCard" ljc ON f."largeScaleJobCardId" = ljc.id
+      JOIN "Exporter" e ON ljc."exporterId" = e.id
       WHERE f."paymentDate" >= ${startOfYear} 
         AND f."paymentDate" <= ${endOfYear}
         AND f.status = 'paid'
@@ -288,6 +319,11 @@ export async function GET(req: NextRequest) {
             exporter: true,
           },
         },
+        largeScaleJobCard: {
+          include: {
+            exporter: true,
+          },
+        },
       },
       take: 10, // Just first 10 for debugging
     });
@@ -298,7 +334,10 @@ export async function GET(req: NextRequest) {
         amountPaid: fee.amountPaid,
         status: fee.status,
         paymentDate: fee.paymentDate,
-        exporter: fee.jobCard.exporter.name,
+        exporter:
+          fee.jobCard?.exporter?.name ||
+          fee.largeScaleJobCard?.exporter?.name ||
+          "Unknown",
         feeType: fee.feeType,
       }))
     );

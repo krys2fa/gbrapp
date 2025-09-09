@@ -21,7 +21,12 @@ interface JobCard {
   };
   _count?: {
     assays?: number;
+    invoices?: number;
   };
+  invoices?: Array<{
+    id: string;
+    status: string;
+  }>;
 }
 
 interface JobCardListProps {
@@ -95,6 +100,8 @@ export function JobCardList({ filters }: JobCardListProps) {
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
+      case "paid":
+        return "bg-green-100 text-green-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
       case "in_progress":
@@ -177,13 +184,23 @@ export function JobCardList({ filters }: JobCardListProps) {
                             jobCard._count.assays &&
                             jobCard._count.assays > 0
                           );
-                          const statusText = hasAssays
-                            ? "Completed"
-                            : jobCard.status.charAt(0).toUpperCase() +
-                              jobCard.status.slice(1).replace("_", " ");
-                          const statusKey = hasAssays
-                            ? "completed"
-                            : jobCard.status;
+                          const hasPaidInvoices = !!(
+                            jobCard.invoices &&
+                            jobCard.invoices.some(invoice => invoice.status === "paid")
+                          );
+                          
+                          let statusText = jobCard.status.charAt(0).toUpperCase() +
+                            jobCard.status.slice(1).replace("_", " ");
+                          let statusKey = jobCard.status;
+                          
+                          if (hasPaidInvoices) {
+                            statusText = "Paid";
+                            statusKey = "paid";
+                          } else if (hasAssays) {
+                            statusText = "Completed";
+                            statusKey = "completed";
+                          }
+                          
                           return (
                             <span
                               className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(

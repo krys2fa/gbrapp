@@ -100,6 +100,13 @@ async function getAllJobCards(req: NextRequest) {
       _count: {
         select: {
           assays: true,
+          invoices: true,
+        },
+      },
+      invoices: {
+        select: {
+          id: true,
+          status: true,
         },
       },
     };

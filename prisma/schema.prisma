@@ -282,21 +282,27 @@ model InvoiceType {
 }
 
 model Fee {
-  id            String    @id @default(uuid())
-  jobCardId     String
-  jobCard       JobCard   @relation(fields: [jobCardId], references: [id])
-  feeType       FeeType
-  amountPaid    Float
-  currencyId    String
-  currency      Currency  @relation(fields: [currencyId], references: [id])
-  paymentDate   DateTime?
-  status        String    @default("pending")
-  receiptNumber String
-  balance       String
-  whtTotal      Float
-  notes         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                   String           @id @default(uuid())
+  jobCardId            String?
+  jobCard              JobCard?         @relation(fields: [jobCardId], references: [id])
+  largeScaleJobCardId  String?
+  largeScaleJobCard    LargeScaleJobCard? @relation(fields: [largeScaleJobCardId], references: [id])
+  feeType              FeeType
+  amountPaid           Float
+  currencyId           String
+  currency             Currency         @relation(fields: [currencyId], references: [id])
+  paymentDate          DateTime?
+  status               String           @default("pending")
+  receiptNumber        String
+  balance              String
+  whtTotal             Float
+  notes                String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  // Ensure only one job card type is set
+  @@unique([jobCardId])
+  @@unique([largeScaleJobCardId])
 }
 
 model Assay {
@@ -595,6 +601,7 @@ model LargeScaleJobCard {
   commodities               LargeScaleJobCardCommodity[]
   assays                    LargeScaleAssay[]
   invoices                  Invoice[]
+  fees                      Fee[]
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
 }

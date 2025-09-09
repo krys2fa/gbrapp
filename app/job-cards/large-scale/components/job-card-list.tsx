@@ -39,7 +39,12 @@ interface LargeScaleJobCard {
   } | null;
   _count?: {
     assays?: number;
+    invoices?: number;
   };
+  invoices?: Array<{
+    id: string;
+    status: string;
+  }>;
 }
 
 interface LargeScaleJobCardListProps {
@@ -123,6 +128,8 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
+      case "paid":
+        return "bg-green-100 text-green-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
       case "in_progress":
@@ -194,13 +201,38 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                         <p className="text-sm font-medium text-gray-900">
                           {jobCard.referenceNumber}
                         </p>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
-                            jobCard.status
-                          )}`}
-                        >
-                          {jobCard.status.replace("_", " ")}
-                        </span>
+                        {(() => {
+                          const hasAssays = !!(
+                            jobCard._count &&
+                            jobCard._count.assays &&
+                            jobCard._count.assays > 0
+                          );
+                          const hasPaidInvoices = !!(
+                            jobCard.invoices &&
+                            jobCard.invoices.some(invoice => invoice.status === "paid")
+                          );
+                          
+                          let statusText = jobCard.status.replace("_", " ");
+                          let statusKey = jobCard.status;
+                          
+                          if (hasPaidInvoices) {
+                            statusText = "Paid";
+                            statusKey = "paid";
+                          } else if (hasAssays) {
+                            statusText = "Completed";
+                            statusKey = "completed";
+                          }
+                          
+                          return (
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
+                                statusKey
+                              )}`}
+                            >
+                              {statusText}
+                            </span>
+                          );
+                        })()}
                       </div>
                       <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
                         <span>{jobCard.exporter.name}</span>
