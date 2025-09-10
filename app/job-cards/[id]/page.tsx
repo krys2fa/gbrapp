@@ -10,6 +10,8 @@ import {
   ArrowPathIcon,
   XCircleIcon,
   EyeIcon,
+  DocumentTextIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
 import { useParams } from "next/navigation";
@@ -628,12 +630,29 @@ function JobCardDetailPage() {
             <h3 className="text-lg leading-6 font-medium text-gray-900">
               Valuation
             </h3>
-            <Link
-              href={`/job-cards/${id}/assays/${jobCard.assays[0].id}`}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              View Valuation
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/job-cards/${id}/assays/${jobCard.assays[0].id}`}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                <EyeIcon className="w-4 h-4 mr-2" />
+                View Valuation
+              </Link>
+              <Link
+                href={`/job-cards/${id}/assays/assay-results`}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                <DocumentTextIcon className="w-4 h-4 mr-2" />
+                Assay Results
+              </Link>
+              <Link
+                href={`/job-cards/${id}/assays/assay-report-analysis`}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                <ChartBarIcon className="w-4 h-4 mr-2" />
+                Assay Report Analysis
+              </Link>
+            </div>
           </div>
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200">

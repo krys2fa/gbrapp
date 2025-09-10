@@ -178,7 +178,7 @@ export default async function InvoicePage(props: any) {
           <div className="flex items-center justify-between mb-1">
             <div className="py-2">
               <img
-                src="/goldbod-logo-black.png"
+                src="/goldbod-logo-green.png"
                 alt="GoldBod Logo"
                 className="h-12 w-auto"
               />
@@ -230,10 +230,6 @@ export default async function InvoicePage(props: any) {
               <span className="text-sm text-gray-500 mr-2">Destination:</span>
               <span className="text-sm">{destinationCountry}</span>
             </div>
-            {/* <div>
-              <span className="text-sm text-gray-500 mr-2">Assay Rate:</span>
-              <span className="font-medium">{rate}</span>
-            </div> */}
 
             <div>
               <span className="text-sm text-gray-500 mr-2">BoG Rate:</span>

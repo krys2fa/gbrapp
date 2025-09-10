@@ -404,7 +404,7 @@ export async function PUT(req: NextRequest) {
                 : new Date(),
               goldContent: avgFineness || 0,
               silverContent: 0,
-              certificateNumber: `CERT-${Date.now()}-${Math.floor(
+              certificateNumber: `ASSY-${Date.now()}-${Math.floor(
                 Math.random() * 1000
               )}`,
 
