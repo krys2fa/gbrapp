@@ -175,8 +175,8 @@ export default async function InvoicePage(props: any) {
         </div>
 
         <div className="bg-white shadow rounded-lg p-6" id="invoice-content">
-          <div className="flex items-center justify-between mb-1 px-8">
-            <div className="p-2">
+          <div className="flex items-center justify-between mb-1">
+            <div className="py-2">
               <img
                 src="/goldbod-logo-black.png"
                 alt="GoldBod Logo"
