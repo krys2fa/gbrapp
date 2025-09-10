@@ -17,7 +17,11 @@ function formatCurrency(value: number | null | undefined, code = "GHS") {
 function formatDate(d?: Date | string | null) {
   if (!d) return "";
   const dt = d instanceof Date ? d : new Date(d);
-  return dt.toLocaleDateString();
+  return dt.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export default async function InvoicePage(props: any) {
@@ -154,10 +158,10 @@ export default async function InvoicePage(props: any) {
         <HistoryBackLink label="Back" />
       </div>
       <div className="max-w-4xl mx-auto py-10 px-4">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold">
+        <div className="flex items-center justify-end mb-6">
+          {/* <h1 className="text-2xl font-semibold">
             Invoice #{invoice.invoiceNumber}
-          </h1>
+          </h1> */}
           {/* Client actions: back + download */}
           <InvoiceActions
             jobCardId={jobCardId}
@@ -176,61 +180,61 @@ export default async function InvoicePage(props: any) {
               />
             </div>
 
-            <div className="flex justify-center">
-              <h1 className="text-xl font-bold tracking-wider">
-                ASSAY INVOICE
-              </h1>
-            </div>
-
-            <div className="bg-white p-4">
+            {/* <div className="bg-white p-4">
               <img
                 src="/coat-of-arms.jpg"
                 alt="Coat of Arms"
                 className="h-20 w-auto"
               />
-            </div>
+            </div> */}
 
-            <div className="bg-white p-4">
+            {/* <div className="bg-white p-4">
               <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
-            </div>
+            </div> */}
+          </div>
+
+          <div className="flex justify-center mb-4">
+            <h1 className="text-xl font-bold tracking-wider">
+              GOLD ASSAY INVOICE
+            </h1>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <p className="text-sm text-gray-500">Date</p>
-              <p className="font-medium">
-                {formatDate(invoice.issueDate || invoice.createdAt)}
-              </p>
+              <span className="text-sm text-gray-500 mr-2">Exporter:</span>
+              <span className="font-medium">{exporterName}</span>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">Assay Number</p>
-              <p className="font-medium">{assayNumbers}</p>
+              <span className="text-sm text-gray-500 mr-2">Date:</span>
+              <span className="font-medium">
+                {formatDate(invoice.issueDate || invoice.createdAt)}
+              </span>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Exporter</p>
-              <p className="font-medium">{exporterName}</p>
+              <span className="text-sm text-gray-500 mr-2">Job Number:</span>
+              <span className="font-medium">{referenceNumber}</span>
             </div>
+
             <div>
-              <p className="text-sm text-gray-500">Job Card ID</p>
-              <p className="font-medium">{referenceNumber}</p>
+              <span className="text-sm text-gray-500 mr-2">Assay Number:</span>
+              <span className="font-medium">{assayNumbers}</span>
             </div>
           </div>
 
           <div className="mb-6 grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-500">Assay Rate</p>
-              <p className="font-medium">{rate}</p>
+              <span className="text-sm text-gray-500 mr-2">Destination:</span>
+              <span className="font-medium">{destinationCountry}</span>
             </div>
+            {/* <div>
+              <span className="text-sm text-gray-500 mr-2">Assay Rate:</span>
+              <span className="font-medium">{rate}</span>
+            </div> */}
 
             <div>
-              <p className="text-sm text-gray-500">Destination</p>
-              <p className="font-medium">{destinationCountry}</p>
+              <span className="text-sm text-gray-500 mr-2">BoG Rate:</span>
+              <span className="font-medium">{exchangeRate}</span>
             </div>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">Exchange Rate</p>
-            <p className="font-medium">{exchangeRate}</p>
           </div>
 
           <table className="w-full mt-2 mb-6 table-auto border-collapse border border-gray-300">
@@ -240,16 +244,16 @@ export default async function InvoicePage(props: any) {
                   Description
                 </th>
                 <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
-                  Assay value (USD)
+                  Assay value ($)
                 </th>
                 <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
                   Assay value (GHS)
                 </th>
                 <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
-                  Rate %
+                  Rate (%)
                 </th>
                 <th className="py-3 px-4 items-center text-sm font-medium text-gray-700 border border-gray-300">
-                  Total - Inclusive (GHS)
+                  Total (Inclusive)
                 </th>
               </tr>
             </thead>
@@ -275,55 +279,65 @@ export default async function InvoicePage(props: any) {
           </table>
 
           <div className="mb-4">
-            <h3 className="text-sm font-medium mb-2 text-center">
-              Total - Exclusive (GHS)
-            </h3>
-            <div className="grid grid-cols-2 gap-2 text-sm mb-2">
-              <div className="text-gray-600 text">Total - Exclusive</div>
-              <div className="font-medium text-right">
-                {formatCurrency(totalExclusive, "GHS")}
-              </div>
+            <div className="font-medium text-right mb-2">
+              <span className="text-gray-600 text mr-12">Exclusive:</span>
+              <span>{formatCurrency(totalExclusive, "GHS")}</span>
             </div>
-            <h3 className="text-sm font-medium mb-2 text-center">
-              Levies & Taxes
-            </h3>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="text-gray-600">NHIL (2.5%)</div>
-              <div className="font-medium text-right">
-                {formatCurrency(nhil, "GHS")}
-              </div>
-              <div className="text-gray-600">GETFund (2.5%)</div>
-              <div className="font-medium text-right">
-                {formatCurrency(getfund, "GHS")}
-              </div>
-              <div className="text-gray-600">COVID (1%)</div>
-              <div className="font-medium text-right">
-                {formatCurrency(covid, "GHS")}
-              </div>
 
-              <div className="text-gray-700 font-medium border-t border-gray-300 pt-2 mt-2">
-                Subtotal
-              </div>
-              <div className="font-semibold text-right border-t border-gray-300 pt-2 mt-2">
-                {formatCurrency(subTotal, "GHS")}
-              </div>
-              <div className="text-gray-600">VAT (15%)</div>
-              <div className="font-medium text-right">
-                {formatCurrency(vat, "GHS")}
-              </div>
-              <div className="text-gray-700 font-medium border-t border-gray-300 pt-2 mt-2">
-                Total
-              </div>
-              <div className="font-semibold text-right border-t border-gray-300 pt-2 mt-2">
-                {formatCurrency(grandTotal, "GHS")}
+            <div className="font-medium text-right mb-2">
+              <span className="text-gray-600 mr-12">NHIL (2.5%):</span>
+              <span>{formatCurrency(nhil, "GHS")}</span>
+            </div>
+
+            <div className="font-medium text-right mb-2">
+              <span className="text-gray-600 mr-12">GETFund (2.5%):</span>
+              <span>{formatCurrency(getfund, "GHS")}</span>
+            </div>
+
+            <div className="font-medium text-right mb-2">
+              <span className="text-gray-600 mr-12">COVID (1%):</span>
+              <span>{formatCurrency(covid, "GHS")}</span>
+            </div>
+
+            <div className="font-semibold text-right pt-2 mt-2 mb-2 ">
+              <span className="mr-12">Sub Total:</span>
+              <span>{formatCurrency(subTotal, "GHS")}</span>
+            </div>
+
+            <div className="font-medium text-right mb-2">
+              <span className="text-gray-600 mr-12">VAT (15%):</span>
+              <span>{formatCurrency(vat, "GHS")}</span>
+            </div>
+
+            <div className="font-semibold text-right mb-4 pb-2">
+              <span className="text-gray-600 mr-12">Total:</span>
+              <span>{formatCurrency(grandTotal, "GHS")}</span>
+            </div>
+
+            <div>
+              <div className="text-right">
+                <p className="font-bold text-gray-800">
+                  <span className="mr-12">Grand Total:</span>
+                  <span className="border-y border-gray-400 py-2 my-2">
+                    {formatCurrency(grandTotal, "GHS")}
+                  </span>
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t text-left">
-            <p className="text-lg font-bold flex justify-between">
-              <span>Grand Total:</span> {formatCurrency(grandTotal, "GHS")}
-            </p>
+          {/* QR Code Section */}
+          <div className="my-6 flex justify-start">
+            <div className="text-center">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
+                  "https://goldbod.gov.gh/"
+                )}`}
+                alt="QR Code - Visit GoldBod Website"
+                className="w-40 h-40 mx-auto mb-2"
+              />
+              {/* <p className="text-xs text-gray-500">Scan to visit GoldBod</p> */}
+            </div>
           </div>
         </div>
       </div>
