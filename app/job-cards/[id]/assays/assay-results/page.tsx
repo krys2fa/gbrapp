@@ -2,14 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowPathIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
-import {
-  formatDate,
-  formatExchangeRate,
-  formatCurrency,
-} from "@/app/lib/utils";
+import AssayActions from "../AssayActions";
+import { formatDate, formatCurrency } from "@/app/lib/utils";
 
 export default function AssayResultsPage() {
   const params = useParams();
@@ -19,7 +15,7 @@ export default function AssayResultsPage() {
   const [jobCard, setJobCard] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  console.log("Job Card Data:", jobCard); // Debug log
+  //   console.log("Job Card Data:", jobCard); // Debug log
   // helper: normalize common units to grams
   function convertToGrams(v: any, unit?: string) {
     const value = Number(v) || 0;
@@ -74,7 +70,7 @@ export default function AssayResultsPage() {
         <div className="bg-red-50 border-l-4 border-red-400 p-4">
           <p className="text-sm text-red-700">{error}</p>
         </div>
-        <div className="mt-4">
+        <div className="mt-4 print:hidden">
           <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
         </div>
       </div>
@@ -87,7 +83,7 @@ export default function AssayResultsPage() {
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
           <p className="text-sm text-yellow-700">Job card not found.</p>
         </div>
-        <div className="mt-4">
+        <div className="mt-4 print:hidden">
           <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
         </div>
       </div>
@@ -98,103 +94,28 @@ export default function AssayResultsPage() {
 
   return (
     <>
+      {/* Header with Logo and Navigation */}
+      <div className="bg-white shadow-sm rounded-t-lg print:hidden">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+           
+            <div className="print:hidden">
+              <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
+            </div>
+            <AssayActions
+              jobCardId={id}
+            //   signatoryName="Dr. John Smith"
+            //   signatoryPosition="Chief Assayer"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header with Logo and Navigation */}
-          <div className="bg-white shadow-sm rounded-t-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                {/* <div className="flex items-center space-x-4">
-                  <img
-                    src="/goldbod-logo-green.png"
-                    alt="GoldBod Logo"
-                    className="h-12 w-auto"
-                  />
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-900">
-                      Gold Assay Results 
-                    </h1>
-                  </div>
-                </div> */}
-                {/* <div className="flex items-center space-x-4 justify-between"> */}
-                <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
-                <button
-                  onClick={() => window.print()}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <DocumentTextIcon className="h-5 w-5 mr-2" />
-                  Print Certificate
-                </button>
-                {/* </div> */}
-              </div>
-            </div>
-
-            {/* Information Grid */}
-            {/* <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-              <div className="flex items-center space-x-4">
-                <img
-                  src="/goldbod-logo-green.png"
-                  alt="GoldBod Logo"
-                  className="h-12 w-auto"
-                />
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">
-                    Gold Assay Results
-                  </h1>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Client</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {jobCard?.exporter?.name || "N/A"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Date</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {formatDate(new Date())}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Job Card #
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {jobCard?.referenceNumber || "N/A"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Assay #</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {assays.length > 0
-                      ? assays[0]?.certificateNumber || "N/A"
-                      : "N/A"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Destination
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {jobCard?.destination || "N/A"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Commodity
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900">
-                    {jobCard?.commodity?.name || "N/A"}
-                  </dd>
-                </div>
-              </div>
-            </div> */}
-          </div>
-
           {/* Main Content */}
-          <div className="bg-white shadow-sm">
-            <div className="py-2">
+          <div id="assay-content" className="bg-white shadow-sm">
+            <div className="px-4 sm:px-6 lg:px-8 py-6 pb-2">
               <img
                 src="/goldbod-logo-green.png"
                 alt="GoldBod Logo"
@@ -202,13 +123,13 @@ export default function AssayResultsPage() {
               />
             </div>
 
-            <div className="flex justify-center mb-4">
+            <div className="px-4 sm:px-6 lg:px-8 pt-2 py-6 flex justify-center mb-2">
               <h1 className="text-xl font-bold tracking-wider">
                 GOLD ASSAY RESULTS
               </h1>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="px-4 sm:px-6 lg:px-8 grid grid-cols-2 gap-4 mb-4">
               <div>
                 <span className="text-sm text-gray-500 mr-2">Client:</span>
                 <span className="text-sm">
@@ -257,100 +178,9 @@ export default function AssayResultsPage() {
             </div>
 
             {/* Assay Measurements Table */}
-            <div className="px-6 py-6">
-              {/* <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                        Certificate #
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                        Assay Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                        Sample ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                        Gross Weight
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                        Net Weight
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                        Gold Content (%)
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                        Silver Content (%)
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                        Unit
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {assays.map((assay: any) =>
-                      (assay.measurements || []).map(
-                        (measurement: any, index: number) => (
-                          <tr
-                            key={`${assay.id}-${index}`}
-                            className="hover:bg-gray-50"
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
-                              {assay.certificateNumber || "-"}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r border-gray-200">
-                              {formatDate(
-                                new Date(assay.assayDate || assay.createdAt)
-                              )}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
-                              {measurement.sampleId || `Sample ${index + 1}`}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
-                              {measurement.grossWeight
-                                ? Number(measurement.grossWeight).toFixed(3)
-                                : "-"}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
-                              {measurement.netWeight
-                                ? Number(measurement.netWeight).toFixed(3)
-                                : "-"}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
-                              {measurement.goldContent
-                                ? Number(measurement.goldContent).toFixed(2)
-                                : "-"}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
-                              {measurement.silverContent
-                                ? Number(measurement.silverContent).toFixed(2)
-                                : "-"}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r border-gray-200">
-                              {measurement.unitOfMeasure ||
-                                jobCard.unitOfMeasure ||
-                                "g"}
-                            </td>
-                          </tr>
-                        )
-                      )
-                    )}
-                    {assays.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan={8}
-                          className="px-6 py-4 text-center text-sm text-gray-500 border-t border-gray-200"
-                        >
-                          No assay measurements found
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div> */}
+            <div className="px-4 sm:px-6 lg:px-8 pt-4">
 
-              <div className="bg-white border rounded overflow-hidden">
+              <div className="bg-white overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -465,7 +295,7 @@ export default function AssayResultsPage() {
               </div>
             </div>
 
-            <div className="p-4">
+            <div className="px-4 sm:px-6 lg:px-8 py-4">
               <div className="space-y-3">
                 <div>
                   <div className="flex items-center gap-2">
@@ -611,7 +441,7 @@ export default function AssayResultsPage() {
 
             {/* QR Code Section */}
             <div className="bg-white shadow-sm rounded-b-lg">
-              <div className="my-6 px-6 pb-6">
+              <div className="my-6 px-4 sm:px-6 lg:px-8 pb-6">
                 <div className="flex items-start justify-between gap-8">
                   {/* QR Code */}
                   <div className="text-center flex-shrink-0">
@@ -629,12 +459,12 @@ export default function AssayResultsPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Comments
                     </label>
-                    <div className="bg-gray-50 border border-gray-300 rounded-md p-3 min-h-[160px]">
-                      {/* <p className="text-sm text-gray-900 whitespace-pre-wrap">
-                        {assays.length > 0 && assays[0]?.comments
+                    <div className="comments-section border border-gray-300 rounded p-4 h-40 overflow-y-auto bg-gray-50">
+                      <p className="text-sm text-gray-900  whitespace-pre-wrap">
+                        {/* {assays.length > 0 && assays[0]?.comments
                           ? assays[0].comments
-                          : "No comments available for this assay."}
-                      </p> */}
+                          : "No comments available for this assay."} */}
+                      </p>
                     </div>
                   </div>
                 </div>
