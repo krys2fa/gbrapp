@@ -128,7 +128,11 @@ export default async function InvoicePage(props: any) {
   // Assay number(s): join certificate numbers of linked assays if present
   const assayNumbers =
     (invoice.assays || [])
-      .map((a: any) => a.certificateNumber)
+      .map((a: any) =>
+        a.certificateNumber
+          ? `ASSY${a.certificateNumber.replace(/cert/gi, "")}`
+          : null
+      )
       .filter(Boolean)
       .join(", ") || "-";
 
