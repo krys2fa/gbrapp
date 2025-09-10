@@ -205,30 +205,30 @@ export default async function InvoicePage(props: any) {
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <span className="text-sm text-gray-500 mr-2">Exporter:</span>
-              <span className="font-medium">{exporterName}</span>
+              <span className="text-sm">{exporterName}</span>
             </div>
 
             <div>
               <span className="text-sm text-gray-500 mr-2">Date:</span>
-              <span className="font-medium">
+              <span className="text-sm">
                 {formatDate(invoice.issueDate || invoice.createdAt)}
               </span>
             </div>
             <div>
               <span className="text-sm text-gray-500 mr-2">Job Number:</span>
-              <span className="font-medium">{referenceNumber}</span>
+              <span className="text-sm">{referenceNumber}</span>
             </div>
 
             <div>
               <span className="text-sm text-gray-500 mr-2">Assay Number:</span>
-              <span className="font-medium">{assayNumbers}</span>
+              <span className="text-sm">{assayNumbers}</span>
             </div>
           </div>
 
           <div className="mb-6 grid grid-cols-2 gap-4">
             <div>
               <span className="text-sm text-gray-500 mr-2">Destination:</span>
-              <span className="font-medium">{destinationCountry}</span>
+              <span className="text-sm">{destinationCountry}</span>
             </div>
             {/* <div>
               <span className="text-sm text-gray-500 mr-2">Assay Rate:</span>
@@ -237,7 +237,7 @@ export default async function InvoicePage(props: any) {
 
             <div>
               <span className="text-sm text-gray-500 mr-2">BoG Rate:</span>
-              <span className="font-medium">{exchangeRate}</span>
+              <span className="text-sm">{exchangeRate}</span>
             </div>
           </div>
 
