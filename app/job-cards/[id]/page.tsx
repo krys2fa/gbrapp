@@ -9,6 +9,7 @@ import {
   TrashIcon,
   ArrowPathIcon,
   XCircleIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
 import { useParams } from "next/navigation";
@@ -97,7 +98,9 @@ function JobCardDetailPage() {
         window.location.href = "/job-cards";
       } else {
         const errorData = await response.json();
-        toast.error(`Failed to delete job card: ${errorData.error || "Unknown error"}`);
+        toast.error(
+          `Failed to delete job card: ${errorData.error || "Unknown error"}`
+        );
       }
     } catch (error) {
       console.error("Error deleting job card:", error);
@@ -139,7 +142,9 @@ function JobCardDetailPage() {
       } else {
         const errorData = await response.json();
         toast.dismiss("invoice-generation");
-        toast.error(`Failed to generate invoice: ${errorData.error || "Unknown error"}`);
+        toast.error(
+          `Failed to generate invoice: ${errorData.error || "Unknown error"}`
+        );
       }
     } catch (error) {
       console.error("Error generating invoice:", error);
@@ -695,6 +700,7 @@ function JobCardDetailPage() {
                 href={`/job-cards/${id}/invoices/${jobCard.invoices[0].id}`}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
               >
+                <EyeIcon className="w-4 h-4 mr-2" />
                 View Invoice
               </Link>
             ) : (

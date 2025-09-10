@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import { useRouter } from "next/navigation";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 
 export default function InvoiceActions({
   jobCardId,
@@ -272,6 +273,7 @@ export default function InvoiceActions({
         }}
         className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
       >
+        <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
         Download
       </button>
     </div>

@@ -93,7 +93,7 @@ export default async function InvoicePage(props: any) {
     // Log error server-side but don't expose to client
     console.log("Failed to load invoice for invoice page:", e);
     return (
-      <div className="max-w-4xl mx-auto py-10 px-4">
+      <div className="max-w-4xl mx-auto py-2 px-4">
         <p>Failed to load invoice data. Please try again later.</p>
         <HistoryBackLink label="Back" />
       </div>
@@ -102,7 +102,7 @@ export default async function InvoicePage(props: any) {
 
   if (!invoice) {
     return (
-      <div className="max-w-4xl mx-auto py-10 px-4">
+      <div className="max-w-4xl mx-auto py-2 px-4">
         <p>Invoice not found.</p>
         <HistoryBackLink label="Back" />
       </div>
@@ -161,7 +161,7 @@ export default async function InvoicePage(props: any) {
       <div className="my-4 ml-4">
         <HistoryBackLink label="Back" />
       </div>
-      <div className="max-w-4xl mx-auto py-10 px-4">
+      <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center justify-end mb-6">
           {/* <h1 className="text-2xl font-semibold">
             Invoice #{invoice.invoiceNumber}
@@ -204,7 +204,7 @@ export default async function InvoicePage(props: any) {
           </div>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <span className="text-sm text-gray-500 mr-2">Exporter:</span>
+              <span className="text-sm text-gray-500 mr-2">Client:</span>
               <span className="text-sm">{exporterName}</span>
             </div>
 
