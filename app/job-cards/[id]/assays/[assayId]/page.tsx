@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
-import { formatDate, formatExchangeRate, formatCurrency } from "@/app/lib/utils";
+import AssayDetailActions from "./AssayDetailActions";
+import { formatDate, formatCurrency } from "@/app/lib/utils";
 
 export default function AssayDetailPage() {
   const params = useParams();
@@ -201,62 +201,50 @@ export default function AssayDetailPage() {
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              try {
-                // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                downloadCertificate();
-              } catch (e) {
-                console.error(e);
-                alert("Failed to generate certificate for printing.");
-              }
-            }}
-            className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
-          >
-            Download
-          </button>
+          <AssayDetailActions
+            jobCardId={id}
+            assayId={assayId}
+            // signatoryName="Dr. John Smith"
+            // signatoryPosition="Chief Assayer"
+          />
         </div>
       </div>
 
-      <div className="bg-white shadow sm:rounded-lg overflow-hidden">
+      <div id="assay-detail-content" className="bg-white overflow-hidden">
         <div className="px-4 py-5 sm:px-6">
           <h3 className="text-base leading-6 font-medium text-gray-900">
             Certificate #{assay.certificateNumber || "-"}
           </h3>
-          {/* <p className="mt-1 max-w-2xl text-sm text-gray-500">
-            Assay details and measurements
-          </p> */}
         </div>
 
         <div className="flex items-center justify-between mb-1 px-8">
           <div className="p-2">
             <img
-              src="/goldbod-logo-black.png"
+              src="/goldbod-logo-green.png"
               alt="GoldBod Logo"
               className="h-12 w-auto"
             />
           </div>
 
-          <div className="flex justify-center">
-            <h1 className="text-xl font-bold tracking-wider">
-              ASSAY REPORT ANALYSIS
-            </h1>
-          </div>
-
-          <div className="bg-white p-4">
+          {/* <div className="bg-white p-4">
             <img
               src="/coat-of-arms.jpg"
               alt="Coat of Arms"
               className="h-20 w-auto"
             />
-          </div>
+          </div> */}
 
-          <div className="bg-white p-4">
+          {/* <div className="bg-white p-4">
             <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
-          </div>
+          </div> */}
         </div>
 
         <div className="border-t border-gray-200 px-4 py-3 sm:p-4">
+          <div className="flex justify-center">
+            <h1 className="text-xl font-bold tracking-wider">
+              ASSAY REPORT ANALYSIS
+            </h1>
+          </div>
           {/* Top: show exporter and assay date above the measurements table */}
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -296,14 +284,14 @@ export default function AssayDetailPage() {
           <div className="mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Exporter Values (top left) */}
-              <div className="bg-white border rounded overflow-hidden">
-                <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+              <div className="bg-white overflow-hidden">
+                <div className="px-4 py-2 bg-gray-50">
                   <h4 className="text-sm font-medium text-gray-900">
                     EXPORTER VALUES
                   </h4>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                <div>
+                  <table className="w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -347,14 +335,14 @@ export default function AssayDetailPage() {
               </div>
 
               {/* GoldBod Values (top right) */}
-              <div className="bg-white border rounded overflow-hidden">
-                <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+              <div className="bg-white overflow-hidden">
+                <div className="px-4 py-2 bg-gray-50">
                   <h4 className="text-sm font-medium text-gray-900">
                     GOLDBOD VALUES
                   </h4>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                <div>
+                  <table className="w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -566,7 +554,10 @@ export default function AssayDetailPage() {
                               }
                             })()
                           : assay.comments?.meta?.dailyPrice != null
-                          ? formatCurrency(assay.comments.meta.dailyPrice, "USD")
+                          ? formatCurrency(
+                              assay.comments.meta.dailyPrice,
+                              "USD"
+                            )
                           : commodityPrice != null
                           ? formatCurrency(commodityPrice, "USD")
                           : formatCurrency(0, "USD")}
@@ -734,86 +725,4 @@ export default function AssayDetailPage() {
       </div>
     </div>
   );
-}
-
-function downloadCertificate() {
-  // Clone the visible certificate card and open a print window that includes the page's styles
-  try {
-    const card =
-      document.querySelector(".bg-white.shadow") ||
-      document.querySelector("main") ||
-      document.body;
-    if (!card) {
-      alert("Certificate content not found on page.");
-      return;
-    }
-
-    const cloned = card.cloneNode(true) as HTMLElement;
-
-    // Find the two-column grid wrapper and mark it for print layout
-    try {
-      const elements = Array.from(cloned.querySelectorAll("*"));
-      for (const el of elements) {
-        if (
-          el.classList &&
-          el.classList.contains("grid") &&
-          el.classList.contains("grid-cols-1") &&
-          el.classList.contains("sm:grid-cols-2")
-        ) {
-          el.classList.add("print-two-column");
-          break;
-        }
-      }
-      // Also find the assay details 4-column grid and mark it so print forces 4 columns
-      try {
-        const assayGrids = Array.from(
-          cloned.querySelectorAll(".grid.grid-cols-1.sm\\:grid-cols-4")
-        );
-        assayGrids.forEach((g) => g.classList.add("print-grid-cols-4"));
-      } catch (e) {
-        // ignore
-      }
-    } catch (e) {
-      // ignore
-    }
-
-    // Collect stylesheet and style tags from the current document head to preserve page styles
-    const headStyles = Array.from(
-      document.querySelectorAll('link[rel="stylesheet"], style')
-    )
-      .map((n) => n.outerHTML)
-      .join("\n");
-
-    const title =
-      document.querySelector("h3")?.textContent?.trim() ||
-      document.title ||
-      "Certificate";
-
-    // Print-specific tweaks: force two-column flex for print, keep table borders
-    const printTweaks = `@page{size:auto;margin:20mm;} .print-two-column{display:flex;gap:16px;align-items:flex-start} .print-two-column > div{flex:1} table{border-collapse:collapse} th,td{border:1px solid #ccc;padding:8px;text-align:left} .print-grid-cols-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}`;
-
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>${headStyles}<style>${printTweaks}</style></head><body>${
-      (cloned as HTMLElement).outerHTML
-    }</body></html>`;
-
-    const w = window.open("", "_blank");
-    if (!w) {
-      alert("Please allow popups to download the certificate.");
-      return;
-    }
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
-    w.focus();
-    setTimeout(() => {
-      try {
-        w.print();
-      } catch (e) {
-        console.error(e);
-      }
-    }, 400);
-  } catch (e) {
-    console.error(e);
-    alert("Failed to generate certificate.");
-  }
 }
