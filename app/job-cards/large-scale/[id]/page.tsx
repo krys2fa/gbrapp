@@ -19,6 +19,24 @@ interface LargeScaleJobCard {
       id: string;
       name: string;
     };
+    // Consignee Information
+    consigneeAddress?: string;
+    consigneeTelephone?: string;
+    consigneeMobile?: string;
+    consigneeEmail?: string;
+    // Exporter Details
+    deliveryLocation?: string;
+    exporterTelephone?: string;
+    exporterEmail?: string;
+    exporterWebsite?: string;
+    exporterLicenseNumber?: string;
+    // Notified Party Information
+    notifiedPartyName?: string;
+    notifiedPartyAddress?: string;
+    notifiedPartyEmail?: string;
+    notifiedPartyContactPerson?: string;
+    notifiedPartyTelephone?: string;
+    notifiedPartyMobile?: string;
   };
   unitOfMeasure: string;
   status: string;
@@ -51,21 +69,7 @@ interface LargeScaleJobCard {
     name: string;
     badgeNumber: string;
   };
-  consigneeAddress: string;
-  consigneeTelephone: string;
-  consigneeMobile: string;
-  consigneeEmail: string;
-  deliveryLocation: string;
-  exporterTelephone: string;
-  exporterEmail: string;
-  exporterWebsite: string;
-  exporterLicenseNumber: string;
-  notifiedPartyName: string;
-  notifiedPartyAddress: string;
-  notifiedPartyEmail: string;
-  notifiedPartyContactPerson: string;
-  notifiedPartyTelephone: string;
-  notifiedPartyMobile: string;
+  // Removed consignee and notified party fields - now in exporter
   commodities: {
     id: string;
     commodity: {
@@ -492,7 +496,7 @@ function LargeScaleJobCardDetailPage() {
           </div>
 
           {/* Contact Information */}
-          <div className="bg-white shadow sm:rounded-lg">
+          {/* <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Contact Information
@@ -503,10 +507,10 @@ function LargeScaleJobCardDetailPage() {
                     Consignee
                   </h4>
                   <div className="space-y-1 text-sm text-gray-600">
-                    <p>{jobCard.consigneeAddress || "Not provided"}</p>
-                    <p>{jobCard.consigneeTelephone || "Not provided"}</p>
-                    <p>{jobCard.consigneeMobile || "Not provided"}</p>
-                    <p>{jobCard.consigneeEmail || "Not provided"}</p>
+                    <p>{jobCard.exporter.consigneeAddress || "Not provided"}</p>
+                    <p>{jobCard.exporter.consigneeTelephone || "Not provided"}</p>
+                    <p>{jobCard.exporter.consigneeMobile || "Not provided"}</p>
+                    <p>{jobCard.exporter.consigneeEmail || "Not provided"}</p>
                   </div>
                 </div>
                 <div>
@@ -514,19 +518,19 @@ function LargeScaleJobCardDetailPage() {
                     Exporter Details
                   </h4>
                   <div className="space-y-1 text-sm text-gray-600">
-                    <p>{jobCard.deliveryLocation || "Not provided"}</p>
-                    <p>{jobCard.exporterTelephone || "Not provided"}</p>
-                    <p>{jobCard.exporterEmail || "Not provided"}</p>
-                    <p>{jobCard.exporterWebsite || "Not provided"}</p>
-                    <p>{jobCard.exporterLicenseNumber || "Not provided"}</p>
+                    <p>{jobCard.exporter.deliveryLocation || "Not provided"}</p>
+                    <p>{jobCard.exporter.exporterTelephone || "Not provided"}</p>
+                    <p>{jobCard.exporter.exporterEmail || "Not provided"}</p>
+                    <p>{jobCard.exporter.exporterWebsite || "Not provided"}</p>
+                    <p>{jobCard.exporter.exporterLicenseNumber || "Not provided"}</p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Notified Party */}
-          {jobCard.notifiedPartyName && (
+          {/* {jobCard.exporter.notifiedPartyName && (
             <div className="bg-white shadow sm:rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
@@ -536,7 +540,7 @@ function LargeScaleJobCardDetailPage() {
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Name</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {jobCard.notifiedPartyName}
+                      {jobCard.exporter.notifiedPartyName}
                     </dd>
                   </div>
                   <div>
@@ -544,7 +548,7 @@ function LargeScaleJobCardDetailPage() {
                       Contact Person
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {jobCard.notifiedPartyContactPerson || "Not provided"}
+                      {jobCard.exporter.notifiedPartyContactPerson || "Not provided"}
                     </dd>
                   </div>
                   <div>
@@ -552,13 +556,13 @@ function LargeScaleJobCardDetailPage() {
                       Address
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {jobCard.notifiedPartyAddress || "Not provided"}
+                      {jobCard.exporter.notifiedPartyAddress || "Not provided"}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Email</dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {jobCard.notifiedPartyEmail || "Not provided"}
+                      {jobCard.exporter.notifiedPartyEmail || "Not provided"}
                     </dd>
                   </div>
                   <div>
@@ -566,7 +570,7 @@ function LargeScaleJobCardDetailPage() {
                       Telephone
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {jobCard.notifiedPartyTelephone || "Not provided"}
+                      {jobCard.exporter.notifiedPartyTelephone || "Not provided"}
                     </dd>
                   </div>
                   <div>
@@ -574,13 +578,13 @@ function LargeScaleJobCardDetailPage() {
                       Mobile
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {jobCard.notifiedPartyMobile || "Not provided"}
+                      {jobCard.exporter.notifiedPartyMobile || "Not provided"}
                     </dd>
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Additional Information */}
           <div className="bg-white shadow sm:rounded-lg">

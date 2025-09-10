@@ -149,8 +149,6 @@ model JobCard {
   technicalDirectorId  String?
   technicalDirector    TechnicalDirector?       @relation(fields: [technicalDirectorId], references: [id])
   unitOfMeasure        String?
-  buyerName            String?
-  buyerAddress         String?
   teamLeader           String?
   totalGrossWeight     Float?
   destinationCountry   String?
@@ -382,6 +380,32 @@ model Exporter {
   address           String?
   licenseNumber     String?
   authorizedSignatory String?
+
+  // Consignee Information
+  consigneeAddress          String?
+  consigneeTelephone        String?
+  consigneeMobile           String?
+  consigneeEmail            String?
+
+  // Buyer Information
+  buyerName                 String?
+  buyerAddress              String?
+
+  // Exporter Details
+  deliveryLocation          String?
+  exporterTelephone         String?
+  exporterEmail             String?
+  exporterWebsite           String?
+  exporterLicenseNumber     String?
+
+  // Notified Party Information
+  notifiedPartyName         String?
+  notifiedPartyAddress      String?
+  notifiedPartyEmail        String?
+  notifiedPartyContactPerson String?
+  notifiedPartyTelephone    String?
+  notifiedPartyMobile       String?
+
   jobCards          JobCard[]
   largeScaleJobCards LargeScaleJobCard[]
   createdAt         DateTime     @default(now())
@@ -575,27 +599,6 @@ model LargeScaleJobCard {
   nacobOfficer              NACOBOfficer?            @relation(fields: [nacobOfficerId], references: [id])
   nationalSecurityOfficerId String?
   nationalSecurityOfficer   NationalSecurityOfficer? @relation(fields: [nationalSecurityOfficerId], references: [id])
-
-  // Consignee Information
-  consigneeAddress          String?
-  consigneeTelephone        String?
-  consigneeMobile           String?
-  consigneeEmail            String?
-
-  // Exporter Details
-  deliveryLocation          String?
-  exporterTelephone         String?
-  exporterEmail             String?
-  exporterWebsite           String?
-  exporterLicenseNumber     String?
-
-  // Notified Party Information
-  notifiedPartyName         String?
-  notifiedPartyAddress      String?
-  notifiedPartyEmail        String?
-  notifiedPartyContactPerson String?
-  notifiedPartyTelephone    String?
-  notifiedPartyMobile       String?
 
   // Relations
   commodities               LargeScaleJobCardCommodity[]

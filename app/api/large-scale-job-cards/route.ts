@@ -132,21 +132,7 @@ async function createLargeScaleJobCard(req: NextRequest) {
       technicalDirectorId,
       nacobOfficerId,
       nationalSecurityOfficerId,
-      consigneeAddress,
-      consigneeTelephone,
-      consigneeMobile,
-      consigneeEmail,
-      deliveryLocation,
-      exporterTelephone,
-      exporterEmail,
-      exporterWebsite,
-      exporterLicenseNumber,
-      notifiedPartyName,
-      notifiedPartyAddress,
-      notifiedPartyEmail,
-      notifiedPartyContactPerson,
-      notifiedPartyTelephone,
-      notifiedPartyMobile,
+      // Removed consignee and notified party fields - now stored in exporter
       commodities,
     } = body;
 
@@ -231,21 +217,7 @@ async function createLargeScaleJobCard(req: NextRequest) {
       technicalDirectorId,
       nacobOfficerId,
       nationalSecurityOfficerId,
-      consigneeAddress,
-      consigneeTelephone,
-      consigneeMobile,
-      consigneeEmail,
-      deliveryLocation,
-      exporterTelephone,
-      exporterEmail,
-      exporterWebsite,
-      exporterLicenseNumber,
-      notifiedPartyName,
-      notifiedPartyAddress,
-      notifiedPartyEmail,
-      notifiedPartyContactPerson,
-      notifiedPartyTelephone,
-      notifiedPartyMobile,
+      // Removed consignee and notified party fields - now stored in exporter
     };
 
     const jobCard = await prisma.largeScaleJobCard.create({
