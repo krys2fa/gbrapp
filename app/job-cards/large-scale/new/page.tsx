@@ -507,8 +507,16 @@ function NewLargeScaleJobCardPage() {
           ? parseInt(form.numberOfBars)
           : undefined,
         deliveryLocation: form.deliveryLocation,
+        // Assay-related fields
         assayMethod: assayMethod,
         authorizedSignatory: authorizedSignatory,
+        typeOfShipment: form.typeOfShipment,
+        dateOfAnalysis: form.dateOfAnalysis,
+        sampleBottleDates: form.sampleBottleDates,
+        dataSheetDates: form.dataSheetDates,
+        numberOfSamples: form.numberOfSamples,
+        sampleType: form.sampleType,
+        shipmentNumber: form.shipmentNumber,
         assayersData: assayersData.length > 0 ? assayersData : undefined,
       };
 
@@ -2003,25 +2011,25 @@ function NewLargeScaleJobCardPage() {
                             <table className="min-w-full divide-y divide-gray-200">
                               <thead className="bg-gray-50">
                                 <tr>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                                     SN
                                   </th>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                                     Bar No
                                   </th>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                                     Gross Weight
                                   </th>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                                     Gold Fineness (%)
                                   </th>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                                     Gold Net Weight
                                   </th>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                                     Silver Fineness (%)
                                   </th>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                                     Silver Net Weight
                                   </th>
                                 </tr>

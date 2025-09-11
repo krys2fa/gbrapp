@@ -126,14 +126,23 @@ async function createLargeScaleJobCard(req: NextRequest) {
       notes,
       destinationCountry,
       sourceOfGold,
-      numberOfBoxes,
+      numberOfBars,
       customsOfficerId,
       assayOfficerId,
       technicalDirectorId,
       nacobOfficerId,
       nationalSecurityOfficerId,
-      // Removed consignee and notified party fields - now stored in exporter
-      commodities,
+      // Assay-related fields
+      assayMethod,
+      authorizedSignatory,
+      typeOfShipment,
+      dateOfAnalysis,
+      sampleBottleDates,
+      dataSheetDates,
+      numberOfSamples,
+      sampleType,
+      shipmentNumber,
+      assayersData,
     } = body;
 
     // Validate required fields
@@ -211,7 +220,7 @@ async function createLargeScaleJobCard(req: NextRequest) {
       notes,
       destinationCountry,
       sourceOfGold: sourceOfGold || "Ghana",
-      numberOfBoxes,
+      numberOfBars,
       customsOfficerId,
       assayOfficerId,
       technicalDirectorId,
@@ -236,6 +245,50 @@ async function createLargeScaleJobCard(req: NextRequest) {
       },
     });
 
+    // Create assay if assay-related data is provided
+    let assay = null;
+    if (assayMethod || dateOfAnalysis || assayersData) {
+      const assayData: any = {
+        jobCardId: jobCard.id,
+        method: assayMethod || "X_RAY",
+        signatory: authorizedSignatory,
+        dateOfAnalysis: dateOfAnalysis ? new Date(dateOfAnalysis) : new Date(),
+        sampleBottleDates: sampleBottleDates ? new Date(sampleBottleDates) : null,
+        dataSheetDates: dataSheetDates ? new Date(dataSheetDates) : null,
+        numberOfSamples: numberOfSamples ? parseInt(numberOfSamples) : 1,
+        sampleType: sampleType || "capillary",
+        shipmentNumber: shipmentNumber,
+      };
+
+      // Add shipment type if provided
+      if (typeOfShipment) {
+        assayData.shipmentTypeId = typeOfShipment;
+      }
+
+      assay = await prisma.largeScaleAssay.create({
+        data: assayData,
+      });
+
+      // Create assay measurements if assayersData is provided
+      if (assayersData && Array.isArray(assayersData)) {
+        for (let i = 0; i < assayersData.length; i++) {
+          const measurement = assayersData[i];
+          await prisma.largeScaleAssayMeasurement.create({
+            data: {
+              assayId: assay.id,
+              piece: i + 1,
+              barNumber: measurement.barNo,
+              grossWeight: measurement.grossWeight ? parseFloat(measurement.grossWeight) : null,
+              goldAssay: measurement.goldFineness ? parseFloat(measurement.goldFineness) : null,
+              netGoldWeight: measurement.goldNetWeight ? parseFloat(measurement.goldNetWeight) : null,
+              silverAssay: measurement.silverFineness ? parseFloat(measurement.silverFineness) : null,
+              netSilverWeight: measurement.silverNetWeight ? parseFloat(measurement.silverNetWeight) : null,
+            },
+          });
+        }
+      }
+    }
+
     // Create commodity associations if provided
     if (commodities && Array.isArray(commodities)) {
       for (const commodityData of commodities) {
@@ -257,7 +310,7 @@ async function createLargeScaleJobCard(req: NextRequest) {
       }
     }
 
-    // Fetch the complete job card with commodities
+    // Fetch the complete job card with commodities and assay
     const completeJobCard = await prisma.largeScaleJobCard.findUnique({
       where: { id: jobCard.id },
       include: {
@@ -274,6 +327,12 @@ async function createLargeScaleJobCard(req: NextRequest) {
         commodities: {
           include: {
             commodity: true,
+          },
+        },
+        assays: {
+          include: {
+            shipmentType: true,
+            measurements: true,
           },
         },
       },

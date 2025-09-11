@@ -26,7 +26,7 @@ interface LargeScaleJobCard {
   notes: string;
   destinationCountry: string;
   sourceOfGold: string;
-  numberOfBoxes: number;
+  numberOfBars: number;
   customsOfficer?: {
     id: string;
     name: string;
@@ -801,9 +801,9 @@ function NewLargeScaleAssayPage() {
               </div>
 
               <div>
-                <div className="text-xs text-gray-500">Number of boxes</div>
+                <div className="text-xs text-gray-500">Number of bars</div>
                 <div className="font-medium text-gray-900">
-                  {jobCard?.numberOfBoxes ?? "-"}
+                  {jobCard?.numberOfBars ?? "-"}
                 </div>
               </div>
             </div>
