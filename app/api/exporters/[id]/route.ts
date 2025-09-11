@@ -14,6 +14,12 @@ async function getExporter(
     const exporter = await prisma.exporter.findUnique({
       where: { id },
       include: {
+        exporterType: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         jobCards: {
           orderBy: {
             createdAt: "desc",

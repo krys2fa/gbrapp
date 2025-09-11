@@ -25,6 +25,9 @@ function NewLargeScaleJobCardPage() {
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
   >([]);
+  const [shipmentTypes, setShipmentTypes] = useState<
+    { id: string; name: string; description: string }[]
+  >([]);
   const [officers, setOfficers] = useState<{
     customsOfficers: { id: string; name: string; badgeNumber: string }[];
     assayOfficers: { id: string; name: string; badgeNumber: string }[];
@@ -64,6 +67,15 @@ function NewLargeScaleJobCardPage() {
   // Modal state
   const [showProcessedResultsModal, setShowProcessedResultsModal] =
     useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+  // Meta bar state
+  const [selectedExporter, setSelectedExporter] = useState<any>(null);
+  const [exchangeRate, setExchangeRate] = useState<string>("");
+  const [goldPrice, setGoldPrice] = useState<string>("");
+  const [silverPrice, setSilverPrice] = useState<string>("");
+  const [assayMethod, setAssayMethod] = useState<string>("x-ray");
+  const [authorizedSignatory, setAuthorizedSignatory] = useState<string>("");
 
   // Ref for hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -111,13 +123,20 @@ function NewLargeScaleJobCardPage() {
     referenceNumber: "",
     receivedDate: new Date().toISOString().split("T")[0], // Today's date as default
     exporterId: "",
-    unitOfMeasure: UnitOfMeasure.GRAMS,
+    unitOfMeasure: UnitOfMeasure.KILOGRAMS,
     miningLicenseNumber: "",
     environmentalPermitNumber: "",
     siteManager: "",
     destinationCountry: "",
     sourceOfGold: "Ghana", // Default to Ghana
-    numberOfBoxes: "",
+    numberOfBars: "",
+    typeOfShipment: "",
+    dateOfAnalysis: "",
+    sampleBottleDates: "",
+    dataSheetDates: "",
+    numberOfSamples: "",
+    sampleType: "",
+    shipmentNumber: "",
     status: "pending",
     notes: "",
     customsOfficerId: "",
@@ -159,13 +178,12 @@ function NewLargeScaleJobCardPage() {
   });
 
   useEffect(() => {
-    // Fetch exporters, commodities, and officers
+    // Fetch exporters, shipment types
     const fetchData = async () => {
       try {
-        const [exportersRes, commoditiesRes, officersRes] = await Promise.all([
+        const [exportersRes, shipmentTypesRes] = await Promise.all([
           fetch("/api/exporters"),
-          fetch("/api/commodity"),
-          fetch("/api/officers"),
+          fetch("/api/shipment-types"),
         ]);
 
         if (exportersRes.ok) {
@@ -173,33 +191,11 @@ function NewLargeScaleJobCardPage() {
           setExporters(exportersData);
         }
 
-        if (commoditiesRes.ok) {
-          const commoditiesData = await commoditiesRes.json();
-          setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
-        }
-
-        if (officersRes.ok) {
-          const officersData = await officersRes.json();
-          // Group officers by type
-          const groupedOfficers = {
-            customsOfficers: officersData.filter(
-              (officer: any) => officer.officerType === "CUSTOMS_OFFICER"
-            ),
-            assayOfficers: officersData.filter(
-              (officer: any) => officer.officerType === "ASSAY_OFFICER"
-            ),
-            technicalDirectors: officersData.filter(
-              (officer: any) => officer.officerType === "TECHNICAL_DIRECTOR"
-            ),
-            nacobOfficers: officersData.filter(
-              (officer: any) => officer.officerType === "NACOB_OFFICER"
-            ),
-            nationalSecurityOfficers: officersData.filter(
-              (officer: any) =>
-                officer.officerType === "NATIONAL_SECURITY_OFFICER"
-            ),
-          };
-          setOfficers(groupedOfficers);
+        if (shipmentTypesRes.ok) {
+          const shipmentTypesData = await shipmentTypesRes.json();
+          setShipmentTypes(
+            Array.isArray(shipmentTypesData) ? shipmentTypesData : []
+          );
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -208,6 +204,52 @@ function NewLargeScaleJobCardPage() {
     };
     fetchData();
   }, []);
+
+  // Fetch meta bar data when exporter or date changes
+  useEffect(() => {
+    const fetchMetaData = async () => {
+      if (!form.exporterId) return;
+
+      try {
+        // Fetch exporter details
+        const exporterRes = await fetch(`/api/exporters/${form.exporterId}`);
+        if (exporterRes.ok) {
+          const exporterData = await exporterRes.json();
+          setSelectedExporter(exporterData);
+        }
+
+        // Fetch latest exchange rate
+        const exchangeRes = await fetch(`/api/daily-exchange`);
+        if (exchangeRes.ok) {
+          const exchangeData = await exchangeRes.json();
+          // Get the latest exchange rate
+          if (exchangeData.length > 0) {
+            setExchangeRate(exchangeData[0].price || "");
+          }
+        }
+
+        // Fetch latest gold and silver prices
+        const goldRes = await fetch(`/api/daily-prices?type=COMMODITY`);
+        if (goldRes.ok) {
+          const pricesData = await goldRes.json();
+          // Find gold and silver prices
+          const goldPriceData = pricesData.find((p: any) =>
+            p.commodity?.name?.toLowerCase().includes("gold")
+          );
+          const silverPriceData = pricesData.find((p: any) =>
+            p.commodity?.name?.toLowerCase().includes("silver")
+          );
+
+          setGoldPrice(goldPriceData?.price || "");
+          setSilverPrice(silverPriceData?.price || "");
+        }
+      } catch (error) {
+        console.error("Error fetching meta data:", error);
+      }
+    };
+
+    fetchMetaData();
+  }, [form.exporterId, form.receivedDate]);
 
   // Excel processing functions
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -385,17 +427,74 @@ function NewLargeScaleJobCardPage() {
         return;
       }
 
-      // Validate that at least one commodity is selected with valid data
-      const validCommodities = form.commodities.filter(
-        (commodity) => commodity.id && commodity.id.trim() !== ""
-      );
+      // Validate new required fields
+      const requiredFields = [
+        { field: form.destinationCountry, name: "Destination Country" },
+        { field: form.sourceOfGold, name: "Source of Gold" },
+        { field: form.numberOfBars, name: "Number of Bars" },
+        { field: form.typeOfShipment, name: "Type of Shipment" },
+        { field: form.dateOfAnalysis, name: "Date of Analysis" },
+        { field: form.sampleBottleDates, name: "Sample Bottle Dates" },
+        { field: form.dataSheetDates, name: "Data Sheet Dates" },
+        { field: form.numberOfSamples, name: "Number of Samples" },
+        { field: form.sampleType, name: "Sample Type" },
+        { field: form.shipmentNumber, name: "Shipment Number" },
+      ];
 
-      if (validCommodities.length === 0) {
-        setError("Please select at least one commodity for the job card.");
+      const missingFields = requiredFields
+        .filter(({ field }) => !field || field.toString().trim() === "")
+        .map(({ name }) => name);
+
+      if (missingFields.length > 0) {
+        setError(
+          `Please fill in all required fields: ${missingFields.join(", ")}.`
+        );
         setLoading(false);
         return;
       }
 
+      // Validate assay information
+      if (!authorizedSignatory.trim()) {
+        setError("Please enter the Authorized Signatory.");
+        setLoading(false);
+        return;
+      }
+
+      // Validate assay data entry if processed data exists
+      if (processedData.length > 0 && assayersData.length > 0) {
+        const incompleteRows = assayersData.filter((row, index) => {
+          return (
+            !row.barNo.trim() ||
+            !row.grossWeight.trim() ||
+            !row.goldFineness.trim() ||
+            !row.silverFineness.trim()
+          );
+        });
+
+        if (incompleteRows.length > 0) {
+          setError(
+            `Please fill in all required fields for assay data entry. ${incompleteRows.length} row(s) have missing information.`
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Show preview modal instead of saving
+      setShowPreviewModal(true);
+    } catch (error) {
+      console.error("Error preparing preview:", error);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmSave = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
       const jobCardData = {
         referenceNumber: form.referenceNumber,
         receivedDate: form.receivedDate,
@@ -404,41 +503,13 @@ function NewLargeScaleJobCardPage() {
         notes: form.notes,
         destinationCountry: form.destinationCountry,
         sourceOfGold: form.sourceOfGold,
-        numberOfBoxes: form.numberOfBoxes
-          ? parseInt(form.numberOfBoxes)
+        numberOfBars: form.numberOfBars
+          ? parseInt(form.numberOfBars)
           : undefined,
-        customsOfficerId: form.customsOfficerId || undefined,
-        assayOfficerId: form.assayOfficerId || undefined,
-        technicalDirectorId: form.technicalDirectorId || undefined,
-        nacobOfficerId: form.nacobOfficerId || undefined,
-        nationalSecurityOfficerId: form.nationalSecurityOfficerId || undefined,
         deliveryLocation: form.deliveryLocation,
-        commodities: form.commodities
-          .filter((commodity) => commodity.id) // Only include commodities with IDs
-          .map((commodity) => ({
-            commodityId: commodity.id,
-            grossWeight: commodity.grossWeight
-              ? parseFloat(commodity.grossWeight)
-              : undefined,
-            netWeight: commodity.netWeight
-              ? parseFloat(commodity.netWeight)
-              : undefined,
-            fineness: commodity.fineness
-              ? parseFloat(commodity.fineness)
-              : undefined,
-            valueGhs: commodity.valueGhs
-              ? parseFloat(commodity.valueGhs)
-              : undefined,
-            valueUsd: commodity.valueUsd
-              ? parseFloat(commodity.valueUsd)
-              : undefined,
-            pricePerOunce: commodity.pricePerOunce
-              ? parseFloat(commodity.pricePerOunce)
-              : undefined,
-            numberOfOunces: commodity.numberOfOunces
-              ? parseFloat(commodity.numberOfOunces)
-              : undefined,
-          })),
+        assayMethod: assayMethod,
+        authorizedSignatory: authorizedSignatory,
+        assayersData: assayersData.length > 0 ? assayersData : undefined,
       };
 
       const response = await fetch("/api/large-scale-job-cards", {
@@ -452,14 +523,17 @@ function NewLargeScaleJobCardPage() {
       if (response.ok) {
         const newJobCard = await response.json();
         toast.success("Large scale job card created successfully!");
+        setShowPreviewModal(false);
         router.push(`/job-cards/large-scale/${newJobCard.id}`);
       } else {
         const errorData = await response.json();
         setError(errorData.error || "Failed to create job card.");
+        setShowPreviewModal(false);
       }
     } catch (error) {
       console.error("Error creating job card:", error);
       setError("An unexpected error occurred. Please try again.");
+      setShowPreviewModal(false);
     } finally {
       setLoading(false);
     }
@@ -474,64 +548,6 @@ function NewLargeScaleJobCardPage() {
     setForm((prev) => ({
       ...prev,
       [name]: value,
-    }));
-  };
-
-  const handleCommodityChange = (
-    index: number,
-    field: string,
-    value: string
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-      commodities: prev.commodities.map((commodity, i) =>
-        i === index ? { ...commodity, [field]: value } : commodity
-      ),
-    }));
-  };
-
-  const addCommodity = () => {
-    setForm((prev) => ({
-      ...prev,
-      commodities: [
-        ...prev.commodities,
-        {
-          id: "",
-          name: "",
-          grossWeight: "",
-          netWeight: "",
-          fineness: "",
-          valueGhs: "",
-          valueUsd: "",
-          pricePerOunce: "",
-          numberOfOunces: "",
-        },
-      ],
-    }));
-  };
-
-  const removeCommodity = (index: number) => {
-    if (form.commodities.length > 1) {
-      setForm((prev) => ({
-        ...prev,
-        commodities: prev.commodities.filter((_, i) => i !== index),
-      }));
-    }
-  };
-
-  const handleCommoditySelect = (index: number, commodityId: string) => {
-    const selectedCommodity = commodities.find((c) => c.id === commodityId);
-    setForm((prev) => ({
-      ...prev,
-      commodities: prev.commodities.map((commodity, i) =>
-        i === index
-          ? {
-              ...commodity,
-              id: commodityId,
-              name: selectedCommodity?.name || "",
-            }
-          : commodity
-      ),
     }));
   };
 
@@ -646,9 +662,294 @@ function NewLargeScaleJobCardPage() {
                     <option value={UnitOfMeasure.KILOGRAMS}>Kilograms</option>
                   </select>
                 </div>
+
+                <div>
+                  <label
+                    htmlFor="destinationCountry"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Destination Country
+                  </label>
+                  <Select
+                    options={countryOptions}
+                    value={countryOptions.find(
+                      (option: { value: string; label: string }) =>
+                        option.value === form.destinationCountry
+                    )}
+                    onChange={(selectedOption) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        destinationCountry: selectedOption?.value || "",
+                      }))
+                    }
+                    placeholder="Select destination country"
+                    styles={customSelectStyles}
+                    isClearable
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="numberOfBars"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Number of Bars
+                  </label>
+                  <input
+                    type="number"
+                    name="numberOfBars"
+                    id="numberOfBars"
+                    value={form.numberOfBars}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter number of bars"
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="sourceOfGold"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Source of Gold
+                  </label>
+                  <input
+                    type="text"
+                    name="sourceOfGold"
+                    id="sourceOfGold"
+                    value={form.sourceOfGold}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter source of gold"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="typeOfShipment"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Type of Shipment
+                  </label>
+                  <select
+                    name="typeOfShipment"
+                    id="typeOfShipment"
+                    value={form.typeOfShipment}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  >
+                    <option value="">Select shipment type</option>
+                    {shipmentTypes.map((shipmentType) => (
+                      <option key={shipmentType.id} value={shipmentType.id}>
+                        {shipmentType.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="dateOfAnalysis"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Date of Analysis
+                  </label>
+                  <input
+                    type="date"
+                    name="dateOfAnalysis"
+                    id="dateOfAnalysis"
+                    value={form.dateOfAnalysis}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="sampleBottleDates"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Sample Bottle Dates
+                  </label>
+                  <input
+                    type="text"
+                    name="sampleBottleDates"
+                    id="sampleBottleDates"
+                    value={form.sampleBottleDates}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter sample bottle dates"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="dataSheetDates"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Data Sheet Dates
+                  </label>
+                  <input
+                    type="text"
+                    name="dataSheetDates"
+                    id="dataSheetDates"
+                    value={form.dataSheetDates}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter data sheet dates"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="numberOfSamples"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Number of Samples
+                  </label>
+                  <input
+                    type="number"
+                    name="numberOfSamples"
+                    id="numberOfSamples"
+                    value={form.numberOfSamples}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter number of samples"
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="sampleType"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Sample Type
+                  </label>
+                  <input
+                    type="text"
+                    name="sampleType"
+                    id="sampleType"
+                    value={form.sampleType}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter sample type"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="shipmentNumber"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Shipment Number
+                  </label>
+                  <input
+                    type="text"
+                    name="shipmentNumber"
+                    id="shipmentNumber"
+                    value={form.shipmentNumber}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter shipment number"
+                  />
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Meta Bar - Show when exporter is selected */}
+          {form.exporterId && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="text-lg font-medium text-blue-900 mb-4">
+                Exporter Information & Market Data
+              </h3>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {/* Exporter Details */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-blue-800">
+                    Exporter Details
+                  </h4>
+                  {selectedExporter && (
+                    <div className="text-sm text-blue-700">
+                      <p>
+                        <strong>Name:</strong> {selectedExporter.name}
+                      </p>
+                      <p>
+                        <strong>Type:</strong>{" "}
+                        {selectedExporter.exporterType?.name}
+                      </p>
+                      <p>
+                        <strong>License:</strong>{" "}
+                        {selectedExporter.licenseNumber || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Email:</strong>{" "}
+                        {selectedExporter.email || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Phone:</strong>{" "}
+                        {selectedExporter.phone || "N/A"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Market Data */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-blue-800">
+                    Latest Market Data
+                  </h4>
+                  <div className="text-sm text-blue-700">
+                    <p>
+                      <strong>Exchange Rate:</strong>{" "}
+                      {exchangeRate || "Loading..."}
+                    </p>
+                    <p>
+                      <strong>Gold Price:</strong> {goldPrice || "Loading..."}
+                    </p>
+                    <p>
+                      <strong>Silver Price:</strong>{" "}
+                      {silverPrice || "Loading..."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Assay Inputs */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-blue-800">
+                    Assay Information
+                  </h4>
+                  <div>
+                    <label className="block text-xs font-medium text-blue-700 mb-1">
+                      Assay Method
+                    </label>
+                    <select
+                      value={assayMethod}
+                      onChange={(e) => setAssayMethod(e.target.value)}
+                      className="block w-full rounded-md border-blue-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    >
+                      <option value="x-ray">X-Ray</option>
+                      <option value="water-density">Water Density</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-blue-700 mb-1">
+                      Authorized Signatory
+                    </label>
+                    <input
+                      type="text"
+                      value={authorizedSignatory}
+                      onChange={(e) => setAuthorizedSignatory(e.target.value)}
+                      className="block w-full rounded-md border-blue-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                      placeholder="Enter authorized signatory"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Excel Upload Section */}
           <div className="mt-8 bg-white shadow sm:rounded-lg">
@@ -773,25 +1074,25 @@ function NewLargeScaleJobCardPage() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                               SN
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                               Bar No
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                               Gross Weight
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                               Gold Fineness (%)
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                               Gold Net Weight
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                               Silver Fineness (%)
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                               Silver Net Weight
                             </th>
                           </tr>
@@ -804,7 +1105,7 @@ function NewLargeScaleJobCardPage() {
                                 index % 2 === 0 ? "bg-white" : "bg-gray-50"
                               }
                             >
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                                 {index + 1}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -838,16 +1139,16 @@ function NewLargeScaleJobCardPage() {
                                   placeholder="0.0000"
                                 />
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                 {row.goldFineness}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                 {row.goldNetWeight}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                 {row.silverFineness}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                 {row.silverNetWeight}
                               </td>
                             </tr>
@@ -855,25 +1156,25 @@ function NewLargeScaleJobCardPage() {
                           {/* Totals Row */}
                           {assayersData.length > 0 && (
                             <tr className="bg-gray-100 font-semibold">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                                 Total
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                 -
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                 {calculateAssayersTotals().grossWeight}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                 -
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                 {calculateAssayersTotals().goldNetWeight}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                 -
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                 {calculateAssayersTotals().silverNetWeight}
                               </td>
                             </tr>
@@ -1136,22 +1437,7 @@ function NewLargeScaleJobCardPage() {
                   />
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="numberOfBoxes"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Number of Boxes
-                  </label>
-                  <input
-                    type="number"
-                    name="numberOfBoxes"
-                    id="numberOfBoxes"
-                    value={form.numberOfBoxes}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Enter number of boxes"
-                  />
+              
                 </div>
               </div>
             </div>
@@ -1426,6 +1712,591 @@ function NewLargeScaleJobCardPage() {
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Modal */}
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div
+                className="absolute inset-0 bg-gray-500 opacity-75"
+                onClick={() => setShowPreviewModal(false)}
+              ></div>
+            </div>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                      Job Card Preview
+                    </h3>
+
+                    {/* Preview Content - Using the same template as assay detail page */}
+                    <div className="bg-white overflow-hidden border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
+                      {/* <div className="px-4 py-5 sm:px-6">
+                        <h3 className="text-base leading-6 font-medium text-gray-900">
+                          Certificate #{form.referenceNumber || "-"}
+                        </h3>
+                      </div> */}
+
+                      <div className="flex items-center justify-between mb-1 px-8">
+                        <div className="p-2">
+                          <img
+                            src="/goldbod-logo-green.png"
+                            alt="GoldBod Logo"
+                            className="h-12 w-auto"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="border-t border-gray-200 px-4 py-3 sm:p-4">
+                        <div className="flex justify-center">
+                          <h1 className="text-xl font-bold tracking-wider">
+                            ASSAY REPORT ANALYSIS
+                          </h1>
+                        </div>
+
+                        {/* Top: show exporter and assay date above the measurements table */}
+
+                        {/* Basic Information Display */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Exporter
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {selectedExporter?.name || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Reference
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.referenceNumber || "N/A"}
+                            </dd>
+                          </div>
+
+                          <div className="">
+                            <dt className="text-sm font-medium text-gray-500">
+                              Received Date
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.receivedDate
+                                ? new Date(
+                                    form.receivedDate
+                                  ).toLocaleDateString()
+                                : "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Unit of Measure
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.unitOfMeasure === UnitOfMeasure.KILOGRAMS
+                                ? "Kilograms"
+                                : "Grams"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Destination Country
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.destinationCountry
+                                ? countryOptions.find(
+                                    (option: {
+                                      value: string;
+                                      label: string;
+                                    }) =>
+                                      option.value === form.destinationCountry
+                                  )?.label || form.destinationCountry
+                                : "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Source of Gold
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.sourceOfGold || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Number of Bars
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.numberOfBars || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Type of Shipment
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.typeOfShipment
+                                ? shipmentTypes.find(
+                                    (st) => st.id === form.typeOfShipment
+                                  )?.name || form.typeOfShipment
+                                : "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Date of Analysis
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.dateOfAnalysis || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Sample Bottle Dates
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.sampleBottleDates || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Data Sheet Dates
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.dataSheetDates || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Number of Samples
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.numberOfSamples || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Sample Type
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.sampleType || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Shipment Number
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.shipmentNumber || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Assay Method
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {assayMethod === "x-ray"
+                                ? "X-Ray"
+                                : assayMethod === "water-density"
+                                ? "Water Density"
+                                : "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Authorized Signatory
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {authorizedSignatory || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Exchange Rate
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {exchangeRate || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Gold Price
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {goldPrice || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Silver Price
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {silverPrice || "N/A"}
+                            </dd>
+                          </div>
+                        </div>
+
+                        {/* Commodities Table */}
+                        {/* {form.commodities.filter((c) => c.id).length > 0 && (
+                          <div className="mt-4">
+                            <h4 className="text-sm font-medium text-gray-900 mb-2">
+                              Commodities
+                            </h4>
+                            <table className="min-w-full divide-y divide-gray-200">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Commodity
+                                  </th>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Gross Weight
+                                  </th>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Net Weight
+                                  </th>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Fineness
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {form.commodities
+                                  .filter((c) => c.id)
+                                  .map((commodity, idx) => (
+                                    <tr key={idx}>
+                                      <td className="px-4 py-2 text-sm text-gray-700">
+                                        {commodity.name || "N/A"}
+                                      </td>
+                                      <td className="px-4 py-2 text-sm text-gray-700">
+                                        {commodity.grossWeight || "N/A"}
+                                      </td>
+                                      <td className="px-4 py-2 text-sm text-gray-700">
+                                        {commodity.netWeight || "N/A"}
+                                      </td>
+                                      <td className="px-4 py-2 text-sm text-gray-700">
+                                        {commodity.fineness || "N/A"}
+                                      </td>
+                                    </tr>
+                                  ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )} */}
+
+                        {/* Assay Data Entry Section */}
+                        {assayersData.length > 0 && (
+                          <div className="mt-6">
+                            <h4 className="text-sm font-medium text-gray-900 mb-2">
+                              Assay Data Entry Results
+                            </h4>
+                            <table className="min-w-full divide-y divide-gray-200">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                    SN
+                                  </th>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                    Bar No
+                                  </th>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                    Gross Weight
+                                  </th>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                    Gold Fineness (%)
+                                  </th>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                    Gold Net Weight
+                                  </th>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                    Silver Fineness (%)
+                                  </th>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase text-center">
+                                    Silver Net Weight
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {assayersData.map((row, index) => (
+                                  <tr key={index}>
+                                    <td className="px-4 py-2 text-sm text-gray-700 text-center">
+                                      {index + 1}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-700 text-center">
+                                      {row.barNo || "N/A"}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-700 text-center">
+                                      {row.grossWeight || "N/A"}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-700 text-center">
+                                      {row.goldFineness || "N/A"}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-700 text-center">
+                                      {row.goldNetWeight || "N/A"}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-700 text-center">
+                                      {row.silverFineness || "N/A"}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-700 text-center">
+                                      {row.silverNetWeight || "N/A"}
+                                    </td>
+                                  </tr>
+                                ))}
+                                {/* Totals Row */}
+                                <tr className="bg-gray-50 font-semibold">
+                                  <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                                    Total
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                                    -
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                                    {calculateAssayersTotals().grossWeight}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                                    {(() => {
+                                      const grossTotal =
+                                        parseFloat(
+                                          calculateAssayersTotals().grossWeight
+                                        ) || 0;
+                                      const goldNetTotal =
+                                        parseFloat(
+                                          calculateAssayersTotals()
+                                            .goldNetWeight
+                                        ) || 0;
+                                      if (grossTotal > 0) {
+                                        const fineness =
+                                          (goldNetTotal / grossTotal) * 100;
+                                        return fineness.toFixed(2) + "%";
+                                      }
+                                      return "-";
+                                    })()}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                                    {calculateAssayersTotals().goldNetWeight}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                                    {(() => {
+                                      const grossTotal =
+                                        parseFloat(
+                                          calculateAssayersTotals().grossWeight
+                                        ) || 0;
+                                      const silverNetTotal =
+                                        parseFloat(
+                                          calculateAssayersTotals()
+                                            .silverNetWeight
+                                        ) || 0;
+                                      if (grossTotal > 0) {
+                                        const fineness =
+                                          (silverNetTotal / grossTotal) * 100;
+                                        return fineness.toFixed(2) + "%";
+                                      }
+                                      return "-";
+                                    })()}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                                    {calculateAssayersTotals().silverNetWeight}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+
+                        {/* Calculated Values */}
+                        {assayersData.length > 0 && (
+                          <div className="mt-6">
+                            <h4 className="text-lg font-medium text-gray-900 mb-4">
+                              Calculated Values
+                            </h4>
+                            <div className="bg-gray-50 rounded-lg p-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {(() => {
+                                  const goldNetWeightGrams =
+                                    parseFloat(
+                                      calculateAssayersTotals().goldNetWeight
+                                    ) || 0;
+                                  const silverNetWeightGrams =
+                                    parseFloat(
+                                      calculateAssayersTotals().silverNetWeight
+                                    ) || 0;
+                                  const goldPricePerOunce =
+                                    parseFloat(goldPrice) || 0;
+                                  const silverPricePerOunce =
+                                    parseFloat(silverPrice) || 0;
+
+                                  // Convert grams to troy ounces (1 troy ounce = 31.1035 grams)
+                                  const GRAMS_PER_TROY_OUNCE = 31.1035;
+                                  const goldNetWeightOz =
+                                    goldNetWeightGrams / GRAMS_PER_TROY_OUNCE;
+                                  const silverNetWeightOz =
+                                    silverNetWeightGrams / GRAMS_PER_TROY_OUNCE;
+
+                                  // Calculate values
+                                  const goldValue =
+                                    goldNetWeightOz * goldPricePerOunce;
+                                  const silverValue =
+                                    silverNetWeightOz * silverPricePerOunce;
+                                  const totalValue = goldValue + silverValue;
+
+                                  return (
+                                    <>
+                                      <div>
+                                        <dt className="text-sm font-medium text-gray-500">
+                                          Net Weight Gold (oz)
+                                        </dt>
+                                        <dd className="mt-1 text-sm text-gray-900 font-semibold">
+                                          {goldNetWeightOz.toLocaleString(
+                                            undefined,
+                                            {
+                                              minimumFractionDigits: 3,
+                                              maximumFractionDigits: 3,
+                                            }
+                                          )}
+                                        </dd>
+                                      </div>
+                                      <div>
+                                        <dt className="text-sm font-medium text-gray-500">
+                                          Net Weight Silver (oz)
+                                        </dt>
+                                        <dd className="mt-1 text-sm text-gray-900 font-semibold">
+                                          {silverNetWeightOz.toLocaleString(
+                                            undefined,
+                                            {
+                                              minimumFractionDigits: 3,
+                                              maximumFractionDigits: 3,
+                                            }
+                                          )}
+                                        </dd>
+                                      </div>
+                                      <div>
+                                        <dt className="text-sm font-medium text-gray-500">
+                                          Gold Price per Ounce
+                                        </dt>
+                                        <dd className="mt-1 text-sm text-gray-900">
+                                          $
+                                          {goldPricePerOunce.toLocaleString(
+                                            undefined,
+                                            {
+                                              minimumFractionDigits: 2,
+                                              maximumFractionDigits: 2,
+                                            }
+                                          )}
+                                        </dd>
+                                      </div>
+                                      <div>
+                                        <dt className="text-sm font-medium text-gray-500">
+                                          Silver Price per Ounce
+                                        </dt>
+                                        <dd className="mt-1 text-sm text-gray-900">
+                                          $
+                                          {silverPricePerOunce.toLocaleString(
+                                            undefined,
+                                            {
+                                              minimumFractionDigits: 2,
+                                              maximumFractionDigits: 2,
+                                            }
+                                          )}
+                                        </dd>
+                                      </div>
+                                      <div>
+                                        <dt className="text-sm font-medium text-gray-500">
+                                          Value of Gold
+                                        </dt>
+                                        <dd className="mt-1 text-sm text-gray-900 font-semibold">
+                                          $
+                                          {goldValue.toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                          })}
+                                        </dd>
+                                      </div>
+                                      <div>
+                                        <dt className="text-sm font-medium text-gray-500">
+                                          Value of Silver
+                                        </dt>
+                                        <dd className="mt-1 text-sm text-gray-900 font-semibold">
+                                          $
+                                          {silverValue.toLocaleString(
+                                            undefined,
+                                            {
+                                              minimumFractionDigits: 2,
+                                              maximumFractionDigits: 2,
+                                            }
+                                          )}
+                                        </dd>
+                                      </div>
+                                      <div className="sm:col-span-2 lg:col-span-3">
+                                        <dt className="text-sm font-medium text-gray-500">
+                                          Total Value (Gold + Silver)
+                                        </dt>
+                                        <dd className="mt-1 text-lg text-gray-900 font-bold">
+                                          $
+                                          {totalValue.toLocaleString(
+                                            undefined,
+                                            {
+                                              minimumFractionDigits: 2,
+                                              maximumFractionDigits: 2,
+                                            }
+                                          )}
+                                        </dd>
+                                      </div>
+                                      {exchangeRate && (
+                                        <div className="sm:col-span-2 lg:col-span-3">
+                                          <dt className="text-sm font-medium text-gray-500">
+                                            Total Value in GHS (Exchange Rate:{" "}
+                                            {exchangeRate})
+                                          </dt>
+                                          <dd className="mt-1 text-lg text-gray-900 font-bold">
+                                            GHS{" "}
+                                            {(
+                                              totalValue *
+                                              parseFloat(exchangeRate)
+                                            ).toLocaleString(undefined, {
+                                              minimumFractionDigits: 2,
+                                              maximumFractionDigits: 2,
+                                            })}
+                                          </dd>
+                                        </div>
+                                      )}
+                                    </>
+                                  );
+                                })()}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={handleConfirmSave}
+                  disabled={loading}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                >
+                  {loading ? "Creating..." : "Confirm & Create Job Card"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPreviewModal(false)}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Back to Edit
                 </button>
               </div>
             </div>
