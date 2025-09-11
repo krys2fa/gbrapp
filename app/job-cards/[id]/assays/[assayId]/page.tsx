@@ -200,6 +200,7 @@ export default function AssayDetailPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6 flex items-center justify-between">
+        <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
         <div className="flex items-center gap-3">
           <AssayDetailActions
             jobCardId={id}

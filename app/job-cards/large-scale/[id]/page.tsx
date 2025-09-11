@@ -496,7 +496,7 @@ function LargeScaleJobCardDetailPage() {
           </div>
 
           {/* Contact Information */}
-          {/* <div className="bg-white shadow sm:rounded-lg">
+          <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Contact Information
@@ -527,10 +527,10 @@ function LargeScaleJobCardDetailPage() {
                 </div>
               </div>
             </div>
-          </div> */}
+          </div>
 
           {/* Notified Party */}
-          {/* {jobCard.exporter.notifiedPartyName && (
+          {jobCard.exporter.notifiedPartyName && (
             <div className="bg-white shadow sm:rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
@@ -584,7 +584,7 @@ function LargeScaleJobCardDetailPage() {
                 </div>
               </div>
             </div>
-          )} */}
+          )}
 
           {/* Additional Information */}
           <div className="bg-white shadow sm:rounded-lg">

@@ -99,6 +99,24 @@ function NewLargeScaleJobCardPage() {
     technicalDirectorId: "",
     nacobOfficerId: "",
     nationalSecurityOfficerId: "",
+    // Consignee section (replacing buyer)
+    consigneeAddress: "",
+    consigneeTelephone: "",
+    consigneeMobile: "",
+    consigneeEmail: "",
+    // Exporter details section
+    deliveryLocation: "",
+    exporterTelephone: "",
+    exporterEmail: "",
+    exporterWebsite: "",
+    exporterLicenseNumber: "",
+    // Notified party section
+    notifiedPartyName: "",
+    notifiedPartyAddress: "",
+    notifiedPartyEmail: "",
+    notifiedPartyContactPerson: "",
+    notifiedPartyTelephone: "",
+    notifiedPartyMobile: "",
     commodities: [
       {
         id: "",
@@ -207,6 +225,21 @@ function NewLargeScaleJobCardPage() {
         technicalDirectorId: form.technicalDirectorId || undefined,
         nacobOfficerId: form.nacobOfficerId || undefined,
         nationalSecurityOfficerId: form.nationalSecurityOfficerId || undefined,
+        consigneeAddress: form.consigneeAddress,
+        consigneeTelephone: form.consigneeTelephone,
+        consigneeMobile: form.consigneeMobile,
+        consigneeEmail: form.consigneeEmail,
+        deliveryLocation: form.deliveryLocation,
+        exporterTelephone: form.exporterTelephone,
+        exporterEmail: form.exporterEmail,
+        exporterWebsite: form.exporterWebsite,
+        exporterLicenseNumber: form.exporterLicenseNumber,
+        notifiedPartyName: form.notifiedPartyName,
+        notifiedPartyAddress: form.notifiedPartyAddress,
+        notifiedPartyEmail: form.notifiedPartyEmail,
+        notifiedPartyContactPerson: form.notifiedPartyContactPerson,
+        notifiedPartyTelephone: form.notifiedPartyTelephone,
+        notifiedPartyMobile: form.notifiedPartyMobile,
         commodities: form.commodities
           .filter((commodity) => commodity.id) // Only include commodities with IDs
           .map((commodity) => ({
@@ -444,10 +477,335 @@ function NewLargeScaleJobCardPage() {
             </div>
           </div>
 
+          {/* Exporter Details */}
+          <div className="bg-white shadow sm:rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                Exporter Details
+              </h3>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="deliveryLocation"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Delivery Location
+                  </label>
+                  <input
+                    type="text"
+                    name="deliveryLocation"
+                    id="deliveryLocation"
+                    value={form.deliveryLocation}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter delivery location"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="exporterTelephone"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Exporter Telephone
+                  </label>
+                  <input
+                    type="text"
+                    name="exporterTelephone"
+                    id="exporterTelephone"
+                    value={form.exporterTelephone}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter exporter telephone"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="exporterEmail"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Exporter Email
+                  </label>
+                  <input
+                    type="email"
+                    name="exporterEmail"
+                    id="exporterEmail"
+                    value={form.exporterEmail}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter exporter email"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="exporterWebsite"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Exporter Website
+                  </label>
+                  <input
+                    type="url"
+                    name="exporterWebsite"
+                    id="exporterWebsite"
+                    value={form.exporterWebsite}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter exporter website eg: https://www.acme.com"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="exporterLicenseNumber"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Exporter License Number
+                  </label>
+                  <input
+                    type="text"
+                    name="exporterLicenseNumber"
+                    id="exporterLicenseNumber"
+                    value={form.exporterLicenseNumber}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter exporter license number"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Consignee Information */}
+          <div className="bg-white shadow sm:rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                Consignee Information
+              </h3>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="consigneeAddress"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Consignee Address
+                  </label>
+                  <input
+                    type="text"
+                    name="consigneeAddress"
+                    id="consigneeAddress"
+                    value={form.consigneeAddress}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter consignee address"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="consigneeTelephone"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Consignee Telephone
+                  </label>
+                  <input
+                    type="text"
+                    name="consigneeTelephone"
+                    id="consigneeTelephone"
+                    value={form.consigneeTelephone}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter consignee telephone"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="consigneeMobile"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Consignee Mobile
+                  </label>
+                  <input
+                    type="text"
+                    name="consigneeMobile"
+                    id="consigneeMobile"
+                    value={form.consigneeMobile}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter consignee mobile"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="consigneeEmail"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Consignee Email
+                  </label>
+                  <input
+                    type="email"
+                    name="consigneeEmail"
+                    id="consigneeEmail"
+                    value={form.consigneeEmail}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter consignee email"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="destinationCountry"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Destination Country
+                  </label>
+                  <Select
+                    options={countryOptions}
+                    value={countryOptions.find(
+                      (option: { value: string; label: string }) =>
+                        option.value === form.destinationCountry
+                    )}
+                    onChange={(selectedOption) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        destinationCountry: selectedOption?.value || "",
+                      }))
+                    }
+                    styles={customSelectStyles}
+                    placeholder="Select destination country"
+                    isClearable
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Notified Party Information */}
+          <div className="bg-white shadow sm:rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                Notified Party Information
+              </h3>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="notifiedPartyName"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="notifiedPartyName"
+                    id="notifiedPartyName"
+                    value={form.notifiedPartyName}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter notified party name"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="notifiedPartyAddress"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    name="notifiedPartyAddress"
+                    id="notifiedPartyAddress"
+                    value={form.notifiedPartyAddress}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter notified party address"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="notifiedPartyEmail"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="notifiedPartyEmail"
+                    id="notifiedPartyEmail"
+                    value={form.notifiedPartyEmail}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter notified party email"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="notifiedPartyContactPerson"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Contact Person
+                  </label>
+                  <input
+                    type="text"
+                    name="notifiedPartyContactPerson"
+                    id="notifiedPartyContactPerson"
+                    value={form.notifiedPartyContactPerson}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter contact person name"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="notifiedPartyTelephone"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Telephone
+                  </label>
+                  <input
+                    type="text"
+                    name="notifiedPartyTelephone"
+                    id="notifiedPartyTelephone"
+                    value={form.notifiedPartyTelephone}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter notified party telephone"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="notifiedPartyMobile"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Mobile
+                  </label>
+                  <input
+                    type="text"
+                    name="notifiedPartyMobile"
+                    id="notifiedPartyMobile"
+                    value={form.notifiedPartyMobile}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter notified party mobile"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Commodities */}
 
           {/* Commodities */}
-          {/* <div className="bg-white shadow sm:rounded-lg">
+          <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Commodities *
@@ -644,7 +1002,7 @@ function NewLargeScaleJobCardPage() {
                 Add Another Commodity
               </button>
             </div>
-          </div> */}
+          </div>
 
           {/* Weight and Quality Information */}
           <div className="bg-white shadow sm:rounded-lg">
