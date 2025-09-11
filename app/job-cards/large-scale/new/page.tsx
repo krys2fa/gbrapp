@@ -1,13 +1,14 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import Select from "react-select";
 import countryList from "react-select-country-list";
 import toast from "react-hot-toast";
+import * as XLSX from "xlsx";
 
 enum UnitOfMeasure {
   GRAMS = "g",
@@ -41,6 +42,31 @@ function NewLargeScaleJobCardPage() {
     nacobOfficers: [],
     nationalSecurityOfficers: [],
   });
+
+  // Excel processing state
+  const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [processedData, setProcessedData] = useState<any[]>([]);
+  const [excelProcessing, setExcelProcessing] = useState(false);
+  const [excelError, setExcelError] = useState("");
+
+  // Assayers data entry state
+  const [assayersData, setAssayersData] = useState<
+    {
+      barNo: string;
+      grossWeight: string;
+      goldFineness: string;
+      goldNetWeight: string;
+      silverFineness: string;
+      silverNetWeight: string;
+    }[]
+  >([]);
+
+  // Modal state
+  const [showProcessedResultsModal, setShowProcessedResultsModal] =
+    useState(false);
+
+  // Ref for hidden file input
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get countries list for the dropdown
   const countryOptions = useMemo(() => countryList().getData(), []);
@@ -183,6 +209,167 @@ function NewLargeScaleJobCardPage() {
     fetchData();
   }, []);
 
+  // Excel processing functions
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setExcelFile(file);
+      setExcelError("");
+      setProcessedData([]);
+    }
+  };
+
+  const processExcelFile = async () => {
+    if (!excelFile) return;
+
+    setExcelProcessing(true);
+    setExcelError("");
+
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: "array" });
+
+          // Get the first worksheet
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+
+          // Convert to JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+          // Find Ag and Au columns on row 2 (index 1)
+          const headers = jsonData[1] as string[];
+          const agIndex = headers.findIndex(
+            (header) => header?.toString().trim() === "Ag"
+          );
+          const auIndex = headers.findIndex(
+            (header) => header?.toString().trim() === "Au"
+          );
+
+          if (agIndex === -1 || auIndex === -1) {
+            throw new Error(
+              'Could not find Ag or Au columns in the Excel file. Please ensure column headers are exactly "Ag" and "Au".'
+            );
+          }
+
+          // Process data in groups of 3 rows starting from row 3 (index 2)
+          const processedRows: any[] = [];
+          for (let i = 2; i < jsonData.length; i += 3) {
+            const group: any[] = [];
+            for (let j = 0; j < 3 && i + j < jsonData.length; j++) {
+              const row = jsonData[i + j] as any[];
+              if (
+                row &&
+                row[agIndex] !== undefined &&
+                row[auIndex] !== undefined
+              ) {
+                group.push({
+                  ag: parseFloat(row[agIndex]) || 0,
+                  au: parseFloat(row[auIndex]) || 0,
+                  rowNumber: i + j + 1,
+                });
+              }
+            }
+
+            if (group.length > 0) {
+              const avgAg =
+                group.reduce((sum, item) => sum + item.ag, 0) / group.length;
+              const avgAu =
+                group.reduce((sum, item) => sum + item.au, 0) / group.length;
+
+              processedRows.push({
+                groupNumber: Math.floor(i / 3) + 1,
+                avgAg: avgAg.toFixed(4),
+                avgAu: avgAu.toFixed(4),
+                sampleCount: group.length,
+                rows: group.map((item) => item.rowNumber).join(", "),
+              });
+            }
+          }
+
+          setProcessedData(processedRows);
+
+          // Initialize assayers data with the same number of rows as processed results
+          if (processedRows.length > 0) {
+            const initialAssayersData = processedRows.map((processedRow) => ({
+              barNo: "",
+              grossWeight: "",
+              goldFineness: processedRow.avgAu,
+              goldNetWeight: "",
+              silverFineness: processedRow.avgAg,
+              silverNetWeight: "",
+            }));
+            setAssayersData(initialAssayersData);
+          }
+        } catch (error: any) {
+          setExcelError(error.message || "Error processing Excel file");
+        } finally {
+          setExcelProcessing(false);
+        }
+      };
+
+      reader.readAsArrayBuffer(excelFile);
+    } catch (error: any) {
+      setExcelError(error.message || "Error reading file");
+      setExcelProcessing(false);
+    }
+  };
+
+  // Assayers data entry functions
+  const updateAssayersRow = (index: number, field: string, value: string) => {
+    setAssayersData((prev) =>
+      prev.map((row, i) => {
+        if (i === index) {
+          const updatedRow = { ...row, [field]: value };
+
+          // Calculate net weights when gross weight or fineness changes
+          if (field === "grossWeight" || field === "goldFineness") {
+            const grossWeight = parseFloat(updatedRow.grossWeight) || 0;
+            const goldFineness = parseFloat(updatedRow.goldFineness) || 0;
+            updatedRow.goldNetWeight = (
+              (goldFineness / 100) *
+              grossWeight
+            ).toFixed(2);
+          }
+
+          if (field === "grossWeight" || field === "silverFineness") {
+            const grossWeight = parseFloat(updatedRow.grossWeight) || 0;
+            const silverFineness = parseFloat(updatedRow.silverFineness) || 0;
+            updatedRow.silverNetWeight = (
+              (silverFineness / 100) *
+              grossWeight
+            ).toFixed(2);
+          }
+
+          return updatedRow;
+        }
+        return row;
+      })
+    );
+  };
+
+  const calculateAssayersTotals = () => {
+    const totals = {
+      grossWeight: 0,
+      goldNetWeight: 0,
+      silverNetWeight: 0,
+    };
+
+    assayersData.forEach((row) => {
+      totals.grossWeight += parseFloat(row.grossWeight) || 0;
+      totals.goldNetWeight += parseFloat(row.goldNetWeight) || 0;
+      totals.silverNetWeight += parseFloat(row.silverNetWeight) || 0;
+    });
+
+    return {
+      grossWeight: totals.grossWeight.toFixed(2),
+      goldNetWeight: totals.goldNetWeight.toFixed(2),
+      silverNetWeight: totals.silverNetWeight.toFixed(2),
+    };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -225,21 +412,7 @@ function NewLargeScaleJobCardPage() {
         technicalDirectorId: form.technicalDirectorId || undefined,
         nacobOfficerId: form.nacobOfficerId || undefined,
         nationalSecurityOfficerId: form.nationalSecurityOfficerId || undefined,
-        consigneeAddress: form.consigneeAddress,
-        consigneeTelephone: form.consigneeTelephone,
-        consigneeMobile: form.consigneeMobile,
-        consigneeEmail: form.consigneeEmail,
         deliveryLocation: form.deliveryLocation,
-        exporterTelephone: form.exporterTelephone,
-        exporterEmail: form.exporterEmail,
-        exporterWebsite: form.exporterWebsite,
-        exporterLicenseNumber: form.exporterLicenseNumber,
-        notifiedPartyName: form.notifiedPartyName,
-        notifiedPartyAddress: form.notifiedPartyAddress,
-        notifiedPartyEmail: form.notifiedPartyEmail,
-        notifiedPartyContactPerson: form.notifiedPartyContactPerson,
-        notifiedPartyTelephone: form.notifiedPartyTelephone,
-        notifiedPartyMobile: form.notifiedPartyMobile,
         commodities: form.commodities
           .filter((commodity) => commodity.id) // Only include commodities with IDs
           .map((commodity) => ({
@@ -477,6 +650,243 @@ function NewLargeScaleJobCardPage() {
             </div>
           </div>
 
+          {/* Excel Upload Section */}
+          <div className="mt-8 bg-white shadow sm:rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                Commodities&apos; Purity Processing
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Upload an Excel file (.xlsx, .xls, .csv) with exact column
+                headers "Ag" and "Au". The system will calculate averages for
+                every 3 rows of data.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Select Excel File
+                  </label>
+                  <div className="mt-1 flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <svg
+                        className="mr-2 h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                        />
+                      </svg>
+                      Choose File
+                    </button>
+                    {excelFile && (
+                      <span className="text-sm text-gray-600">
+                        {excelFile.name}
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={processExcelFile}
+                    disabled={!excelFile || excelProcessing}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {excelProcessing ? "Processing..." : "Process Excel File"}
+                  </button>
+
+                  {processedData.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowProcessedResultsModal(true)}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <svg
+                        className="mr-2 h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      View Processed Results
+                    </button>
+                  )}
+
+                  {excelFile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExcelFile(null);
+                        setProcessedData([]);
+                        setAssayersData([]);
+                        setExcelError("");
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = "";
+                        }
+                      }}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                {excelError && (
+                  <div className="rounded-md bg-red-50 p-4">
+                    <div className="text-sm text-red-700">{excelError}</div>
+                  </div>
+                )}
+
+                {/* Assayers Data Entry Details Table */}
+                {processedData.length > 0 && (
+                  <div className="mt-8">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="text-md font-medium text-gray-900">
+                        Assayers Data Entry Details
+                      </h4>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              SN
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Bar No
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Gross Weight
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Gold Fineness (%)
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Gold Net Weight
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Silver Fineness (%)
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Silver Net Weight
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {assayersData.map((row, index) => (
+                            <tr
+                              key={index}
+                              className={
+                                index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                              }
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {index + 1}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <input
+                                  type="text"
+                                  value={row.barNo}
+                                  onChange={(e) =>
+                                    updateAssayersRow(
+                                      index,
+                                      "barNo",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                  placeholder="Enter bar number"
+                                />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <input
+                                  type="number"
+                                  step="0.0001"
+                                  value={row.grossWeight}
+                                  onChange={(e) =>
+                                    updateAssayersRow(
+                                      index,
+                                      "grossWeight",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                  placeholder="0.0000"
+                                />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {row.goldFineness}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {row.goldNetWeight}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {row.silverFineness}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {row.silverNetWeight}
+                              </td>
+                            </tr>
+                          ))}
+                          {/* Totals Row */}
+                          {assayersData.length > 0 && (
+                            <tr className="bg-gray-100 font-semibold">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Total
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                -
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {calculateAssayersTotals().grossWeight}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                -
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {calculateAssayersTotals().goldNetWeight}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                -
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {calculateAssayersTotals().silverNetWeight}
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Commodities */}
 
           {/* Commodities */}
@@ -680,7 +1090,7 @@ function NewLargeScaleJobCardPage() {
           </div> */}
 
           {/* Weight and Quality Information */}
-          <div className="bg-white shadow sm:rounded-lg">
+          {/* <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Weight and Quality Information
@@ -745,10 +1155,10 @@ function NewLargeScaleJobCardPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Officer Assignments */}
-          <div className="bg-white shadow sm:rounded-lg">
+          {/* <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Officer Assignments
@@ -868,33 +1278,12 @@ function NewLargeScaleJobCardPage() {
                     ))}
                   </select>
                 </div>
-
-                {/* <div>
-                  <label
-                    htmlFor="status"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Status
-                  </label>
-                  <select
-                    name="status"
-                    id="status"
-                    value={form.status}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
-                </div> */}
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Notes */}
-          <div className="bg-white shadow sm:rounded-lg">
+          {/* <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Additional Notes
@@ -917,7 +1306,7 @@ function NewLargeScaleJobCardPage() {
                 />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Form Actions */}
           <div className="flex justify-end gap-4">
@@ -937,6 +1326,112 @@ function NewLargeScaleJobCardPage() {
           </div>
         </form>
       </div>
+
+      {/* Processed Results Modal */}
+      {showProcessedResultsModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div
+                className="absolute inset-0 bg-gray-500 opacity-75"
+                onClick={() => setShowProcessedResultsModal(false)}
+              ></div>
+            </div>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900">
+                    Processed Results
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowProcessedResultsModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Group #
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                          AVG Ag
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                          AVG Au
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Samples
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Source Rows
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {processedData.map((row, index) => (
+                        <tr
+                          key={index}
+                          className={
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {row.groupNumber}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {row.avgAg}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {row.avgAu}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {row.sampleCount}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {row.rows}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={() => setShowProcessedResultsModal(false)}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

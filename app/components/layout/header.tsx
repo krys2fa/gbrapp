@@ -29,26 +29,26 @@ export const Header: React.FC<HeaderProps> = ({
   const [isNotifOpen, setIsNotifOpen] = React.useState(false);
   const notifRef = React.useRef<HTMLDivElement | null>(null);
 
-  const notifications = [
-    {
-      id: "n1",
-      title: "Job Card Created",
-      description: "New job card for Exporter ABC has been created.",
-      time: "30 minutes ago",
-    },
-    {
-      id: "n2",
-      title: "Invoice Generated",
-      description: "Invoice #INV-2025-042 generated for Exporter XYZ.",
-      time: "2 hours ago",
-    },
-    {
-      id: "n3",
-      title: "Payment Received",
-      description: "Payment of $15,000 received from Global Exports.",
-      time: "6 hours ago",
-    },
-  ];
+  // const notifications = [
+  //   {
+  //     id: "n1",
+  //     title: "Job Card Created",
+  //     description: "New job card for Exporter ABC has been created.",
+  //     time: "30 minutes ago",
+  //   },
+  //   {
+  //     id: "n2",
+  //     title: "Invoice Generated",
+  //     description: "Invoice #INV-2025-042 generated for Exporter XYZ.",
+  //     time: "2 hours ago",
+  //   },
+  //   {
+  //     id: "n3",
+  //     title: "Payment Received",
+  //     description: "Payment of $15,000 received from Global Exports.",
+  //     time: "6 hours ago",
+  //   },
+  // ];
 
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -132,7 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
           </Button>
 
           {/* Notifications */}
-          <div className="relative" ref={notifRef}>
+          {/* <div className="relative" ref={notifRef}>
             <Button
               variant="ghost"
               size="icon"
@@ -194,7 +194,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Profile */}
           <Link href="/settings">
