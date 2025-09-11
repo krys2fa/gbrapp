@@ -1,12 +1,22 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
-import { useState, useEffect } from "react";
+import { formatCurrency, formatDate } from "@/app/lib/utils";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import toast from "react-hot-toast";
-import { formatDate } from "@/app/lib/utils";
+import countryList from "react-select-country-list";
+import {
+  PencilIcon,
+  TrashIcon,
+  ArrowPathIcon,
+  XCircleIcon,
+  EyeIcon,
+  DocumentTextIcon,
+  ChartBarIcon,
+} from "@heroicons/react/24/outline";
 
 interface LargeScaleJobCard {
   id: string;
@@ -70,44 +80,62 @@ interface LargeScaleJobCard {
     badgeNumber: string;
   };
   // Removed consignee and notified party fields - now in exporter
-  commodities: {
-    id: string;
-    commodity: {
-      id: string;
-      name: string;
-      symbol: string;
-    };
-    grossWeight: number;
-    netWeight: number;
-    fineness: number;
-    valueGhs: number;
-    valueUsd: number;
-    pricePerOunce: number;
-    numberOfOunces: number;
-  }[];
+  // commodities: {
+  //   id: string;
+  //   commodity: {
+  //     id: string;
+  //     name: string;
+  //     symbol: string;
+  //   };
+  //   grossWeight: number;
+  //   netWeight: number;
+  //   fineness: number;
+  //   valueGhs: number;
+  //   valueUsd: number;
+  //   pricePerOunce: number;
+  //   numberOfOunces: number;
+  // }[];
   assays?: {
     id: string;
     method: string;
     pieces: number;
     signatory: string;
+    comments?: string;
+    shipmentType?: {
+      id: string;
+      name: string;
+      description: string;
+    };
+    securitySealNo?: string;
+    goldbodSealNo?: string;
+    customsSealNo?: string;
+    shipmentNumber?: string;
     dateOfAnalysis: string;
-    totalNetGoldWeight: number;
-    totalNetSilverWeight: number;
-    totalNetGoldWeightOz: number;
-    totalNetSilverWeightOz: number;
-    totalGoldValue: number;
-    totalSilverValue: number;
-    totalCombinedValue: number;
-    totalValueGhs: number;
+    dataSheetDates?: string;
+    sampleBottleDates?: string;
+    numberOfSamples: number;
+    numberOfBars: number;
+    sampleType: string;
+    exchangeRate?: number;
+    commodityPrice?: number;
+    pricePerOz?: number;
+    totalNetGoldWeight?: number;
+    totalNetSilverWeight?: number;
+    totalNetGoldWeightOz?: number;
+    totalNetSilverWeightOz?: number;
+    totalGoldValue?: number;
+    totalSilverValue?: number;
+    totalCombinedValue?: number;
+    totalValueGhs?: number;
     measurements: {
       id: string;
       piece: number;
-      barNumber: string;
-      grossWeight: number;
-      goldAssay: number;
-      silverAssay: number;
-      netGoldWeight: number;
-      netSilverWeight: number;
+      barNumber?: string;
+      grossWeight?: number;
+      goldAssay?: number;
+      netGoldWeight?: number;
+      silverAssay?: number;
+      netSilverWeight?: number;
     }[];
   }[];
   invoices?: {
@@ -132,6 +160,8 @@ function LargeScaleJobCardDetailPage() {
   const [error, setError] = useState("");
   const [generatingInvoice, setGeneratingInvoice] = useState(false);
   const id = (params?.id as string) || "";
+
+  const countryOptions = useMemo(() => countryList().getData(), []);
 
   useEffect(() => {
     const fetchJobCard = async () => {
@@ -355,8 +385,314 @@ function LargeScaleJobCardDetailPage() {
             </div>
           </div>
 
+          {/* Assay Information */}
+          {/* {jobCard.assays && jobCard.assays.length > 0 && (
+            <div className="bg-white shadow sm:rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                  Assay Information
+                </h3>
+                {jobCard.assays.map((assay, index) => (
+                  <div key={assay.id} className="mb-6 last:mb-0">
+                    {jobCard.assays && jobCard.assays.length > 1 && (
+                      <h4 className="text-md font-medium text-gray-900 mb-3">
+                        Assay #{index + 1}
+                      </h4>
+                    )}
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Assay Method
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.method}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Authorized Signatory
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.signatory || "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Type of Shipment
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.shipmentType?.name || "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Date of Analysis
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {new Date(assay.dateOfAnalysis).toLocaleDateString()}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Sample Bottle Dates
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.sampleBottleDates
+                            ? new Date(
+                                assay.sampleBottleDates
+                              ).toLocaleDateString()
+                            : "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Data Sheet Dates
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.dataSheetDates
+                            ? new Date(
+                                assay.dataSheetDates
+                              ).toLocaleDateString()
+                            : "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Number of Samples
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.numberOfSamples}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Number of Bars
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.numberOfBars}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Sample Type
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.sampleType}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Shipment Number
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.shipmentNumber || "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Security Seal No.
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.securitySealNo || "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Goldbod Seal No.
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.goldbodSealNo || "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Customs Seal No.
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.customsSealNo || "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Exchange Rate
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.exchangeRate
+                            ? `GHS ${assay.exchangeRate.toFixed(4)}`
+                            : "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Commodity Price
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.commodityPrice
+                            ? `$${assay.commodityPrice.toLocaleString()}`
+                            : "Not specified"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Price per Oz
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.pricePerOz
+                            ? `$${assay.pricePerOz.toLocaleString()}`
+                            : "Not specified"}
+                        </dd>
+                      </div>
+                    </div>
+
+                    {/* Assay Measurements */}
+          {/* {assay.measurements && assay.measurements.length > 0 && (
+                      <div className="mt-6">
+                        <h5 className="text-sm font-medium text-gray-900 mb-3">
+                          Assay Measurements
+                        </h5>
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Piece
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Bar Number
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Gross Weight ({jobCard.unitOfMeasure})
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Gold Assay (%)
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Net Gold Weight ({jobCard.unitOfMeasure})
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Silver Assay (%)
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Net Silver Weight ({jobCard.unitOfMeasure})
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {assay.measurements.map((measurement) => (
+                                <tr key={measurement.id}>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {measurement.piece}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {measurement.barNumber || "N/A"}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {measurement.grossWeight?.toFixed(2) ||
+                                      "N/A"}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {measurement.goldAssay?.toFixed(4) || "N/A"}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {measurement.netGoldWeight?.toFixed(2) ||
+                                      "N/A"}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {measurement.silverAssay?.toFixed(4) ||
+                                      "N/A"}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {measurement.netSilverWeight?.toFixed(2) ||
+                                      "N/A"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )} */}
+
+          {/* Assay Totals */}
+          {/* <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Total Net Gold Weight
+                        </dt>
+                        <dd className="mt-1 text-lg font-semibold text-gray-900">
+                          {assay.totalNetGoldWeight?.toFixed(2) || "N/A"}{" "}
+                          {jobCard.unitOfMeasure}
+                        </dd>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Total Net Silver Weight
+                        </dt>
+                        <dd className="mt-1 text-lg font-semibold text-gray-900">
+                          {assay.totalNetSilverWeight?.toFixed(2) || "N/A"}{" "}
+                          {jobCard.unitOfMeasure}
+                        </dd>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Total Gold Value
+                        </dt>
+                        <dd className="mt-1 text-lg font-semibold text-gray-900">
+                          {assay.totalGoldValue
+                            ? `$${assay.totalGoldValue.toLocaleString()}`
+                            : "N/A"}
+                        </dd>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Total Silver Value
+                        </dt>
+                        <dd className="mt-1 text-lg font-semibold text-gray-900">
+                          {assay.totalSilverValue
+                            ? `$${assay.totalSilverValue.toLocaleString()}`
+                            : "N/A"}
+                        </dd>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Total Combined Value
+                        </dt>
+                        <dd className="mt-1 text-lg font-semibold text-gray-900">
+                          {assay.totalCombinedValue
+                            ? `$${assay.totalCombinedValue.toLocaleString()}`
+                            : "N/A"}
+                        </dd>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Total Value (GHS)
+                        </dt>
+                        <dd className="mt-1 text-lg font-semibold text-gray-900">
+                          {assay.totalValueGhs
+                            ? `GHS ${assay.totalValueGhs.toLocaleString()}`
+                            : "N/A"}
+                        </dd>
+                      </div>
+                    </div> */}
+
+          {/* {assay.comments && (
+                      <div className="mt-4">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Comments
+                        </dt>
+                        <dd className="mt-1 text-sm text-gray-900">
+                          {assay.comments}
+                        </dd>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Commodities */}
-          <div className="bg-white shadow sm:rounded-lg">
+          {/* <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Commodities
@@ -432,10 +768,10 @@ function LargeScaleJobCardDetailPage() {
                 ))}
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Officer Assignments */}
-          <div className="bg-white shadow sm:rounded-lg">
+          {/* <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Officer Assignments
@@ -493,10 +829,10 @@ function LargeScaleJobCardDetailPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Contact Information */}
-          <div className="bg-white shadow sm:rounded-lg">
+          {/* <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Contact Information
@@ -508,7 +844,9 @@ function LargeScaleJobCardDetailPage() {
                   </h4>
                   <div className="space-y-1 text-sm text-gray-600">
                     <p>{jobCard.exporter.consigneeAddress || "Not provided"}</p>
-                    <p>{jobCard.exporter.consigneeTelephone || "Not provided"}</p>
+                    <p>
+                      {jobCard.exporter.consigneeTelephone || "Not provided"}
+                    </p>
                     <p>{jobCard.exporter.consigneeMobile || "Not provided"}</p>
                     <p>{jobCard.exporter.consigneeEmail || "Not provided"}</p>
                   </div>
@@ -519,18 +857,22 @@ function LargeScaleJobCardDetailPage() {
                   </h4>
                   <div className="space-y-1 text-sm text-gray-600">
                     <p>{jobCard.exporter.deliveryLocation || "Not provided"}</p>
-                    <p>{jobCard.exporter.exporterTelephone || "Not provided"}</p>
+                    <p>
+                      {jobCard.exporter.exporterTelephone || "Not provided"}
+                    </p>
                     <p>{jobCard.exporter.exporterEmail || "Not provided"}</p>
                     <p>{jobCard.exporter.exporterWebsite || "Not provided"}</p>
-                    <p>{jobCard.exporter.exporterLicenseNumber || "Not provided"}</p>
+                    <p>
+                      {jobCard.exporter.exporterLicenseNumber || "Not provided"}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Notified Party */}
-          {jobCard.exporter.notifiedPartyName && (
+          {/* {jobCard.exporter.notifiedPartyName && (
             <div className="bg-white shadow sm:rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
@@ -548,7 +890,8 @@ function LargeScaleJobCardDetailPage() {
                       Contact Person
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {jobCard.exporter.notifiedPartyContactPerson || "Not provided"}
+                      {jobCard.exporter.notifiedPartyContactPerson ||
+                        "Not provided"}
                     </dd>
                   </div>
                   <div>
@@ -570,7 +913,8 @@ function LargeScaleJobCardDetailPage() {
                       Telephone
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {jobCard.exporter.notifiedPartyTelephone || "Not provided"}
+                      {jobCard.exporter.notifiedPartyTelephone ||
+                        "Not provided"}
                     </dd>
                   </div>
                   <div>
@@ -584,7 +928,7 @@ function LargeScaleJobCardDetailPage() {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Additional Information */}
           <div className="bg-white shadow sm:rounded-lg">
@@ -598,7 +942,12 @@ function LargeScaleJobCardDetailPage() {
                     Destination Country
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {jobCard.destinationCountry || "Not specified"}
+                    {jobCard.destinationCountry
+                      ? countryOptions.find(
+                          (option: { value: string; label: string }) =>
+                            option.value === jobCard.destinationCountry
+                        )?.label || jobCard.destinationCountry
+                      : "Not specified"}
                   </dd>
                 </div>
                 <div>
@@ -609,18 +958,18 @@ function LargeScaleJobCardDetailPage() {
                     {jobCard.numberOfBoxes || "Not specified"}
                   </dd>
                 </div>
-                <div className="sm:col-span-2">
+                {/* <div className="sm:col-span-2">
                   <dt className="text-sm font-medium text-gray-500">Notes</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.notes || "No notes provided"}
                   </dd>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
 
           {/* Timestamps */}
-          <div className="bg-white shadow sm:rounded-lg">
+          {/* <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Record Information
@@ -642,26 +991,35 @@ function LargeScaleJobCardDetailPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Valuation Section: only show after valuation (assays) exist */}
-          {jobCard && jobCard.assays && jobCard.assays.length > 0 && (
-            <div>
+          {jobCard && jobCard.assays && jobCard.assays.length > 0 ? (
+            <div className="mt-8">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
                   Valuation
                 </h3>
-                <Link
-                  href={`/job-cards/large-scale/${id}/assays/${jobCard.assays[0].id}`}
-                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                  View Valuation
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/job-cards/large-scale/${id}/assays/assay-results`}
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    <DocumentTextIcon className="w-4 h-4 mr-2" />
+                    Assay Results
+                  </Link>
+                  {/* <Link
+                    href={`/job-cards/large-scale/${id}/assays/${jobCard.assays[0].id}`}
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    <ChartBarIcon className="w-4 h-4 mr-2" />
+                    Assay Report Analysis
+                  </Link> */}
+                </div>
               </div>
-
               <div className="bg-white shadow overflow-hidden sm:rounded-md">
                 <ul className="divide-y divide-gray-200">
-                  {jobCard.assays.map((assay: any, index: number) => (
+                  {jobCard.assays.map((assay: any) => (
                     <li key={assay.id}>
                       <Link
                         href={`/job-cards/large-scale/${id}/assays/${assay.id}`}
@@ -670,26 +1028,32 @@ function LargeScaleJobCardDetailPage() {
                           <div className="px-4 py-4 sm:px-6">
                             <div className="flex items-center justify-between">
                               <p className="text-sm font-medium text-indigo-600 truncate">
-                                Assay #{index + 1} - {assay.method}
+                                Assay #{assay.id.slice(-8)}
                               </p>
                               <div className="ml-2 flex-shrink-0 flex">
-                                <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                  {assay.pieces} piece
-                                  {assay.pieces !== 1 ? "s" : ""}
+                                <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                  Gold:{" "}
+                                  {assay.totalNetGoldWeightOz?.toFixed(3) ||
+                                    "N/A"}{" "}
+                                  oz | Silver:{" "}
+                                  {assay.totalNetSilverWeightOz?.toFixed(3) ||
+                                    "N/A"}{" "}
+                                  oz
                                 </p>
                               </div>
                             </div>
                             <div className="mt-2 sm:flex sm:justify-between">
                               <div className="sm:flex">
                                 <p className="flex items-center text-sm text-gray-500">
-                                  Total Value: $
-                                  {assay.totalCombinedValue?.toLocaleString()}
+                                  Analysis Date:{" "}
+                                  {formatDate(new Date(assay.dateOfAnalysis))}
                                 </p>
                               </div>
                               <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                                 <p>
-                                  Date:{" "}
-                                  {formatDate(new Date(assay.dateOfAnalysis))}
+                                  Total Value: $
+                                  {assay.totalCombinedValue?.toLocaleString() ||
+                                    "N/A"}
                                 </p>
                               </div>
                             </div>
@@ -699,6 +1063,23 @@ function LargeScaleJobCardDetailPage() {
                     </li>
                   ))}
                 </ul>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-8">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Valuation
+                </h3>
+                <Link
+                  href={`/job-cards/large-scale/${id}/assays/new`}
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Perform Valuation
+                </Link>
+              </div>
+              <div className="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center text-gray-500">
+                Valuation has not been performed for this job card yet.
               </div>
             </div>
           )}

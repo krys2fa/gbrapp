@@ -220,7 +220,7 @@ async function createLargeScaleJobCard(req: NextRequest) {
       notes,
       destinationCountry,
       sourceOfGold: sourceOfGold || "Ghana",
-      numberOfBars,
+      numberOfBoxes: numberOfBars ? parseInt(numberOfBars) : undefined,
       customsOfficerId,
       assayOfficerId,
       technicalDirectorId,
