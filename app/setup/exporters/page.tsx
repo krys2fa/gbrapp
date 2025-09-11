@@ -357,7 +357,7 @@ const ExportersPage = () => {
         <BackLink href="/setup" label="Back to Settings" />
       </div>
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-xl">
+        <div className="max-w-4xl">
           <form
             onSubmit={editingExporter ? handleUpdateExporter : handleSubmit}
           >
@@ -538,327 +538,333 @@ const ExportersPage = () => {
                   </div>
                 </div>
 
-                {/* Consignee Information Section */}
-                <div className="mt-8">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">
-                    Consignee Information
-                  </h4>
-                  <div className="grid grid-cols-1 gap-6">
-                    <div>
-                      <label
-                        htmlFor="consigneeAddress"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Consignee Address
-                      </label>
-                      <input
-                        type="text"
-                        name="consigneeAddress"
-                        id="consigneeAddress"
-                        value={form.consigneeAddress}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter consignee address"
-                      />
+                {/* Consignee and Buyer Information Side by Side */}
+                <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  {/* Consignee Information Section */}
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 mb-4">
+                      Consignee Information
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="consigneeAddress"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Consignee Address
+                        </label>
+                        <input
+                          type="text"
+                          name="consigneeAddress"
+                          id="consigneeAddress"
+                          value={form.consigneeAddress}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter consignee address"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="consigneeTelephone"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Consignee Telephone
+                        </label>
+                        <input
+                          type="text"
+                          name="consigneeTelephone"
+                          id="consigneeTelephone"
+                          value={form.consigneeTelephone}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter consignee telephone"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="consigneeMobile"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Consignee Mobile
+                        </label>
+                        <input
+                          type="text"
+                          name="consigneeMobile"
+                          id="consigneeMobile"
+                          value={form.consigneeMobile}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter consignee mobile"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="consigneeEmail"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Consignee Email
+                        </label>
+                        <input
+                          type="email"
+                          name="consigneeEmail"
+                          id="consigneeEmail"
+                          value={form.consigneeEmail}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter consignee email"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label
-                        htmlFor="consigneeTelephone"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Consignee Telephone
-                      </label>
-                      <input
-                        type="text"
-                        name="consigneeTelephone"
-                        id="consigneeTelephone"
-                        value={form.consigneeTelephone}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter consignee telephone"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="consigneeMobile"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Consignee Mobile
-                      </label>
-                      <input
-                        type="text"
-                        name="consigneeMobile"
-                        id="consigneeMobile"
-                        value={form.consigneeMobile}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter consignee mobile"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="consigneeEmail"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Consignee Email
-                      </label>
-                      <input
-                        type="email"
-                        name="consigneeEmail"
-                        id="consigneeEmail"
-                        value={form.consigneeEmail}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter consignee email"
-                      />
+                  </div>
+
+                  {/* Buyer Information Section */}
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 mb-4">
+                      Buyer Information
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="buyerName"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Buyer Name
+                        </label>
+                        <input
+                          type="text"
+                          name="buyerName"
+                          id="buyerName"
+                          value={form.buyerName}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter buyer name"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="buyerAddress"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Buyer Address
+                        </label>
+                        <input
+                          type="text"
+                          name="buyerAddress"
+                          id="buyerAddress"
+                          value={form.buyerAddress}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter buyer address"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Buyer Information Section */}
-                <div className="mt-8">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">
-                    Buyer Information
-                  </h4>
-                  <div className="grid grid-cols-1 gap-6">
-                    <div>
-                      <label
-                        htmlFor="buyerName"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Buyer Name
-                      </label>
-                      <input
-                        type="text"
-                        name="buyerName"
-                        id="buyerName"
-                        value={form.buyerName}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter buyer name"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="buyerAddress"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Buyer Address
-                      </label>
-                      <input
-                        type="text"
-                        name="buyerAddress"
-                        id="buyerAddress"
-                        value={form.buyerAddress}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter buyer address"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Exporter Details Section */}
-                <div className="mt-8">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">
-                    Exporter Details
-                  </h4>
-                  <div className="grid grid-cols-1 gap-6">
-                    <div>
-                      <label
-                        htmlFor="deliveryLocation"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Delivery Location
-                      </label>
-                      <input
-                        type="text"
-                        name="deliveryLocation"
-                        id="deliveryLocation"
-                        value={form.deliveryLocation}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter delivery location"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="exporterTelephone"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Exporter Telephone
-                      </label>
-                      <input
-                        type="text"
-                        name="exporterTelephone"
-                        id="exporterTelephone"
-                        value={form.exporterTelephone}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter exporter telephone"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="exporterEmail"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Exporter Email
-                      </label>
-                      <input
-                        type="email"
-                        name="exporterEmail"
-                        id="exporterEmail"
-                        value={form.exporterEmail}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter exporter email"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="exporterWebsite"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Exporter Website
-                      </label>
-                      <input
-                        type="url"
-                        name="exporterWebsite"
-                        id="exporterWebsite"
-                        value={form.exporterWebsite}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="https://www.example.com"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="exporterLicenseNumber"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Exporter License Number
-                      </label>
-                      <input
-                        type="text"
-                        name="exporterLicenseNumber"
-                        id="exporterLicenseNumber"
-                        value={form.exporterLicenseNumber}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter exporter license number"
-                      />
+                {/* Exporter Details and Notified Party Information Side by Side */}
+                <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  {/* Exporter Details Section */}
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 mb-4">
+                      Exporter Details
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="deliveryLocation"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Delivery Location
+                        </label>
+                        <input
+                          type="text"
+                          name="deliveryLocation"
+                          id="deliveryLocation"
+                          value={form.deliveryLocation}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter delivery location"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="exporterTelephone"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Exporter Telephone
+                        </label>
+                        <input
+                          type="text"
+                          name="exporterTelephone"
+                          id="exporterTelephone"
+                          value={form.exporterTelephone}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter exporter telephone"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="exporterEmail"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Exporter Email
+                        </label>
+                        <input
+                          type="email"
+                          name="exporterEmail"
+                          id="exporterEmail"
+                          value={form.exporterEmail}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter exporter email"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="exporterWebsite"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Exporter Website
+                        </label>
+                        <input
+                          type="url"
+                          name="exporterWebsite"
+                          id="exporterWebsite"
+                          value={form.exporterWebsite}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="https://www.example.com"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="exporterLicenseNumber"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Exporter License Number
+                        </label>
+                        <input
+                          type="text"
+                          name="exporterLicenseNumber"
+                          id="exporterLicenseNumber"
+                          value={form.exporterLicenseNumber}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter exporter license number"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Notified Party Information Section */}
-                <div className="mt-8">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">
-                    Notified Party Information
-                  </h4>
-                  <div className="grid grid-cols-1 gap-6">
-                    <div>
-                      <label
-                        htmlFor="notifiedPartyName"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        name="notifiedPartyName"
-                        id="notifiedPartyName"
-                        value={form.notifiedPartyName}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter notified party name"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="notifiedPartyAddress"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Address
-                      </label>
-                      <input
-                        type="text"
-                        name="notifiedPartyAddress"
-                        id="notifiedPartyAddress"
-                        value={form.notifiedPartyAddress}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter notified party address"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="notifiedPartyEmail"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        name="notifiedPartyEmail"
-                        id="notifiedPartyEmail"
-                        value={form.notifiedPartyEmail}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter notified party email"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="notifiedPartyContactPerson"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Contact Person
-                      </label>
-                      <input
-                        type="text"
-                        name="notifiedPartyContactPerson"
-                        id="notifiedPartyContactPerson"
-                        value={form.notifiedPartyContactPerson}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter contact person name"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="notifiedPartyTelephone"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Telephone
-                      </label>
-                      <input
-                        type="text"
-                        name="notifiedPartyTelephone"
-                        id="notifiedPartyTelephone"
-                        value={form.notifiedPartyTelephone}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter notified party telephone"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="notifiedPartyMobile"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Mobile
-                      </label>
-                      <input
-                        type="text"
-                        name="notifiedPartyMobile"
-                        id="notifiedPartyMobile"
-                        value={form.notifiedPartyMobile}
-                        onChange={handleChange}
-                        className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter notified party mobile"
-                      />
+                  {/* Notified Party Information Section */}
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 mb-4">
+                      Notified Party Information
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="notifiedPartyName"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Name
+                        </label>
+                        <input
+                          type="text"
+                          name="notifiedPartyName"
+                          id="notifiedPartyName"
+                          value={form.notifiedPartyName}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter notified party name"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="notifiedPartyAddress"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Address
+                        </label>
+                        <input
+                          type="text"
+                          name="notifiedPartyAddress"
+                          id="notifiedPartyAddress"
+                          value={form.notifiedPartyAddress}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter notified party address"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="notifiedPartyEmail"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          name="notifiedPartyEmail"
+                          id="notifiedPartyEmail"
+                          value={form.notifiedPartyEmail}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter notified party email"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="notifiedPartyContactPerson"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Contact Person
+                        </label>
+                        <input
+                          type="text"
+                          name="notifiedPartyContactPerson"
+                          id="notifiedPartyContactPerson"
+                          value={form.notifiedPartyContactPerson}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter contact person name"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="notifiedPartyTelephone"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Telephone
+                        </label>
+                        <input
+                          type="text"
+                          name="notifiedPartyTelephone"
+                          id="notifiedPartyTelephone"
+                          value={form.notifiedPartyTelephone}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter notified party telephone"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="notifiedPartyMobile"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Mobile
+                        </label>
+                        <input
+                          type="text"
+                          name="notifiedPartyMobile"
+                          id="notifiedPartyMobile"
+                          value={form.notifiedPartyMobile}
+                          onChange={handleChange}
+                          className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter notified party mobile"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
