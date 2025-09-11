@@ -289,27 +289,6 @@ async function createLargeScaleJobCard(req: NextRequest) {
       }
     }
 
-    // Create commodity associations if provided
-    if (commodities && Array.isArray(commodities)) {
-      for (const commodityData of commodities) {
-        if (commodityData.commodityId) {
-          await prisma.largeScaleJobCardCommodity.create({
-            data: {
-              jobCardId: jobCard.id,
-              commodityId: commodityData.commodityId,
-              grossWeight: commodityData.grossWeight,
-              netWeight: commodityData.netWeight,
-              fineness: commodityData.fineness,
-              valueGhs: commodityData.valueGhs,
-              valueUsd: commodityData.valueUsd,
-              pricePerOunce: commodityData.pricePerOunce,
-              numberOfOunces: commodityData.numberOfOunces,
-            },
-          });
-        }
-      }
-    }
-
     // Fetch the complete job card with commodities and assay
     const completeJobCard = await prisma.largeScaleJobCard.findUnique({
       where: { id: jobCard.id },
