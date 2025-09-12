@@ -26,7 +26,7 @@ function ValuationList() {
   const fetchValuations = async () => {
     setLoading(true);
     try {
-      // fetch job cards; filter client-side for those with assays
+      // Fetch both regular and large scale job cards with assays
       const params = new URLSearchParams();
       params.append("page", String(currentPage));
       params.append("limit", String(itemsPerPage));
@@ -36,24 +36,75 @@ function ValuationList() {
       if (referenceFilter) params.append("reference", referenceFilter);
       if (startDateFilter) params.append("startDate", startDateFilter);
       if (endDateFilter) params.append("endDate", endDateFilter);
-      const res = await fetch(`/api/job-cards?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch job cards");
-      const data = await res.json();
 
-      const valued = (data.jobCards || []).filter(
+      // Fetch regular job cards with assays
+      const regularRes = await fetch(`/api/job-cards?${params.toString()}`);
+      if (!regularRes.ok) throw new Error("Failed to fetch regular job cards");
+
+      // Fetch large scale job cards with assays
+      const largeScaleRes = await fetch(
+        `/api/large-scale-job-cards?${params.toString()}`
+      );
+      if (!largeScaleRes.ok)
+        throw new Error("Failed to fetch large scale job cards");
+
+      const regularData = await regularRes.json();
+      const largeScaleData = await largeScaleRes.json();
+
+      // Filter regular job cards that have assays
+      const regularValued = (regularData.jobCards || []).filter(
         (jc: any) => jc.assays && jc.assays.length > 0
       );
-      // apply certificate filter client-side (API doesn't support certificate filter)
+
+      // Filter large scale job cards that have assays
+      const largeScaleValued = (largeScaleData.jobCards || []).filter(
+        (jc: any) => jc._count?.assays > 0
+      );
+
+      // Add type indicator and combine both types
+      const combinedValuations = [
+        ...regularValued.map((jc: any) => ({
+          ...jc,
+          valuationType: "regular",
+        })),
+        ...largeScaleValued.map((jc: any) => ({
+          ...jc,
+          valuationType: "largeScale",
+        })),
+      ];
+
+      // Apply certificate filter client-side (API doesn't support certificate filter)
       const certificateFiltered = certificateFilter
-        ? valued.filter((jc: any) => {
-            const assay = jc.assays && jc.assays.length ? jc.assays[0] : null;
-            return assay?.certificateNumber
-              ?.toLowerCase()
-              .includes(certificateFilter.toLowerCase());
+        ? combinedValuations.filter((jc: any) => {
+            if (jc.valuationType === "regular") {
+              const assay = jc.assays && jc.assays.length ? jc.assays[0] : null;
+              return assay?.certificateNumber
+                ?.toLowerCase()
+                .includes(certificateFilter.toLowerCase());
+            } else {
+              // For large scale, check certificate numbers in assay data
+              const assay = jc.assays && jc.assays.length ? jc.assays[0] : null;
+              return (
+                assay?.certificateNumber
+                  ?.toLowerCase()
+                  .includes(certificateFilter.toLowerCase()) ||
+                assay?.securitySealNo
+                  ?.toLowerCase()
+                  .includes(certificateFilter.toLowerCase()) ||
+                assay?.goldbodSealNo
+                  ?.toLowerCase()
+                  .includes(certificateFilter.toLowerCase())
+              );
+            }
           })
-        : valued;
-      setJobCards(valued);
-      setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
+        : combinedValuations;
+
+      setJobCards(certificateFiltered);
+      // Calculate total pages based on combined results
+      const totalRegular = regularData.total || 0;
+      const totalLargeScale = largeScaleData.total || 0;
+      const totalCombined = totalRegular + totalLargeScale;
+      setTotalPages(Math.ceil(totalCombined / itemsPerPage));
     } catch (err) {
       console.error(err);
     } finally {
@@ -70,7 +121,9 @@ function ValuationList() {
         </div>
       ) : jobCards.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-gray-500">No valuations found.</p>
+          <p className="text-gray-500">
+            No valuations found for regular or large scale job cards.
+          </p>
         </div>
       ) : (
         <>
@@ -86,11 +139,14 @@ function ValuationList() {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <label className="text-xs text-gray-600">Certificate</label>
+                  <label className="text-xs text-gray-600">
+                    Certificate/Seal #
+                  </label>
                   <input
                     value={certificateFilter}
                     onChange={(e) => setCertificateFilter(e.target.value)}
                     className="mt-1 border rounded px-2 py-1"
+                    placeholder="Search certificates or seals"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -134,57 +190,69 @@ function ValuationList() {
                     Exporter
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Shipment
+                    Total Value
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Certificate
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Assay Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Gold %
+                    Status
                   </th>
                   <th className="px-6 py-3" />
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {jobCards.map((jc) => {
-                  const assay =
-                    jc.assays && jc.assays.length ? jc.assays[0] : null;
+                  const isLargeScale = jc.valuationType === "largeScale";
+                  const assay = isLargeScale
+                    ? jc.assays && jc.assays.length
+                      ? jc.assays[0]
+                      : null
+                    : jc.assays && jc.assays.length
+                    ? jc.assays[0]
+                    : null;
+
                   return (
                     <tr key={jc.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
                         <Link
-                          href={`/job-cards/${jc.id}`}
+                          href={
+                            isLargeScale
+                              ? `/job-cards/large-scale/${jc.id}`
+                              : `/job-cards/${jc.id}`
+                          }
                           className="hover:underline"
                         >
                           {jc.referenceNumber}
                         </Link>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {jc.exporter?.name}
+                        {jc.exporter?.name || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {assay?.certificateNumber || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {assay
-                          ? formatDate(
-                              new Date(
-                                assay.assayDate || assay.createdAt || Date.now()
-                              )
-                            )
+                        {assay && assay.totalGoldValue
+                          ? `GHS ${assay.totalGoldValue.toLocaleString()}`
+                          : jc.valueGhs
+                          ? `GHS ${jc.valueGhs.toLocaleString()}`
                           : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {assay
-                          ? (assay.goldContent || assay.fineness || 0) + "%"
-                          : "-"}
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            jc.status === "COMPLETED"
+                              ? "bg-green-100 text-green-800"
+                              : jc.status === "ACTIVE"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {jc.status || "PENDING"}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Link
-                          href={`/job-cards/${jc.id}`}
+                          href={
+                            isLargeScale
+                              ? `/job-cards/large-scale/${jc.id}`
+                              : `/job-cards/${jc.id}`
+                          }
                           className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
                         >
                           <EyeIcon className="h-4 w-4 mr-1" />
@@ -205,20 +273,19 @@ function ValuationList() {
                 <p className="text-sm text-gray-700">
                   Showing{" "}
                   <span className="font-medium">
-                    {(currentPage - 1) * itemsPerPage + 1}
+                    {jobCards.length === 0
+                      ? 0
+                      : (currentPage - 1) * itemsPerPage + 1}
                   </span>{" "}
                   to{" "}
                   <span className="font-medium">
                     {Math.min(
                       currentPage * itemsPerPage,
-                      totalPages * itemsPerPage
+                      (currentPage - 1) * itemsPerPage + jobCards.length
                     )}
                   </span>{" "}
-                  of{" "}
-                  <span className="font-medium">
-                    {totalPages * itemsPerPage}
-                  </span>{" "}
-                  results
+                  of <span className="font-medium">{jobCards.length}</span>{" "}
+                  valuations
                 </p>
               </div>
               <div>
@@ -281,7 +348,7 @@ function ValuationsPage() {
       <Header
         title="Valuations"
         icon={<FileText className="h-5 w-5" />}
-        subtitle="List of job cards with completed valuations."
+        subtitle="Comprehensive list of regular and large scale job cards with completed valuations and assay results."
       />
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="sm:flex sm:items-center">

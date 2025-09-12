@@ -71,9 +71,6 @@ async function getAllJobCards(req: NextRequest) {
       };
     }
 
-    // Get total count of job cards matching the filter
-    const totalCount = await prisma.jobCard.count({ where });
-
     // Use an explicit select to avoid referencing columns that may not exist in older DBs
     const selectObj: any = {
       id: true,
@@ -111,43 +108,167 @@ async function getAllJobCards(req: NextRequest) {
       },
     };
 
-    // Fetch job cards (only selected fields)
-    const jobCards = await prisma.jobCard.findMany({
-      where,
-      select: selectObj,
-      orderBy: { createdAt: "desc" },
-      skip,
-      take: limit,
-    });
+    // Get total count of job cards matching the filter (both regular and large scale)
+    let totalCount = 0;
+    let jobCards: any[] = [];
 
-    // If assays were requested, fetch assays separately and attach them to the job cards to avoid selecting additional jobcard columns that may be missing in the DB schema.
+    if (hasAssays === "true") {
+      // When filtering for assays, we need to query both models
+      const [regularCount, largeScaleCount] = await Promise.all([
+        prisma.jobCard.count({ where }),
+        prisma.largeScaleJobCard.count({
+          where: {
+            ...where,
+            // Remove jobCard-specific fields that don't exist on LargeScaleJobCard
+            assays: { some: {} },
+            // Keep other filters that apply to both models
+            exporterId: where.exporterId,
+            status: where.status,
+            createdAt: where.createdAt,
+          },
+        }),
+      ]);
+      totalCount = regularCount + largeScaleCount;
+
+      // Fetch both types of job cards
+      const [regularJobCards, largeScaleJobCards] = await Promise.all([
+        prisma.jobCard.findMany({
+          where,
+          select: selectObj,
+          orderBy: { createdAt: "desc" },
+          skip: 0,
+          take: limit,
+        }),
+        prisma.largeScaleJobCard.findMany({
+          where: {
+            ...where,
+            assays: { some: {} },
+            exporterId: where.exporterId,
+            status: where.status,
+            createdAt: where.createdAt,
+          },
+          select: {
+            id: true,
+            referenceNumber: true,
+            receivedDate: true,
+            status: true,
+            exporterId: true,
+            createdAt: true,
+            updatedAt: true,
+            exporter: {
+              select: {
+                id: true,
+                name: true,
+                exporterType: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            _count: {
+              select: {
+                assays: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          skip: 0,
+          take: limit,
+        }),
+      ]);
+
+      // Combine and sort all job cards by creation date
+      jobCards = [...regularJobCards, ...largeScaleJobCards]
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+        .slice(0, limit); // Apply pagination limit
+    } else {
+      // When not filtering for assays, just query regular job cards
+      totalCount = await prisma.jobCard.count({ where });
+      jobCards = await prisma.jobCard.findMany({
+        where,
+        select: selectObj,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      });
+    }
+
+    // If assays were requested, fetch assays separately and attach them to the job cards
     if (hasAssays === "true" && jobCards.length) {
-      const jobCardIds = jobCards.map((j: any) => j.id);
-      const assays = await prisma.assay.findMany({
-        where: { jobCardId: { in: jobCardIds } },
-        orderBy: { createdAt: "asc" },
-      });
+      // Separate regular and large scale job cards
+      const regularJobCards = jobCards.filter((jc: any) => !jc._count); // Regular job cards don't have _count initially
+      const largeScaleJobCards = jobCards.filter((jc: any) => jc._count); // Large scale have _count
 
-      const assaysByJob: Record<string, any[]> = {};
-      assays.forEach((a: any) => {
-        if (!assaysByJob[a.jobCardId]) assaysByJob[a.jobCardId] = [];
-        assaysByJob[a.jobCardId].push(a);
-      });
+      // Fetch assays for regular job cards
+      if (regularJobCards.length > 0) {
+        const regularJobCardIds = regularJobCards.map((j: any) => j.id);
+        const regularAssays = await prisma.assay.findMany({
+          where: { jobCardId: { in: regularJobCardIds } },
+          orderBy: { createdAt: "asc" },
+        });
 
-      // attach assays and fetch seals for each job card so the client can show seal numbers
-      const seals = await prisma.seal.findMany({
-        where: { jobCardId: { in: jobCardIds } },
-      });
-      const sealsByJob: Record<string, any[]> = {};
-      seals.forEach((s: any) => {
-        if (!sealsByJob[s.jobCardId]) sealsByJob[s.jobCardId] = [];
-        sealsByJob[s.jobCardId].push(s);
-      });
+        const regularAssaysByJob: Record<string, any[]> = {};
+        regularAssays.forEach((a: any) => {
+          if (!regularAssaysByJob[a.jobCardId])
+            regularAssaysByJob[a.jobCardId] = [];
+          regularAssaysByJob[a.jobCardId].push(a);
+        });
 
-      jobCards.forEach((jc: any) => {
-        jc.assays = assaysByJob[jc.id] || [];
-        jc.seals = sealsByJob[jc.id] || [];
-      });
+        // Fetch seals for regular job cards
+        const regularSeals = await prisma.seal.findMany({
+          where: { jobCardId: { in: regularJobCardIds } },
+        });
+        const regularSealsByJob: Record<string, any[]> = {};
+        regularSeals.forEach((s: any) => {
+          if (!regularSealsByJob[s.jobCardId])
+            regularSealsByJob[s.jobCardId] = [];
+          regularSealsByJob[s.jobCardId].push(s);
+        });
+
+        // Attach to regular job cards
+        regularJobCards.forEach((jc: any) => {
+          jc.assays = regularAssaysByJob[jc.id] || [];
+          jc.seals = regularSealsByJob[jc.id] || [];
+        });
+      }
+
+      // Fetch assays for large scale job cards
+      if (largeScaleJobCards.length > 0) {
+        const largeScaleJobCardIds = largeScaleJobCards.map((j: any) => j.id);
+        const largeScaleAssays = await prisma.largeScaleAssay.findMany({
+          where: { jobCardId: { in: largeScaleJobCardIds } },
+          orderBy: { createdAt: "asc" },
+        });
+
+        const largeScaleAssaysByJob: Record<string, any[]> = {};
+        largeScaleAssays.forEach((a: any) => {
+          if (!largeScaleAssaysByJob[a.jobCardId])
+            largeScaleAssaysByJob[a.jobCardId] = [];
+          largeScaleAssaysByJob[a.jobCardId].push(a);
+        });
+
+        // Attach to large scale job cards
+        largeScaleJobCards.forEach((jc: any) => {
+          jc.assays = largeScaleAssaysByJob[jc.id] || [];
+          jc.seals = []; // Large scale job cards might not have seals in the same way
+        });
+      }
+    }
+
+    console.log(
+      `Returning ${jobCards.length} job cards with hasAssays=${hasAssays}`
+    );
+    if (jobCards.length > 0) {
+      console.log(
+        `First job card: ${jobCards[0].referenceNumber}, assays: ${
+          jobCards[0].assays?.length || 0
+        }`
+      );
     }
 
     // If client requested hasAssays=true, sort the returned jobCards by latest assay date (server-side sorting by related array not directly supported across DBs in Prisma), so do a client-side sort here before returning to keep behavior deterministic.
@@ -168,6 +289,8 @@ async function getAllJobCards(req: NextRequest) {
     return NextResponse.json({
       jobCards,
       total: totalCount,
+      page,
+      limit,
     });
   } catch (error) {
     console.error("Error fetching job cards:", error);

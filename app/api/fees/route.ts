@@ -6,6 +6,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const jobCardId = searchParams.get("jobCardId");
     const jobCardIds = searchParams.get("jobCardIds");
+    const largeScaleJobCardIds = searchParams.get("largeScaleJobCardIds");
 
     if (jobCardId) {
       const fees = await prisma.fee.findMany({
@@ -22,6 +23,18 @@ export async function GET(req: NextRequest) {
         .filter(Boolean);
       const fees = await prisma.fee.findMany({
         where: { jobCardId: { in: ids } },
+        orderBy: { paymentDate: "desc" },
+      });
+      return NextResponse.json({ fees });
+    }
+
+    if (largeScaleJobCardIds) {
+      const ids = largeScaleJobCardIds
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const fees = await prisma.fee.findMany({
+        where: { largeScaleJobCardId: { in: ids } },
         orderBy: { paymentDate: "desc" },
       });
       return NextResponse.json({ fees });
@@ -47,6 +60,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       jobCardId,
+      largeScaleJobCardId,
       feeType,
       amount,
       currencyId,
@@ -55,7 +69,18 @@ export async function POST(req: NextRequest) {
       notes,
       paymentType,
     } = body;
-    if (!jobCardId || !feeType || !amount) {
+
+    const targetJobCardId = jobCardId || largeScaleJobCardId;
+
+    console.log("Creating fee:", {
+      jobCardId,
+      largeScaleJobCardId,
+      targetJobCardId,
+      feeType,
+      amount,
+    });
+
+    if (!targetJobCardId || !feeType || !amount) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -70,19 +95,23 @@ export async function POST(req: NextRequest) {
       paymentType ? ` (paymentType:${paymentType})` : ""
     }`;
 
+    const feeData = {
+      ...(jobCardId ? { jobCardId } : { largeScaleJobCardId }),
+      feeType,
+      amountPaid: Number(amount),
+      currencyId: currency?.id || "",
+      paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
+      status: "paid",
+      receiptNumber: receiptNumber || `RCPT-${Date.now()}`,
+      balance: "0",
+      whtTotal: 0,
+      notes: combinedNotes,
+    };
+
+    console.log("Fee data to create:", feeData);
+
     const fee = await prisma.fee.create({
-      data: {
-        jobCardId: jobCardId,
-        feeType,
-        amountPaid: Number(amount),
-        currencyId: currency?.id || "",
-        paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
-        status: "paid",
-        receiptNumber: receiptNumber || `RCPT-${Date.now()}`,
-        balance: "0",
-        whtTotal: 0,
-        notes: combinedNotes,
-      },
+      data: feeData,
     });
 
     // Update the corresponding invoice status to "paid"
@@ -97,9 +126,13 @@ export async function POST(req: NextRequest) {
 
       if (typeKeywords.length > 0) {
         // Find invoices for this job card with matching type
+        const invoiceWhere = jobCardId
+          ? { jobCardId: jobCardId }
+          : { largeScaleJobCardId: largeScaleJobCardId };
+
         const invoices = await prisma.invoice.findMany({
           where: {
-            jobCardId: jobCardId,
+            ...invoiceWhere,
             invoiceType: {
               name: {
                 contains: typeKeywords[0],
@@ -118,7 +151,7 @@ export async function POST(req: NextRequest) {
             data: { status: "paid" },
           });
           console.log(
-            `Updated ${invoices.length} invoice(s) to paid status for job card ${jobCardId}`
+            `Updated ${invoices.length} invoice(s) to paid status for job card ${targetJobCardId}`
           );
         }
       }
@@ -129,10 +162,17 @@ export async function POST(req: NextRequest) {
 
     // mark job card as paid so details page reflects paid status
     try {
-      await prisma.jobCard.update({
-        where: { id: jobCardId },
-        data: { status: "paid" },
-      });
+      if (jobCardId) {
+        await prisma.jobCard.update({
+          where: { id: jobCardId },
+          data: { status: "paid" },
+        });
+      } else if (largeScaleJobCardId) {
+        await prisma.largeScaleJobCard.update({
+          where: { id: largeScaleJobCardId },
+          data: { status: "paid" },
+        });
+      }
     } catch (e) {
       // non-fatal: log and continue
       console.debug("Failed to update job card status to paid:", e);

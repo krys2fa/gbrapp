@@ -67,12 +67,20 @@ function PaymentList() {
         // Group invoices by job card and pick assay/wht invoices if present
         const map = new Map();
         (data.invoices || []).forEach((inv: any) => {
-          const jcId = inv.jobCardId || inv.jobCard?.id || "unknown";
+          // Handle both regular and large scale job cards
+          const jcId =
+            inv.jobCardId ||
+            inv.largeScaleJobCardId ||
+            inv.jobCard?.id ||
+            inv.largeScaleJobCard?.id ||
+            "unknown";
+          const jobCard = inv.jobCard || inv.largeScaleJobCard;
+
           if (!map.has(jcId)) {
             map.set(jcId, {
               id: jcId,
-              reference: inv.jobCard?.referenceNumber || jcId,
-              exporter: inv.jobCard?.exporter?.name || "-",
+              reference: jobCard?.referenceNumber || jcId,
+              exporter: jobCard?.exporter?.name || "-",
               assayInvoiceId: null,
               assayInvoiceNumber: null,
               assayInvoice: null,
@@ -80,6 +88,7 @@ function PaymentList() {
               whtInvoiceNumber: null,
               whtInvoice: null,
               paymentDate: inv.issueDate || inv.createdAt,
+              isLargeScale: !!inv.largeScaleJobCardId, // Flag to identify large scale job cards
             });
           }
           const row = map.get(jcId);
@@ -114,30 +123,55 @@ function PaymentList() {
         setItems(rows);
         // fetch fees for these job cards to display receipt numbers
         try {
-          const ids = rows
+          const regularJobCardIds = rows
+            .filter((r: any) => !r.isLargeScale)
             .map((r: any) => r.id)
             .filter(Boolean)
             .join(",");
-          if (ids) {
-            const feesRes = await fetch(`/api/fees?jobCardIds=${ids}`);
-            if (feesRes.ok) {
-              const feesData = await feesRes.json();
-              const latestByJob: Record<string, any> = {};
-              (feesData.fees || []).forEach((f: any) => {
-                if (!latestByJob[f.jobCardId]) latestByJob[f.jobCardId] = f;
-                else if (
-                  new Date(f.paymentDate) >
-                  new Date(latestByJob[f.jobCardId].paymentDate)
-                )
-                  latestByJob[f.jobCardId] = f;
-              });
-              // merge receipt numbers into rows
-              rows.forEach((r: any) => {
-                const fee = latestByJob[r.id];
-                if (fee) r.receipt = fee.receiptNumber || r.receipt || "";
-              });
-              setItems(rows);
+          const largeScaleJobCardIds = rows
+            .filter((r: any) => r.isLargeScale)
+            .map((r: any) => r.id)
+            .filter(Boolean)
+            .join(",");
+
+          // Fetch fees for both types of job cards
+          const feePromises = [];
+          if (regularJobCardIds) {
+            feePromises.push(
+              fetch(`/api/fees?jobCardIds=${regularJobCardIds}`)
+            );
+          }
+          if (largeScaleJobCardIds) {
+            feePromises.push(
+              fetch(`/api/fees?largeScaleJobCardIds=${largeScaleJobCardIds}`)
+            );
+          }
+
+          if (feePromises.length > 0) {
+            const feeResponses = await Promise.all(feePromises);
+            const latestByJob: Record<string, any> = {};
+
+            for (const feeRes of feeResponses) {
+              if (feeRes.ok) {
+                const feesData = await feeRes.json();
+                (feesData.fees || []).forEach((f: any) => {
+                  const jobCardId = f.jobCardId || f.largeScaleJobCardId;
+                  if (!latestByJob[jobCardId]) latestByJob[jobCardId] = f;
+                  else if (
+                    new Date(f.paymentDate) >
+                    new Date(latestByJob[jobCardId].paymentDate)
+                  )
+                    latestByJob[jobCardId] = f;
+                });
+              }
             }
+
+            // merge receipt numbers into rows
+            rows.forEach((r: any) => {
+              const fee = latestByJob[r.id];
+              if (fee) r.receipt = fee.receiptNumber || r.receipt || "";
+            });
+            setItems(rows);
           }
         } catch (feeErr) {
           console.debug("Failed to fetch fees for receipts", feeErr);
@@ -199,12 +233,21 @@ function PaymentList() {
   const [payType, setPayType] = useState<"assay" | "wht" | null>(null);
   const [payJobCardId, setPayJobCardId] = useState<string | null>(null);
   const [payInvoiceTotal, setPayInvoiceTotal] = useState<number | null>(null);
+  const [payIsLargeScale, setPayIsLargeScale] = useState(false);
 
   function openPayModal(jobCardId: string, type: "assay" | "wht") {
     setPayJobCardId(jobCardId);
     setPayType(type);
     // find invoice total for this job card and type from items
     const row = items.find((it: any) => it.id === jobCardId);
+    console.log(
+      "Opening pay modal for jobCardId:",
+      jobCardId,
+      "row:",
+      row,
+      "isLargeScale:",
+      row?.isLargeScale
+    );
     let total = 0;
     if (row) {
       // prefer assayInvoice amount
@@ -214,10 +257,12 @@ function PaymentList() {
         total = Number(row.whtInvoice.amount || 0);
     }
     setPayInvoiceTotal(total || null);
+    setPayIsLargeScale(row?.isLargeScale || false);
     setShowPayModal(true);
   }
 
   async function submitPayment(payload: any) {
+    console.log("Submitting payment with payload:", payload);
     try {
       const res = await fetch(`/api/fees`, {
         method: "POST",
@@ -293,6 +338,9 @@ function PaymentList() {
                 Reference
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Exporter
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Invoice
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -308,9 +356,15 @@ function PaymentList() {
                   <Link
                     href={
                       d.assayInvoiceId
-                        ? `/job-cards/${d.id}/invoices/${d.assayInvoiceId}`
+                        ? d.isLargeScale
+                          ? `/job-cards/large-scale/${d.id}/invoices/${d.assayInvoiceId}`
+                          : `/job-cards/${d.id}/invoices/${d.assayInvoiceId}`
                         : d.whtInvoiceId
-                        ? `/job-cards/${d.id}/invoices/${d.whtInvoiceId}`
+                        ? d.isLargeScale
+                          ? `/job-cards/large-scale/${d.id}/invoices/${d.whtInvoiceId}`
+                          : `/job-cards/${d.id}/invoices/${d.whtInvoiceId}`
+                        : d.isLargeScale
+                        ? `/job-cards/large-scale/${d.id}`
                         : `/job-cards/${d.id}`
                     }
                     className="hover:underline"
@@ -318,7 +372,9 @@ function PaymentList() {
                     {d.reference}
                   </Link>
                 </td>
-                {/* exporter column removed per request */}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {d.exporter || "-"}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div className="flex flex-col">
                     <span>Assay: {d.assayInvoiceNumber || "-"}</span>
@@ -334,7 +390,11 @@ function PaymentList() {
                     <Link
                       href={
                         d.assayInvoiceId
-                          ? `/job-cards/${d.id}/invoices/${d.assayInvoiceId}`
+                          ? d.isLargeScale
+                            ? `/job-cards/large-scale/${d.id}/invoices/${d.assayInvoiceId}`
+                            : `/job-cards/${d.id}/invoices/${d.assayInvoiceId}`
+                          : d.isLargeScale
+                          ? `/job-cards/large-scale/${d.id}`
                           : `/job-cards/${d.id}`
                       }
                       className={`inline-flex items-center px-3 py-1 text-xs rounded ${
@@ -450,6 +510,7 @@ function PaymentList() {
           jobCardId={payJobCardId}
           type={payType}
           invoiceTotal={payInvoiceTotal}
+          isLargeScale={payIsLargeScale}
           onClose={() => setShowPayModal(false)}
           onSubmit={submitPayment}
         />
@@ -462,12 +523,14 @@ function PayModal({
   jobCardId,
   type,
   invoiceTotal,
+  isLargeScale,
   onClose,
   onSubmit,
 }: {
   jobCardId: string;
   type: "assay" | "wht";
   invoiceTotal?: number | null;
+  isLargeScale?: boolean;
   onClose: () => void;
   onSubmit: (payload: any) => Promise<void>;
 }) {
@@ -479,7 +542,7 @@ function PayModal({
 
   const handleSubmit = async () => {
     const payload = {
-      jobCardId,
+      ...(isLargeScale ? { largeScaleJobCardId: jobCardId } : { jobCardId }),
       feeType: type === "assay" ? "ASSAY_FEE" : "WHT_FEE",
       amount: Number(amount),
       currencyId,
@@ -488,6 +551,7 @@ function PayModal({
       notes,
       paymentType,
     };
+    console.log("PayModal payload:", payload, "isLargeScale:", isLargeScale);
     await onSubmit(payload);
   };
 

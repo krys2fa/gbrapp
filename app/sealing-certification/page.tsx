@@ -43,10 +43,7 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
       const res = await fetch(`/api/job-cards?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch job cards");
       const data = await res.json();
-      const valued = (data.jobCards || []).filter(
-        (jc: any) => jc.assays && jc.assays.length > 0
-      );
-      setJobCards(valued);
+      setJobCards(data.jobCards || []);
       setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
     } catch (err) {
       console.error(err);
@@ -64,7 +61,7 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
         </div>
       ) : jobCards.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-gray-500">No job cards ready for sealing.</p>
+          <p className="text-gray-500">No job cards with assays found.</p>
         </div>
       ) : (
         <>
@@ -80,7 +77,7 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <label className="text-xs text-gray-600">PMMC Seal</label>
+                  <label className="text-xs text-gray-600">GOLDBOD Seal</label>
                   <input
                     value={pmmcFilter}
                     onChange={(e) => setPmmcFilter(e.target.value)}

@@ -17,6 +17,7 @@ import {
   LineChart,
   Line,
   Legend,
+  LabelList,
 } from "recharts";
 
 interface ChartData {
@@ -238,6 +239,9 @@ export const ExporterInvoiceChart: React.FC<{
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
         Monthly Invoice Payments by Exporter (Payment Date - GHS)
       </h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        💡 <strong>Note:</strong> Small values may appear as thin bars. Hover over the chart or check the summary below for exact amounts.
+      </p>
 
       {/* Summary of payments */}
       <div className="mb-6">
@@ -254,8 +258,9 @@ export const ExporterInvoiceChart: React.FC<{
               {exporterNames.map((exporter) => {
                 const amount = Number(monthData[exporter] || 0);
                 if (amount > 0) {
+                  const isSmallValue = amount < 100000; // Less than 100K
                   return (
-                    <div key={exporter} className="ml-4 text-sm">
+                    <div key={exporter} className={`ml-4 text-sm`}>
                       {exporter}:{" "}
                       <span className="font-mono">
                         GHS {amount.toLocaleString()}
@@ -291,7 +296,15 @@ export const ExporterInvoiceChart: React.FC<{
               <YAxis
                 tick={{ fontSize: 12 }}
                 className="text-gray-600 dark:text-gray-400"
-                tickFormatter={(value) => `GHS ${(value / 1000).toFixed(0)}K`}
+                tickFormatter={(value) => {
+                  if (value >= 1000000) {
+                    return `GHS ${(value / 1000000).toFixed(1)}M`;
+                  } else if (value >= 1000) {
+                    return `GHS ${(value / 1000).toFixed(0)}K`;
+                  }
+                  return `GHS ${value}`;
+                }}
+                domain={['dataMin', 'dataMax']}
               />
               <Tooltip
                 contentStyle={{
@@ -299,10 +312,16 @@ export const ExporterInvoiceChart: React.FC<{
                   border: "1px solid #e2e8f0",
                   borderRadius: "8px",
                 }}
-                formatter={(value: any, name: string) => [
-                  `GHS ${Number(value).toLocaleString()}`,
-                  name,
-                ]}
+                formatter={(value: any, name: string) => {
+                  const numValue = Number(value);
+                  let formattedValue = `GHS ${numValue.toLocaleString()}`;
+                  if (numValue >= 1000000) {
+                    formattedValue += ` (${(numValue / 1000000).toFixed(2)}M)`;
+                  } else if (numValue >= 1000) {
+                    formattedValue += ` (${(numValue / 1000).toFixed(1)}K)`;
+                  }
+                  return [formattedValue, name];
+                }}
                 labelFormatter={(label) => `Month: ${label}`}
               />
               <Legend />

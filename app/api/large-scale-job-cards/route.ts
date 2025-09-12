@@ -74,6 +74,13 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
             commodity: true,
           },
         },
+        assays: {
+          include: {
+            measurements: true,
+            shipmentType: true,
+          },
+          orderBy: { dateOfAnalysis: "desc" },
+        },
         invoices: {
           select: {
             id: true,

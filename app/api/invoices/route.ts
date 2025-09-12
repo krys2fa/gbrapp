@@ -48,7 +48,22 @@ export async function GET(req: NextRequest) {
           amount: true,
           createdAt: true,
           status: true,
+          jobCardId: true,
+          largeScaleJobCardId: true,
+          invoiceType: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           jobCard: {
+            select: {
+              id: true,
+              referenceNumber: true,
+              exporter: { select: { id: true, name: true } },
+            },
+          },
+          largeScaleJobCard: {
             select: {
               id: true,
               referenceNumber: true,
@@ -75,9 +90,17 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { jobCardId, amount, currencyCode = "USD" } = body;
+    const {
+      jobCardId,
+      largeScaleJobCardId,
+      amount,
+      currencyCode = "USD",
+    } = body;
 
-    if (!jobCardId) {
+    const targetJobCardId = jobCardId || largeScaleJobCardId;
+    const isLargeScale = !!largeScaleJobCardId;
+
+    if (!targetJobCardId) {
       return NextResponse.json(
         { error: "Job card ID is required" },
         { status: 400 }
@@ -86,7 +109,9 @@ export async function POST(req: NextRequest) {
 
     // Check if an invoice already exists for this job card
     const existingInvoice = await prisma.invoice.findFirst({
-      where: { jobCardId },
+      where: isLargeScale
+        ? { largeScaleJobCardId: targetJobCardId }
+        : { jobCardId: targetJobCardId },
     });
 
     if (existingInvoice) {
@@ -97,79 +122,128 @@ export async function POST(req: NextRequest) {
     }
 
     // Get the job card with assays to calculate invoice amount
-    const jobCard = await prisma.jobCard.findUnique({
-      where: { id: jobCardId },
-      include: {
-        assays: {
-          select: {
-            id: true,
-            totalUsdValue: true,
-            totalGhsValue: true,
-            exchangeRate: true,
-            comments: true,
-          },
-        },
-        commodity: true,
-      },
-    });
-
-    if (!jobCard) {
-      return NextResponse.json(
-        { error: "Job card not found" },
-        { status: 404 }
-      );
-    }
-
-    if (!jobCard.assays || jobCard.assays.length === 0) {
-      return NextResponse.json(
-        { error: "No assays found for this job card" },
-        { status: 400 }
-      );
-    }
-
-    // Calculate totals from all assays
+    let jobCard: any;
     let assayUsdValue = 0;
     let assayGhsValue = 0;
     let exchangeRate = 0;
 
-    for (const assay of jobCard.assays) {
-      // Use stored assay values if available
-      if (assay.totalUsdValue) {
-        assayUsdValue += Number(assay.totalUsdValue);
-      }
-      if (assay.totalGhsValue) {
-        assayGhsValue += Number(assay.totalGhsValue);
+    if (isLargeScale) {
+      jobCard = await prisma.largeScaleJobCard.findUnique({
+        where: { id: targetJobCardId },
+        include: {
+          assays: {
+            select: {
+              id: true,
+              totalGoldValue: true,
+              totalSilverValue: true,
+              totalCombinedValue: true,
+              totalValueGhs: true,
+              exchangeRate: true,
+              comments: true,
+            },
+          },
+        },
+      });
+
+      if (!jobCard) {
+        return NextResponse.json(
+          { error: "Large scale job card not found" },
+          { status: 404 }
+        );
       }
 
-      // Get exchange rate from assay (prioritize stored field over comments)
-      if (assay.exchangeRate && exchangeRate === 0) {
-        exchangeRate = Number(assay.exchangeRate);
+      if (!jobCard.assays || jobCard.assays.length === 0) {
+        return NextResponse.json(
+          { error: "No assays found for this large scale job card" },
+          { status: 400 }
+        );
       }
 
-      // Try to extract exchange rate and values from assay comments if not available
-      if (
-        (!assay.totalUsdValue || !assay.totalGhsValue || exchangeRate === 0) &&
-        assay.comments
-      ) {
-        try {
-          let meta: any = null;
-          if (typeof assay.comments === "string") {
-            meta = JSON.parse(assay.comments || "{}")?.meta;
-          } else {
-            meta = (assay.comments as any)?.meta;
+      // Calculate totals from large scale assays
+      for (const assay of jobCard.assays) {
+        if (assay.totalCombinedValue) {
+          assayUsdValue += Number(assay.totalCombinedValue);
+        }
+        if (assay.totalValueGhs) {
+          assayGhsValue += Number(assay.totalValueGhs);
+        }
+        if (assay.exchangeRate && exchangeRate === 0) {
+          exchangeRate = Number(assay.exchangeRate);
+        }
+      }
+    } else {
+      jobCard = await prisma.jobCard.findUnique({
+        where: { id: targetJobCardId },
+        include: {
+          assays: {
+            select: {
+              id: true,
+              totalUsdValue: true,
+              totalGhsValue: true,
+              exchangeRate: true,
+              comments: true,
+            },
+          },
+          commodity: true,
+        },
+      });
+
+      if (!jobCard) {
+        return NextResponse.json(
+          { error: "Job card not found" },
+          { status: 404 }
+        );
+      }
+
+      if (!jobCard.assays || jobCard.assays.length === 0) {
+        return NextResponse.json(
+          { error: "No assays found for this job card" },
+          { status: 400 }
+        );
+      }
+
+      // Calculate totals from regular assays
+      for (const assay of jobCard.assays) {
+        // Use stored assay values if available
+        if (assay.totalUsdValue) {
+          assayUsdValue += Number(assay.totalUsdValue);
+        }
+        if (assay.totalGhsValue) {
+          assayGhsValue += Number(assay.totalGhsValue);
+        }
+
+        // Get exchange rate from assay (prioritize stored field over comments)
+        if (assay.exchangeRate && exchangeRate === 0) {
+          exchangeRate = Number(assay.exchangeRate);
+        }
+
+        // Try to extract exchange rate and values from assay comments if not available
+        if (
+          (!assay.totalUsdValue ||
+            !assay.totalGhsValue ||
+            exchangeRate === 0) &&
+          assay.comments
+        ) {
+          try {
+            let meta: any = null;
+            if (typeof assay.comments === "string") {
+              meta = JSON.parse(assay.comments || "{}")?.meta;
+            } else {
+              meta = (assay.comments as any)?.meta;
+            }
+            if (meta) {
+              if (meta.valueUsd && !assay.totalUsdValue)
+                assayUsdValue += Number(meta.valueUsd);
+              if (meta.valueGhs && !assay.totalGhsValue)
+                assayGhsValue += Number(meta.valueGhs);
+              if (meta.weeklyExchange && exchangeRate === 0)
+                exchangeRate = Number(meta.weeklyExchange);
+              if (meta.exchangeRate && exchangeRate === 0)
+                exchangeRate = Number(meta.exchangeRate);
+            }
+          } catch (e) {
+            // ignore parsing errors
           }
-          if (meta) {
-            if (meta.valueUsd && !assay.totalUsdValue)
-              assayUsdValue += Number(meta.valueUsd);
-            if (meta.valueGhs && !assay.totalGhsValue)
-              assayGhsValue += Number(meta.valueGhs);
-            if (meta.weeklyExchange && exchangeRate === 0)
-              exchangeRate = Number(meta.weeklyExchange);
-            if (meta.exchangeRate && exchangeRate === 0)
-              exchangeRate = Number(meta.exchangeRate);
-          }
-        } catch (e) {
-          // ignore parsing errors
         }
       }
     }
@@ -245,36 +319,52 @@ export async function POST(req: NextRequest) {
     }
 
     // Create the invoice
+    const invoiceData: any = {
+      invoiceNumber: `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      invoiceTypeId: invoiceType.id,
+      amount: invoiceAmount,
+      currencyId: currency.id,
+      assayUsdValue: assayUsdValue,
+      assayGhsValue: assayGhsValue,
+      rate: rate,
+      issueDate: new Date(),
+      status: "pending",
+      // Save calculated fields
+      grandTotal: grandTotal,
+      subTotal: subTotal,
+      covid: covid,
+      getfund: getfund,
+      nhil: nhil,
+      rateCharge: rateCharge,
+      totalInclusive: totalInclusive,
+      totalExclusive: totalExclusive,
+      vat: vat,
+      exchangeRate: exchangeRate,
+    };
+
+    // Set the appropriate job card ID
+    if (isLargeScale) {
+      invoiceData.largeScaleJobCardId = targetJobCardId;
+    } else {
+      invoiceData.jobCardId = targetJobCardId;
+      invoiceData.assays = {
+        connect: jobCard.assays.map((assay: any) => ({ id: assay.id })),
+      };
+    }
+
     const invoice = await prisma.invoice.create({
-      data: {
-        invoiceNumber: `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        jobCardId,
-        invoiceTypeId: invoiceType.id,
-        amount: invoiceAmount,
-        currencyId: currency.id,
-        assays: {
-          connect: jobCard.assays.map((assay) => ({ id: assay.id })),
-        },
-        assayUsdValue: assayUsdValue,
-        assayGhsValue: assayGhsValue,
-        rate: rate,
-        issueDate: new Date(),
-        status: "pending",
-        // Save calculated fields
-        grandTotal: grandTotal,
-        subTotal: subTotal,
-        covid: covid,
-        getfund: getfund,
-        nhil: nhil,
-        rateCharge: rateCharge,
-        totalInclusive: totalInclusive,
-        totalExclusive: totalExclusive,
-        vat: vat,
-        exchangeRate: exchangeRate,
-      },
+      data: invoiceData,
       include: {
         currency: true,
         jobCard: {
+          select: {
+            id: true,
+            referenceNumber: true,
+            destinationCountry: true,
+            exporter: { select: { name: true } },
+          },
+        },
+        largeScaleJobCard: {
           select: {
             id: true,
             referenceNumber: true,

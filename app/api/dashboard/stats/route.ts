@@ -31,13 +31,13 @@ export async function GET(req: NextRequest) {
     const totalUsersCount = await prisma.user.count();
     const totalExportersCount = await prisma.exporter.count();
 
-    // Calculate total revenue from invoices
-    const totalRevenueResult = await prisma.invoice.aggregate({
+    // Calculate total revenue from fees (payments received) instead of invoice amounts
+    const totalRevenueResult = await prisma.fee.aggregate({
       _sum: {
-        amount: true,
+        amountPaid: true,
       },
     });
-    const totalRevenueAmount = totalRevenueResult._sum.amount || 0;
+    const totalRevenueAmount = totalRevenueResult._sum.amountPaid || 0;
 
     // Fetch current exchange rate (GHS per USD)
     const latestExchangeRate = await prisma.dailyPrice.findFirst({
@@ -410,27 +410,36 @@ export async function GET(req: NextRequest) {
       const monthNumber = index + 1;
       const monthData: any = { month: monthName };
 
-      // Find data for this month
-      const monthRecord = exporterInvoiceData.find(
+      // Find ALL data for this month and aggregate by exporter
+      const monthRecords = exporterInvoiceData.filter(
         (item) => Number(item.month) === monthNumber
       );
 
       console.log(
-        `Debug - Looking for month ${monthNumber}, found:`,
-        monthRecord
+        `Debug - Records for ${monthName} (month ${monthNumber}):`,
+        monthRecords
       );
 
-      if (monthRecord) {
-        // Add the exporter's amount for this month
-        monthData[monthRecord.exporterName] = Number(monthRecord.totalAmount);
+      // Group by exporter and sum the amounts
+      const exporterTotals: { [key: string]: number } = {};
+      monthRecords.forEach((record) => {
+        const exporterName = record.exporterName;
+        const amount = Number(record.totalAmount) || 0;
+
+        if (exporterTotals[exporterName]) {
+          exporterTotals[exporterName] += amount;
+        } else {
+          exporterTotals[exporterName] = amount;
+        }
+      });
+
+      // Add aggregated amounts to month data
+      Object.entries(exporterTotals).forEach(([exporterName, totalAmount]) => {
+        monthData[exporterName] = totalAmount;
         console.log(
-          `Debug - Adding ${monthRecord.exporterName}: ${monthRecord.totalAmount} to ${monthName}`
+          `Debug - Adding ${exporterName}: ${totalAmount} to ${monthName}`
         );
-      } else {
-        console.log(
-          `Debug - No data found for ${monthName} (month ${monthNumber})`
-        );
-      }
+      });
 
       // Get all unique exporters and fill zeros for months without data
       const allExporters = [
