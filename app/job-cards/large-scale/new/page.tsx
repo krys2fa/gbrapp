@@ -405,10 +405,22 @@ function NewLargeScaleJobCardPage() {
       totals.silverNetWeight += parseFloat(row.silverNetWeight) || 0;
     });
 
+    // Calculate total fineness: (net total / gross total) * 100
+    const goldFineness =
+      totals.grossWeight > 0
+        ? (totals.goldNetWeight / totals.grossWeight) * 100
+        : 0;
+    const silverFineness =
+      totals.grossWeight > 0
+        ? (totals.silverNetWeight / totals.grossWeight) * 100
+        : 0;
+
     return {
       grossWeight: totals.grossWeight.toFixed(2),
       goldNetWeight: totals.goldNetWeight.toFixed(2),
       silverNetWeight: totals.silverNetWeight.toFixed(2),
+      goldFineness: goldFineness.toFixed(2),
+      silverFineness: silverFineness.toFixed(2),
     };
   };
 
@@ -1174,13 +1186,13 @@ function NewLargeScaleJobCardPage() {
                                 {calculateAssayersTotals().grossWeight}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                -
+                                {calculateAssayersTotals().goldFineness}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                 {calculateAssayersTotals().goldNetWeight}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                -
+                                {calculateAssayersTotals().silverFineness}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                 {calculateAssayersTotals().silverNetWeight}
@@ -1195,412 +1207,6 @@ function NewLargeScaleJobCardPage() {
               </div>
             </div>
           </div>
-
-          {/* Commodities */}
-
-          {/* Commodities */}
-          {/* <div className="bg-white shadow sm:rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-                Commodities *
-              </h3>
-              {form.commodities.map((commodity, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
-                >
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-medium text-gray-900">
-                      Commodity {index + 1}
-                    </h4>
-                    {form.commodities.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeCommodity(index)}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Commodity *
-                      </label>
-                      <select
-                        value={commodity.id}
-                        onChange={(e) =>
-                          handleCommoditySelect(index, e.target.value)
-                        }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        required
-                      >
-                        <option value="">Select Commodity</option>
-                        {commodities.map((comm) => (
-                          <option key={comm.id} value={comm.id}>
-                            {comm.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Gross Weight ({form.unitOfMeasure})
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={commodity.grossWeight}
-                        onChange={(e) =>
-                          handleCommodityChange(
-                            index,
-                            "grossWeight",
-                            e.target.value
-                          )
-                        }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Net Weight ({form.unitOfMeasure})
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={commodity.netWeight}
-                        onChange={(e) =>
-                          handleCommodityChange(
-                            index,
-                            "netWeight",
-                            e.target.value
-                          )
-                        }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Fineness (%)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        value={commodity.fineness}
-                        onChange={(e) =>
-                          handleCommodityChange(
-                            index,
-                            "fineness",
-                            e.target.value
-                          )
-                        }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Value (GHS)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={commodity.valueGhs}
-                        onChange={(e) =>
-                          handleCommodityChange(
-                            index,
-                            "valueGhs",
-                            e.target.value
-                          )
-                        }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Value (USD)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={commodity.valueUsd}
-                        onChange={(e) =>
-                          handleCommodityChange(
-                            index,
-                            "valueUsd",
-                            e.target.value
-                          )
-                        }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Price per Ounce
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={commodity.pricePerOunce}
-                        onChange={(e) =>
-                          handleCommodityChange(
-                            index,
-                            "pricePerOunce",
-                            e.target.value
-                          )
-                        }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Number of Ounces
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={commodity.numberOfOunces}
-                        onChange={(e) =>
-                          handleCommodityChange(
-                            index,
-                            "numberOfOunces",
-                            e.target.value
-                          )
-                        }
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addCommodity}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <svg
-                  className="mr-2 h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                Add Another Commodity
-              </button>
-            </div>
-          </div> */}
-
-          {/* Weight and Quality Information */}
-          {/* <div className="bg-white shadow sm:rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-                Weight and Quality Information
-              </h3>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="totalGrossWeight"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Total Gross Weight ({form.unitOfMeasure})
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    id="totalGrossWeight"
-                    value={form.commodities.reduce(
-                      (sum, com) => sum + (parseFloat(com.grossWeight) || 0),
-                      0
-                    )}
-                    readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="totalNetWeight"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Total Net Weight ({form.unitOfMeasure})
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    id="totalNetWeight"
-                    value={form.commodities.reduce(
-                      (sum, com) => sum + (parseFloat(com.netWeight) || 0),
-                      0
-                    )}
-                    readOnly
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50"
-                  />
-                </div>
-
-              
-                </div>
-              </div>
-            </div>
-          </div> */}
-
-          {/* Officer Assignments */}
-          {/* <div className="bg-white shadow sm:rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-                Officer Assignments
-              </h3>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="customsOfficerId"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Customs Officer
-                  </label>
-                  <select
-                    name="customsOfficerId"
-                    id="customsOfficerId"
-                    value={form.customsOfficerId}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    <option value="">Select customs officer</option>
-                    {officers.customsOfficers.map((officer) => (
-                      <option key={officer.id} value={officer.id}>
-                        {officer.name} ({officer.badgeNumber})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="assayOfficerId"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Assay Officer
-                  </label>
-                  <select
-                    name="assayOfficerId"
-                    id="assayOfficerId"
-                    value={form.assayOfficerId}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    <option value="">Select assay officer</option>
-                    {officers.assayOfficers.map((officer) => (
-                      <option key={officer.id} value={officer.id}>
-                        {officer.name} ({officer.badgeNumber})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="technicalDirectorId"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Technical Director
-                  </label>
-                  <select
-                    name="technicalDirectorId"
-                    id="technicalDirectorId"
-                    value={form.technicalDirectorId}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    <option value="">Select technical director</option>
-                    {officers.technicalDirectors.map((officer) => (
-                      <option key={officer.id} value={officer.id}>
-                        {officer.name} ({officer.badgeNumber})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="nacobOfficerId"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    NACOB Officer
-                  </label>
-                  <select
-                    name="nacobOfficerId"
-                    id="nacobOfficerId"
-                    value={form.nacobOfficerId}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    <option value="">Select NACOB officer</option>
-                    {officers.nacobOfficers.map((officer) => (
-                      <option key={officer.id} value={officer.id}>
-                        {officer.name} ({officer.badgeNumber})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="nationalSecurityOfficerId"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    National Security Officer
-                  </label>
-                  <select
-                    name="nationalSecurityOfficerId"
-                    id="nationalSecurityOfficerId"
-                    value={form.nationalSecurityOfficerId}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    <option value="">Select national security officer</option>
-                    {officers.nationalSecurityOfficers.map((officer) => (
-                      <option key={officer.id} value={officer.id}>
-                        {officer.name} ({officer.badgeNumber})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div> */}
-
-          {/* Notes */}
-          {/* <div className="bg-white shadow sm:rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-                Additional Notes
-              </h3>
-              <div>
-                <label
-                  htmlFor="notes"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Notes
-                </label>
-                <textarea
-                  name="notes"
-                  id="notes"
-                  rows={4}
-                  value={form.notes}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Enter any additional notes or comments"
-                />
-              </div>
-            </div>
-          </div> */}
 
           {/* Form Actions */}
           <div className="flex justify-end gap-4">
@@ -2072,45 +1678,13 @@ function NewLargeScaleJobCardPage() {
                                     {calculateAssayersTotals().grossWeight}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
-                                    {(() => {
-                                      const grossTotal =
-                                        parseFloat(
-                                          calculateAssayersTotals().grossWeight
-                                        ) || 0;
-                                      const goldNetTotal =
-                                        parseFloat(
-                                          calculateAssayersTotals()
-                                            .goldNetWeight
-                                        ) || 0;
-                                      if (grossTotal > 0) {
-                                        const fineness =
-                                          (goldNetTotal / grossTotal) * 100;
-                                        return fineness.toFixed(2) + "%";
-                                      }
-                                      return "-";
-                                    })()}
+                                    {calculateAssayersTotals().goldFineness}%
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
                                     {calculateAssayersTotals().goldNetWeight}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
-                                    {(() => {
-                                      const grossTotal =
-                                        parseFloat(
-                                          calculateAssayersTotals().grossWeight
-                                        ) || 0;
-                                      const silverNetTotal =
-                                        parseFloat(
-                                          calculateAssayersTotals()
-                                            .silverNetWeight
-                                        ) || 0;
-                                      if (grossTotal > 0) {
-                                        const fineness =
-                                          (silverNetTotal / grossTotal) * 100;
-                                        return fineness.toFixed(2) + "%";
-                                      }
-                                      return "-";
-                                    })()}
+                                    {calculateAssayersTotals().silverFineness}%
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
                                     {calculateAssayersTotals().silverNetWeight}
