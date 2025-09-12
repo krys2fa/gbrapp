@@ -43,8 +43,20 @@ export async function GET(
     // Determine the target date (use provided date or current date)
     const targetDate = dateParam ? new Date(dateParam) : new Date();
 
-    // Get the daily exchange rate for the exact target date
-    const dailyRate = await prisma.dailyPrice.findFirst({
+    // Find the Monday of the week containing the target date
+    const targetDay = targetDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const diff = targetDate.getDate() - targetDay + (targetDay === 0 ? -6 : 1); // Adjust for Sunday
+    const weekStartDate = new Date(targetDate);
+    weekStartDate.setDate(diff);
+    weekStartDate.setHours(0, 0, 0, 0);
+
+    // Find the Sunday of the same week
+    const weekEndDate = new Date(weekStartDate);
+    weekEndDate.setDate(weekStartDate.getDate() + 6);
+    weekEndDate.setHours(23, 59, 59, 999);
+
+    // Get the daily exchange rate for the exact target date first
+    let dailyRate = await prisma.dailyPrice.findFirst({
       where: {
         type: "EXCHANGE",
         exchangeId: exchange.id,
@@ -63,12 +75,31 @@ export async function GET(
       },
     });
 
+    // If no rate for the exact date, look within the same week
+    if (!dailyRate) {
+      dailyRate = await prisma.dailyPrice.findFirst({
+        where: {
+          type: "EXCHANGE",
+          exchangeId: exchange.id,
+          date: {
+            gte: weekStartDate,
+            lte: weekEndDate,
+          },
+        },
+        orderBy: {
+          date: "desc", // Get the most recent rate within the week
+        },
+      });
+    }
+
     if (!dailyRate) {
       return NextResponse.json(
         {
-          error: `No exchange rate available for ${fromCurrency.toUpperCase()}-${toCurrency.toUpperCase()} on ${
+          error: `No exchange rate available for ${fromCurrency.toUpperCase()}-${toCurrency.toUpperCase()} in the week of ${
             targetDate.toISOString().split("T")[0]
-          }`,
+          } (week: ${weekStartDate.toISOString().split("T")[0]} to ${
+            weekEndDate.toISOString().split("T")[0]
+          })`,
           available: false,
         },
         { status: 404 }

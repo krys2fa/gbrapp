@@ -209,12 +209,14 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                           );
                           const hasPaidInvoices = !!(
                             jobCard.invoices &&
-                            jobCard.invoices.some(invoice => invoice.status === "paid")
+                            jobCard.invoices.some(
+                              (invoice) => invoice.status === "paid"
+                            )
                           );
-                          
+
                           let statusText = jobCard.status.replace("_", " ");
                           let statusKey = jobCard.status;
-                          
+
                           if (hasPaidInvoices) {
                             statusText = "Paid";
                             statusKey = "paid";
@@ -222,7 +224,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                             statusText = "Completed";
                             statusKey = "completed";
                           }
-                          
+
                           return (
                             <span
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
@@ -252,9 +254,13 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                                 Assay Date:
                               </span>
                               <div className="text-gray-600">
-                                {formatDate(
-                                  new Date(jobCard.assaySummary.dateOfAnalysis)
-                                )}
+                                {jobCard.assaySummary?.dateOfAnalysis
+                                  ? formatDate(
+                                      new Date(
+                                        jobCard.assaySummary.dateOfAnalysis
+                                      )
+                                    )
+                                  : "N/A"}
                               </div>
                             </div>
                             <div>
@@ -262,9 +268,12 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                                 Gold (oz):
                               </span>
                               <div className="text-gray-600">
-                                {jobCard.assaySummary.totalNetGoldWeightOz.toFixed(
-                                  3
-                                )}
+                                {jobCard.assaySummary?.totalNetGoldWeightOz !=
+                                null
+                                  ? jobCard.assaySummary.totalNetGoldWeightOz.toFixed(
+                                      3
+                                    )
+                                  : "0.000"}
                               </div>
                             </div>
                             <div>
@@ -272,9 +281,12 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                                 Silver (oz):
                               </span>
                               <div className="text-gray-600">
-                                {jobCard.assaySummary.totalNetSilverWeightOz.toFixed(
-                                  3
-                                )}
+                                {jobCard.assaySummary?.totalNetSilverWeightOz !=
+                                null
+                                  ? jobCard.assaySummary.totalNetSilverWeightOz.toFixed(
+                                      3
+                                    )
+                                  : "0.000"}
                               </div>
                             </div>
                             <div>
@@ -282,14 +294,21 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                                 Total Value (GHS):
                               </span>
                               <div className="text-gray-600">
-                                {formatCurrency(jobCard.assaySummary.totalValueGhs, "GHS", false)}
+                                {jobCard.assaySummary?.totalValueGhs != null
+                                  ? formatCurrency(
+                                      jobCard.assaySummary.totalValueGhs,
+                                      "GHS",
+                                      false
+                                    )
+                                  : formatCurrency(0, "GHS", false)}
                               </div>
                             </div>
                           </div>
                           <div className="mt-2 text-xs text-gray-500">
-                            Method: {jobCard.assaySummary.method} | Pieces:{" "}
-                            {jobCard.assaySummary.pieces} | Signatory:{" "}
-                            {jobCard.assaySummary.signatory}
+                            Method: {jobCard.assaySummary?.method || "N/A"} |
+                            Pieces: {jobCard.assaySummary?.pieces || "N/A"} |
+                            Signatory:{" "}
+                            {jobCard.assaySummary?.signatory || "N/A"}
                           </div>
                         </div>
                       )}

@@ -185,7 +185,7 @@ export default function AssayResultsPage() {
             </div>
 
             <div className="px-4 sm:px-6 lg:px-8 pt-2 py-6 flex justify-center mb-2">
-              <h1 className="text-xl font-bold tracking-wider">
+              <h1 className="text-lg font-bold tracking-wider">
                 REPORT OF GOLD SAMPLE ANALYSIS FROM LARGE SCALE GOLD MINING
                 COMPANY
               </h1>
@@ -480,12 +480,8 @@ export default function AssayResultsPage() {
               </div>
             </div>
 
-            <div className="px-4 sm:px-6 lg:px-8 py-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-
-                </div>
-
+            <div className="px-4 sm:px-6 lg:px-8 py-4 mx-auto">
+              <div className="space-y-3 mx-auto">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -493,8 +489,7 @@ export default function AssayResultsPage() {
                         NET WEIGHT OF GOLD (Oz):
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay?.totalNetGoldWeightOz}
-                        oz
+                        {assay?.totalNetGoldWeightOz.toFixed(3)}
                       </dd>
                     </div>
                   </div>
@@ -504,8 +499,7 @@ export default function AssayResultsPage() {
                         NET WEIGHT OF SILVER (Oz):
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay?.totalNetSilverWeightOz}
-                        oz
+                        {assay?.totalNetSilverWeightOz.toFixed(3)}
                       </dd>
                     </div>
                   </div>
@@ -515,7 +509,7 @@ export default function AssayResultsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <dt className="text-sm font-medium text-gray-500 uppercase">
-                       Unit price per ounce:
+                        Unit price per ounce:
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
                         {(() => {
@@ -547,7 +541,7 @@ export default function AssayResultsPage() {
                         VALUE OF GOLD (US$):
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay?.totalGoldValue}
+                        {formatCurrency(assay?.totalGoldValue, "USD")}
                       </dd>
                     </div>
                   </div>
@@ -557,18 +551,18 @@ export default function AssayResultsPage() {
                         VALUE OF SILVER (US$):
                       </dt>
                       <dd className="text-sm font-semibold text-gray-900">
-                        {assay?.totalSilverValue}
+                        {formatCurrency(assay?.totalSilverValue, "USD")}
                       </dd>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex mb-4">
-                  <div className="flex justify-between items-center w-1/2">
+                <div className="flex mt-4 pt-4">
+                  <div className="flex justify-between items-center">
                     <dt className="text-sm font-medium text-gray-900">
                       PREVAILING BOG EXCHANGE RATE:
                     </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
+                    <dd className="text-sm font-semibold text-gray-900 ml-2">
                       {Number(assay?.exchangeRate).toFixed(4)}
                     </dd>
                   </div>
@@ -579,8 +573,8 @@ export default function AssayResultsPage() {
                     <dt className="text-sm font-medium text-gray-900">
                       TOTAL VALUE OF SHIPMENT (GOLD & SILVER) US$:
                     </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
-                      {assay?.totalValueGhs}
+                    <dd className="text-sm font-semibold text-gray-900 ml-2">
+                      {formatCurrency(assay?.totalValueGhs, "USD")}
                     </dd>
                   </div>
                 </div>
@@ -590,8 +584,8 @@ export default function AssayResultsPage() {
                     <dt className="text-sm font-medium text-gray-900">
                       TOTAL VALUE OF SHIPMENT (GOLD & SILVER) GHS:
                     </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
-                      {assay?.totalCombinedValue}
+                    <dd className="text-sm font-semibold text-gray-900 ml-2">
+                      {formatCurrency(assay?.totalCombinedValue, "GHS")}
                     </dd>
                   </div>
                 </div>

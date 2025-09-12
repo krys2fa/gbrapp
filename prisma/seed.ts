@@ -176,6 +176,15 @@ async function main() {
     },
   });
 
+  const silverCommodity = await prisma.commodity.upsert({
+    where: { name: "Silver" },
+    update: {},
+    create: {
+      name: "Silver",
+      symbol: "XAG",
+    },
+  });
+
   console.log("Created commodities");
 
   // Create levy types

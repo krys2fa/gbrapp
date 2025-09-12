@@ -114,10 +114,8 @@ export async function fetchAndSaveExchangeRateIfMissing(exchangeId: string) {
     let target = symbol === "USD" ? "USD" : symbol || "GHS";
     // If the exchange record is GHS or symbol missing, default to GHS
     if (!target) target = "GHS";
-    // Use exchangerate.host latest endpoint
-    const fr = await fetch(
-      `https://api.exchangerate.host/latest?base=USD&symbols=${target}`
-    );
+    // Use exchangerate.host latest endpoint (free tier)
+    const fr = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
     if (fr.ok) {
       const j = await fr.json().catch(() => null);
       const rate = j?.rates?.[target];

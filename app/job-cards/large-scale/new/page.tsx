@@ -480,9 +480,9 @@ function NewLargeScaleJobCardPage() {
     try {
       // Validate required fields
       if (!form.referenceNumber || !form.receivedDate || !form.exporterId) {
-        setError(
-          "Please fill in all required fields: Reference Number, Received Date, and Exporter."
-        );
+        const errorMessage = "Please fill in all required fields: Reference Number, Received Date, and Exporter.";
+        setError(errorMessage);
+        toast.error(errorMessage);
         setLoading(false);
         return;
       }
@@ -506,16 +506,18 @@ function NewLargeScaleJobCardPage() {
         .map(({ name }) => name);
 
       if (missingFields.length > 0) {
-        setError(
-          `Please fill in all required fields: ${missingFields.join(", ")}.`
-        );
+        const errorMessage = `Please fill in all required fields: ${missingFields.join(", ")}.`;
+        setError(errorMessage);
+        toast.error(errorMessage);
         setLoading(false);
         return;
       }
 
       // Validate assay information
       if (!authorizedSignatory.trim()) {
-        setError("Please enter the Authorized Signatory.");
+        const errorMessage = "Please enter the Authorized Signatory.";
+        setError(errorMessage);
+        toast.error(errorMessage);
         setLoading(false);
         return;
       }
@@ -532,9 +534,9 @@ function NewLargeScaleJobCardPage() {
         });
 
         if (incompleteRows.length > 0) {
-          setError(
-            `Please fill in all required fields for assay data entry. ${incompleteRows.length} row(s) have missing information.`
-          );
+          const errorMessage = `Please fill in all required fields for assay data entry. ${incompleteRows.length} row(s) have missing information.`;
+          setError(errorMessage);
+          toast.error(errorMessage);
           setLoading(false);
           return;
         }
@@ -544,7 +546,9 @@ function NewLargeScaleJobCardPage() {
       setShowPreviewModal(true);
     } catch (error) {
       console.error("Error preparing preview:", error);
-      setError("An unexpected error occurred. Please try again.");
+      const errorMessage = "An unexpected error occurred. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -557,7 +561,9 @@ function NewLargeScaleJobCardPage() {
     try {
       // Validate that received date is provided (required for pricing lookups)
       if (!form.receivedDate) {
-        setError("Received Date is required for pricing calculations. Please select a date.");
+        const errorMessage = "Received Date is required for pricing calculations. Please select a date.";
+        setError(errorMessage);
+        toast.error(errorMessage);
         setLoading(false);
         return;
       }
@@ -612,7 +618,9 @@ function NewLargeScaleJobCardPage() {
           }
         } catch (error) {
           console.error('Pricing data error:', error);
-          setError(`Cannot save job card: ${error.message}. Please ensure pricing data is available for the selected date.`);
+          const errorMessage = `Cannot save job card: ${error instanceof Error ? error.message : 'Unknown error'}. Note: Commodity prices must be available for the exact selected date, while exchange rates can be from within the same week.`;
+          setError(errorMessage);
+          toast.error(errorMessage);
           setLoading(false);
           return; // Prevent saving
         }
@@ -628,18 +636,18 @@ function NewLargeScaleJobCardPage() {
           netSilverWeight: parseFloat(row.silverNetWeight) || 0,
         }));
 
-        valuationDetails = calculateValuationDetails(
-          measurements,
-          form.unitOfMeasure,
+        valuationDetails = {
+          ...calculateValuationDetails(
+            measurements,
+            form.unitOfMeasure,
+            commodityPrice,
+            pricePerOz,
+            exchangeRate
+          ),
+          exchangeRate,
           commodityPrice,
           pricePerOz,
-          exchangeRate
-        );
-
-        // Add pricing information to valuation details for storage
-        valuationDetails.exchangeRate = exchangeRate;
-        valuationDetails.commodityPrice = commodityPrice;
-        valuationDetails.pricePerOz = pricePerOz;
+        };
       }
 
       const jobCardData = {
@@ -679,17 +687,21 @@ function NewLargeScaleJobCardPage() {
 
       if (response.ok) {
         const newJobCard = await response.json();
-        toast.success("Large scale job card created successfully!");
+        toast.success("Valuation saved successfully!");
         setShowPreviewModal(false);
         router.push(`/job-cards/large-scale/${newJobCard.id}`);
       } else {
         const errorData = await response.json();
-        setError(errorData.error || "Failed to create job card.");
+        const errorMessage = errorData.error || "Failed to create job card.";
+        setError(errorMessage);
+        toast.error(errorMessage);
         setShowPreviewModal(false);
       }
     } catch (error) {
       console.error("Error creating job card:", error);
-      setError("An unexpected error occurred. Please try again.");
+      const errorMessage = "An unexpected error occurred. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setShowPreviewModal(false);
     } finally {
       setLoading(false);
@@ -933,13 +945,12 @@ function NewLargeScaleJobCardPage() {
                     Sample Bottle Dates
                   </label>
                   <input
-                    type="text"
+                    type="date"
                     name="sampleBottleDates"
                     id="sampleBottleDates"
                     value={form.sampleBottleDates}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Enter sample bottle dates"
                   />
                 </div>
 
@@ -951,13 +962,12 @@ function NewLargeScaleJobCardPage() {
                     Data Sheet Dates
                   </label>
                   <input
-                    type="text"
+                    type="date"
                     name="dataSheetDates"
                     id="dataSheetDates"
                     value={form.dataSheetDates}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Enter data sheet dates"
                   />
                 </div>
 
@@ -1247,13 +1257,13 @@ function NewLargeScaleJobCardPage() {
                               Gold Fineness (%)
                             </th>
                             <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
-                              Gold Net Weight
+                              Gold Net Weight ({form.unitOfMeasure})
                             </th>
                             <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
                               Silver Fineness (%)
                             </th>
                             <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
-                              Silver Net Weight
+                              Silver Net Weight ({form.unitOfMeasure})
                             </th>
                           </tr>
                         </thead>
@@ -1361,7 +1371,7 @@ function NewLargeScaleJobCardPage() {
               disabled={loading}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Creating..." : "Create Large Scale Job Card"}
+              {loading ? "Evaluating..." : "Perform Valuation"}
             </button>
           </div>
         </form>
@@ -1492,10 +1502,10 @@ function NewLargeScaleJobCardPage() {
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                      Job Card Preview
+                      Sample Analysis & Valuation Preview
                     </h3>
 
-                    {/* Preview Content - Using the same template as assay detail page */}
+                    {/* Preview Content */}
                     <div className="bg-white overflow-hidden border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
 
                       <div className="flex items-center justify-between mb-1 px-8">
@@ -1696,53 +1706,6 @@ function NewLargeScaleJobCardPage() {
                           </div>
                         </div>
 
-                        {/* Commodities Table */}
-                        {/* {form.commodities.filter((c) => c.id).length > 0 && (
-                          <div className="mt-4">
-                            <h4 className="text-sm font-medium text-gray-900 mb-2">
-                              Commodities
-                            </h4>
-                            <table className="min-w-full divide-y divide-gray-200">
-                              <thead className="bg-gray-50">
-                                <tr>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Commodity
-                                  </th>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Gross Weight
-                                  </th>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Net Weight
-                                  </th>
-                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Fineness
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody className="bg-white divide-y divide-gray-200">
-                                {form.commodities
-                                  .filter((c) => c.id)
-                                  .map((commodity, idx) => (
-                                    <tr key={idx}>
-                                      <td className="px-4 py-2 text-sm text-gray-700">
-                                        {commodity.name || "N/A"}
-                                      </td>
-                                      <td className="px-4 py-2 text-sm text-gray-700">
-                                        {commodity.grossWeight || "N/A"}
-                                      </td>
-                                      <td className="px-4 py-2 text-sm text-gray-700">
-                                        {commodity.netWeight || "N/A"}
-                                      </td>
-                                      <td className="px-4 py-2 text-sm text-gray-700">
-                                        {commodity.fineness || "N/A"}
-                                      </td>
-                                    </tr>
-                                  ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )} */}
-
                         {/* Assay Data Entry Section */}
                         {assayersData.length > 0 && (
                           <div className="mt-6">
@@ -1813,13 +1776,13 @@ function NewLargeScaleJobCardPage() {
                                     {calculateAssayersTotals().grossWeight}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
-                                    {calculateAssayersTotals().goldFineness}%
+                                    {calculateAssayersTotals().goldFineness}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
                                     {calculateAssayersTotals().goldNetWeight}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
-                                    {calculateAssayersTotals().silverFineness}%
+                                    {calculateAssayersTotals().silverFineness}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
                                     {calculateAssayersTotals().silverNetWeight}
@@ -2006,14 +1969,14 @@ function NewLargeScaleJobCardPage() {
                   disabled={loading}
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                 >
-                  {loading ? "Creating..." : "Confirm & Create Job Card"}
+                  {loading ? "Saving..." : "Confirm & Save"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPreviewModal(false)}
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >
-                  Back to Edit
+                  Back
                 </button>
               </div>
             </div>
