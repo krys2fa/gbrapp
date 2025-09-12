@@ -424,6 +424,54 @@ function NewLargeScaleJobCardPage() {
     };
   };
 
+  // Helper function to calculate valuation details
+  const calculateValuationDetails = (measurements: any[], unitOfMeasure: string, commodityPrice: number = 0, pricePerOz: number = 0, exchangeRate: number = 1) => {
+    const GRAMS_PER_TROY_OUNCE = 31.1035;
+
+    // Helper function to convert to grams
+    const convertToGrams = (value: any, unit?: string) => {
+      const numValue = Number(value) || 0;
+      if (!numValue) return 0;
+      const u = (unit || "g").toString().toLowerCase();
+      if (u === "kg" || u === "kilogram" || u === "kilograms") return numValue * 1000;
+      if (u === "g" || u === "gram" || u === "grams") return numValue;
+      if (u === "lb" || u === "lbs" || u === "pound" || u === "pounds") return numValue * 453.59237;
+      return numValue; // default: treat as grams
+    };
+
+    // Calculate total net weights in grams
+    const totalNetGoldWeightGrams = measurements.reduce(
+      (acc: number, m: any) => acc + convertToGrams(m.netGoldWeight, unitOfMeasure),
+      0
+    );
+
+    const totalNetSilverWeightGrams = measurements.reduce(
+      (acc: number, m: any) => acc + convertToGrams(m.netSilverWeight, unitOfMeasure),
+      0
+    );
+
+    // Convert to ounces
+    const totalNetGoldWeightOz = totalNetGoldWeightGrams / GRAMS_PER_TROY_OUNCE;
+    const totalNetSilverWeightOz = totalNetSilverWeightGrams / GRAMS_PER_TROY_OUNCE;
+
+    // Calculate values
+    const totalGoldValue = totalNetGoldWeightOz * commodityPrice;
+    const totalSilverValue = totalNetSilverWeightOz * pricePerOz;
+    const totalCombinedValue = totalGoldValue + totalSilverValue;
+    const totalValueGhs = totalCombinedValue * exchangeRate;
+
+    return {
+      totalNetGoldWeight: totalNetGoldWeightGrams,
+      totalNetGoldWeightOz,
+      totalNetSilverWeight: totalNetSilverWeightGrams,
+      totalNetSilverWeightOz,
+      totalGoldValue,
+      totalSilverValue,
+      totalCombinedValue,
+      totalValueGhs,
+    };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -507,6 +555,93 @@ function NewLargeScaleJobCardPage() {
     setError("");
 
     try {
+      // Validate that received date is provided (required for pricing lookups)
+      if (!form.receivedDate) {
+        setError("Received Date is required for pricing calculations. Please select a date.");
+        setLoading(false);
+        return;
+      }
+
+      // Calculate valuation details if assay data exists
+      let valuationDetails = null;
+      if (assayersData.length > 0) {
+        // Fetch current pricing information from APIs
+        let commodityPrice = 0;
+        let pricePerOz = 0;
+        let exchangeRate = 1;
+
+        try {
+          // Fetch gold price for the job card date
+          const jobCardDate = form.receivedDate || new Date().toISOString().split('T')[0];
+          const goldResponse = await fetch(`/api/commodities/XAU/price?date=${jobCardDate}`);
+          if (goldResponse.ok) {
+            const goldData = await goldResponse.json();
+            if (goldData.available) {
+              commodityPrice = goldData.price || 0;
+            } else {
+              throw new Error(`Gold price not available for ${jobCardDate}: ${goldData.error}`);
+            }
+          } else {
+            throw new Error('Failed to fetch gold price');
+          }
+
+          // Fetch silver price for the job card date
+          const silverResponse = await fetch(`/api/commodities/XAG/price?date=${jobCardDate}`);
+          if (silverResponse.ok) {
+            const silverData = await silverResponse.json();
+            if (silverData.available) {
+              pricePerOz = silverData.price || 0;
+            } else {
+              throw new Error(`Silver price not available for ${jobCardDate}: ${silverData.error}`);
+            }
+          } else {
+            throw new Error('Failed to fetch silver price');
+          }
+
+          // Fetch exchange rate (USD to GHS) for the job card date
+          const exchangeResponse = await fetch(`/api/exchange/usd-ghs/rate?date=${jobCardDate}`);
+          if (exchangeResponse.ok) {
+            const exchangeData = await exchangeResponse.json();
+            if (exchangeData.available) {
+              exchangeRate = exchangeData.rate || 1;
+            } else {
+              throw new Error(`Exchange rate not available for ${jobCardDate}: ${exchangeData.error}`);
+            }
+          } else {
+            throw new Error('Failed to fetch exchange rate');
+          }
+        } catch (error) {
+          console.error('Pricing data error:', error);
+          setError(`Cannot save job card: ${error.message}. Please ensure pricing data is available for the selected date.`);
+          setLoading(false);
+          return; // Prevent saving
+        }
+
+        // Convert assayersData to measurements format expected by the calculation function
+        const measurements = assayersData.map((row, index) => ({
+          id: index + 1,
+          barNumber: row.barNo,
+          grossWeight: parseFloat(row.grossWeight) || 0,
+          goldAssay: parseFloat(row.goldFineness) || 0,
+          silverAssay: parseFloat(row.silverFineness) || 0,
+          netGoldWeight: parseFloat(row.goldNetWeight) || 0,
+          netSilverWeight: parseFloat(row.silverNetWeight) || 0,
+        }));
+
+        valuationDetails = calculateValuationDetails(
+          measurements,
+          form.unitOfMeasure,
+          commodityPrice,
+          pricePerOz,
+          exchangeRate
+        );
+
+        // Add pricing information to valuation details for storage
+        valuationDetails.exchangeRate = exchangeRate;
+        valuationDetails.commodityPrice = commodityPrice;
+        valuationDetails.pricePerOz = pricePerOz;
+      }
+
       const jobCardData = {
         referenceNumber: form.referenceNumber,
         receivedDate: form.receivedDate,
@@ -530,6 +665,8 @@ function NewLargeScaleJobCardPage() {
         sampleType: form.sampleType,
         shipmentNumber: form.shipmentNumber,
         assayersData: assayersData.length > 0 ? assayersData : undefined,
+        // Include valuation details
+        ...valuationDetails,
       };
 
       const response = await fetch("/api/large-scale-job-cards", {
@@ -638,6 +775,9 @@ function NewLargeScaleJobCardPage() {
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Required for pricing calculations. Gold, silver, and exchange rates must be available for this date.
+                  </p>
                 </div>
 
                 <div>
@@ -1357,11 +1497,6 @@ function NewLargeScaleJobCardPage() {
 
                     {/* Preview Content - Using the same template as assay detail page */}
                     <div className="bg-white overflow-hidden border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
-                      {/* <div className="px-4 py-5 sm:px-6">
-                        <h3 className="text-base leading-6 font-medium text-gray-900">
-                          Certificate #{form.referenceNumber || "-"}
-                        </h3>
-                      </div> */}
 
                       <div className="flex items-center justify-between mb-1 px-8">
                         <div className="p-2">
@@ -1383,7 +1518,7 @@ function NewLargeScaleJobCardPage() {
                         {/* Top: show exporter and assay date above the measurements table */}
 
                         {/* Basic Information Display */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 my-4">
                           <div>
                             <dt className="text-sm font-medium text-gray-500">
                               Exporter
@@ -1698,8 +1833,8 @@ function NewLargeScaleJobCardPage() {
                         {/* Calculated Values */}
                         {assayersData.length > 0 && (
                           <div className="mt-6">
-                            <h4 className="text-lg font-medium text-gray-900 mb-4">
-                              Calculated Values
+                            <h4 className="text-sm font-medium text-gray-900 mb-4">
+                              Valuation
                             </h4>
                             <div className="bg-gray-50 rounded-lg p-4">
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1820,9 +1955,9 @@ function NewLargeScaleJobCardPage() {
                                       </div>
                                       <div className="sm:col-span-2 lg:col-span-3">
                                         <dt className="text-sm font-medium text-gray-500">
-                                          Total Value (Gold + Silver)
+                                          Total Shipment Value (Gold & Silver) 
                                         </dt>
-                                        <dd className="mt-1 text-lg text-gray-900 font-bold">
+                                        <dd className="mt-1 text-sm text-gray-900 font-bold">
                                           $
                                           {totalValue.toLocaleString(
                                             undefined,
@@ -1836,10 +1971,10 @@ function NewLargeScaleJobCardPage() {
                                       {exchangeRate && (
                                         <div className="sm:col-span-2 lg:col-span-3">
                                           <dt className="text-sm font-medium text-gray-500">
-                                            Total Value in GHS (Exchange Rate:{" "}
+                                            Total Shipment Value GHS (Exchange Rate:{" "}
                                             {exchangeRate})
                                           </dt>
-                                          <dd className="mt-1 text-lg text-gray-900 font-bold">
+                                          <dd className="mt-1 text-sm text-gray-900 font-bold">
                                             GHS{" "}
                                             {(
                                               totalValue *

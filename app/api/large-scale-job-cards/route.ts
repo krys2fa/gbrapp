@@ -143,6 +143,19 @@ async function createLargeScaleJobCard(req: NextRequest) {
       sampleType,
       shipmentNumber,
       assayersData,
+      // Valuation fields
+      totalCombinedValue,
+      totalGoldValue,
+      totalNetGoldWeight,
+      totalNetGoldWeightOz,
+      totalNetSilverWeight,
+      totalNetSilverWeightOz,
+      totalSilverValue,
+      totalValueGhs,
+      // Pricing information used in calculations
+      exchangeRate,
+      commodityPrice,
+      pricePerOz,
     } = body;
 
     // Validate required fields
@@ -251,13 +264,34 @@ async function createLargeScaleJobCard(req: NextRequest) {
       const assayData: any = {
         jobCardId: jobCard.id,
         method: assayMethod || "X_RAY",
+        pieces:
+          assayersData && Array.isArray(assayersData)
+            ? assayersData.length
+            : numberOfSamples
+            ? parseInt(numberOfSamples)
+            : 1,
         signatory: authorizedSignatory,
         dateOfAnalysis: dateOfAnalysis ? new Date(dateOfAnalysis) : new Date(),
-        sampleBottleDates: sampleBottleDates ? new Date(sampleBottleDates) : null,
+        sampleBottleDates: sampleBottleDates
+          ? new Date(sampleBottleDates)
+          : null,
         dataSheetDates: dataSheetDates ? new Date(dataSheetDates) : null,
         numberOfSamples: numberOfSamples ? parseInt(numberOfSamples) : 1,
         sampleType: sampleType || "capillary",
         shipmentNumber: shipmentNumber,
+        // Valuation fields
+        totalCombinedValue: totalCombinedValue || 0,
+        totalGoldValue: totalGoldValue || 0,
+        totalNetGoldWeight: totalNetGoldWeight || 0,
+        totalNetGoldWeightOz: totalNetGoldWeightOz || 0,
+        totalNetSilverWeight: totalNetSilverWeight || 0,
+        totalNetSilverWeightOz: totalNetSilverWeightOz || 0,
+        totalSilverValue: totalSilverValue || 0,
+        totalValueGhs: totalValueGhs || 0,
+        // Pricing information used in calculations
+        exchangeRate: exchangeRate ? Number(exchangeRate.toFixed(4)) : 1,
+        commodityPrice: commodityPrice || 0,
+        pricePerOz: pricePerOz || 0,
       };
 
       // Add shipment type if provided
@@ -278,11 +312,21 @@ async function createLargeScaleJobCard(req: NextRequest) {
               assayId: assay.id,
               piece: i + 1,
               barNumber: measurement.barNo,
-              grossWeight: measurement.grossWeight ? parseFloat(measurement.grossWeight) : null,
-              goldAssay: measurement.goldFineness ? parseFloat(measurement.goldFineness) : null,
-              netGoldWeight: measurement.goldNetWeight ? parseFloat(measurement.goldNetWeight) : null,
-              silverAssay: measurement.silverFineness ? parseFloat(measurement.silverFineness) : null,
-              netSilverWeight: measurement.silverNetWeight ? parseFloat(measurement.silverNetWeight) : null,
+              grossWeight: measurement.grossWeight
+                ? parseFloat(measurement.grossWeight)
+                : null,
+              goldAssay: measurement.goldFineness
+                ? parseFloat(measurement.goldFineness)
+                : null,
+              netGoldWeight: measurement.goldNetWeight
+                ? parseFloat(measurement.goldNetWeight)
+                : null,
+              silverAssay: measurement.silverFineness
+                ? parseFloat(measurement.silverFineness)
+                : null,
+              netSilverWeight: measurement.silverNetWeight
+                ? parseFloat(measurement.silverNetWeight)
+                : null,
             },
           });
         }

@@ -207,15 +207,15 @@ export default function AssayResultsPage() {
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
                                 {`${idx + 1}`}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
                                 {m.grossWeight != null
                                   ? Number(m.grossWeight).toFixed(2)
                                   : "-"}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
                                 {m.fineness ?? "-"}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
                                 {m.netWeight != null
                                   ? Number(m.netWeight).toFixed(2)
                                   : "-"}
@@ -229,7 +229,7 @@ export default function AssayResultsPage() {
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                           {"TOTAL"}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                           {(() => {
                             const total = assays.reduce(
                               (acc: number, assay: any) =>
@@ -244,7 +244,7 @@ export default function AssayResultsPage() {
                             return total > 0 ? total.toFixed(2) : "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                           {(() => {
                             const grossTotal = assays.reduce(
                               (acc: number, assay: any) =>
@@ -268,12 +268,12 @@ export default function AssayResultsPage() {
                             );
                             if (grossTotal > 0 && netTotal > 0) {
                               const fineness = (netTotal / grossTotal) * 100;
-                              return fineness.toFixed(2) + "%";
+                              return fineness.toFixed(2);
                             }
                             return "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                           {(() => {
                             const total = assays.reduce(
                               (acc: number, assay: any) =>
