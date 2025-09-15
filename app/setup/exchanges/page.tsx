@@ -10,6 +10,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
+import { toast } from "react-hot-toast";
 
 function capitalizeFirst(str: string) {
   if (!str) return "";
@@ -20,8 +21,6 @@ export default function ExchangesPage() {
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const [exchanges, setExchanges] = useState<any[]>([]);
   const [fetching, setFetching] = useState(true);
 
@@ -48,20 +47,19 @@ export default function ExchangesPage() {
         const res = await fetch(url);
         const data = await res.json();
         setExchanges(data || []);
-      } catch {
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load exchanges");
         setExchanges([]);
       } finally {
         setFetching(false);
       }
     }
     load();
-  }, [success, filterTrigger]);
+  }, [filterTrigger]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       const res = await fetch("/api/exchange", {
         method: "POST",
@@ -69,11 +67,12 @@ export default function ExchangesPage() {
         body: JSON.stringify({ name, symbol }),
       });
       if (!res.ok) throw new Error("Failed to create exchange");
-      setSuccess("Exchange created");
+      toast.success("Exchange created successfully!");
       setName("");
       setSymbol("");
+      setFilterTrigger(filterTrigger + 1); // Refresh the list
     } catch (err: any) {
-      setError(err.message || "Error creating exchange");
+      toast.error(err.message || "Error creating exchange");
     } finally {
       setLoading(false);
     }
@@ -89,8 +88,6 @@ export default function ExchangesPage() {
     e.preventDefault();
     if (!editingExchange) return;
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       const res = await fetch(`/api/exchange/${editingExchange.id}`, {
         method: "PUT",
@@ -98,12 +95,13 @@ export default function ExchangesPage() {
         body: JSON.stringify({ name, symbol }),
       });
       if (!res.ok) throw new Error("Failed to update exchange");
-      setSuccess("Exchange updated");
+      toast.success("Exchange updated successfully!");
       setEditingExchange(null);
       setName("");
       setSymbol("");
+      setFilterTrigger(filterTrigger + 1); // Refresh the list
     } catch (err: any) {
-      setError(err.message || "Error updating exchange");
+      toast.error(err.message || "Error updating exchange");
     } finally {
       setLoading(false);
     }
@@ -113,14 +111,13 @@ export default function ExchangesPage() {
     if (!window.confirm("Are you sure you want to delete this exchange?"))
       return;
     setLoading(true);
-    setError("");
-    setSuccess("");
     try {
       const res = await fetch(`/api/exchange/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete exchange");
-      setSuccess("Exchange deleted");
+      toast.success("Exchange deleted successfully!");
+      setFilterTrigger(filterTrigger + 1); // Refresh the list
     } catch (err: any) {
-      setError(err.message || "Error deleting exchange");
+      toast.error(err.message || "Error deleting exchange");
     } finally {
       setLoading(false);
     }
@@ -133,7 +130,8 @@ export default function ExchangesPage() {
       const data = await res.json();
       setViewingExchange(data);
       setViewModalOpen(true);
-    } catch {
+    } catch (err: any) {
+      toast.error(err.message || "Failed to fetch exchange details");
       setViewingExchange(c);
       setViewModalOpen(true);
     }
@@ -157,8 +155,6 @@ export default function ExchangesPage() {
           >
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                {error && <div className="text-red-600">{error}</div>}
-                {success && <div className="text-green-600">{success}</div>}
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">

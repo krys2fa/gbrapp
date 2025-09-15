@@ -19,6 +19,7 @@ async function getUser(
         id: true,
         email: true,
         name: true,
+        phone: true,
         role: true,
         isActive: true,
         lastLogin: true,
@@ -47,7 +48,7 @@ async function updateUser(
 ) {
   try {
     const { id } = await ctx.params;
-    const { email, password, name, role, isActive } = await req.json();
+    const { email, password, name, phone, role, isActive } = await req.json();
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -77,6 +78,10 @@ async function updateUser(
       updateData.name = name;
     }
 
+    if (phone !== undefined) {
+      updateData.phone = phone;
+    }
+
     if (role !== undefined) {
       updateData.role = role;
     }
@@ -95,6 +100,7 @@ async function updateUser(
           id: true,
           email: true,
           name: true,
+          phone: true,
           role: true,
           isActive: true,
           lastLogin: true,
@@ -114,6 +120,7 @@ async function updateUser(
             id: true,
             email: true,
             name: true,
+            phone: true,
             role: true,
             isActive: true,
             lastLogin: true,

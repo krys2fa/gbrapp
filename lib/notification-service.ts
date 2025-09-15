@@ -1,5 +1,6 @@
 // lib/notification-service.ts
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory, LogLevel } from "./logger";
 
 export interface NotificationData {
   to: string;
@@ -10,9 +11,30 @@ export interface NotificationData {
 
 export class NotificationService {
   private static emailServiceUrl = process.env.EMAIL_SERVICE_URL;
-  private static smsServiceUrl = process.env.SMS_SERVICE_URL;
   private static emailApiKey = process.env.EMAIL_API_KEY;
   private static smsApiKey = process.env.SMS_API_KEY;
+
+  /**
+   * Validate if a phone number is in a valid format for SMS
+   * Accepts international format with or without + prefix
+   * Minimum 10 digits, maximum 15 digits (E.164 standard)
+   */
+  private static isValidPhoneNumber(phone: string | null | undefined): boolean {
+    if (!phone || typeof phone !== "string") {
+      return false;
+    }
+
+    // Remove all non-digit characters
+    const cleanedPhone = phone.replace(/\D/g, "");
+
+    // Check if it's between 10-15 digits (international standard)
+    if (cleanedPhone.length < 10 || cleanedPhone.length > 15) {
+      return false;
+    }
+
+    // Must start with digits (country codes are typically 1-4 digits)
+    return /^\d+$/.test(cleanedPhone);
+  }
 
   static async sendEmail(
     to: string,
@@ -52,7 +74,28 @@ export class NotificationService {
 
   static async sendSMS(to: string, message: string): Promise<boolean> {
     try {
-      if (!this.smsServiceUrl || !this.smsApiKey) {
+      // Validate phone number first
+      if (!this.isValidPhoneNumber(to)) {
+        await logger.warn(
+          LogCategory.SMS,
+          `Invalid phone number format: ${to} - SMS not sent`,
+          {
+            phoneNumber: to,
+            reason: "invalid_format",
+          }
+        );
+        console.warn(`📱 Invalid phone number format: ${to} - SMS not sent`);
+        return false;
+      }
+
+      if (!this.smsApiKey) {
+        await logger.warn(
+          LogCategory.SMS,
+          "SMS service not configured - API key missing",
+          {
+            phoneNumber: to,
+          }
+        );
         console.warn(
           "SMS service not configured, logging notification instead"
         );
@@ -60,22 +103,143 @@ export class NotificationService {
         return true;
       }
 
-      const response = await fetch(this.smsServiceUrl, {
+      // Arkesel SMS API endpoint
+      const arkeselEndpoint = "https://sms.arkesel.com/api/v2/sms/send";
+
+      // Ensure phone number is in international format (remove leading + if present)
+      const cleanedPhoneNumber = to.startsWith("+") ? to.substring(1) : to;
+
+      const response = await fetch(arkeselEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.smsApiKey}`,
+          "api-key": this.smsApiKey,
         },
         body: JSON.stringify({
-          to,
-          message,
+          sender: "GBR System",
+          message: message,
+          recipients: [cleanedPhoneNumber],
         }),
       });
 
-      return response.ok;
+      const result = await response.json();
+
+      if (response.ok && result.code === "ok") {
+        await logger.info(LogCategory.SMS, `SMS sent successfully`, {
+          phoneNumber: to,
+          messageLength: message.length,
+          cost: result.data?.cost,
+          balance: result.data?.balance,
+        });
+        console.log(`SMS sent successfully to ${to}`);
+        return true;
+      } else {
+        await logger.error(LogCategory.SMS, `SMS sending failed`, {
+          phoneNumber: to,
+          error: result,
+          responseStatus: response.status,
+        });
+        console.error(`SMS sending failed:`, result);
+        return false;
+      }
     } catch (error) {
       console.error("SMS sending failed:", error);
       return false;
+    }
+  }
+
+  static async notifyUsersWithRoles(
+    roles: (
+      | "SUPERADMIN"
+      | "CEO"
+      | "DEPUTY_CEO"
+      | "ADMIN"
+      | "USER"
+      | "TELLER"
+      | "FINANCE"
+    )[],
+    subject: string,
+    message: string,
+    notificationType: "email" | "sms" | "both" = "both"
+  ): Promise<void> {
+    try {
+      console.log(`🔍 Looking for users with roles: ${roles.join(", ")}`);
+      const users = await prisma.user.findMany({
+        where: {
+          role: {
+            in: roles,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+        },
+      });
+      console.log(`📱 Found ${users.length} users with required roles:`);
+      users.forEach((user) => {
+        console.log(
+          `  - ${user.name} (${user.role}): phone=${
+            user.phone || "NO PHONE"
+          }, email=${user.email}`
+        );
+      });
+
+      const notifications = users.map(async (user) => {
+        const promises = [];
+
+        if (notificationType === "email" || notificationType === "both") {
+          if (user.email) {
+            promises.push(this.sendEmail(user.email, subject, message));
+          } else {
+            console.warn(
+              `📧 No email address for user ${user.name} (${user.role})`
+            );
+          }
+        }
+
+        if (notificationType === "sms" || notificationType === "both") {
+          if (user.phone && this.isValidPhoneNumber(user.phone)) {
+            console.log(
+              `📱 Sending SMS to ${user.name} (${user.role}): ${user.phone}`
+            );
+            promises.push(this.sendSMS(user.phone, message));
+          } else if (user.phone) {
+            console.warn(
+              `📱 Invalid phone number for user ${user.name} (${user.role}): ${user.phone} - SMS not sent`
+            );
+          } else {
+            console.warn(
+              `📱 No phone number for user ${user.name} (${user.role}) - SMS not sent`
+            );
+          }
+        }
+
+        return Promise.all(promises);
+      });
+
+      await Promise.all(notifications);
+
+      // Log summary of SMS delivery attempts
+      const smsEligibleUsers = users.filter(
+        (user) => user.phone && this.isValidPhoneNumber(user.phone)
+      );
+      const invalidPhoneUsers = users.filter(
+        (user) => user.phone && !this.isValidPhoneNumber(user.phone)
+      );
+      const noPhoneUsers = users.filter((user) => !user.phone);
+
+      if (notificationType === "sms" || notificationType === "both") {
+        console.log(`📊 SMS Delivery Summary:`);
+        console.log(`  ✅ Valid phone numbers: ${smsEligibleUsers.length}`);
+        console.log(`  ❌ Invalid phone numbers: ${invalidPhoneUsers.length}`);
+        console.log(`  📵 No phone numbers: ${noPhoneUsers.length}`);
+      }
+    } catch (error) {
+      console.error("Failed to notify users with roles:", error);
+      throw error;
     }
   }
 
@@ -136,12 +300,48 @@ Rate: ${rate}
 Week: ${weekStart}
 Submitted By: ${submittedBy}
 
-Please review and approve/reject this rate in the system.
+Please review and approve/reject this week's exchange rate in the system.
 
-This is an automated notification from GBR Application.
+This is an automated notification from the GBR System.
     `.trim();
 
-    await this.notifySuperAdmins(subject, message);
+    // Send immediate SMS notification to SUPERADMIN and CEO
+    await this.notifyUsersWithRoles(
+      ["SUPERADMIN", "CEO"],
+      subject,
+      message,
+      "sms"
+    );
+  }
+
+  static async notifyExchangeRateApprovalDelayed(
+    exchangeRateId: string,
+    exchangeName: string,
+    rate: number,
+    weekStart: string,
+    submittedBy: string
+  ): Promise<void> {
+    const subject = `URGENT: Exchange Rate Still Pending Approval: ${exchangeName}`;
+    const message = `
+URGENT: An exchange rate has been pending approval for 5 minutes:
+
+Exchange: ${exchangeName}
+Rate: ${rate}
+Week: ${weekStart}
+Submitted By: ${submittedBy}
+
+This rate requires immediate attention. Please review and approve/reject via the admin panel.
+
+This is an automated urgent notification from GBR Application.
+    `.trim();
+
+    // Send delayed SMS notification to DEPUTY_CEO and SUPERADMIN
+    await this.notifyUsersWithRoles(
+      ["DEPUTY_CEO", "SUPERADMIN"],
+      subject,
+      message,
+      "sms"
+    );
   }
 
   static async notifyExchangeRateApproved(
@@ -188,5 +388,71 @@ This is an automated notification from GBR Application.
     `.trim();
 
     await this.notifySuperAdmins(subject, message);
+  }
+
+  /**
+   * Check SMS readiness for users with specific roles
+   * Returns count of users with valid phone numbers
+   */
+  static async checkSMSReadiness(
+    roles: (
+      | "SUPERADMIN"
+      | "CEO"
+      | "DEPUTY_CEO"
+      | "ADMIN"
+      | "USER"
+      | "TELLER"
+      | "FINANCE"
+    )[]
+  ): Promise<{
+    totalUsers: number;
+    validPhoneUsers: number;
+    invalidPhoneUsers: number;
+    noPhoneUsers: number;
+    users: Array<{
+      name: string;
+      role: string;
+      phone: string | null;
+      phoneValid: boolean;
+    }>;
+  }> {
+    try {
+      const users = await prisma.user.findMany({
+        where: {
+          role: {
+            in: roles,
+          },
+        },
+        select: {
+          name: true,
+          role: true,
+          phone: true,
+        },
+      });
+
+      const userDetails = users.map((user) => ({
+        name: user.name,
+        role: user.role,
+        phone: user.phone,
+        phoneValid: this.isValidPhoneNumber(user.phone),
+      }));
+
+      const validPhoneUsers = userDetails.filter((u) => u.phoneValid).length;
+      const invalidPhoneUsers = userDetails.filter(
+        (u) => u.phone && !u.phoneValid
+      ).length;
+      const noPhoneUsers = userDetails.filter((u) => !u.phone).length;
+
+      return {
+        totalUsers: users.length,
+        validPhoneUsers,
+        invalidPhoneUsers,
+        noPhoneUsers,
+        users: userDetails,
+      };
+    } catch (error) {
+      console.error("Failed to check SMS readiness:", error);
+      throw error;
+    }
   }
 }

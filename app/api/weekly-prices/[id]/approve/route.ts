@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { NotificationService } from "../../../../../lib/notification-service";
+import { NotificationScheduler } from "../../../../../lib/notification-scheduler";
 import * as jose from "jose";
 
 export async function POST(
@@ -65,6 +66,30 @@ export async function POST(
       const { payload } = await jose.jwtVerify(token, secret);
       userId = payload.userId as string;
       userRole = payload.role as string;
+
+      // Validate that the user exists in the database
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true, role: true },
+      });
+
+      if (!user) {
+        console.error(`User with ID ${userId} not found in database`);
+        return NextResponse.json(
+          {
+            error: "User not found. Please log in again.",
+          },
+          { status: 401 }
+        );
+      }
+
+      // Verify role from database matches JWT
+      if (user.role !== userRole) {
+        console.warn(
+          `Role mismatch for user ${userId}: JWT has ${userRole}, DB has ${user.role}`
+        );
+        userRole = user.role; // Use role from database
+      }
     } catch (error) {
       return NextResponse.json(
         {
@@ -74,12 +99,12 @@ export async function POST(
       );
     }
 
-    // Only allow super admins and admins to approve/reject rates
-    if (!["SUPERADMIN", "ADMIN"].includes(userRole)) {
+    // Only allow super admins, CEO, and deputy CEO to approve/reject rates
+    if (!["SUPERADMIN", "CEO", "DEPUTY_CEO"].includes(userRole)) {
       return NextResponse.json(
         {
           error:
-            "Unauthorized. Only admins and super admins can approve or reject rates.",
+            "Unauthorized. Only system admin, CEO, and deputy CEO can approve or reject exchange rates.",
         },
         { status: 403 }
       );
@@ -129,6 +154,9 @@ export async function POST(
         approvedByUser: true,
       },
     });
+
+    // Cancel any scheduled delayed notifications since the rate has been processed
+    NotificationScheduler.cancelScheduledNotification(id);
 
     // Send notification
     if (weeklyPrice.type === "EXCHANGE" && weeklyPrice.exchange) {

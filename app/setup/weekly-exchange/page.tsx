@@ -350,10 +350,19 @@ export default function WeeklyExchangePage() {
             <div className="mt-6 flex justify-end">
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
+                className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 disabled={loading}
               >
-                {editingPrice ? "Update Rate" : "Add Rate"}
+                {loading ? (
+                  <>
+                    <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                    {editingPrice ? "Updating..." : "Adding..."}
+                  </>
+                ) : editingPrice ? (
+                  "Update Rate"
+                ) : (
+                  "Add Rate"
+                )}
               </button>
             </div>
           </form>

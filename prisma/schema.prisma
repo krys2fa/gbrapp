@@ -700,3 +700,28 @@ model LargeScaleJobCardCommodity {
 
   @@unique([jobCardId, commodityId])
 }
+
+model SystemLog {
+  id          String   @id @default(uuid())
+  timestamp   DateTime @default(now())
+  level       String   // DEBUG, INFO, WARN, ERROR, CRITICAL
+  category    String   // SYSTEM, AUTH, SMS, EMAIL, etc.
+  message     String
+  userId      String?
+  userName    String?
+  userRole    String?
+  entityType  String?  // Type of entity being logged (User, JobCard, etc.)
+  entityId    String?  // ID of the entity
+  metadata    String?  // JSON string for additional data
+  ipAddress   String?
+  userAgent   String?
+  sessionId   String?
+  requestId   String?
+  createdAt   DateTime @default(now())
+
+  @@index([timestamp])
+  @@index([level])
+  @@index([category])
+  @@index([userId])
+  @@index([entityType, entityId])
+}

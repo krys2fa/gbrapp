@@ -42,6 +42,7 @@ async function getUsers(req: NextRequest) {
         id: true,
         email: true,
         name: true,
+        phone: true,
         role: true,
         isActive: true,
         lastLogin: true,
@@ -69,7 +70,7 @@ async function getUsers(req: NextRequest) {
  */
 async function createUser(req: NextRequest) {
   try {
-    const { email, password, name, role, isActive } = await req.json();
+    const { email, password, name, phone, role, isActive } = await req.json();
 
     // Validate input
     if (!email || !password || !name) {
@@ -111,6 +112,7 @@ async function createUser(req: NextRequest) {
           email,
           password: hashedPassword,
           name,
+          phone,
           role,
           isActive: isActive !== undefined ? isActive : true,
         },
@@ -131,6 +133,7 @@ async function createUser(req: NextRequest) {
       id: user.id,
       email: user.email,
       name: user.name,
+      phone: user.phone,
       role: user.role,
       isActive: user.isActive,
       createdAt: user.createdAt,

@@ -30,6 +30,7 @@ const CreateUserPage = () => {
     name: "",
     email: "",
     password: "",
+    phone: "",
     role: roles[0],
   });
   const [loading, setLoading] = useState(false);
@@ -82,7 +83,7 @@ const CreateUserPage = () => {
       });
       if (!res.ok) throw new Error("Failed to create user");
       toast.success("User created successfully!");
-      setForm({ name: "", email: "", password: "", role: roles[0] });
+      setForm({ name: "", email: "", password: "", phone: "", role: roles[0] });
       setFilterTrigger((prev) => prev + 1); // Refresh the users list
     } catch (err: any) {
       toast.error(err.message || "Error creating user");
@@ -97,6 +98,7 @@ const CreateUserPage = () => {
       name: user.name,
       email: user.email,
       password: "", // Don't show password
+      phone: user.phone || "",
       role: user.role,
     });
   };
@@ -107,7 +109,11 @@ const CreateUserPage = () => {
     setLoading(true);
     try {
       // Do not include email in update payload to avoid conflicts
-      const payload: any = { name: form.name, role: form.role };
+      const payload: any = {
+        name: form.name,
+        phone: form.phone,
+        role: form.role,
+      };
       const res = await fetch(`/api/users/${editingUser.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -119,7 +125,7 @@ const CreateUserPage = () => {
       }
       toast.success("User updated successfully!");
       setEditingUser(null);
-      setForm({ name: "", email: "", password: "", role: roles[0] });
+      setForm({ name: "", email: "", password: "", phone: "", role: roles[0] });
       setFilterTrigger((prev) => prev + 1); // Refresh the users list
     } catch (err: any) {
       toast.error(err.message || "Error updating user");
@@ -185,7 +191,6 @@ const CreateUserPage = () => {
           <form onSubmit={editingUser ? handleUpdateUser : handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-               
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <label
@@ -219,6 +224,23 @@ const CreateUserPage = () => {
                       onChange={handleChange}
                       className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                       required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="phone"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      id="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      placeholder="+233241234567"
+                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -354,6 +376,9 @@ const CreateUserPage = () => {
                         Email
                       </th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Phone
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                         Role
                       </th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -377,6 +402,9 @@ const CreateUserPage = () => {
                           </td>
                           <td className="px-4 py-2 text-gray-700">
                             {user.email}
+                          </td>
+                          <td className="px-4 py-2 text-gray-700">
+                            {user.phone || "N/A"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {capitalizeFirst(user.role)}
@@ -515,6 +543,10 @@ const CreateUserPage = () => {
               <div>
                 <span className="font-semibold">Email:</span>{" "}
                 {viewingUser.email}
+              </div>
+              <div>
+                <span className="font-semibold">Phone:</span>{" "}
+                {viewingUser.phone || "N/A"}
               </div>
               <div>
                 <span className="font-semibold">Role:</span>{" "}

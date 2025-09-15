@@ -1,0 +1,8 @@
+2025-09-15T13:41:52.510Z [DEBUG] [SYSTEM] [SYSTEM]  Debug log from API test endpoint
+2025-09-15T13:41:55.967Z [INFO] [API] [SYSTEM]  Info log from API test endpoint
+2025-09-15T13:41:56.206Z [WARN] [SYSTEM] [SYSTEM]  Warning log from API test endpoint
+2025-09-15T13:41:56.476Z [ERROR] [API] [SYSTEM]  Error log from API test endpoint
+2025-09-15T13:41:56.699Z [INFO] [API] [Test User:ADMIN]  API test endpoint accessed | Metadata: {"endpoint":"/api/test-logging","method":"GET","timestamp":"2025-09-15T13:41:56.699Z","testMode":true}
+2025-09-15T13:41:56.947Z [INFO] [API] [SYSTEM]  API logging test completed successfully | Metadata: {"endpoint":"/api/test-logging","statusCode":200}
+2025-09-15T14:34:07.090Z [ERROR] [SMS] [SYSTEM]  SMS sending failed | Metadata: {"phoneNumber":"+233558252455","error":{"code":"111","message":"Your are not allowed to use this Sender ID. Please contact Support."},"responseStatus":403}
+2025-09-15T14:36:44.121Z [ERROR] [SMS] [SYSTEM]  SMS sending failed | Metadata: {"phoneNumber":"+233558252455","error":{"data":[{"id":"af807edc-e932-4150-aa2d-1324cc8fd4b0","recipient":"233558252455"}],"status":"success"},"responseStatus":200}

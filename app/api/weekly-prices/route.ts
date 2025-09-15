@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { getWeekBounds } from "@/app/lib/week-utils";
 import { NotificationService } from "../../../lib/notification-service";
+import { NotificationScheduler } from "../../../lib/notification-scheduler";
 import * as jose from "jose";
 
 export async function GET(req: Request) {
@@ -115,6 +116,40 @@ export async function POST(req: Request) {
     try {
       const { payload } = await jose.jwtVerify(token, secret);
       submittedBy = payload.userId as string;
+
+      // Validate that the user exists in the database
+      const user = await prisma.user.findUnique({
+        where: { id: submittedBy },
+        select: { id: true, name: true, email: true },
+      });
+
+      if (!user) {
+        console.warn(
+          `User with ID ${submittedBy} not found in database. Using system user as fallback.`
+        );
+
+        // Fallback to system user
+        const systemUser = await prisma.user.findFirst({
+          where: {
+            OR: [{ email: "system@gbrapp.com" }, { role: "SUPERADMIN" }],
+          },
+          select: { id: true, name: true, email: true },
+        });
+
+        if (systemUser) {
+          submittedBy = systemUser.id;
+          console.log(
+            `Using system user ${systemUser.name} (${systemUser.id}) as submitter`
+          );
+        } else {
+          return NextResponse.json(
+            {
+              error: "User validation failed. Please contact administrator.",
+            },
+            { status: 500 }
+          );
+        }
+      }
     } catch (error) {
       return NextResponse.json(
         {
@@ -175,8 +210,24 @@ export async function POST(req: Request) {
       },
     });
 
-    // Send notification to super admins for approval
+    // Send immediate SMS notification to SUPERADMIN and CEO for exchange rates
     if (type === "EXCHANGE" && weeklyPrice.exchange) {
+      console.log("🔔 Exchange rate created, sending SMS notifications...");
+      console.log("Exchange:", weeklyPrice.exchange.name);
+      console.log("Rate:", weeklyPrice.price);
+
+      // Check SMS readiness for immediate notifications
+      const immediateReadiness = await NotificationService.checkSMSReadiness([
+        "SUPERADMIN",
+        "CEO",
+      ]);
+      console.log("📊 Immediate SMS Readiness:", {
+        total: immediateReadiness.totalUsers,
+        valid: immediateReadiness.validPhoneUsers,
+        invalid: immediateReadiness.invalidPhoneUsers,
+        noPhone: immediateReadiness.noPhoneUsers,
+      });
+
       try {
         await NotificationService.notifyExchangeRateApproval(
           weeklyPrice.id,
@@ -184,6 +235,17 @@ export async function POST(req: Request) {
           weeklyPrice.price,
           weeklyPrice.weekStartDate.toISOString().split("T")[0],
           weeklyPrice.submittedByUser?.name || "Unknown User"
+        );
+        console.log("✅ SMS notification service called successfully");
+
+        // Schedule delayed notification to DEPUTY_CEO and SUPERADMIN after 5 minutes
+        NotificationScheduler.scheduleDelayedNotification(
+          weeklyPrice.id,
+          weeklyPrice.exchange.name,
+          weeklyPrice.price,
+          weeklyPrice.weekStartDate.toISOString().split("T")[0],
+          weeklyPrice.submittedByUser?.name || "Unknown User",
+          5 // 5 minutes delay
         );
 
         // Mark notification as sent
