@@ -32,7 +32,7 @@ async function testCompleteLogging() {
     
     // Test 2: Check database directly
     console.log('\n2. Checking database logs directly...');
-    const { PrismaClient } = require('./app/generated/prisma');
+    const { PrismaClient } = require('../app/generated/prisma');
     const prisma = new PrismaClient();
     
     const totalLogs = await prisma.systemLog.count();

@@ -1,4 +1,4 @@
-import { prisma } from "./app/lib/prisma.ts";
+import { prisma } from "../app/lib/prisma.ts";
 
 async function updateSilverSymbol() {
   try {

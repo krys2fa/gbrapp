@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of GBR App - Gold Buying and Refining Management System
+- Initial release of GBR App - GoldBod Assay & Invoice System
 - Complete job card management system with comprehensive form fields
 - User authentication with JWT and role-based access control (SUPERADMIN, ADMIN, USER)
 - Database schema with full business entity relationships

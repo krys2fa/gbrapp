@@ -1,5 +1,5 @@
 // test-user-validation-fix.js - Test the foreign key constraint fix
-const { PrismaClient } = require('./app/generated/prisma');
+const { PrismaClient } = require('../app/generated/prisma');
 
 async function testUserValidationFix() {
   console.log('🧪 Testing WeeklyPrice Foreign Key Constraint Fix...\n');

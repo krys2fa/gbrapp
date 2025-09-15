@@ -1,5 +1,5 @@
 // debug-user-foreign-key.js - Debug script for WeeklyPrice submittedBy foreign key issue
-const { PrismaClient } = require('./app/generated/prisma');
+const { PrismaClient } = require('../app/generated/prisma');
 
 async function debugUserForeignKey() {
   console.log('🔍 Debugging WeeklyPrice submittedBy foreign key constraint...\n');

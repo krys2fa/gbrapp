@@ -1,5 +1,5 @@
 // test-logging.js - Test script for the comprehensive logging system
-const { PrismaClient } = require('./app/generated/prisma');
+const { PrismaClient } = require('../app/generated/prisma');
 
 async function testLogging() {
   console.log('🧪 Testing Logging System...\n');

@@ -1,5 +1,5 @@
 // test-logger-class.js - Test the Logger class implementation
-const { Logger, LogLevel, LogCategory } = require('./lib/logger.ts');
+const { Logger, LogLevel, LogCategory } = require('../lib/logger.ts');
 
 async function testLoggerClass() {
   console.log('🧪 Testing Logger Class Implementation...\n');
@@ -49,7 +49,7 @@ async function testLoggerClass() {
     
     // Test 5: Check if logs are being created
     console.log('5. Checking database logs...');
-    const { PrismaClient } = require('./app/generated/prisma');
+    const { PrismaClient } = require('../app/generated/prisma/index');
     const prisma = new PrismaClient();
     
     const logCount = await prisma.systemLog.count();

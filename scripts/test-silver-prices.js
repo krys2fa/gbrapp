@@ -1,4 +1,4 @@
-import { prisma } from "./app/lib/prisma.ts";
+import { prisma } from "../app/lib/prisma.ts";
 
 async function testSilverPriceFetching() {
   try {
@@ -15,7 +15,7 @@ async function testSilverPriceFetching() {
     console.log(`Testing price fetching for Silver (${silverCommodity.symbol})`);
 
     // Try to fetch price for silver
-    const { fetchAndSaveCommodityPriceIfMissing } = await import("./app/lib/external-prices.ts");
+    const { fetchAndSaveCommodityPriceIfMissing } = await import("../app/lib/external-prices.ts");
 
     const result = await fetchAndSaveCommodityPriceIfMissing(silverCommodity.id);
     console.log("Price fetching result:", result);
