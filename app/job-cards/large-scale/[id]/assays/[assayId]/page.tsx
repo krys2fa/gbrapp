@@ -395,7 +395,9 @@ export default function AssayResultsPage() {
                 </div>
 
                 <div className="flex-1 text-center">
-                  <div className="title-section font-bold uppercase underline">Ghana Gold Board</div>
+                  <div className="title-section font-bold uppercase underline">
+                    Ghana Gold Board
+                  </div>
                 </div>
 
                 <div className="flex items-center">
@@ -489,286 +491,294 @@ export default function AssayResultsPage() {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Assay Measurements Table */}
-          <div className="px-4 sm:px-6 lg:px-8 pt-4">
-            <div className="bg-white overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
-                        SN
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
-                        Bar No. NGGL
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
-                        Gross Weight ({jobCard?.unitOfMeasure})
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
-                        Gold Fineness (%)
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
-                        Gold Net Weight ({jobCard?.unitOfMeasure})
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
-                        Silver Fineness (%)
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
-                        Silver Net Weight ({jobCard?.unitOfMeasure})
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {(assay.measurements || []).map((m: any, idx: number) => (
-                      <tr key={`${assay.id}-${idx}`}>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
-                          {idx + 1}
+            {/* Assay Measurements Table */}
+            <div className="px-4 sm:px-6 lg:px-8 pt-4">
+              <div className="bg-white overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                          SN
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                          Bar No. NGGL
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                          Gross Weight ({jobCard?.unitOfMeasure})
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                          Gold Fineness (%)
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                          Gold Net Weight ({jobCard?.unitOfMeasure})
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                          Silver Fineness (%)
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                          Silver Net Weight ({jobCard?.unitOfMeasure})
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {(assay.measurements || []).map((m: any, idx: number) => (
+                        <tr key={`${assay.id}-${idx}`}>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                            {idx + 1}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                            {m.barNumber || "-"}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                            {m.grossWeight != null
+                              ? Number(m.grossWeight).toFixed(2)
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                            {m.goldAssay != null
+                              ? Number(m.goldAssay).toFixed(2)
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                            {m.netGoldWeight != null
+                              ? Number(m.netGoldWeight).toFixed(2)
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                            {m.silverAssay != null
+                              ? Number(m.silverAssay).toFixed(2)
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                            {m.netSilverWeight != null
+                              ? Number(m.netSilverWeight).toFixed(2)
+                              : "-"}
+                          </td>
+                        </tr>
+                      ))}
+                      {/* Total Row */}
+                      <tr className="bg-gray-50 font-semibold">
+                        <td
+                          className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center"
+                          colSpan={2}
+                        >
+                          TOTAL
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
-                          {m.barNumber || "-"}
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {(() => {
+                            const total = (assay.measurements || []).reduce(
+                              (acc: number, m: any) =>
+                                acc + (Number(m.grossWeight) || 0),
+                              0
+                            );
+                            return total > 0 ? total.toFixed(2) : "-";
+                          })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
-                          {m.grossWeight != null
-                            ? Number(m.grossWeight).toFixed(2)
-                            : "-"}
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {(() => {
+                            const grossTotal = (
+                              assay.measurements || []
+                            ).reduce(
+                              (acc: number, m: any) =>
+                                acc + (Number(m.grossWeight) || 0),
+                              0
+                            );
+                            const netGoldTotal = (
+                              assay.measurements || []
+                            ).reduce(
+                              (acc: number, m: any) =>
+                                acc + (Number(m.netGoldWeight) || 0),
+                              0
+                            );
+                            if (grossTotal > 0 && netGoldTotal > 0) {
+                              const fineness =
+                                (netGoldTotal / grossTotal) * 100;
+                              return fineness.toFixed(2);
+                            }
+                            return "-";
+                          })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
-                          {m.goldAssay != null
-                            ? Number(m.goldAssay).toFixed(2)
-                            : "-"}
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {(() => {
+                            const total = (assay.measurements || []).reduce(
+                              (acc: number, m: any) =>
+                                acc + (Number(m.netGoldWeight) || 0),
+                              0
+                            );
+                            return total > 0 ? total.toFixed(2) : "-";
+                          })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
-                          {m.netGoldWeight != null
-                            ? Number(m.netGoldWeight).toFixed(2)
-                            : "-"}
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {(() => {
+                            const grossTotal = (
+                              assay.measurements || []
+                            ).reduce(
+                              (acc: number, m: any) =>
+                                acc + (Number(m.grossWeight) || 0),
+                              0
+                            );
+                            const netSilverTotal = (
+                              assay.measurements || []
+                            ).reduce(
+                              (acc: number, m: any) =>
+                                acc + (Number(m.netSilverWeight) || 0),
+                              0
+                            );
+                            if (grossTotal > 0 && netSilverTotal > 0) {
+                              const fineness =
+                                (netSilverTotal / grossTotal) * 100;
+                              return fineness.toFixed(2);
+                            }
+                            return "-";
+                          })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
-                          {m.silverAssay != null
-                            ? Number(m.silverAssay).toFixed(2)
-                            : "-"}
-                        </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
-                          {m.netSilverWeight != null
-                            ? Number(m.netSilverWeight).toFixed(2)
-                            : "-"}
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {(() => {
+                            const total = (assay.measurements || []).reduce(
+                              (acc: number, m: any) =>
+                                acc + (Number(m.netSilverWeight) || 0),
+                              0
+                            );
+                            return total > 0 ? total.toFixed(2) : "-";
+                          })()}
                         </td>
                       </tr>
-                    ))}
-                    {/* Total Row */}
-                    <tr className="bg-gray-50 font-semibold">
-                      <td
-                        className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center"
-                        colSpan={2}
-                      >
-                        TOTAL
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
-                        {(() => {
-                          const total = (assay.measurements || []).reduce(
-                            (acc: number, m: any) =>
-                              acc + (Number(m.grossWeight) || 0),
-                            0
-                          );
-                          return total > 0 ? total.toFixed(2) : "-";
-                        })()}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
-                        {(() => {
-                          const grossTotal = (assay.measurements || []).reduce(
-                            (acc: number, m: any) =>
-                              acc + (Number(m.grossWeight) || 0),
-                            0
-                          );
-                          const netGoldTotal = (
-                            assay.measurements || []
-                          ).reduce(
-                            (acc: number, m: any) =>
-                              acc + (Number(m.netGoldWeight) || 0),
-                            0
-                          );
-                          if (grossTotal > 0 && netGoldTotal > 0) {
-                            const fineness = (netGoldTotal / grossTotal) * 100;
-                            return fineness.toFixed(2);
-                          }
-                          return "-";
-                        })()}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
-                        {(() => {
-                          const total = (assay.measurements || []).reduce(
-                            (acc: number, m: any) =>
-                              acc + (Number(m.netGoldWeight) || 0),
-                            0
-                          );
-                          return total > 0 ? total.toFixed(2) : "-";
-                        })()}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
-                        {(() => {
-                          const grossTotal = (assay.measurements || []).reduce(
-                            (acc: number, m: any) =>
-                              acc + (Number(m.grossWeight) || 0),
-                            0
-                          );
-                          const netSilverTotal = (
-                            assay.measurements || []
-                          ).reduce(
-                            (acc: number, m: any) =>
-                              acc + (Number(m.netSilverWeight) || 0),
-                            0
-                          );
-                          if (grossTotal > 0 && netSilverTotal > 0) {
-                            const fineness =
-                              (netSilverTotal / grossTotal) * 100;
-                            return fineness.toFixed(2);
-                          }
-                          return "-";
-                        })()}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
-                        {(() => {
-                          const total = (assay.measurements || []).reduce(
-                            (acc: number, m: any) =>
-                              acc + (Number(m.netSilverWeight) || 0),
-                            0
-                          );
-                          return total > 0 ? total.toFixed(2) : "-";
-                        })()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="px-4 sm:px-6 lg:px-8 py-4 mx-auto">
-            <div className="space-y-3 mx-auto">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center">
-                    <dt className="text-sm font-medium text-gray-500">
-                      NET WEIGHT OF GOLD (Oz):
+            {/* Financial Information Section */}
+            <div className="px-4 sm:px-6 lg:px-8 py-4 mx-auto">
+              <div className="space-y-3 mx-auto">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <dt className="text-sm font-medium text-gray-500">
+                        NET WEIGHT OF GOLD (Oz):
+                      </dt>
+                      <dd className="text-sm font-semibold text-gray-900">
+                        {assay?.totalNetGoldWeightOz.toFixed(3)}
+                      </dd>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500">
+                        NET WEIGHT OF SILVER (Oz):
+                      </dt>
+                      <dd className="text-sm font-semibold text-gray-900">
+                        {assay?.totalNetSilverWeightOz.toFixed(3)}
+                      </dd>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-end">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500 uppercase">
+                        Unit price per ounce:
+                      </dt>
+                      <dd className="text-sm font-semibold text-gray-900">
+                        {(() => {
+                          const pricePerOz = assay?.commodityPrice || 0;
+                          return formatCurrency(pricePerOz, "USD");
+                        })()}
+                      </dd>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500 uppercase">
+                        Unit price per ounce:
+                      </dt>
+                      <dd className="text-sm font-semibold text-gray-900">
+                        {(() => {
+                          const pricePerOz = assay?.pricePerOz || 0;
+                          return formatCurrency(pricePerOz, "USD");
+                        })()}
+                      </dd>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500">
+                        VALUE OF GOLD (US$):
+                      </dt>
+                      <dd className="text-sm font-semibold text-gray-900">
+                        {formatCurrency(assay?.totalGoldValue, "USD")}
+                      </dd>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <dt className="text-sm font-medium text-gray-500">
+                        VALUE OF SILVER (US$):
+                      </dt>
+                      <dd className="text-sm font-semibold text-gray-900">
+                        {formatCurrency(assay?.totalSilverValue, "USD")}
+                      </dd>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex mt-4 pt-4">
+                  <div className="flex justify-between items-center">
+                    <dt className="text-sm font-medium text-gray-900">
+                      PREVAILING BOG EXCHANGE RATE:
                     </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
-                      {assay?.totalNetGoldWeightOz.toFixed(3)}
+                    <dd className="text-sm font-semibold text-gray-900 ml-1">
+                      {Number(assay?.exchangeRate).toFixed(4)}
                     </dd>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <dt className="text-sm font-medium text-gray-500">
-                      NET WEIGHT OF SILVER (Oz):
+
+                <div className="flex mb-4">
+                  <div className="text-center justify-between flex">
+                    <dt className="text-sm font-medium text-gray-900">
+                      TOTAL VALUE OF SHIPMENT (GOLD & SILVER):
                     </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
-                      {assay?.totalNetSilverWeightOz.toFixed(3)}
+                    <dd className="text-sm font-semibold text-gray-900 ml-1">
+                      {formatCurrency(assay?.totalValueGhs, "USD")}
+                    </dd>
+                  </div>
+                </div>
+
+                <div className="flex">
+                  <div className="text-center justify-between flex">
+                    <dt className="text-sm font-medium text-gray-900">
+                      TOTAL VALUE OF SHIPMENT (GOLD & SILVER):
+                    </dt>
+                    <dd className="text-sm font-semibold text-gray-900 ml-1">
+                      {formatCurrency(assay?.totalCombinedValue, "GHS")}
                     </dd>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex justify-between items-end">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <dt className="text-sm font-medium text-gray-500 uppercase">
-                      Unit price per ounce:
-                    </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
-                      {(() => {
-                        const pricePerOz = assay?.commodityPrice || 0;
-                        return formatCurrency(pricePerOz, "USD");
-                      })()}
-                    </dd>
+            {/* Technical Director Signature Section */}
+            <div className="px-4 sm:px-6 lg:px-8 py-8">
+              <div className="flex justify-start">
+                <div className="border-t border-gray-300 pt-4 w-64">
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
+                      Technical Director
+                    </p>
                   </div>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <dt className="text-sm font-medium text-gray-500 uppercase">
-                      Unit price per ounce:
-                    </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
-                      {(() => {
-                        const pricePerOz = assay?.pricePerOz || 0;
-                        return formatCurrency(pricePerOz, "USD");
-                      })()}
-                    </dd>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <dt className="text-sm font-medium text-gray-500">
-                      VALUE OF GOLD (US$):
-                    </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
-                      {formatCurrency(assay?.totalGoldValue, "USD")}
-                    </dd>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <dt className="text-sm font-medium text-gray-500">
-                      VALUE OF SILVER (US$):
-                    </dt>
-                    <dd className="text-sm font-semibold text-gray-900">
-                      {formatCurrency(assay?.totalSilverValue, "USD")}
-                    </dd>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex mt-4 pt-4">
-                <div className="flex justify-between items-center">
-                  <dt className="text-sm font-medium text-gray-900">
-                    PREVAILING BOG EXCHANGE RATE:
-                  </dt>
-                  <dd className="text-sm font-semibold text-gray-900 ml-1">
-                    {Number(assay?.exchangeRate).toFixed(4)}
-                  </dd>
-                </div>
-              </div>
-
-              <div className="flex mb-4">
-                <div className="text-center justify-between flex">
-                  <dt className="text-sm font-medium text-gray-900">
-                    TOTAL VALUE OF SHIPMENT (GOLD & SILVER):
-                  </dt>
-                  <dd className="text-sm font-semibold text-gray-900 ml-1">
-                    {formatCurrency(assay?.totalValueGhs, "USD")}
-                  </dd>
-                </div>
-              </div>
-
-              <div className="flex">
-                <div className="text-center justify-between flex">
-                  <dt className="text-sm font-medium text-gray-900">
-                    TOTAL VALUE OF SHIPMENT (GOLD & SILVER):
-                  </dt>
-                  <dd className="text-sm font-semibold text-gray-900 ml-1">
-                    {formatCurrency(assay?.totalCombinedValue, "GHS")}
-                  </dd>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Technical Director Signature Section */}
-          <div className="px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex justify-start">
-              <div className="border-t border-gray-300 pt-4 w-64">
-                <div className="text-center">
-                  <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
-                    Technical Director
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </>

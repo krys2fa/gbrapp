@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "vercel-build": "npx prisma migrate deploy && next build",
+    "vercel-build-with-seed": "npx prisma migrate deploy && npx prisma db seed && next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "npx prisma db seed"
+    "db:seed": "npx prisma db seed",
+    "seed:production": "node scripts/seed-production.js",
+    "safe-seed:production": "node scripts/safe-seed-production.js",
+    "conditional-seed": "node scripts/conditional-seed.js"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
