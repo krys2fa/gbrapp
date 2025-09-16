@@ -49,7 +49,13 @@ interface JobCardData {
   valueGhs?: string | number;
 
   // Related data
-  exporter: { name: string };
+  exporter: { 
+    name: string;
+    buyerName?: string;
+    buyerIdNumber?: string;
+    buyerPhone?: string;
+    buyerAddress?: string;
+  };
   commodity?: { name: string };
   assays?: Array<Record<string, any>>;
   invoices?: Array<Record<string, any>>;
@@ -377,13 +383,13 @@ function JobCardDetailPage() {
                     {jobCard.exporter.name}
                   </dd>
                 </div>
-                {jobCard!.buyerName && (
+                {jobCard.exporter?.buyerName && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
                       Importer Name
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard!.buyerName}
+                      {jobCard.exporter.buyerName}
                     </dd>
                   </div>
                 )}
@@ -946,7 +952,7 @@ function JobCardDetailPage() {
                     Buyer Name
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard!.buyerName || "Not specified"}
+                    {jobCard?.exporter?.buyerName || "Not specified"}
                   </dd>
                 </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

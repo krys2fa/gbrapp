@@ -729,7 +729,7 @@ const ExportersPage = () => {
                           Exporter Website
                         </label>
                         <input
-                          type="url"
+                          type="text"
                           name="exporterWebsite"
                           id="exporterWebsite"
                           value={form.exporterWebsite}

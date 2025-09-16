@@ -422,7 +422,7 @@ export default function NewAssayPage() {
       // Weekly exchange is now required for data integrity - block saving if missing
       if (!(jobCard?.referenceNumber || jobCard?.reference))
         metaMissing.push("reference number");
-      if (!jobCard?.buyerName) metaMissing.push("buyer");
+      if (!jobCard?.exporter?.buyerName) metaMissing.push("buyer");
       if (!jobCard?.destinationCountry) metaMissing.push("destination");
       if (!commodityName) metaMissing.push("commodity");
       if (jobCard?.numberOfBoxes == null) metaMissing.push("number of boxes");
@@ -655,7 +655,7 @@ export default function NewAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Buyer</div>
                 <div className="font-medium text-gray-900">
-                  {jobCard?.buyerName || "-"}
+                  {jobCard?.exporter?.buyerName || "-"}
                 </div>
               </div>
               <div>

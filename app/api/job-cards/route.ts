@@ -337,8 +337,8 @@ async function createJobCard(req: NextRequest) {
       "exporterId",
       "status",
       "unitOfMeasure",
-      "buyerName",
-      "buyerAddress",
+      "buyerName", // Keep for exporter update, will be filtered out for job card
+      "buyerAddress", // Keep for exporter update, will be filtered out for job card
       "teamLeader",
       "totalGrossWeight",
       "destinationCountry",
@@ -415,17 +415,40 @@ async function createJobCard(req: NextRequest) {
 
     console.log("Creating job card with data:", JSON.stringify(data, null, 2));
 
+    // Extract buyer information to save to exporter
+    const buyerInfo = {
+      buyerName: data.buyerName,
+      buyerAddress: data.buyerAddress,
+    };
+
+    // If buyer information is provided, update the exporter
+    if (data.exporterId && (buyerInfo.buyerName || buyerInfo.buyerAddress)) {
+      try {
+        const updateData: any = {};
+        if (buyerInfo.buyerName) updateData.buyerName = buyerInfo.buyerName;
+        if (buyerInfo.buyerAddress) updateData.buyerAddress = buyerInfo.buyerAddress;
+        
+        await prisma.exporter.update({
+          where: { id: data.exporterId },
+          data: updateData,
+        });
+        console.log("Updated exporter with buyer information");
+      } catch (exporterError) {
+        console.error("Failed to update exporter with buyer info:", exporterError);
+        // Continue with job card creation even if exporter update fails
+      }
+    }
+
     // Prepare the arguments we will pass to Prisma so we can log them exactly
     // Build an explicit whitelist of scalar fields to avoid accidentally
     // passing nested relation objects (e.g. exporter: {...}) to Prisma.
+    // Note: buyerName and buyerAddress are NOT included here as they belong to Exporter model
     const allowedFields = [
       "referenceNumber",
       "receivedDate",
       "exporterId",
       "status",
       "unitOfMeasure",
-      "buyerName",
-      "buyerAddress",
       "teamLeader",
       "totalGrossWeight",
       "destinationCountry",
