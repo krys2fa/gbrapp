@@ -217,12 +217,12 @@ function NewLargeScaleAssayPage() {
         // Fetch commodity prices - for large scale, we need to get prices for all commodities in the job card
         let commodityPrices: any[] = [];
         if (jobBody?.commodities && jobBody.commodities.length > 0) {
-          // Get prices for all commodities in the job card
+          // Get weekly prices for all commodities in the job card
           const commodityIds = jobBody.commodities.map(
             (c: any) => c.commodity.id
           );
           const pricePromises = commodityIds.map((commodityId: string) =>
-            fetch(`/api/daily-prices?type=COMMODITY&itemId=${commodityId}`)
+            fetch(`/api/weekly-prices?type=COMMODITY&itemId=${commodityId}&approvedOnly=true`)
               .then((res) => (res.ok ? res.json().catch(() => []) : []))
               .catch(() => [])
           );
@@ -231,7 +231,7 @@ function NewLargeScaleAssayPage() {
           commodityPrices = priceResults.flat(); // Flatten all results into one array
         } else {
           // fallback: fetch all commodity prices
-          const cpRes = await fetch(`/api/daily-prices?type=COMMODITY`);
+          const cpRes = await fetch(`/api/weekly-prices?type=COMMODITY&approvedOnly=true`);
           if (cpRes && cpRes.ok)
             commodityPrices = await cpRes.json().catch(() => []);
         }
@@ -282,8 +282,11 @@ function NewLargeScaleAssayPage() {
         console.log("Day of week:", todayDate.getUTCDay());
         console.log("Diff calculated:", diff);
 
-        const todayCommodityMatches = (commodityPrices || []).filter(
-          (p: any) => String(p?.createdAt || "").split("T")[0] === today
+        const currentWeekCommodityMatches = (commodityPrices || []).filter(
+          (p: any) => {
+            const priceWeekStart = String(p?.weekStartDate || "").split("T")[0];
+            return priceWeekStart === currentWeekStart;
+          }
         );
         const todaysExchangeMatches = (exchangePrices || []).filter(
           (p: any) => {
@@ -299,10 +302,10 @@ function NewLargeScaleAssayPage() {
         console.log("Today's exchange matches:", todaysExchangeMatches);
         console.log("Number of matches:", todaysExchangeMatches?.length || 0);
 
-        // Get commodity entry (can fall back to latest if today's is missing)
+        // Get commodity entry (can fall back to latest if current week's is missing)
         const commodityEntry =
           latestByDate(
-            todayCommodityMatches.filter((p: any) => p.type === "COMMODITY")
+            currentWeekCommodityMatches.filter((p: any) => p.type === "COMMODITY")
           ) ||
           latestByDate(
             (commodityPrices || []).filter((p: any) => p.type === "COMMODITY")
@@ -479,24 +482,24 @@ function NewLargeScaleAssayPage() {
       c.commodity.symbol.toLowerCase().includes("ag")
   );
 
-  const goldDailyPrice = goldCommodity
+  const goldWeeklyPrice = goldCommodity
     ? commodityPrices.find((p) => p.commodityId === goldCommodity.commodity.id)
         ?.price
     : null;
 
-  const silverDailyPrice = silverCommodity
+  const silverWeeklyPrice = silverCommodity
     ? commodityPrices.find(
         (p) => p.commodityId === silverCommodity.commodity.id
       )?.price
     : null;
 
   const totalGoldValue =
-    goldDailyPrice && totalNetGoldWeightOz
-      ? Number(goldDailyPrice) * totalNetGoldWeightOz
+    goldWeeklyPrice && totalNetGoldWeightOz
+      ? Number(goldWeeklyPrice) * totalNetGoldWeightOz
       : 0;
   const totalSilverValue =
-    silverDailyPrice && totalNetSilverWeightOz
-      ? Number(silverDailyPrice) * totalNetSilverWeightOz
+    silverWeeklyPrice && totalNetSilverWeightOz
+      ? Number(silverWeeklyPrice) * totalNetSilverWeightOz
       : 0;
 
   // Calculate combined total value and GHS conversion
@@ -1161,7 +1164,7 @@ function NewLargeScaleAssayPage() {
                     {formatCurrency(totalGoldValue, "USD")}
                   </div>
                   <div className="text-xs text-gray-500">
-                    @ {formatCurrency(goldDailyPrice || 0, "USD", false)}/oz
+                    @ {formatCurrency(goldWeeklyPrice || 0, "USD", false)}/oz
                   </div>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-md">
@@ -1172,7 +1175,7 @@ function NewLargeScaleAssayPage() {
                     {formatCurrency(totalSilverValue, "USD")}
                   </div>
                   <div className="text-xs text-gray-500">
-                    @ {formatCurrency(silverDailyPrice || 0, "USD", false)}/oz
+                    @ {formatCurrency(silverWeeklyPrice || 0, "USD", false)}/oz
                   </div>
                 </div>
                 <div className="bg-green-50 p-3 rounded-md">

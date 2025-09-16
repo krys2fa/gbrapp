@@ -1,6 +1,7 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
+import { useAuth } from "@/app/context/auth-context";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -9,6 +10,7 @@ import Select from "react-select";
 import countryList from "react-select-country-list";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
+import { ClientLogger, LogLevel, LogCategory } from "@/lib/client-logger";
 
 enum UnitOfMeasure {
   GRAMS = "g",
@@ -17,8 +19,28 @@ enum UnitOfMeasure {
 
 function NewLargeScaleJobCardPage() {
   const router = useRouter();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Logger instance for file logging
+  const logger = ClientLogger.getInstance();
+
+  // Helper function to log both to console and file
+  const logInfo = async (message: string, metadata?: Record<string, any>) => {
+    console.log(message, metadata || "");
+    await logger.info(LogCategory.JOB_CARD, message, metadata);
+  };
+
+  const logError = async (message: string, metadata?: Record<string, any>) => {
+    console.error(message, metadata || "");
+    await logger.error(LogCategory.JOB_CARD, message, metadata);
+  };
+
+  const logWarn = async (message: string, metadata?: Record<string, any>) => {
+    console.warn(message, metadata || "");
+    await logger.warn(LogCategory.JOB_CARD, message, metadata);
+  };
   const [exporters, setExporters] = useState<
     { id: string; name: string; exporterType: { id: string; name: string } }[]
   >([]);
@@ -197,8 +219,38 @@ function NewLargeScaleJobCardPage() {
             Array.isArray(shipmentTypesData) ? shipmentTypesData : []
           );
         }
+
+        // Load initial exchange rate from weekly prices
+        await logInfo("Loading initial exchange rate...");
+        const initialExchangeRes = await fetch(
+          `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`
+        );
+        await logInfo("Initial exchange response received", {
+          status: initialExchangeRes.status,
+        });
+
+        if (initialExchangeRes.ok) {
+          const initialExchangeData = await initialExchangeRes.json();
+          await logInfo("Initial exchange data received", {
+            dataLength: initialExchangeData.length,
+            firstRate: initialExchangeData[0]?.price || null,
+          });
+          if (initialExchangeData.length > 0) {
+            await logInfo("Setting initial exchange rate", {
+              price: initialExchangeData[0].price,
+            });
+            setExchangeRate(initialExchangeData[0].price || "");
+          }
+        } else {
+          await logError("Failed to fetch initial exchange rate", {
+            status: initialExchangeRes.status,
+          });
+        }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        await logError("Error fetching initial data", {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         setError("Failed to load form data. Please try again.");
       }
     };
@@ -218,33 +270,135 @@ function NewLargeScaleJobCardPage() {
           setSelectedExporter(exporterData);
         }
 
-        // Fetch latest exchange rate
-        const exchangeRes = await fetch(`/api/daily-exchange`);
+        // Fetch latest exchange rate from weekly prices
+        await logInfo("Fetching exchange rate...");
+        const exchangeRes = await fetch(
+          `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`
+        );
+        await logInfo("Exchange response received", {
+          status: exchangeRes.status,
+        });
+
         if (exchangeRes.ok) {
           const exchangeData = await exchangeRes.json();
+          await logInfo("Exchange data received", {
+            dataLength: exchangeData.length,
+            firstEntry: exchangeData[0] || null,
+          });
           // Get the latest exchange rate
           if (exchangeData.length > 0) {
+            await logInfo("Setting exchange rate", {
+              price: exchangeData[0].price,
+            });
             setExchangeRate(exchangeData[0].price || "");
+          } else {
+            await logWarn("No weekly exchange data available");
+            toast.error("No weekly exchange rate data available");
           }
+        } else {
+          const errorText = await exchangeRes.text();
+          await logError("Failed to fetch exchange rate", {
+            status: exchangeRes.status,
+            statusText: exchangeRes.statusText,
+            errorResponse: errorText,
+          });
+          toast.error("Failed to load weekly exchange rate");
         }
 
-        // Fetch latest gold and silver prices
+        // Fetch latest gold and silver daily prices
+        await logInfo("Fetching daily commodity prices...");
         const goldRes = await fetch(`/api/daily-prices?type=COMMODITY`);
+        await logInfo("Daily commodity prices response received", {
+          status: goldRes.status,
+        });
+
         if (goldRes.ok) {
           const pricesData = await goldRes.json();
-          // Find gold and silver prices
-          const goldPriceData = pricesData.find((p: any) =>
-            p.commodity?.name?.toLowerCase().includes("gold")
-          );
-          const silverPriceData = pricesData.find((p: any) =>
-            p.commodity?.name?.toLowerCase().includes("silver")
-          );
+          await logInfo("Daily commodity prices data received", {
+            dataLength: pricesData.length,
+            commodities: pricesData.map((p: any) => ({
+              name: p.commodity?.name,
+              symbol: p.commodity?.symbol,
+              price: p.price,
+              date: p.date,
+            })),
+          });
 
-          setGoldPrice(goldPriceData?.price || "");
-          setSilverPrice(silverPriceData?.price || "");
+          // Find gold and silver prices with more flexible matching
+          const goldPriceData = pricesData.find((p: any) => {
+            const name = p.commodity?.name?.toLowerCase() || "";
+            const symbol = p.commodity?.symbol?.toLowerCase() || "";
+            return (
+              name.includes("gold") ||
+              symbol.includes("au") ||
+              symbol.includes("xau")
+            );
+          });
+
+          const silverPriceData = pricesData.find((p: any) => {
+            const name = p.commodity?.name?.toLowerCase() || "";
+            const symbol = p.commodity?.symbol?.toLowerCase() || "";
+            return (
+              name.includes("silver") ||
+              symbol.includes("ag") ||
+              symbol.includes("xag")
+            );
+          });
+
+          await logInfo("Commodity price matching results", {
+            goldFound: !!goldPriceData,
+            goldPrice: goldPriceData?.price || null,
+            silverFound: !!silverPriceData,
+            silverPrice: silverPriceData?.price || null,
+          });
+
+          if (goldPriceData) {
+            setGoldPrice(goldPriceData.price || "");
+            await logInfo("Gold price set successfully", {
+              price: goldPriceData.price,
+            });
+          } else {
+            setGoldPrice("Not Available");
+            await logWarn("No gold price found in daily commodity prices");
+          }
+
+          if (silverPriceData) {
+            setSilverPrice(silverPriceData.price || "");
+            await logInfo("Silver price set successfully", {
+              price: silverPriceData.price,
+            });
+          } else {
+            setSilverPrice("Not Available");
+            await logWarn("No silver price found in daily commodity prices");
+          }
+
+          // Show informational message if no commodity prices are available
+          if (!goldPriceData && !silverPriceData) {
+            await logError("No daily commodity prices are available");
+            toast.error(
+              "No daily commodity prices are available. Please add commodity prices in the setup section."
+            );
+          } else if (!goldPriceData || !silverPriceData) {
+            const missing = !goldPriceData ? "gold" : "silver";
+            await logWarn(`Missing ${missing} price`, { missing });
+            toast.error(
+              `No daily ${missing} price available. Please add ${missing} prices in the setup section.`
+            );
+          }
+        } else {
+          const errorText = await goldRes.text();
+          await logError("Failed to fetch daily commodity prices", {
+            status: goldRes.status,
+            statusText: goldRes.statusText,
+            errorResponse: errorText,
+          });
+          toast.error("Failed to load daily commodity prices");
         }
       } catch (error) {
-        console.error("Error fetching meta data:", error);
+        await logError("Error fetching meta data", {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
       }
     };
 
@@ -425,7 +579,13 @@ function NewLargeScaleJobCardPage() {
   };
 
   // Helper function to calculate valuation details
-  const calculateValuationDetails = (measurements: any[], unitOfMeasure: string, commodityPrice: number = 0, pricePerOz: number = 0, exchangeRate: number = 1) => {
+  const calculateValuationDetails = (
+    measurements: any[],
+    unitOfMeasure: string,
+    commodityPrice: number = 0,
+    pricePerOz: number = 0,
+    exchangeRate: number = 1
+  ) => {
     const GRAMS_PER_TROY_OUNCE = 31.1035;
 
     // Helper function to convert to grams
@@ -433,26 +593,31 @@ function NewLargeScaleJobCardPage() {
       const numValue = Number(value) || 0;
       if (!numValue) return 0;
       const u = (unit || "g").toString().toLowerCase();
-      if (u === "kg" || u === "kilogram" || u === "kilograms") return numValue * 1000;
+      if (u === "kg" || u === "kilogram" || u === "kilograms")
+        return numValue * 1000;
       if (u === "g" || u === "gram" || u === "grams") return numValue;
-      if (u === "lb" || u === "lbs" || u === "pound" || u === "pounds") return numValue * 453.59237;
+      if (u === "lb" || u === "lbs" || u === "pound" || u === "pounds")
+        return numValue * 453.59237;
       return numValue; // default: treat as grams
     };
 
     // Calculate total net weights in grams
     const totalNetGoldWeightGrams = measurements.reduce(
-      (acc: number, m: any) => acc + convertToGrams(m.netGoldWeight, unitOfMeasure),
+      (acc: number, m: any) =>
+        acc + convertToGrams(m.netGoldWeight, unitOfMeasure),
       0
     );
 
     const totalNetSilverWeightGrams = measurements.reduce(
-      (acc: number, m: any) => acc + convertToGrams(m.netSilverWeight, unitOfMeasure),
+      (acc: number, m: any) =>
+        acc + convertToGrams(m.netSilverWeight, unitOfMeasure),
       0
     );
 
     // Convert to ounces
     const totalNetGoldWeightOz = totalNetGoldWeightGrams / GRAMS_PER_TROY_OUNCE;
-    const totalNetSilverWeightOz = totalNetSilverWeightGrams / GRAMS_PER_TROY_OUNCE;
+    const totalNetSilverWeightOz =
+      totalNetSilverWeightGrams / GRAMS_PER_TROY_OUNCE;
 
     // Calculate values
     const totalGoldValue = totalNetGoldWeightOz * commodityPrice;
@@ -480,7 +645,8 @@ function NewLargeScaleJobCardPage() {
     try {
       // Validate required fields
       if (!form.referenceNumber || !form.receivedDate || !form.exporterId) {
-        const errorMessage = "Please fill in all required fields: Reference Number, Received Date, and Exporter.";
+        const errorMessage =
+          "Please fill in all required fields: Reference Number, Received Date, and Exporter.";
         setError(errorMessage);
         toast.error(errorMessage);
         setLoading(false);
@@ -506,7 +672,9 @@ function NewLargeScaleJobCardPage() {
         .map(({ name }) => name);
 
       if (missingFields.length > 0) {
-        const errorMessage = `Please fill in all required fields: ${missingFields.join(", ")}.`;
+        const errorMessage = `Please fill in all required fields: ${missingFields.join(
+          ", "
+        )}.`;
         setError(errorMessage);
         toast.error(errorMessage);
         setLoading(false);
@@ -545,7 +713,10 @@ function NewLargeScaleJobCardPage() {
       // Show preview modal instead of saving
       setShowPreviewModal(true);
     } catch (error) {
-      console.error("Error preparing preview:", error);
+      await logError("Error preparing preview", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       const errorMessage = "An unexpected error occurred. Please try again.";
       setError(errorMessage);
       toast.error(errorMessage);
@@ -561,7 +732,8 @@ function NewLargeScaleJobCardPage() {
     try {
       // Validate that received date is provided (required for pricing lookups)
       if (!form.receivedDate) {
-        const errorMessage = "Received Date is required for pricing calculations. Please select a date.";
+        const errorMessage =
+          "Received Date is required for pricing calculations. Please select a date.";
         setError(errorMessage);
         toast.error(errorMessage);
         setLoading(false);
@@ -578,47 +750,141 @@ function NewLargeScaleJobCardPage() {
 
         try {
           // Fetch gold price for the job card date
-          const jobCardDate = form.receivedDate || new Date().toISOString().split('T')[0];
-          const goldResponse = await fetch(`/api/commodities/XAU/price?date=${jobCardDate}`);
+          const jobCardDate =
+            form.receivedDate || new Date().toISOString().split("T")[0];
+          const goldResponse = await fetch(
+            `/api/commodities/XAU/price?date=${jobCardDate}`
+          );
           if (goldResponse.ok) {
             const goldData = await goldResponse.json();
             if (goldData.available) {
               commodityPrice = goldData.price || 0;
             } else {
-              throw new Error(`Gold price not available for ${jobCardDate}: ${goldData.error}`);
+              throw new Error(
+                `Gold price not available for ${jobCardDate}: ${goldData.error}`
+              );
             }
           } else {
-            throw new Error('Failed to fetch gold price');
+            throw new Error("Failed to fetch gold price");
           }
 
           // Fetch silver price for the job card date
-          const silverResponse = await fetch(`/api/commodities/XAG/price?date=${jobCardDate}`);
+          const silverResponse = await fetch(
+            `/api/commodities/XAG/price?date=${jobCardDate}`
+          );
           if (silverResponse.ok) {
             const silverData = await silverResponse.json();
             if (silverData.available) {
               pricePerOz = silverData.price || 0;
             } else {
-              throw new Error(`Silver price not available for ${jobCardDate}: ${silverData.error}`);
+              throw new Error(
+                `Silver price not available for ${jobCardDate}: ${silverData.error}`
+              );
             }
           } else {
-            throw new Error('Failed to fetch silver price');
+            throw new Error("Failed to fetch silver price");
           }
 
-          // Fetch exchange rate (USD to GHS) for the job card date
-          const exchangeResponse = await fetch(`/api/exchange/usd-ghs/rate?date=${jobCardDate}`);
+          // Fetch exchange rate from weekly prices
+          await logInfo("Fetching weekly exchange rate for job card creation", {
+            jobCardDate,
+            apiEndpoint: `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`,
+          });
+
+          const exchangeResponse = await fetch(
+            `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`
+          );
+          await logInfo("Weekly exchange rate API response received", {
+            status: exchangeResponse.status,
+            statusText: exchangeResponse.statusText,
+          });
+
           if (exchangeResponse.ok) {
             const exchangeData = await exchangeResponse.json();
-            if (exchangeData.available) {
-              exchangeRate = exchangeData.rate || 1;
+            await logInfo("Weekly exchange rate data received", {
+              dataLength: exchangeData.length,
+              firstEntry: exchangeData[0] || null,
+              allEntries: exchangeData.map((entry: any) => ({
+                id: entry.id,
+                price: entry.price,
+                status: entry.status,
+                weekStart: entry.weekStartDate,
+                weekEnd: entry.weekEndDate,
+              })),
+            });
+
+            if (exchangeData.length > 0) {
+              // Use the most recent approved weekly exchange rate
+              const latestRate = exchangeData[0];
+              exchangeRate = latestRate.price || 1;
+              await logInfo(
+                "Exchange rate set successfully from weekly prices",
+                {
+                  exchangeRate,
+                  rateId: latestRate.id,
+                  weekStart: latestRate.weekStartDate,
+                  weekEnd: latestRate.weekEndDate,
+                  status: latestRate.status,
+                }
+              );
             } else {
-              throw new Error(`Exchange rate not available for ${jobCardDate}: ${exchangeData.error}`);
+              await logError(
+                "No approved weekly exchange rates found in response",
+                {
+                  jobCardDate,
+                  responseData: exchangeData,
+                  apiUrl: `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`,
+                }
+              );
+              throw new Error(
+                `No approved weekly exchange rates available. Please go to Setup → Weekly Exchange Rates to add and approve a USD to GHS exchange rate.`
+              );
             }
           } else {
-            throw new Error('Failed to fetch exchange rate');
+            const errorText = await exchangeResponse.text();
+            await logError("Failed to fetch weekly exchange rate - API error", {
+              status: exchangeResponse.status,
+              statusText: exchangeResponse.statusText,
+              errorResponse: errorText,
+              jobCardDate,
+            });
+            throw new Error(
+              `Failed to fetch weekly exchange rate (${exchangeResponse.status}): ${errorText}`
+            );
           }
         } catch (error) {
-          console.error('Pricing data error:', error);
-          const errorMessage = `Cannot save job card: ${error instanceof Error ? error.message : 'Unknown error'}. Note: Commodity prices must be available for the exact selected date, while exchange rates can be from within the same week.`;
+          const errorDetails = {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            name: error instanceof Error ? error.name : "UnknownError",
+          };
+
+          await logError(
+            "Pricing data error during job card creation",
+            errorDetails
+          );
+
+          // Log the specific error for debugging
+          console.error(
+            "Full error details during job card creation:",
+            errorDetails
+          );
+
+          const originalErrorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          let userFriendlyMessage = originalErrorMessage;
+
+          // Provide more specific guidance based on the error
+          if (originalErrorMessage.includes("weekly exchange rate")) {
+            userFriendlyMessage = `${originalErrorMessage} Please check that you have approved weekly exchange rates in Setup → Weekly Exchange Rates.`;
+          } else if (
+            originalErrorMessage.includes("Gold price not available") ||
+            originalErrorMessage.includes("Silver price not available")
+          ) {
+            userFriendlyMessage = `${originalErrorMessage} Please ensure commodity prices are available for the selected date.`;
+          }
+
+          const errorMessage = `Cannot save job card: ${userFriendlyMessage}`;
           setError(errorMessage);
           toast.error(errorMessage);
           setLoading(false);
@@ -687,6 +953,11 @@ function NewLargeScaleJobCardPage() {
 
       if (response.ok) {
         const newJobCard = await response.json();
+        await logInfo("Large scale job card created successfully", {
+          jobCardId: newJobCard.id,
+          exporterId: form.exporterId,
+          commodityCount: newJobCard.commodities?.length || 0,
+        });
         toast.success("Valuation saved successfully!");
         setShowPreviewModal(false);
         router.push(`/job-cards/large-scale/${newJobCard.id}`);
@@ -698,7 +969,10 @@ function NewLargeScaleJobCardPage() {
         setShowPreviewModal(false);
       }
     } catch (error) {
-      console.error("Error creating job card:", error);
+      await logError("Error creating job card", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       const errorMessage = "An unexpected error occurred. Please try again.";
       setError(errorMessage);
       toast.error(errorMessage);
@@ -748,7 +1022,7 @@ function NewLargeScaleJobCardPage() {
           {/* Basic Information */}
           <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+              <h3 className="text-2xl font-medium leading-6 text-gray-900 mb-4">
                 Basic Information
               </h3>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -788,7 +1062,8 @@ function NewLargeScaleJobCardPage() {
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                   <p className="mt-1 text-xs text-gray-500">
-                    Required for pricing calculations. Gold, silver, and exchange rates must be available for this date.
+                    Required for pricing calculations. Gold, silver, and
+                    exchange rates must be available for this date.
                   </p>
                 </div>
 
@@ -1032,13 +1307,13 @@ function NewLargeScaleJobCardPage() {
           {/* Meta Bar - Show when exporter is selected */}
           {form.exporterId && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-blue-900 mb-4">
+              <h3 className="text-2xl font-medium text-blue-900 mb-4">
                 Exporter Information & Market Data
               </h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {/* Exporter Details */}
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-blue-800">
+                  <h4 className="text-2xl font-medium text-blue-800">
                     Exporter Details
                   </h4>
                   {selectedExporter && (
@@ -1068,27 +1343,62 @@ function NewLargeScaleJobCardPage() {
 
                 {/* Market Data */}
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-blue-800">
+                  <h4 className="text-2xl font-medium text-blue-800">
                     Latest Market Data
                   </h4>
                   <div className="text-sm text-blue-700">
                     <p>
                       <strong>Exchange Rate:</strong>{" "}
-                      {exchangeRate || "Loading..."}
+                      <span
+                        className={
+                          exchangeRate && exchangeRate !== "Loading..."
+                            ? "text-green-600"
+                            : "text-gray-500"
+                        }
+                      >
+                        {exchangeRate || "Loading..."}
+                      </span>
                     </p>
                     <p>
-                      <strong>Gold Price:</strong> {goldPrice || "Loading..."}
+                      <strong>Gold Price:</strong>{" "}
+                      <span
+                        className={
+                          goldPrice &&
+                          goldPrice !== "Loading..." &&
+                          goldPrice !== "Not Available"
+                            ? "text-green-600"
+                            : goldPrice === "Not Available"
+                            ? "text-red-500"
+                            : "text-gray-500"
+                        }
+                      >
+                        {goldPrice || "Loading..."}
+                        {goldPrice === "Not Available" && " (Setup Required)"}
+                      </span>
                     </p>
                     <p>
                       <strong>Silver Price:</strong>{" "}
-                      {silverPrice || "Loading..."}
+                      <span
+                        className={
+                          silverPrice &&
+                          silverPrice !== "Loading..." &&
+                          silverPrice !== "Not Available"
+                            ? "text-green-600"
+                            : silverPrice === "Not Available"
+                            ? "text-red-500"
+                            : "text-gray-500"
+                        }
+                      >
+                        {silverPrice || "Loading..."}
+                        {silverPrice === "Not Available" && " (Setup Required)"}
+                      </span>
                     </p>
                   </div>
                 </div>
 
                 {/* Assay Inputs */}
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-blue-800">
+                  <h4 className="text-2xl font-medium text-blue-800">
                     Assay Information
                   </h4>
                   <div>
@@ -1124,7 +1434,7 @@ function NewLargeScaleJobCardPage() {
           {/* Excel Upload Section */}
           <div className="mt-8 bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+              <h3 className="text-2xl font-medium leading-6 text-gray-900 mb-4">
                 Commodities&apos; Purity Processing
               </h3>
               <p className="text-sm text-gray-600 mb-4">
@@ -1507,7 +1817,6 @@ function NewLargeScaleJobCardPage() {
 
                     {/* Preview Content */}
                     <div className="bg-white overflow-hidden border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
-
                       <div className="flex items-center justify-between mb-1 px-8">
                         <div className="p-2">
                           <img
@@ -1918,7 +2227,7 @@ function NewLargeScaleJobCardPage() {
                                       </div>
                                       <div className="sm:col-span-2 lg:col-span-3">
                                         <dt className="text-sm font-medium text-gray-500">
-                                          Total Shipment Value (Gold & Silver) 
+                                          Total Shipment Value (Gold & Silver)
                                         </dt>
                                         <dd className="mt-1 text-sm text-gray-900 font-bold">
                                           $
@@ -1934,8 +2243,8 @@ function NewLargeScaleJobCardPage() {
                                       {exchangeRate && (
                                         <div className="sm:col-span-2 lg:col-span-3">
                                           <dt className="text-sm font-medium text-gray-500">
-                                            Total Shipment Value GHS (Exchange Rate:{" "}
-                                            {exchangeRate})
+                                            Total Shipment Value GHS (Exchange
+                                            Rate: {exchangeRate})
                                           </dt>
                                           <dd className="mt-1 text-sm text-gray-900 font-bold">
                                             GHS{" "}

@@ -14,6 +14,7 @@ import {
   UserCircle2Icon,
   UserCheck2Icon,
   UserStarIcon,
+  Truck,
 } from "lucide-react";
 
 const setupOptions = [
@@ -44,6 +45,13 @@ const setupOptions = [
     icon: <Building className="h-6 w-6" />,
     href: "/setup/exporter-types",
     color: "bg-lime-600",
+  },
+  {
+    label: "Manage Shipment Types",
+    description: "Add and manage shipment types.",
+    icon: <Truck className="h-6 w-6" />,
+    href: "/setup/shipment-types",
+    color: "bg-cyan-600",
   },
   {
     label: "Manage Commodities",

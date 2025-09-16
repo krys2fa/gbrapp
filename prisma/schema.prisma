@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../app/generated/prisma"
@@ -12,23 +9,23 @@ datasource db {
 }
 
 model Commodity {
-  id                 String               @id @default(uuid())
-  name               String               @unique
+  id                 String                       @id @default(uuid())
+  name               String                       @unique
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
   symbol             String
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
   prices             DailyPrice[]
-  weeklyPrices       WeeklyPrice[]
   JobCard            JobCard[]
   largeScaleJobCards LargeScaleJobCardCommodity[]
+  weeklyPrices       WeeklyPrice[]
 }
 
 model Exchange {
   id          String        @id @default(uuid())
   name        String        @unique
-  symbol      String
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  symbol      String
   rates       DailyPrice[]
   weeklyRates WeeklyPrice[]
 }
@@ -36,42 +33,574 @@ model Exchange {
 model DailyPrice {
   id          String         @id @default(uuid())
   type        DailyPriceType
-  commodityId String? // Only for type COMMODITY
-  commodity   Commodity?     @relation(fields: [commodityId], references: [id])
-  exchangeId  String? // Only for type EXCHANGE
-  exchange    Exchange?      @relation(fields: [exchangeId], references: [id])
+  commodityId String?
+  exchangeId  String?
   price       Float
-  date        DateTime       // Date of the price
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  date        DateTime
+  commodity   Commodity?     @relation(fields: [commodityId], references: [id])
+  exchange    Exchange?      @relation(fields: [exchangeId], references: [id])
 }
 
 model WeeklyPrice {
-  id          String          @id @default(uuid())
-  type        WeeklyPriceType
-  commodityId String? // Only for type COMMODITY
-  commodity   Commodity?      @relation(fields: [commodityId], references: [id])
-  exchangeId  String? // Only for type EXCHANGE
-  exchange    Exchange?       @relation(fields: [exchangeId], references: [id])
-  price       Float
-  weekStartDate DateTime      // Start of the week (Monday)
-  weekEndDate   DateTime      // End of the week (Sunday)
-
-  // Approval workflow fields
-  status      ApprovalStatus  @default(PENDING)
-  submittedBy String?         // User ID who submitted the rate
-  submittedByUser User?       @relation("SubmittedRates", fields: [submittedBy], references: [id])
-  approvedBy  String?         // User ID who approved/rejected
-  approvedByUser User?        @relation("ApprovedRates", fields: [approvedBy], references: [id])
-  approvedAt  DateTime?
-  rejectionReason String?
-  notificationSent Boolean    @default(false)
-
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id               String          @id @default(uuid())
+  type             WeeklyPriceType
+  commodityId      String?
+  exchangeId       String?
+  price            Float
+  weekStartDate    DateTime
+  weekEndDate      DateTime
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  approvedAt       DateTime?
+  approvedBy       String?
+  notificationSent Boolean         @default(false)
+  rejectionReason  String?
+  status           ApprovalStatus  @default(PENDING)
+  submittedBy      String?
+  approvedByUser   User?           @relation("ApprovedRates", fields: [approvedBy], references: [id])
+  commodity        Commodity?      @relation(fields: [commodityId], references: [id])
+  exchange         Exchange?       @relation(fields: [exchangeId], references: [id])
+  submittedByUser  User?           @relation("SubmittedRates", fields: [submittedBy], references: [id])
 
   @@unique([type, commodityId, weekStartDate], name: "unique_weekly_commodity_price")
   @@unique([type, exchangeId, weekStartDate], name: "unique_weekly_exchange_rate")
+}
+
+model JobCard {
+  id                  String                   @id @default(uuid())
+  referenceNumber     String                   @unique
+  receivedDate        DateTime
+  exporterId          String
+  customsOfficerId    String?
+  nacobOfficerId      String?
+  securityOfficerId   String?
+  assayOfficerId      String?
+  technicalDirectorId String?
+  status              String                   @default("pending")
+  notes               String?
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  destinationCountry  String?
+  fineness            Float?
+  numberOfBoxes       Int?
+  sourceOfGold        String?                  @default("Ghana")
+  teamLeader          String?
+  totalGrossWeight    Float?
+  totalNetWeight      Float?
+  unitOfMeasure       String?
+  commodityId         String?
+  numberOfOunces      Float?
+  pricePerOunce       Float?
+  valueUsd            Float?
+  valueGhs            Float?
+  editCount           Int                      @default(0)
+  assays              Assay[]
+  fees                Fee?
+  invoices            Invoice?
+  assayOfficer        AssayOfficer?            @relation(fields: [assayOfficerId], references: [id])
+  commodity           Commodity?               @relation(fields: [commodityId], references: [id])
+  customsOfficer      CustomsOfficer?          @relation(fields: [customsOfficerId], references: [id])
+  exporter            Exporter                 @relation(fields: [exporterId], references: [id])
+  nacobOfficer        NACOBOfficer?            @relation(fields: [nacobOfficerId], references: [id])
+  securityOfficer     NationalSecurityOfficer? @relation(fields: [securityOfficerId], references: [id])
+  technicalDirector   TechnicalDirector?       @relation(fields: [technicalDirectorId], references: [id])
+  levies              Levy[]
+  seals               Seal[]
+}
+
+model CustomsOfficer {
+  id                 String              @id @default(uuid())
+  name               String
+  badgeNumber        String              @unique
+  email              String?             @unique
+  phone              String?
+  userId             String?             @unique
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               User?               @relation(fields: [userId], references: [id])
+  jobCards           JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+}
+
+model NACOBOfficer {
+  id                 String              @id @default(uuid())
+  name               String
+  badgeNumber        String              @unique
+  email              String?             @unique
+  phone              String?
+  userId             String?             @unique
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  jobCards           JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+  user               User?               @relation(fields: [userId], references: [id])
+}
+
+model NationalSecurityOfficer {
+  id                 String              @id @default(uuid())
+  name               String
+  badgeNumber        String              @unique
+  email              String?             @unique
+  phone              String?
+  userId             String?             @unique
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  jobCards           JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+  user               User?               @relation(fields: [userId], references: [id])
+}
+
+model Seal {
+  id          String   @id @default(uuid())
+  sealNumber  String   @unique
+  jobCardId   String
+  sealType    SealType
+  appliedDate DateTime @default(now())
+  status      String   @default("active")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  jobCard     JobCard  @relation(fields: [jobCardId], references: [id])
+}
+
+model Invoice {
+  id                  String             @id @default(uuid())
+  invoiceNumber       String             @unique
+  jobCardId           String?            @unique
+  invoiceTypeId       String
+  amount              Float
+  currencyId          String
+  assayUsdValue       Float
+  assayGhsValue       Float
+  rate                Float
+  issueDate           DateTime
+  dueDate             DateTime?
+  status              String             @default("pending")
+  notes               String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  covid               Float?
+  getfund             Float?
+  grandTotal          Float?
+  nhil                Float?
+  rateCharge          Float?
+  subTotal            Float?
+  totalExclusive      Float?
+  totalInclusive      Float?
+  vat                 Float?
+  exchangeRate        Float?
+  largeScaleJobCardId String?            @unique
+  assays              Assay[]
+  currency            Currency           @relation(fields: [currencyId], references: [id])
+  invoiceType         InvoiceType        @relation(fields: [invoiceTypeId], references: [id])
+  jobCard             JobCard?           @relation(fields: [jobCardId], references: [id])
+  largeScaleJobCard   LargeScaleJobCard? @relation(fields: [largeScaleJobCardId], references: [id])
+  levies              Levy[]
+}
+
+model InvoiceType {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  invoices    Invoice[]
+}
+
+model Fee {
+  id                  String             @id @default(uuid())
+  jobCardId           String?            @unique
+  feeType             FeeType
+  amountPaid          Float
+  currencyId          String
+  paymentDate         DateTime?
+  status              String             @default("pending")
+  receiptNumber       String
+  balance             String
+  whtTotal            Float
+  notes               String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  largeScaleJobCardId String?            @unique
+  currency            Currency           @relation(fields: [currencyId], references: [id])
+  jobCard             JobCard?           @relation(fields: [jobCardId], references: [id])
+  largeScaleJobCard   LargeScaleJobCard? @relation(fields: [largeScaleJobCardId], references: [id])
+}
+
+model Assay {
+  id                  String             @id @default(uuid())
+  jobCardId           String
+  invoiceId           String?
+  assayOfficerId      String?
+  technicalDirectorId String?
+  goldContent         Float
+  silverContent       Float?
+  comments            String
+  assayDate           DateTime
+  certificateNumber   String?            @unique
+  remarks             String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  commodityPrice      Float?
+  customsSealNo       String?
+  exporterSignatory   String?
+  fineness            Float?
+  goldbodSealNo       String?
+  goldbodSignatory    String?
+  grossWeight         Float?
+  jbFineness          Float?
+  jbGrossWeight       Float?
+  jbNetWeight         Float?
+  jbPricePerOz        Float?
+  jbTotalGhsValue     Float?
+  jbTotalUsdValue     Float?
+  jbWeightInOz        Float?
+  netWeight           Float?
+  pricePerOz          Float?
+  securitySealNo      String?
+  totalGhsValue       Float?
+  totalUsdValue       Float?
+  weightInOz          Float?
+  exchangeRate        Float?
+  shipmentTypeId      String?
+  assayOfficer        AssayOfficer?      @relation(fields: [assayOfficerId], references: [id])
+  invoice             Invoice?           @relation(fields: [invoiceId], references: [id])
+  jobCard             JobCard            @relation(fields: [jobCardId], references: [id])
+  shipmentType        ShipmentType?      @relation(fields: [shipmentTypeId], references: [id])
+  technicalDirector   TechnicalDirector? @relation(fields: [technicalDirectorId], references: [id])
+  measurements        AssayMeasurement[]
+}
+
+model ShipmentType {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  description      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  assays           Assay[]
+  largeScaleAssays LargeScaleAssay[]
+}
+
+model Exporter {
+  id                         String              @id @default(uuid())
+  name                       String
+  exporterTypeId             String
+  contactPerson              String?
+  email                      String?
+  phone                      String?
+  address                    String?
+  licenseNumber              String?
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
+  tin                        String?
+  authorizedSignatory        String?
+  consigneeAddress           String?
+  consigneeEmail             String?
+  consigneeMobile            String?
+  consigneeTelephone         String?
+  deliveryLocation           String?
+  exporterEmail              String?
+  exporterLicenseNumber      String?
+  exporterTelephone          String?
+  exporterWebsite            String?
+  notifiedPartyAddress       String?
+  notifiedPartyContactPerson String?
+  notifiedPartyEmail         String?
+  notifiedPartyMobile        String?
+  notifiedPartyName          String?
+  notifiedPartyTelephone     String?
+  buyerAddress               String?
+  buyerName                  String?
+  exporterType               ExporterType        @relation(fields: [exporterTypeId], references: [id])
+  jobCards                   JobCard[]
+  largeScaleJobCards         LargeScaleJobCard[]
+}
+
+model ExporterType {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  exporters   Exporter[]
+}
+
+model Currency {
+  id        String    @id @default(uuid())
+  code      String    @unique
+  name      String
+  symbol    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  fees      Fee[]
+  invoices  Invoice[]
+  levies    Levy[]
+  prices    Price[]
+}
+
+model Price {
+  id             String    @id @default(uuid())
+  value          Float
+  priceTypeId    String
+  currencyId     String
+  effectiveDate  DateTime
+  expirationDate DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  currency       Currency  @relation(fields: [currencyId], references: [id])
+  priceType      PriceType @relation(fields: [priceTypeId], references: [id])
+}
+
+model PriceType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  prices      Price[]
+}
+
+model Levy {
+  id               String    @id @default(uuid())
+  name             String
+  code             String    @unique
+  description      String?
+  rate             Float
+  isPercentage     Boolean   @default(true)
+  levyTypeId       String
+  jobCardId        String?
+  invoiceId        String?
+  currencyId       String
+  amount           Float
+  calculatedAmount Float?
+  effectiveDate    DateTime
+  expirationDate   DateTime?
+  status           String    @default("active")
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  currency         Currency  @relation(fields: [currencyId], references: [id])
+  invoice          Invoice?  @relation(fields: [invoiceId], references: [id])
+  jobCard          JobCard?  @relation(fields: [jobCardId], references: [id])
+  levyType         LevyType  @relation(fields: [levyTypeId], references: [id])
+}
+
+model LevyType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  levies      Levy[]
+}
+
+model AssayOfficer {
+  id                 String              @id @default(uuid())
+  name               String
+  badgeNumber        String              @unique
+  email              String?             @unique
+  phone              String?
+  userId             String?             @unique
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  assays             Assay[]
+  user               User?               @relation(fields: [userId], references: [id])
+  jobCards           JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+}
+
+model AssayMeasurement {
+  id          String   @id @default(uuid())
+  assayId     String
+  pieceNumber Int
+  grossWeight Float?
+  waterWeight Float?
+  fineness    Float?
+  netWeight   Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assay       Assay    @relation(fields: [assayId], references: [id])
+}
+
+model TechnicalDirector {
+  id                 String              @id @default(uuid())
+  name               String
+  badgeNumber        String              @unique
+  email              String?             @unique
+  phone              String?
+  userId             String?             @unique
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  assays             Assay[]
+  jobCards           JobCard[]
+  largeScaleJobCards LargeScaleJobCard[]
+  user               User?               @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id                 String                   @id @default(uuid())
+  name               String
+  email              String                   @unique
+  password           String
+  role               Role                     @default(USER)
+  isActive           Boolean                  @default(true)
+  lastLogin          DateTime?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  emailNotifications Boolean                  @default(true)
+  phone              String?
+  smsNotifications   Boolean                  @default(false)
+  assayOfficer       AssayOfficer?
+  auditTrails        AuditTrail[]
+  customsOfficer     CustomsOfficer?
+  nacobOfficer       NACOBOfficer?
+  securityOfficer    NationalSecurityOfficer?
+  technicalDirector  TechnicalDirector?
+  approvedRates      WeeklyPrice[]            @relation("ApprovedRates")
+  submittedRates     WeeklyPrice[]            @relation("SubmittedRates")
+}
+
+model AuditTrail {
+  id         String     @id @default(uuid())
+  userId     String
+  action     ActionType
+  entityType String
+  entityId   String
+  details    String?
+  ipAddress  String?
+  userAgent  String?
+  timestamp  DateTime   @default(now())
+  metadata   String?
+  user       User       @relation(fields: [userId], references: [id])
+}
+
+model LargeScaleJobCard {
+  id                        String                       @id @default(uuid())
+  referenceNumber           String                       @unique
+  receivedDate              DateTime
+  exporterId                String
+  unitOfMeasure             String?
+  status                    String                       @default("pending")
+  notes                     String?
+  destinationCountry        String?
+  sourceOfGold              String?                      @default("Ghana")
+  numberOfBoxes             Int?
+  customsOfficerId          String?
+  assayOfficerId            String?
+  technicalDirectorId       String?
+  nacobOfficerId            String?
+  nationalSecurityOfficerId String?
+  createdAt                 DateTime                     @default(now())
+  updatedAt                 DateTime                     @updatedAt
+  fees                      Fee?
+  invoices                  Invoice?
+  assays                    LargeScaleAssay?
+  assayOfficer              AssayOfficer?                @relation(fields: [assayOfficerId], references: [id])
+  customsOfficer            CustomsOfficer?              @relation(fields: [customsOfficerId], references: [id])
+  exporter                  Exporter                     @relation(fields: [exporterId], references: [id])
+  nacobOfficer              NACOBOfficer?                @relation(fields: [nacobOfficerId], references: [id])
+  nationalSecurityOfficer   NationalSecurityOfficer?     @relation(fields: [nationalSecurityOfficerId], references: [id])
+  technicalDirector         TechnicalDirector?           @relation(fields: [technicalDirectorId], references: [id])
+  commodities               LargeScaleJobCardCommodity[]
+}
+
+model LargeScaleAssay {
+  id                     String                       @id @default(uuid())
+  jobCardId              String                       @unique
+  method                 String
+  pieces                 Int
+  signatory              String?
+  comments               String?
+  shipmentTypeId         String?
+  securitySealNo         String?
+  goldbodSealNo          String?
+  customsSealNo          String?
+  shipmentNumber         String?
+  dateOfAnalysis         DateTime
+  dataSheetDates         DateTime?
+  sampleBottleDates      DateTime?
+  numberOfSamples        Int                          @default(1)
+  numberOfBars           Int                          @default(1)
+  sampleType             String                       @default("capillary")
+  exchangeRate           Float?
+  commodityPrice         Float?
+  pricePerOz             Float?
+  totalNetGoldWeight     Float?
+  totalNetSilverWeight   Float?
+  totalNetGoldWeightOz   Float?
+  totalNetSilverWeightOz Float?
+  totalGoldValue         Float?
+  totalSilverValue       Float?
+  totalCombinedValue     Float?
+  totalValueGhs          Float?
+  createdAt              DateTime                     @default(now())
+  updatedAt              DateTime                     @updatedAt
+  jobCard                LargeScaleJobCard            @relation(fields: [jobCardId], references: [id], onDelete: Cascade)
+  shipmentType           ShipmentType?                @relation(fields: [shipmentTypeId], references: [id])
+  measurements           LargeScaleAssayMeasurement[]
+}
+
+model LargeScaleAssayMeasurement {
+  id              String          @id @default(uuid())
+  assayId         String
+  piece           Int
+  barNumber       String?
+  grossWeight     Float?
+  goldAssay       Float?
+  netGoldWeight   Float?
+  silverAssay     Float?
+  netSilverWeight Float?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  assay           LargeScaleAssay @relation(fields: [assayId], references: [id], onDelete: Cascade)
+
+  @@unique([assayId, piece])
+}
+
+model LargeScaleJobCardCommodity {
+  id             String            @id @default(uuid())
+  jobCardId      String
+  commodityId    String
+  grossWeight    Float?
+  netWeight      Float?
+  fineness       Float?
+  valueGhs       Float?
+  valueUsd       Float?
+  pricePerOunce  Float?
+  numberOfOunces Float?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  commodity      Commodity         @relation(fields: [commodityId], references: [id])
+  jobCard        LargeScaleJobCard @relation(fields: [jobCardId], references: [id], onDelete: Cascade)
+
+  @@unique([jobCardId, commodityId])
+}
+
+model SystemLog {
+  id         String   @id @default(uuid())
+  timestamp  DateTime @default(now())
+  level      String
+  category   String
+  message    String
+  userId     String?
+  userName   String?
+  userRole   String?
+  entityType String?
+  entityId   String?
+  metadata   String?
+  ipAddress  String?
+  userAgent  String?
+  sessionId  String?
+  requestId  String?
+  createdAt  DateTime @default(now())
+
+  @@index([timestamp])
+  @@index([level])
+  @@index([category])
+  @@index([userId])
+  @@index([entityType, entityId])
 }
 
 enum DailyPriceType {
@@ -90,7 +619,6 @@ enum ApprovalStatus {
   REJECTED
 }
 
-// Define enums
 enum Role {
   SUPERADMIN
   ADMIN
@@ -128,600 +656,4 @@ enum IdType {
   GHANA_CARD
   DRIVERS_LICENSE
   TIN
-}
-
-// Define models for GBR App
-
-model JobCard {
-  id                   String                   @id @default(uuid())
-  referenceNumber      String                   @unique
-  receivedDate         DateTime
-  exporterId           String
-  exporter             Exporter                 @relation(fields: [exporterId], references: [id])
-  customsOfficerId     String?
-  customsOfficer       CustomsOfficer?          @relation(fields: [customsOfficerId], references: [id])
-  nacobOfficerId       String?
-  nacobOfficer         NACOBOfficer?            @relation(fields: [nacobOfficerId], references: [id])
-  securityOfficerId    String?
-  securityOfficer      NationalSecurityOfficer? @relation(fields: [securityOfficerId], references: [id])
-  assayOfficerId       String?
-  assayOfficer         AssayOfficer?            @relation(fields: [assayOfficerId], references: [id])
-  technicalDirectorId  String?
-  technicalDirector    TechnicalDirector?       @relation(fields: [technicalDirectorId], references: [id])
-  unitOfMeasure        String?
-  teamLeader           String?
-  totalGrossWeight     Float?
-  destinationCountry   String?
-  fineness             Float? // Percentage
-  sourceOfGold         String?                  @default("Ghana")
-  totalNetWeight       Float?
-  commodityId          String?
-  commodity            Commodity?               @relation(fields: [commodityId], references: [id])
-  numberOfOunces      Float?
-  pricePerOunce       Float?
-  valueUsd            Float?
-  valueGhs            Float?
-  numberOfBoxes        Int?
-  seals                Seal[]
-  assays               Assay[]
-  invoices             Invoice[]
-  fees                 Fee[]
-  levies               Levy[]
-  status               String                   @default("pending")
-  editCount            Int                      @default(0)
-  notes                String?
-  createdAt            DateTime                 @default(now())
-  updatedAt            DateTime                 @updatedAt
-}
-
-model CustomsOfficer {
-  id                String             @id @default(uuid())
-  name              String
-  badgeNumber       String             @unique
-  email             String?            @unique
-  phone             String?
-  jobCards          JobCard[]
-  largeScaleJobCards LargeScaleJobCard[]
-  userId            String?            @unique
-  user              User?              @relation(fields: [userId], references: [id])
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-}
-
-model NACOBOfficer {
-  id                String             @id @default(uuid())
-  name              String
-  badgeNumber       String             @unique
-  email             String?            @unique
-  phone             String?
-  jobCards          JobCard[]
-  largeScaleJobCards LargeScaleJobCard[]
-  userId            String?            @unique
-  user              User?              @relation(fields: [userId], references: [id])
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-}
-
-model NationalSecurityOfficer {
-  id                String             @id @default(uuid())
-  name              String
-  badgeNumber       String             @unique
-  email             String?            @unique
-  phone             String?
-  jobCards          JobCard[]
-  largeScaleJobCards LargeScaleJobCard[]
-  userId            String?            @unique
-  user              User?              @relation(fields: [userId], references: [id])
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-}
-
-model Seal {
-  id          String   @id @default(uuid())
-  sealNumber  String   @unique
-  jobCardId   String
-  jobCard     JobCard  @relation(fields: [jobCardId], references: [id])
-  sealType    SealType
-  appliedDate DateTime @default(now())
-  status      String   @default("active")
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Invoice {
-  id                   String         @id @default(uuid())
-  invoiceNumber        String         @unique
-  jobCardId            String?
-  jobCard              JobCard?       @relation(fields: [jobCardId], references: [id])
-  largeScaleJobCardId  String?
-  largeScaleJobCard    LargeScaleJobCard? @relation(fields: [largeScaleJobCardId], references: [id])
-  invoiceTypeId        String
-  invoiceType          InvoiceType    @relation(fields: [invoiceTypeId], references: [id])
-  amount               Float
-  currencyId           String
-  currency             Currency       @relation(fields: [currencyId], references: [id])
-  assays               Assay[]
-  levies               Levy[]
-  assayUsdValue        Float
-  assayGhsValue        Float
-  rate                 Float
-  issueDate            DateTime
-  dueDate              DateTime?
-  status               String         @default("pending")
-  notes                String?
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
-
-  // Additional calculated fields
-  grandTotal           Float?
-  subTotal             Float?
-  covid                Float?
-  getfund              Float?
-  nhil                 Float?
-  rateCharge           Float?
-  totalInclusive       Float?
-  totalExclusive       Float?
-  vat                  Float?
-  exchangeRate         Float?
-
-  // Ensure only one job card type is set
-  @@unique([jobCardId])
-  @@unique([largeScaleJobCardId])
-}
-
-model InvoiceType {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  description String?
-  invoices    Invoice[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model Fee {
-  id                   String           @id @default(uuid())
-  jobCardId            String?
-  jobCard              JobCard?         @relation(fields: [jobCardId], references: [id])
-  largeScaleJobCardId  String?
-  largeScaleJobCard    LargeScaleJobCard? @relation(fields: [largeScaleJobCardId], references: [id])
-  feeType              FeeType
-  amountPaid           Float
-  currencyId           String
-  currency             Currency         @relation(fields: [currencyId], references: [id])
-  paymentDate          DateTime?
-  status               String           @default("pending")
-  receiptNumber        String
-  balance              String
-  whtTotal             Float
-  notes                String?
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
-
-  // Ensure only one job card type is set
-  @@unique([jobCardId])
-  @@unique([largeScaleJobCardId])
-}
-
-model Assay {
-  id                  String             @id @default(uuid())
-  jobCardId           String
-  jobCard             JobCard            @relation(fields: [jobCardId], references: [id])
-  invoiceId           String?
-  invoice             Invoice?           @relation(fields: [invoiceId], references: [id])
-  assayOfficerId      String?
-  assayOfficer        AssayOfficer?      @relation(fields: [assayOfficerId], references: [id])
-  technicalDirectorId String?
-  technicalDirector   TechnicalDirector? @relation(fields: [technicalDirectorId], references: [id])
-  goldContent         Float
-  silverContent       Float?
-  comments            String
-  assayDate           DateTime
-  certificateNumber   String?            @unique
-  remarks             String?
-  measurements        AssayMeasurement[]
-  
-  // Calculated valuation fields
-  grossWeight         Float?
-  fineness            Float?
-  netWeight           Float?
-  weightInOz          Float?
-  pricePerOz          Float?
-  totalUsdValue       Float?
-  totalGhsValue       Float?
-  commodityPrice      Float?
-  
-  // Job card reference fields
-  jbGrossWeight       Float?
-  jbNetWeight         Float?
-  jbFineness          Float?
-  jbWeightInOz        Float?
-  jbPricePerOz        Float?
-  jbTotalUsdValue     Float?
-  jbTotalGhsValue     Float?
-  
-  // Seal and signatory fields
-  securitySealNo      String?
-  goldbodSealNo       String?
-  customsSealNo       String?
-  exporterSignatory   String?
-  goldbodSignatory    String?
-  
-  // Exchange rate field
-  exchangeRate        Float?
-  
-  // Shipment type field
-  shipmentTypeId      String?
-  shipmentType        ShipmentType?      @relation(fields: [shipmentTypeId], references: [id])
-  
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-}
-
-model ShipmentType {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  assays      Assay[]
-  largeScaleAssays LargeScaleAssay[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Exporter {
-  id                String       @id @default(uuid())
-  name              String
-  tin               String?
-  exporterTypeId    String
-  exporterType      ExporterType @relation(fields: [exporterTypeId], references: [id])
-  contactPerson     String?
-  email             String?
-  phone             String?
-  address           String?
-  licenseNumber     String?
-  authorizedSignatory String?
-
-  // Consignee Information
-  consigneeAddress          String?
-  consigneeTelephone        String?
-  consigneeMobile           String?
-  consigneeEmail            String?
-
-  // Buyer Information
-  buyerName                 String?
-  buyerAddress              String?
-
-  // Exporter Details
-  deliveryLocation          String?
-  exporterTelephone         String?
-  exporterEmail             String?
-  exporterWebsite           String?
-  exporterLicenseNumber     String?
-
-  // Notified Party Information
-  notifiedPartyName         String?
-  notifiedPartyAddress      String?
-  notifiedPartyEmail        String?
-  notifiedPartyContactPerson String?
-  notifiedPartyTelephone    String?
-  notifiedPartyMobile       String?
-
-  jobCards          JobCard[]
-  largeScaleJobCards LargeScaleJobCard[]
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-}
-
-model ExporterType {
-  id          String     @id @default(uuid())
-  name        String     @unique
-  description String?
-  exporters   Exporter[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-}
-
-model Currency {
-  id        String    @id @default(uuid())
-  code      String    @unique
-  name      String
-  symbol    String
-  invoices  Invoice[]
-  fees      Fee[]
-  prices    Price[]
-  levies    Levy[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-model Price {
-  id             String    @id @default(uuid())
-  value          Float
-  priceTypeId    String
-  priceType      PriceType @relation(fields: [priceTypeId], references: [id])
-  currencyId     String
-  currency       Currency  @relation(fields: [currencyId], references: [id])
-  effectiveDate  DateTime
-  expirationDate DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-}
-
-model PriceType {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  prices      Price[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Levy {
-  id               String    @id @default(uuid())
-  name             String
-  code             String    @unique
-  description      String?
-  rate             Float
-  isPercentage     Boolean   @default(true)
-  levyTypeId       String
-  levyType         LevyType  @relation(fields: [levyTypeId], references: [id])
-  jobCardId        String?
-  jobCard          JobCard?  @relation(fields: [jobCardId], references: [id])
-  invoiceId        String?
-  invoice          Invoice?  @relation(fields: [invoiceId], references: [id])
-  currencyId       String
-  currency         Currency  @relation(fields: [currencyId], references: [id])
-  amount           Float
-  calculatedAmount Float?
-  effectiveDate    DateTime
-  expirationDate   DateTime?
-  status           String    @default("active")
-  notes            String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-}
-
-model LevyType {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  levies      Levy[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model AssayOfficer {
-  id                String             @id @default(uuid())
-  name              String
-  badgeNumber       String             @unique
-  email             String?            @unique
-  phone             String?
-  jobCards          JobCard[]
-  largeScaleJobCards LargeScaleJobCard[]
-  assays            Assay[]
-  userId            String?            @unique
-  user              User?              @relation(fields: [userId], references: [id])
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-}
-
-model AssayMeasurement {
-  id          String   @id @default(uuid())
-  assayId     String
-  assay       Assay    @relation(fields: [assayId], references: [id])
-  pieceNumber Int
-  grossWeight Float?
-  waterWeight Float?
-  fineness    Float?
-  netWeight   Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model TechnicalDirector {
-  id                String             @id @default(uuid())
-  name              String
-  badgeNumber       String             @unique
-  email             String?            @unique
-  phone             String?
-  jobCards          JobCard[]
-  largeScaleJobCards LargeScaleJobCard[]
-  assays            Assay[]
-  userId            String?            @unique
-  user              User?              @relation(fields: [userId], references: [id])
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-}
-
-model User {
-  id                String                   @id @default(uuid())
-  name              String
-  email             String                   @unique
-  password          String
-  role              Role                     @default(USER)
-  phone             String?                  // For SMS notifications
-  emailNotifications Boolean                 @default(true)
-  smsNotifications  Boolean                  @default(false)
-  customsOfficer    CustomsOfficer?
-  nacobOfficer      NACOBOfficer?
-  securityOfficer   NationalSecurityOfficer?
-  assayOfficer      AssayOfficer?
-  technicalDirector TechnicalDirector?
-  auditTrails       AuditTrail[]
-
-  // Exchange rate approval relations
-  submittedRates    WeeklyPrice[]            @relation("SubmittedRates")
-  approvedRates     WeeklyPrice[]            @relation("ApprovedRates")
-
-  isActive          Boolean                  @default(true)
-  lastLogin         DateTime?
-  createdAt         DateTime                 @default(now())
-  updatedAt         DateTime                 @updatedAt
-}
-
-model AuditTrail {
-  id         String     @id @default(uuid())
-  userId     String
-  user       User       @relation(fields: [userId], references: [id])
-  action     ActionType
-  entityType String // The type of entity being affected (JobCard, Assay, etc.)
-  entityId   String // The ID of the entity being affected
-  details    String? // JSON or text description of what changed
-  ipAddress  String?
-  userAgent  String?
-  timestamp  DateTime   @default(now())
-  metadata   String? // Additional JSON metadata if needed
-}
-
-model LargeScaleJobCard {
-  id                        String                   @id @default(uuid())
-  referenceNumber           String                   @unique
-  receivedDate              DateTime
-  exporterId                String
-  exporter                  Exporter                 @relation(fields: [exporterId], references: [id])
-  unitOfMeasure             String?
-  status                    String                   @default("pending")
-  notes                     String?
-
-  // Location Information
-  destinationCountry        String?
-  sourceOfGold              String?                  @default("Ghana")
-  numberOfBoxes             Int?
-
-  // Officer Assignments
-  customsOfficerId          String?
-  customsOfficer            CustomsOfficer?          @relation(fields: [customsOfficerId], references: [id])
-  assayOfficerId            String?
-  assayOfficer              AssayOfficer?            @relation(fields: [assayOfficerId], references: [id])
-  technicalDirectorId       String?
-  technicalDirector         TechnicalDirector?       @relation(fields: [technicalDirectorId], references: [id])
-  nacobOfficerId            String?
-  nacobOfficer              NACOBOfficer?            @relation(fields: [nacobOfficerId], references: [id])
-  nationalSecurityOfficerId String?
-  nationalSecurityOfficer   NationalSecurityOfficer? @relation(fields: [nationalSecurityOfficerId], references: [id])
-
-  // Relations
-  commodities               LargeScaleJobCardCommodity[]
-  assays                    LargeScaleAssay[]
-  invoices                  Invoice[]
-  fees                      Fee[]
-  createdAt                 DateTime                 @default(now())
-  updatedAt                 DateTime                 @updatedAt
-}
-
-model LargeScaleAssay {
-  id                String             @id @default(uuid())
-  jobCardId         String
-  jobCard           LargeScaleJobCard  @relation(fields: [jobCardId], references: [id], onDelete: Cascade)
-
-  // Assay Basic Information
-  method            String             // X_RAY, WATER_DENSITY
-  pieces            Int
-  signatory         String?
-  comments          String?
-
-  // Shipment Information
-  shipmentTypeId    String?
-  shipmentType      ShipmentType?      @relation(fields: [shipmentTypeId], references: [id])
-  securitySealNo    String?
-  goldbodSealNo     String?
-  customsSealNo     String?
-  shipmentNumber    String?
-
-  // Analysis Details
-  dateOfAnalysis    DateTime
-  dataSheetDates    DateTime?
-  sampleBottleDates DateTime?
-  numberOfSamples   Int                @default(1)
-  numberOfBars      Int                @default(1)
-  sampleType        String             @default("capillary")
-
-  // Pricing Information (at time of assay)
-  exchangeRate      Float?
-  commodityPrice    Float?
-  pricePerOz        Float?
-
-  // Summary Calculations
-  totalNetGoldWeight    Float?
-  totalNetSilverWeight  Float?
-  totalNetGoldWeightOz  Float?
-  totalNetSilverWeightOz Float?
-  totalGoldValue        Float?
-  totalSilverValue      Float?
-  totalCombinedValue    Float?
-  totalValueGhs         Float?
-
-  // Relations
-  measurements      LargeScaleAssayMeasurement[]
-
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-
-  @@unique([jobCardId]) // One assay per job card
-}
-
-model LargeScaleAssayMeasurement {
-  id                String             @id @default(uuid())
-  assayId           String
-  assay             LargeScaleAssay    @relation(fields: [assayId], references: [id], onDelete: Cascade)
-
-  // Piece Information
-  piece             Int                // Piece number (1, 2, 3, etc.)
-
-  // Measurement Data
-  barNumber         String?
-  grossWeight       Float?
-  goldAssay         Float?             // Percentage
-  netGoldWeight     Float?
-  silverAssay       Float?             // Percentage
-  netSilverWeight   Float?
-
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-
-  @@unique([assayId, piece])
-}
-
-model LargeScaleJobCardCommodity {
-  id                String             @id @default(uuid())
-  jobCardId         String
-  jobCard           LargeScaleJobCard  @relation(fields: [jobCardId], references: [id], onDelete: Cascade)
-  commodityId       String
-  commodity         Commodity          @relation(fields: [commodityId], references: [id])
-  grossWeight       Float?
-  netWeight         Float?
-  fineness          Float? // Percentage
-  valueGhs          Float?
-  valueUsd          Float?
-  pricePerOunce     Float?
-  numberOfOunces    Float?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-
-  @@unique([jobCardId, commodityId])
-}
-
-model SystemLog {
-  id          String   @id @default(uuid())
-  timestamp   DateTime @default(now())
-  level       String   // DEBUG, INFO, WARN, ERROR, CRITICAL
-  category    String   // SYSTEM, AUTH, SMS, EMAIL, etc.
-  message     String
-  userId      String?
-  userName    String?
-  userRole    String?
-  entityType  String?  // Type of entity being logged (User, JobCard, etc.)
-  entityId    String?  // ID of the entity
-  metadata    String?  // JSON string for additional data
-  ipAddress   String?
-  userAgent   String?
-  sessionId   String?
-  requestId   String?
-  createdAt   DateTime @default(now())
-
-  @@index([timestamp])
-  @@index([level])
-  @@index([category])
-  @@index([userId])
-  @@index([entityType, entityId])
 }
