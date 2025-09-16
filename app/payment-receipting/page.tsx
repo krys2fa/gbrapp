@@ -587,7 +587,7 @@ function PayModal({
             className="border rounded px-2 py-1"
           />
 
-          <label className="text-sm text-gray-600">Balance</label>
+          {/* <label className="text-sm text-gray-600">Balance</label>
           <input
             type="text"
             readOnly
@@ -597,7 +597,7 @@ function PayModal({
               return (inv - paid).toLocaleString();
             })()}
             className="border rounded px-2 py-1 bg-gray-50"
-          />
+          /> */}
 
           <label className="text-sm text-gray-600">Payment Type</label>
           <select

@@ -2,15 +2,12 @@
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
 import { formatDate } from "@/app/lib/utils";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import toast from "react-hot-toast";
-import countryList from "react-select-country-list";
-import {
-  DocumentTextIcon,
-} from "@heroicons/react/24/outline";
+import { DocumentTextIcon } from "@heroicons/react/24/outline";
 
 interface LargeScaleJobCard {
   id: string;
@@ -138,8 +135,6 @@ function LargeScaleJobCardDetailPage() {
   const [error, setError] = useState("");
   const [generatingInvoice, setGeneratingInvoice] = useState(false);
   const id = (params?.id as string) || "";
-
-  const countryOptions = useMemo(() => countryList().getData(), []);
 
   useEffect(() => {
     const fetchJobCard = async () => {
@@ -375,12 +370,7 @@ function LargeScaleJobCardDetailPage() {
                     Destination Country
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {jobCard.destinationCountry
-                      ? countryOptions.find(
-                          (option: { value: string; label: string }) =>
-                            option.value === jobCard.destinationCountry
-                        )?.label || jobCard.destinationCountry
-                      : "Not specified"}
+                    {jobCard.destinationCountry || "Not specified"}
                   </dd>
                 </div>
                 <div>
@@ -412,7 +402,6 @@ function LargeScaleJobCardDetailPage() {
                       Assay Results
                     </Link>
                   )}
-
                 </div>
               </div>
               <div className="bg-white shadow overflow-hidden sm:rounded-md">

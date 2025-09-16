@@ -1121,12 +1121,12 @@ function NewLargeScaleJobCardPage() {
                     options={countryOptions}
                     value={countryOptions.find(
                       (option: { value: string; label: string }) =>
-                        option.value === form.destinationCountry
+                        option.label === form.destinationCountry
                     )}
                     onChange={(selectedOption) =>
                       setForm((prev) => ({
                         ...prev,
-                        destinationCountry: selectedOption?.value || "",
+                        destinationCountry: selectedOption?.label || "",
                       }))
                     }
                     placeholder="Select destination country"
