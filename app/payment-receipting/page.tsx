@@ -408,7 +408,11 @@ function PaymentList() {
                     {/* <Link
                       href={
                         d.whtInvoiceId
-                          ? `/job-cards/${d.id}/invoices/${d.whtInvoiceId}`
+                          ? d.isLargeScale
+                            ? `/job-cards/large-scale/${d.id}/invoices/${d.whtInvoiceId}`
+                            : `/job-cards/${d.id}/invoices/${d.whtInvoiceId}`
+                          : d.isLargeScale
+                          ? `/job-cards/large-scale/${d.id}`
                           : `/job-cards/${d.id}`
                       }
                       className={`inline-flex items-center px-3 py-1 text-xs rounded ${
@@ -419,12 +423,14 @@ function PaymentList() {
                     >
                       <FileText className="h-4 w-4 mr-1" /> WHT Invoice
                     </Link> */}
-                    <button
-                      onClick={() => openPayModal(d.id, "assay")}
-                      className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700"
-                    >
-                      <CreditCard className="h-4 w-4 mr-1" /> Pay Assay
-                    </button>
+                    {d.assayInvoice?.status !== "paid" && (
+                      <button
+                        onClick={() => openPayModal(d.id, "assay")}
+                        className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700"
+                      >
+                        <CreditCard className="h-4 w-4 mr-1" /> Pay Assay
+                      </button>
+                    )}
                     {/* <button
                       onClick={() => openPayModal(d.id, "wht")}
                       className="inline-flex items-center px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700"
@@ -539,20 +545,26 @@ function PayModal({
   const [receiptNumber, setReceiptNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentType, setPaymentType] = useState<string>("cash");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    const payload = {
-      ...(isLargeScale ? { largeScaleJobCardId: jobCardId } : { jobCardId }),
-      feeType: type === "assay" ? "ASSAY_FEE" : "WHT_FEE",
-      amount: Number(amount),
-      currencyId,
-      paymentDate: new Date().toISOString(),
-      receiptNumber,
-      notes,
-      paymentType,
-    };
-    console.log("PayModal payload:", payload, "isLargeScale:", isLargeScale);
-    await onSubmit(payload);
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        ...(isLargeScale ? { largeScaleJobCardId: jobCardId } : { jobCardId }),
+        feeType: type === "assay" ? "ASSAY_FEE" : "WHT_FEE",
+        amount: Number(amount),
+        currencyId,
+        paymentDate: new Date().toISOString(),
+        receiptNumber,
+        notes,
+        paymentType,
+      };
+      console.log("PayModal payload:", payload, "isLargeScale:", isLargeScale);
+      await onSubmit(payload);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -620,14 +632,22 @@ function PayModal({
           />
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <button onClick={onClose} className="px-3 py-1 border rounded">
+          <button
+            onClick={onClose}
+            className="px-3 py-1 border rounded"
+            disabled={isSubmitting}
+          >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-3 py-1 bg-indigo-600 text-white rounded"
+            disabled={isSubmitting}
+            className="px-3 py-1 bg-indigo-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Submit Payment
+            {isSubmitting && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            )}
+            {isSubmitting ? "Processing..." : "Submit Payment"}
           </button>
         </div>
       </div>
