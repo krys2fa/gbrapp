@@ -12,6 +12,7 @@ import {
   Eye,
   EyeOff,
   Loader,
+  Loader2,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -218,7 +219,7 @@ function SettingsPage() {
         <div className="max-w-4xl mx-auto p-6">
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+              <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mx-auto mb-4" />
               <p className="text-gray-600">Loading your profile...</p>
             </div>
           </div>

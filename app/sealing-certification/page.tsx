@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowPathIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { Header } from "../components/layout/header";
-import { Award } from "lucide-react";
+import { Award, Loader2 } from "lucide-react";
 import Select from "react-select";
 
 function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
@@ -57,8 +57,8 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
     <div className="bg-white shadow overflow-hidden sm:rounded-md">
       {loading ? (
         <div className="flex justify-center items-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          {/* <span className="ml-2 text-gray-500">Loading...</span> */}
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mr-2" />
+          <span className="text-gray-500">Loading sealing data...</span>
         </div>
       ) : jobCards.length === 0 ? (
         <div className="text-center py-10">

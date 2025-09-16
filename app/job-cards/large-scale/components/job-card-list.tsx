@@ -8,6 +8,7 @@ import {
   PencilSquareIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
+import { Loader2 } from "lucide-react";
 import { formatDate, formatCurrency } from "@/app/lib/utils";
 
 interface LargeScaleJobCard {
@@ -164,7 +165,8 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mr-2" />
+        <span className="text-gray-500">Loading large scale job cards...</span>
       </div>
     );
   }

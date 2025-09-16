@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowPathIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { Header } from "@/app/components/layout/header";
-import { FileText } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
 import { formatDate } from "@/app/lib/utils";
 
 function ValuationList() {
@@ -116,8 +116,8 @@ function ValuationList() {
     <div className="bg-white shadow overflow-hidden sm:rounded-md">
       {loading ? (
         <div className="flex justify-center items-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <span className="ml-2 text-gray-500">Loading valuations...</span>
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mr-2" />
+          <span className="text-gray-500">Loading valuations...</span>
         </div>
       ) : jobCards.length === 0 ? (
         <div className="text-center py-10">

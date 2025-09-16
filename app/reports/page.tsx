@@ -33,7 +33,7 @@ export default async function ReportsPage(props: any) {
   // Fetch both regular and large scale job cards within the selected period
   let jobCards: any[] = [];
   let largeScaleJobCards: any[] = [];
-  
+
   try {
     // Fetch regular job cards
     const regularJobCards = await prisma.jobCard.findMany({
@@ -83,12 +83,12 @@ export default async function ReportsPage(props: any) {
             totalSilverValue: true,
             totalCombinedValue: true,
             totalValueGhs: true,
-            measurements: { 
-              select: { 
-                id: true, 
-                netGoldWeight: true, 
-                netSilverWeight: true 
-              } 
+            measurements: {
+              select: {
+                id: true,
+                netGoldWeight: true,
+                netSilverWeight: true,
+              },
             },
           },
         },
@@ -122,7 +122,7 @@ export default async function ReportsPage(props: any) {
       // Large scale job card calculations
       netGoldGrams = assay?.totalNetGoldWeight || 0; // Already in grams
       netSilverGrams = assay?.totalNetSilverWeight || 0; // Already in grams
-      
+
       // If no stored weights, calculate from measurements
       if (!netGoldGrams || netGoldGrams === 0) {
         netGoldGrams = (jc.assays || []).reduce((acc: number, a: any) => {
@@ -144,9 +144,13 @@ export default async function ReportsPage(props: any) {
         }, 0);
       }
 
-      ounces = assay?.totalNetGoldWeightOz || netGoldGrams / GRAMS_PER_TROY_OUNCE;
+      ounces =
+        assay?.totalNetGoldWeightOz || netGoldGrams / GRAMS_PER_TROY_OUNCE;
       pricePerOunce = assay?.pricePerOz || commodityPrice;
-      estimatedValue = assay?.totalCombinedValue || assay?.totalGoldValue || ounces * pricePerOunce;
+      estimatedValue =
+        assay?.totalCombinedValue ||
+        assay?.totalGoldValue ||
+        ounces * pricePerOunce;
     } else {
       // Regular job card calculations
       const storedNet = assay?.jbNetWeight || Number(jc.totalNetWeight) || 0;
@@ -180,25 +184,27 @@ export default async function ReportsPage(props: any) {
       netSilverGrams,
       estimatedValue,
       isLargeScale,
-      storedValues: isLargeScale ? {
-        // Large scale stored values
-        grossWeight: null, // Not available in large scale
-        netWeight: assay?.totalNetGoldWeight,
-        fineness: null, // Not available in large scale
-        weightInOz: assay?.totalNetGoldWeightOz,
-        pricePerOz: assay?.pricePerOz,
-        totalUsdValue: assay?.totalCombinedValue || assay?.totalGoldValue,
-        totalGhsValue: assay?.totalValueGhs,
-      } : {
-        // Regular job card stored values
-        grossWeight: assay?.jbGrossWeight,
-        netWeight: assay?.jbNetWeight,
-        fineness: assay?.jbFineness,
-        weightInOz: assay?.jbWeightInOz,
-        pricePerOz: assay?.jbPricePerOz,
-        totalUsdValue: assay?.jbTotalUsdValue,
-        totalGhsValue: assay?.jbTotalGhsValue,
-      },
+      storedValues: isLargeScale
+        ? {
+            // Large scale stored values
+            grossWeight: null, // Not available in large scale
+            netWeight: assay?.totalNetGoldWeight,
+            fineness: null, // Not available in large scale
+            weightInOz: assay?.totalNetGoldWeightOz,
+            pricePerOz: assay?.pricePerOz,
+            totalUsdValue: assay?.totalCombinedValue || assay?.totalGoldValue,
+            totalGhsValue: assay?.totalValueGhs,
+          }
+        : {
+            // Regular job card stored values
+            grossWeight: assay?.jbGrossWeight,
+            netWeight: assay?.jbNetWeight,
+            fineness: assay?.jbFineness,
+            weightInOz: assay?.jbWeightInOz,
+            pricePerOz: assay?.jbPricePerOz,
+            totalUsdValue: assay?.jbTotalUsdValue,
+            totalGhsValue: assay?.jbTotalGhsValue,
+          },
     };
   });
 

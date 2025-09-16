@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Receipt, CreditCard, FileText } from "lucide-react";
+import { TableLoadingSpinner } from "@/app/components/ui/loading-spinner";
 import { toast } from "react-hot-toast";
 
 // temporary dummy data until backend wiring is available
@@ -350,62 +351,78 @@ function PaymentList() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {items.map((d) => (
-              <tr key={d.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                  <Link
-                    href={
-                      d.assayInvoiceId
-                        ? d.isLargeScale
-                          ? `/job-cards/large-scale/${d.id}/invoices/${d.assayInvoiceId}`
-                          : `/job-cards/${d.id}/invoices/${d.assayInvoiceId}`
-                        : d.whtInvoiceId
-                        ? d.isLargeScale
-                          ? `/job-cards/large-scale/${d.id}/invoices/${d.whtInvoiceId}`
-                          : `/job-cards/${d.id}/invoices/${d.whtInvoiceId}`
-                        : d.isLargeScale
-                        ? `/job-cards/large-scale/${d.id}`
-                        : `/job-cards/${d.id}`
-                    }
-                    className="hover:underline"
-                  >
-                    {d.reference}
-                  </Link>
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="text-center">
+                  <TableLoadingSpinner message="Loading payment data..." />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {d.exporter || "-"}
+              </tr>
+            ) : items.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-6 py-12 text-center text-gray-500"
+                >
+                  No payment records found.
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div className="flex flex-col">
-                    <span>Assay: {d.assayInvoiceNumber || "-"}</span>
-                    <span>WHT: {d.whtInvoiceNumber || "-"}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {d.receipt || "-"}
-                </td>
-                {/* payment date column removed per request */}
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex gap-2 justify-end">
+              </tr>
+            ) : (
+              items.map((d) => (
+                <tr key={d.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
                     <Link
                       href={
                         d.assayInvoiceId
                           ? d.isLargeScale
                             ? `/job-cards/large-scale/${d.id}/invoices/${d.assayInvoiceId}`
                             : `/job-cards/${d.id}/invoices/${d.assayInvoiceId}`
+                          : d.whtInvoiceId
+                          ? d.isLargeScale
+                            ? `/job-cards/large-scale/${d.id}/invoices/${d.whtInvoiceId}`
+                            : `/job-cards/${d.id}/invoices/${d.whtInvoiceId}`
                           : d.isLargeScale
                           ? `/job-cards/large-scale/${d.id}`
                           : `/job-cards/${d.id}`
                       }
-                      className={`inline-flex items-center px-3 py-1 text-xs rounded ${
-                        d.assayInvoiceId
-                          ? "bg-blue-600 text-white hover:bg-blue-700"
-                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      }`}
+                      className="hover:underline"
                     >
-                      <FileText className="h-4 w-4 mr-1" /> Assay Invoice
+                      {d.reference}
                     </Link>
-                    {/* <Link
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {d.exporter || "-"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex flex-col">
+                      <span>Assay: {d.assayInvoiceNumber || "-"}</span>
+                      <span>WHT: {d.whtInvoiceNumber || "-"}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {d.receipt || "-"}
+                  </td>
+                  {/* payment date column removed per request */}
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex gap-2 justify-end">
+                      <Link
+                        href={
+                          d.assayInvoiceId
+                            ? d.isLargeScale
+                              ? `/job-cards/large-scale/${d.id}/invoices/${d.assayInvoiceId}`
+                              : `/job-cards/${d.id}/invoices/${d.assayInvoiceId}`
+                            : d.isLargeScale
+                            ? `/job-cards/large-scale/${d.id}`
+                            : `/job-cards/${d.id}`
+                        }
+                        className={`inline-flex items-center px-3 py-1 text-xs rounded ${
+                          d.assayInvoiceId
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
+                            : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                        }`}
+                      >
+                        <FileText className="h-4 w-4 mr-1" /> Assay Invoice
+                      </Link>
+                      {/* <Link
                       href={
                         d.whtInvoiceId
                           ? d.isLargeScale
@@ -423,24 +440,25 @@ function PaymentList() {
                     >
                       <FileText className="h-4 w-4 mr-1" /> WHT Invoice
                     </Link> */}
-                    {d.assayInvoice?.status !== "paid" && (
-                      <button
-                        onClick={() => openPayModal(d.id, "assay")}
-                        className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700"
-                      >
-                        <CreditCard className="h-4 w-4 mr-1" /> Pay Assay
-                      </button>
-                    )}
-                    {/* <button
+                      {d.assayInvoice?.status !== "paid" && (
+                        <button
+                          onClick={() => openPayModal(d.id, "assay")}
+                          className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700"
+                        >
+                          <CreditCard className="h-4 w-4 mr-1" /> Pay Assay
+                        </button>
+                      )}
+                      {/* <button
                       onClick={() => openPayModal(d.id, "wht")}
                       className="inline-flex items-center px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700"
                     >
                       <Receipt className="h-4 w-4 mr-1" /> Pay WHT
                     </button> */}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -24,6 +24,7 @@ import {
   Repeat,
   TrendingUp,
   TrendingDown,
+  Loader2,
 } from "lucide-react";
 import { withClientAuth } from "@/app/lib/with-client-auth";
 import { useAuth } from "@/app/context/auth-context";
@@ -183,7 +184,7 @@ function DashboardPage() {
         {isLoading && !dashboardData && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+              <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mx-auto mb-2" />
               <p className="text-gray-600 dark:text-gray-400">
                 Loading dashboard data...
               </p>
