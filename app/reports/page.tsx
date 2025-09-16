@@ -30,10 +30,13 @@ export default async function ReportsPage(props: any) {
   });
   const commodityPrice = dailyPrice?.price || 0; // assumed per troy ounce
 
-  // Fetch job cards within the selected period with only the fields needed for reports
+  // Fetch both regular and large scale job cards within the selected period
   let jobCards: any[] = [];
+  let largeScaleJobCards: any[] = [];
+  
   try {
-    jobCards = await prisma.jobCard.findMany({
+    // Fetch regular job cards
+    const regularJobCards = await prisma.jobCard.findMany({
       where: { createdAt: { gte: sinceDate } },
       orderBy: { createdAt: "desc" },
       take: 1000,
@@ -58,41 +61,116 @@ export default async function ReportsPage(props: any) {
         },
       },
     });
+
+    // Fetch large scale job cards
+    largeScaleJobCards = await prisma.largeScaleJobCard.findMany({
+      where: { createdAt: { gte: sinceDate } },
+      orderBy: { createdAt: "desc" },
+      take: 1000,
+      select: {
+        id: true,
+        createdAt: true,
+        exporter: { select: { id: true, name: true } },
+        assays: {
+          select: {
+            id: true,
+            totalNetGoldWeight: true,
+            totalNetSilverWeight: true,
+            totalNetGoldWeightOz: true,
+            totalNetSilverWeightOz: true,
+            pricePerOz: true,
+            totalGoldValue: true,
+            totalSilverValue: true,
+            totalCombinedValue: true,
+            totalValueGhs: true,
+            measurements: { 
+              select: { 
+                id: true, 
+                netGoldWeight: true, 
+                netSilverWeight: true 
+              } 
+            },
+          },
+        },
+      },
+    });
+
+    // Combine both types of job cards
+    jobCards = [...regularJobCards, ...largeScaleJobCards];
   } catch (e) {
     // Defensive: log and continue with empty jobCards so the Reports page doesn't crash
     // Common cause: production DB schema is older and missing recently added columns
     console.error("Failed to load job cards for reports page:", e);
     jobCards = [];
+    largeScaleJobCards = [];
   }
 
   let rows: any[] = [];
 
   const computed = jobCards.map((jc: any) => {
-    // Use stored assay values if available, otherwise fall back to job card values
+    // Determine if this is a large scale job card (they don't have totalNetWeight)
+    const isLargeScale = !jc.totalNetWeight && jc.assays?.length > 0;
     const assay = jc.assays && jc.assays.length > 0 ? jc.assays[0] : null;
 
-    const storedNet = assay?.jbNetWeight || Number(jc.totalNetWeight) || 0; // grams
-    let netGoldGrams = storedNet;
+    let netGoldGrams = 0;
+    let netSilverGrams = 0;
+    let ounces = 0;
+    let pricePerOunce = commodityPrice;
+    let estimatedValue = 0;
 
-    if (!storedNet || storedNet === 0) {
-      netGoldGrams = (jc.assays || []).reduce((acc: number, a: any) => {
-        const s = (a.measurements || []).reduce(
-          (mAcc: number, m: any) => mAcc + (Number(m.netWeight) || 0),
-          0
-        );
-        return acc + s;
-      }, 0);
+    if (isLargeScale) {
+      // Large scale job card calculations
+      netGoldGrams = assay?.totalNetGoldWeight || 0; // Already in grams
+      netSilverGrams = assay?.totalNetSilverWeight || 0; // Already in grams
+      
+      // If no stored weights, calculate from measurements
+      if (!netGoldGrams || netGoldGrams === 0) {
+        netGoldGrams = (jc.assays || []).reduce((acc: number, a: any) => {
+          const s = (a.measurements || []).reduce(
+            (mAcc: number, m: any) => mAcc + (Number(m.netGoldWeight) || 0),
+            0
+          );
+          return acc + s;
+        }, 0);
+      }
+
+      if (!netSilverGrams || netSilverGrams === 0) {
+        netSilverGrams = (jc.assays || []).reduce((acc: number, a: any) => {
+          const s = (a.measurements || []).reduce(
+            (mAcc: number, m: any) => mAcc + (Number(m.netSilverWeight) || 0),
+            0
+          );
+          return acc + s;
+        }, 0);
+      }
+
+      ounces = assay?.totalNetGoldWeightOz || netGoldGrams / GRAMS_PER_TROY_OUNCE;
+      pricePerOunce = assay?.pricePerOz || commodityPrice;
+      estimatedValue = assay?.totalCombinedValue || assay?.totalGoldValue || ounces * pricePerOunce;
+    } else {
+      // Regular job card calculations
+      const storedNet = assay?.jbNetWeight || Number(jc.totalNetWeight) || 0;
+      netGoldGrams = storedNet;
+
+      if (!storedNet || storedNet === 0) {
+        netGoldGrams = (jc.assays || []).reduce((acc: number, a: any) => {
+          const s = (a.measurements || []).reduce(
+            (mAcc: number, m: any) => mAcc + (Number(m.netWeight) || 0),
+            0
+          );
+          return acc + s;
+        }, 0);
+      }
+
+      netSilverGrams = (jc.assays || []).reduce(
+        (acc: number, a: any) => acc + (Number(a.silverContent) || 0),
+        0
+      );
+
+      ounces = assay?.jbWeightInOz || netGoldGrams / GRAMS_PER_TROY_OUNCE;
+      pricePerOunce = assay?.jbPricePerOz || commodityPrice;
+      estimatedValue = assay?.jbTotalUsdValue || ounces * pricePerOunce;
     }
-
-    const netSilverGrams = (jc.assays || []).reduce(
-      (acc: number, a: any) => acc + (Number(a.silverContent) || 0),
-      0
-    );
-
-    // Use stored assay values for calculations
-    const ounces = assay?.jbWeightInOz || netGoldGrams / GRAMS_PER_TROY_OUNCE;
-    const pricePerOunce = assay?.jbPricePerOz || commodityPrice;
-    const estimatedValue = assay?.jbTotalUsdValue || ounces * pricePerOunce;
 
     return {
       id: jc.id,
@@ -101,7 +179,18 @@ export default async function ReportsPage(props: any) {
       netGoldGrams,
       netSilverGrams,
       estimatedValue,
-      storedValues: {
+      isLargeScale,
+      storedValues: isLargeScale ? {
+        // Large scale stored values
+        grossWeight: null, // Not available in large scale
+        netWeight: assay?.totalNetGoldWeight,
+        fineness: null, // Not available in large scale
+        weightInOz: assay?.totalNetGoldWeightOz,
+        pricePerOz: assay?.pricePerOz,
+        totalUsdValue: assay?.totalCombinedValue || assay?.totalGoldValue,
+        totalGhsValue: assay?.totalValueGhs,
+      } : {
+        // Regular job card stored values
         grossWeight: assay?.jbGrossWeight,
         netWeight: assay?.jbNetWeight,
         fineness: assay?.jbFineness,
@@ -161,7 +250,7 @@ export default async function ReportsPage(props: any) {
       />
       <main className="py-6 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
         <div className="bg-white rounded-2xl p-6 border border-gray-200">
-          <h2 className="text-lg font-semibold mb-4">Exporters & Weights</h2>
+          <h2 className="text-2xl font-semibold mb-4">Exporters & Weights</h2>
 
           <div className="text-sm text-gray-600 mb-3">
             Showing: <strong>{isWeekly ? "Weekly" : "Monthly"}</strong>{" "}
@@ -256,6 +345,11 @@ export default async function ReportsPage(props: any) {
                     )}
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
                       {r.exporter}
+                      {!isSummary && r.isLargeScale && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                          LS
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
                       {formatNumber(r.netGoldGrams)}
