@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowPathIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { Header } from "../components/layout/header";
 import { Award } from "lucide-react";
+import Select from "react-select";
 
 function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
   const [jobCards, setJobCards] = useState<any[]>([]);
@@ -57,7 +58,7 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
       {loading ? (
         <div className="flex justify-center items-center py-10">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <span className="ml-2 text-gray-500">Loading...</span>
+          {/* <span className="ml-2 text-gray-500">Loading...</span> */}
         </div>
       ) : jobCards.length === 0 ? (
         <div className="text-center py-10">
@@ -163,10 +164,22 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
                     return s ? s.sealNumber || String(s.notes || "") : "";
                   };
 
+                  // Determine if this is a large scale job card
+                  const isLargeScale = !!(jc._count || jc.largeScaleJobCardId);
+
                   return (
                     <tr key={jc.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                        {jc.referenceNumber}
+                        <Link
+                          href={
+                            isLargeScale
+                              ? `/job-cards/large-scale/${jc.id}`
+                              : `/job-cards/${jc.id}`
+                          }
+                          className="hover:underline"
+                        >
+                          {jc.referenceNumber}
+                        </Link>
                       </td>
                       {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {assay
@@ -379,9 +392,11 @@ function AddSealModal({
   onClose: (refresh?: boolean) => void;
 }) {
   console.debug("AddSealModal render", { open, jobCardId });
-  const [customsOfficerName, setCustomsOfficerName] = useState("");
-  const [nacobOfficerName, setNacobOfficerName] = useState("");
-  const [nationalSecurityName, setNationalSecurityName] = useState("");
+  const [customsOfficerId, setCustomsOfficerId] = useState<string | null>(null);
+  const [nacobOfficerId, setNacobOfficerId] = useState<string | null>(null);
+  const [nationalSecurityOfficerId, setNationalSecurityOfficerId] = useState<
+    string | null
+  >(null);
   const [customsSeal, setCustomsSeal] = useState("");
   const [pmmcSeal, setPmmcSeal] = useState("");
   const [otherSeal, setOtherSeal] = useState("");
@@ -392,12 +407,75 @@ function AddSealModal({
   const [saving, setSaving] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(false);
 
+  // Officers state
+  const [officers, setOfficers] = useState<{
+    customsOfficers: { id: string; name: string; badgeNumber: string }[];
+    nacobOfficers: { id: string; name: string; badgeNumber: string }[];
+    nationalSecurityOfficers: {
+      id: string;
+      name: string;
+      badgeNumber: string;
+    }[];
+  }>({
+    customsOfficers: [],
+    nacobOfficers: [],
+    nationalSecurityOfficers: [],
+  });
+
+  // Custom styles for React Select to match other form inputs
+  const customSelectStyles = {
+    container: (provided: Record<string, unknown>) => ({
+      ...provided,
+      minHeight: "38px",
+    }),
+    control: (provided: Record<string, unknown>) => ({
+      ...provided,
+      border: "1px solid #d1d5db",
+      borderRadius: "0.375rem",
+      minHeight: "38px",
+      fontSize: "14px",
+    }),
+    menu: (provided: Record<string, unknown>) => ({
+      ...provided,
+      zIndex: 9999,
+    }),
+  };
+
+  // Fetch officers on component mount
+  useEffect(() => {
+    const fetchOfficers = async () => {
+      try {
+        const response = await fetch("/api/officers");
+        if (response.ok) {
+          const officersData = await response.json();
+          // Group officers by type
+          const groupedOfficers = {
+            customsOfficers: officersData.filter(
+              (o: any) => o.officerType === "CUSTOMS_OFFICER"
+            ),
+            nacobOfficers: officersData.filter(
+              (o: any) => o.officerType === "NACOB_OFFICER"
+            ),
+            nationalSecurityOfficers: officersData.filter(
+              (o: any) => o.officerType === "NATIONAL_SECURITY_OFFICER"
+            ),
+          };
+          setOfficers(groupedOfficers);
+        }
+      } catch (error) {
+        console.error("Failed to fetch officers:", error);
+      }
+    };
+
+    fetchOfficers();
+  }, []);
+
   const close = () => {
     // close without refreshing list
     onClose(false);
-    setCustomsOfficerName("");
-    setNacobOfficerName("");
-    setNationalSecurityName("");
+    setCustomsOfficerId(null);
+    setNacobOfficerId(null);
+    setNationalSecurityOfficerId(null);
     setCustomsSeal("");
     setPmmcSeal("");
     setOtherSeal("");
@@ -411,6 +489,19 @@ function AddSealModal({
     if (!jobCardId) return;
     setSaving(true);
     try {
+      // Get officer names from IDs
+      const customsOfficerName = customsOfficerId
+        ? officers.customsOfficers.find((o) => o.id === customsOfficerId)?.name
+        : undefined;
+      const nacobOfficerName = nacobOfficerId
+        ? officers.nacobOfficers.find((o) => o.id === nacobOfficerId)?.name
+        : undefined;
+      const nationalSecurityName = nationalSecurityOfficerId
+        ? officers.nationalSecurityOfficers.find(
+            (o) => o.id === nationalSecurityOfficerId
+          )?.name
+        : undefined;
+
       const payload: any = {
         customsOfficerName: customsOfficerName || undefined,
         nacobOfficerName: nacobOfficerName || undefined,
@@ -466,15 +557,35 @@ function AddSealModal({
         if (!res.ok) throw new Error("Failed to load job card");
         const jc = await res.json();
         if (!mounted) return;
-        // parse notes for officer names
+        // parse notes for officer names and find corresponding IDs
         const notesText = jc.notes || "";
         setNotes(notesText);
         const customsMatch = notesText.match(/Customs Officer: ([^;\n]+)/);
         const nacobMatch = notesText.match(/NACOB Officer: ([^;\n]+)/);
         const nationalMatch = notesText.match(/National Security: ([^;\n]+)/);
-        setCustomsOfficerName(customsMatch ? customsMatch[1].trim() : "");
-        setNacobOfficerName(nacobMatch ? nacobMatch[1].trim() : "");
-        setNationalSecurityName(nationalMatch ? nationalMatch[1].trim() : "");
+
+        // Find officer IDs by name
+        if (customsMatch) {
+          const officerName = customsMatch[1].trim();
+          const officer = officers.customsOfficers.find(
+            (o) => o.name === officerName
+          );
+          setCustomsOfficerId(officer?.id || null);
+        }
+        if (nacobMatch) {
+          const officerName = nacobMatch[1].trim();
+          const officer = officers.nacobOfficers.find(
+            (o) => o.name === officerName
+          );
+          setNacobOfficerId(officer?.id || null);
+        }
+        if (nationalMatch) {
+          const officerName = nationalMatch[1].trim();
+          const officer = officers.nationalSecurityOfficers.find(
+            (o) => o.name === officerName
+          );
+          setNationalSecurityOfficerId(officer?.id || null);
+        }
         // populate seals
         const seals = jc.seals || [];
         const findObj = (type: string) =>
@@ -505,7 +616,7 @@ function AddSealModal({
     return () => {
       mounted = false;
     };
-  }, [open, jobCardId]);
+  }, [open, jobCardId, officers]);
 
   if (!open) return null;
 
@@ -516,26 +627,83 @@ function AddSealModal({
         <div className="grid grid-cols-2 gap-3">
           <label className="flex flex-col">
             <span className="text-sm text-gray-600">Customs Officer</span>
-            <input
-              value={customsOfficerName}
-              onChange={(e) => setCustomsOfficerName(e.target.value)}
-              className="mt-1 border rounded px-2 py-1"
+            <Select
+              options={officers.customsOfficers.map((officer) => ({
+                value: officer.id,
+                label: `${officer.name} (${officer.badgeNumber})`,
+              }))}
+              value={
+                customsOfficerId
+                  ? officers.customsOfficers
+                      .map((officer) => ({
+                        value: officer.id,
+                        label: `${officer.name} (${officer.badgeNumber})`,
+                      }))
+                      .find((o) => o.value === customsOfficerId)
+                  : null
+              }
+              onChange={(selectedOption) =>
+                setCustomsOfficerId(selectedOption?.value || null)
+              }
+              className="mt-1"
+              classNamePrefix="react-select"
+              styles={customSelectStyles}
+              isClearable
+              placeholder="Select customs officer"
             />
           </label>
           <label className="flex flex-col">
             <span className="text-sm text-gray-600">NACOB Officer</span>
-            <input
-              value={nacobOfficerName}
-              onChange={(e) => setNacobOfficerName(e.target.value)}
-              className="mt-1 border rounded px-2 py-1"
+            <Select
+              options={officers.nacobOfficers.map((officer) => ({
+                value: officer.id,
+                label: `${officer.name} (${officer.badgeNumber})`,
+              }))}
+              value={
+                nacobOfficerId
+                  ? officers.nacobOfficers
+                      .map((officer) => ({
+                        value: officer.id,
+                        label: `${officer.name} (${officer.badgeNumber})`,
+                      }))
+                      .find((o) => o.value === nacobOfficerId)
+                  : null
+              }
+              onChange={(selectedOption) =>
+                setNacobOfficerId(selectedOption?.value || null)
+              }
+              className="mt-1"
+              classNamePrefix="react-select"
+              styles={customSelectStyles}
+              isClearable
+              placeholder="Select NACOB officer"
             />
           </label>
           <label className="flex flex-col">
             <span className="text-sm text-gray-600">National Security</span>
-            <input
-              value={nationalSecurityName}
-              onChange={(e) => setNationalSecurityName(e.target.value)}
-              className="mt-1 border rounded px-2 py-1"
+            <Select
+              options={officers.nationalSecurityOfficers.map((officer) => ({
+                value: officer.id,
+                label: `${officer.name} (${officer.badgeNumber})`,
+              }))}
+              value={
+                nationalSecurityOfficerId
+                  ? officers.nationalSecurityOfficers
+                      .map((officer) => ({
+                        value: officer.id,
+                        label: `${officer.name} (${officer.badgeNumber})`,
+                      }))
+                      .find((o) => o.value === nationalSecurityOfficerId)
+                  : null
+              }
+              onChange={(selectedOption) =>
+                setNationalSecurityOfficerId(selectedOption?.value || null)
+              }
+              className="mt-1"
+              classNamePrefix="react-select"
+              styles={customSelectStyles}
+              isClearable
+              placeholder="Select national security officer"
             />
           </label>
           <label className="flex flex-col">
@@ -574,14 +742,21 @@ function AddSealModal({
           </label>
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <button onClick={close} className="px-4 py-2 border rounded">
+          <button
+            onClick={close}
+            className="px-4 py-2 border rounded"
+            disabled={saving}
+          >
             Cancel
           </button>
           <button
             onClick={submit}
             disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white rounded"
+            className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
+            {saving && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            )}
             {saving ? "Saving..." : "Save"}
           </button>
         </div>
