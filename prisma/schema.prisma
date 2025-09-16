@@ -98,7 +98,7 @@ model JobCard {
   editCount           Int                      @default(0)
   assays              Assay[]
   fees                Fee?
-  invoices            Invoice?
+  invoices            Invoice[]
   assayOfficer        AssayOfficer?            @relation(fields: [assayOfficerId], references: [id])
   commodity           Commodity?               @relation(fields: [commodityId], references: [id])
   customsOfficer      CustomsOfficer?          @relation(fields: [customsOfficerId], references: [id])
@@ -168,7 +168,7 @@ model Seal {
 model Invoice {
   id                  String             @id @default(uuid())
   invoiceNumber       String             @unique
-  jobCardId           String?            @unique
+  jobCardId           String?
   invoiceTypeId       String
   amount              Float
   currencyId          String
@@ -191,7 +191,7 @@ model Invoice {
   totalInclusive      Float?
   vat                 Float?
   exchangeRate        Float?
-  largeScaleJobCardId String?            @unique
+  largeScaleJobCardId String?
   assays              Assay[]
   currency            Currency           @relation(fields: [currencyId], references: [id])
   invoiceType         InvoiceType        @relation(fields: [invoiceTypeId], references: [id])
@@ -495,8 +495,8 @@ model LargeScaleJobCard {
   createdAt                 DateTime                     @default(now())
   updatedAt                 DateTime                     @updatedAt
   fees                      Fee?
-  invoices                  Invoice?
-  assays                    LargeScaleAssay?
+  invoices                  Invoice[]
+  assays                    LargeScaleAssay[]
   assayOfficer              AssayOfficer?                @relation(fields: [assayOfficerId], references: [id])
   customsOfficer            CustomsOfficer?              @relation(fields: [customsOfficerId], references: [id])
   exporter                  Exporter                     @relation(fields: [exporterId], references: [id])
@@ -508,7 +508,7 @@ model LargeScaleJobCard {
 
 model LargeScaleAssay {
   id                     String                       @id @default(uuid())
-  jobCardId              String                       @unique
+  jobCardId              String
   method                 String
   pieces                 Int
   signatory              String?

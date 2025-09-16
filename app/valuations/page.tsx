@@ -116,7 +116,7 @@ function ValuationList() {
     <div className="bg-white shadow overflow-hidden sm:rounded-md">
       {loading ? (
         <div className="flex justify-center items-center py-10">
-          <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
           <span className="ml-2 text-gray-500">Loading valuations...</span>
         </div>
       ) : jobCards.length === 0 ? (

@@ -236,7 +236,7 @@ function JobCardDetailPage() {
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
             <p className="text-gray-600 dark:text-gray-400">
               Loading job card...
             </p>
@@ -631,7 +631,6 @@ function JobCardDetailPage() {
               Valuation
             </h3>
             <div className="flex items-center gap-3">
-              
               <Link
                 href={`/job-cards/${id}/assays/assay-results`}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
@@ -644,7 +643,7 @@ function JobCardDetailPage() {
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
               >
                 {/* <EyeIcon className="w-4 h-4 mr-2" /> */}
-                 <ChartBarIcon className="w-4 h-4 mr-2" />
+                <ChartBarIcon className="w-4 h-4 mr-2" />
                 {/* View Valuation */}
                 Assay Report Analysis
               </Link>
@@ -846,7 +845,7 @@ function JobCardDetailPage() {
 
       {loading ? (
         <div className="flex justify-center items-center py-10">
-          <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
           <span className="ml-2 text-gray-500">Loading job card...</span>
         </div>
       ) : error ? (

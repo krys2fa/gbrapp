@@ -225,7 +225,7 @@ export default function ExporterTypesPage() {
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             {typesLoading ? (
               <div className="flex justify-center items-center py-10">
-                <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
                 <span className="ml-2 text-gray-500">Loading...</span>
               </div>
             ) : (
@@ -240,7 +240,7 @@ export default function ExporterTypesPage() {
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Description
                         </th>
-                     
+
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Actions
                         </th>
@@ -257,7 +257,7 @@ export default function ExporterTypesPage() {
                             <td className="px-4 py-2 text-gray-700">
                               {t.description || "-"}
                             </td>
-                          
+
                             <td className="px-4 py-2 flex gap-2">
                               <button
                                 className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"

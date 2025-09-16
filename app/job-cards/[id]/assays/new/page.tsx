@@ -554,7 +554,7 @@ export default function NewAssayPage() {
       <div className="mb-4">
         {metaLoading ? (
           <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto" />
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
@@ -631,14 +631,18 @@ export default function NewAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Value (USD)</div>
                 <div className="font-medium text-gray-900">
-                  {displayUsdValue ? formatCurrency(displayUsdValue, "USD", false) : formatCurrency(0, "USD", false)}
+                  {displayUsdValue
+                    ? formatCurrency(displayUsdValue, "USD", false)
+                    : formatCurrency(0, "USD", false)}
                 </div>
               </div>
 
               <div>
                 <div className="text-xs text-gray-500">Value (GHS)</div>
                 <div className="font-medium text-gray-900">
-                  {displayGhsValue ? formatCurrency(displayGhsValue, "GHS", false) : formatCurrency(0, "GHS", false)}
+                  {displayGhsValue
+                    ? formatCurrency(displayGhsValue, "GHS", false)
+                    : formatCurrency(0, "GHS", false)}
                 </div>
               </div>
 

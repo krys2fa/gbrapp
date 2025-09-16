@@ -160,7 +160,7 @@ export default function LoginPage() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Signing in...
                   </>
                 ) : (
@@ -212,9 +212,7 @@ export default function LoginPage() {
                     <p className="text-xs text-white mt-1">
                       Email: superadmin@gbrapp.com
                     </p>
-                    <p className="text-xs text-white">
-                      Password: admin123
-                    </p>
+                    <p className="text-xs text-white">Password: admin123</p>
                   </div>
                 </div>
                 <div className="bg-white/10 rounded-md p-3 flex items-center gap-3">

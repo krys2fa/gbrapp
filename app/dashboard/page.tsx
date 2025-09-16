@@ -183,7 +183,7 @@ function DashboardPage() {
         {isLoading && !dashboardData && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
               <p className="text-gray-600 dark:text-gray-400">
                 Loading dashboard data...
               </p>
@@ -632,7 +632,7 @@ function DashboardPage() {
         {/* </div>
         )} */}
 
-          {/* Exporter Invoice Chart */}
+        {/* Exporter Invoice Chart */}
         {dashboardData?.exporterInvoiceChart && (
           <ExporterInvoiceChart data={dashboardData.exporterInvoiceChart} />
         )}
@@ -700,8 +700,6 @@ function DashboardPage() {
             ))}
           </div>
         </div>
-
-      
 
         {/* Charts + Sidebar Trio: Recent Activity | System Status | Top Exporters (single row) */}
         {/* {dashboardData && (

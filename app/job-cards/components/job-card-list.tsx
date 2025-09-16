@@ -156,7 +156,7 @@ export function JobCardList({ filters }: JobCardListProps) {
     <div className="bg-white shadow overflow-hidden sm:rounded-md">
       {loading ? (
         <div className="flex justify-center items-center py-10">
-          <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
           <span className="ml-2 text-gray-500">Loading job cards...</span>
         </div>
       ) : jobCards.length === 0 ? (
@@ -186,13 +186,16 @@ export function JobCardList({ filters }: JobCardListProps) {
                           );
                           const hasPaidInvoices = !!(
                             jobCard.invoices &&
-                            jobCard.invoices.some(invoice => invoice.status === "paid")
+                            jobCard.invoices.some(
+                              (invoice) => invoice.status === "paid"
+                            )
                           );
-                          
-                          let statusText = jobCard.status.charAt(0).toUpperCase() +
+
+                          let statusText =
+                            jobCard.status.charAt(0).toUpperCase() +
                             jobCard.status.slice(1).replace("_", " ");
                           let statusKey = jobCard.status;
-                          
+
                           if (hasPaidInvoices) {
                             statusText = "Paid";
                             statusKey = "paid";
@@ -200,7 +203,7 @@ export function JobCardList({ filters }: JobCardListProps) {
                             statusText = "Completed";
                             statusKey = "completed";
                           }
-                          
+
                           return (
                             <span
                               className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
@@ -399,7 +402,7 @@ export function JobCardList({ filters }: JobCardListProps) {
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         {loading ? (
           <div className="flex justify-center items-center py-10">
-            <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
             <span className="ml-2 text-gray-500">Loading job cards...</span>
           </div>
         ) : jobCards.length === 0 ? (

@@ -293,7 +293,7 @@ const CreateUserPage = () => {
                   >
                     {loading ? (
                       <>
-                        <ArrowPathIcon className="h-5 w-5 text-white animate-spin mr-2" />
+                        <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         {editingUser ? "Updating..." : "Creating..."}
                       </>
                     ) : editingUser ? (
@@ -360,7 +360,7 @@ const CreateUserPage = () => {
           </div>
           {usersLoading ? (
             <div className="flex justify-center items-center py-10">
-              <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
               <span className="ml-2 text-gray-500">Loading users...</span>
             </div>
           ) : (

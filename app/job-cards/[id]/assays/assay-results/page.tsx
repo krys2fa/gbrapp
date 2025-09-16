@@ -57,7 +57,7 @@ export default function AssayResultsPage() {
     return (
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-center">
-          <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
           <span className="ml-2 text-gray-500">Loading assay results...</span>
         </div>
       </div>
@@ -98,14 +98,13 @@ export default function AssayResultsPage() {
       <div className="bg-white shadow-sm rounded-t-lg print:hidden">
         <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-           
             <div className="print:hidden">
               <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
             </div>
             <AssayActions
               jobCardId={id}
-            //   signatoryName="Dr. John Smith"
-            //   signatoryPosition="Chief Assayer"
+              //   signatoryName="Dr. John Smith"
+              //   signatoryPosition="Chief Assayer"
             />
           </div>
         </div>
@@ -179,7 +178,6 @@ export default function AssayResultsPage() {
 
             {/* Assay Measurements Table */}
             <div className="px-4 sm:px-6 lg:px-8 pt-4">
-
               <div className="bg-white overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">

@@ -222,7 +222,9 @@ function NewLargeScaleAssayPage() {
             (c: any) => c.commodity.id
           );
           const pricePromises = commodityIds.map((commodityId: string) =>
-            fetch(`/api/weekly-prices?type=COMMODITY&itemId=${commodityId}&approvedOnly=true`)
+            fetch(
+              `/api/weekly-prices?type=COMMODITY&itemId=${commodityId}&approvedOnly=true`
+            )
               .then((res) => (res.ok ? res.json().catch(() => []) : []))
               .catch(() => [])
           );
@@ -231,7 +233,9 @@ function NewLargeScaleAssayPage() {
           commodityPrices = priceResults.flat(); // Flatten all results into one array
         } else {
           // fallback: fetch all commodity prices
-          const cpRes = await fetch(`/api/weekly-prices?type=COMMODITY&approvedOnly=true`);
+          const cpRes = await fetch(
+            `/api/weekly-prices?type=COMMODITY&approvedOnly=true`
+          );
           if (cpRes && cpRes.ok)
             commodityPrices = await cpRes.json().catch(() => []);
         }
@@ -305,7 +309,9 @@ function NewLargeScaleAssayPage() {
         // Get commodity entry (can fall back to latest if current week's is missing)
         const commodityEntry =
           latestByDate(
-            currentWeekCommodityMatches.filter((p: any) => p.type === "COMMODITY")
+            currentWeekCommodityMatches.filter(
+              (p: any) => p.type === "COMMODITY"
+            )
           ) ||
           latestByDate(
             (commodityPrices || []).filter((p: any) => p.type === "COMMODITY")
@@ -663,7 +669,7 @@ function NewLargeScaleAssayPage() {
       <div className="mb-4">
         {metaLoading ? (
           <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto" />
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
@@ -779,14 +785,18 @@ function NewLargeScaleAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">Value (USD)</div>
                 <div className="font-medium text-gray-900">
-                  {displayUsdValue ? formatCurrency(displayUsdValue, "USD", false) : "0.00"}
+                  {displayUsdValue
+                    ? formatCurrency(displayUsdValue, "USD", false)
+                    : "0.00"}
                 </div>
               </div>
 
               <div>
                 <div className="text-xs text-gray-500">Value (GHS)</div>
                 <div className="font-medium text-gray-900">
-                  {displayGhsValue ? formatCurrency(displayGhsValue, "GHS", false) : "0.00"}
+                  {displayGhsValue
+                    ? formatCurrency(displayGhsValue, "GHS", false)
+                    : "0.00"}
                 </div>
               </div>
 

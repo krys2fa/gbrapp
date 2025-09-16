@@ -355,7 +355,7 @@ export default function WeeklyExchangePage() {
               >
                 {loading ? (
                   <>
-                    <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mr-2"></div>
                     {editingPrice ? "Updating..." : "Adding..."}
                   </>
                 ) : editingPrice ? (
@@ -467,7 +467,7 @@ export default function WeeklyExchangePage() {
 
           {pricesLoading ? (
             <div className="text-center py-8">
-              <ArrowPathIcon className="mx-auto h-8 w-8 animate-spin text-blue-600" />
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
               <p className="mt-2 text-sm text-gray-500">Loading rates...</p>
             </div>
           ) : (
