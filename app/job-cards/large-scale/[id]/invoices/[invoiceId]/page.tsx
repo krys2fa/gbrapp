@@ -43,7 +43,6 @@ export default async function LargeScaleInvoicePage(props: any) {
         issueDate: true,
         createdAt: true,
         notes: true,
-        // Include calculated fields
         grandTotal: true,
         subTotal: true,
         covid: true,
@@ -146,10 +145,10 @@ export default async function LargeScaleInvoicePage(props: any) {
         <HistoryBackLink label="Back" />
       </div>
       <div className="max-w-4xl mx-auto py-10 px-4">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold">
+        <div className="flex items-center justify-end mb-6">
+          {/* <h1 className="text-2xl font-semibold">
             Invoice #{invoice.invoiceNumber}
-          </h1>
+          </h1> */}
           {/* Client actions: back + download */}
           <LargeScaleInvoiceActions
             jobCardId={jobCardId}
@@ -177,55 +176,55 @@ export default async function LargeScaleInvoicePage(props: any) {
               </h1>
             </div>
 
-            <div className="bg-white p-4">
+            <div className="bg-white p-4 flex justify-end">
               <img
                 src="/coat-of-arms.jpg"
                 alt="Coat of Arms"
                 className="h-20 w-auto"
               />
             </div>
-
+            {/* 
             <div className="bg-white p-4">
               <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
-            </div>
+            </div> */}
           </div>
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div>
+            <div className="flex">
               <p className="text-sm text-gray-500">Date</p>
-              <p className="font-medium">
+              <p className="text-sm ml-2">
                 {formatDate(invoice.issueDate || invoice.createdAt)}
               </p>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500">Assay Number</p>
-              <p className="font-medium">{assayNumbers}</p>
+            <div className="flex text-right justify-end pr-0 mr-0">
+              <p className="text-sm text-gray-500">Assay Number:</p>
+              <p className="text-sm ml-1">{assayNumbers}</p>
             </div>
-            <div>
+            <div className="flex">
               <p className="text-sm text-gray-500">Exporter</p>
-              <p className="font-medium">{exporterName}</p>
+              <p className="text-sm ml-2">{exporterName}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Job Card ID</p>
-              <p className="font-medium">{referenceNumber}</p>
+            <div className="flex text-right pr-0 mr-0 justify-end">
+              <p className="text-sm text-gray-500">Job Card ID:</p>
+              <p className="text-sm ml-1">{referenceNumber}</p>
             </div>
           </div>
 
           <div className="mb-6 grid grid-cols-2 gap-4">
-            <div>
+            <div className="flex">
               <p className="text-sm text-gray-500">Assay Rate</p>
-              <p className="font-medium">{rate}</p>
+              <p className="text-sm ml-2">{rate}</p>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500">Destination</p>
-              <p className="font-medium">{destinationCountry}</p>
+            <div className="flex text-right pr-0 mr-0 justify-end">
+              <p className="text-sm text-gray-500">Destination:</p>
+              <p className="text-sm ml-1">{destinationCountry}</p>
             </div>
           </div>
 
-          <div>
+          <div className="flex">
             <p className="text-sm text-gray-500">Exchange Rate</p>
-            <p className="font-medium">{exchangeRate}</p>
+            <p className="text-sm ml-2">{exchangeRate}</p>
           </div>
 
           <table className="w-full mt-2 mb-6 table-auto border-collapse border border-gray-300">

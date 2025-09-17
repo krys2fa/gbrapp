@@ -1,9 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import BackLink from "@/app/components/ui/BackLink";
-import { useRouter } from "next/navigation";
+import { PrinterIcon } from "@heroicons/react/24/outline";
 
 export default function LargeScaleInvoiceActions({
   jobCardId,
@@ -14,8 +12,6 @@ export default function LargeScaleInvoiceActions({
   signatoryName?: string;
   signatoryPosition?: string;
 }) {
-  const router = useRouter();
-
   function downloadInvoice() {
     try {
       const content = document.getElementById("invoice-content");
@@ -149,9 +145,10 @@ export default function LargeScaleInvoiceActions({
             alert("Failed to download invoice.");
           }
         }}
-        className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
+        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
       >
-        Download
+        <PrinterIcon className="h-4 w-4 mr-2" />
+        Print Invoice
       </button>
     </div>
   );
