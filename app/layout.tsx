@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./styles/watermark.css";
 import { AuthProvider } from "./context/auth-context";
 import { LayoutWrapper } from "./components/layout/layout-wrapper";
 import { Toaster } from "react-hot-toast";

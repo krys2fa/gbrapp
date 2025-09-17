@@ -198,36 +198,92 @@ export default function AssayDetailPage() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
-        <div className="flex items-center gap-3">
-          <AssayDetailActions
-            jobCardId={id}
-            assayId={assayId}
-            // signatoryName="Dr. John Smith"
-            // signatoryPosition="Chief Assayer"
-          />
-        </div>
-      </div>
+    <>
+      {/* Watermark Styles */}
+      <style jsx>{`
+        #assay-detail-content {
+          position: relative;
+        }
+        #assay-detail-content::before {
+          content: "";
+          position: absolute;
+          top: 30%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 280px;
+          height: 280px;
+          background: url("/seal.png") no-repeat center center;
+          background-size: contain;
+          opacity: 0.08;
+          z-index: 1;
+          pointer-events: none;
+        }
+        #assay-detail-content > * {
+          position: relative;
+          z-index: 2;
+        }
 
-      <div id="assay-detail-content" className="bg-white overflow-hidden">
-        <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-base leading-6 font-medium text-gray-900">
-            Certificate #{assay.certificateNumber || "-"}
-          </h3>
-        </div>
+        /* Multi-page watermark for print */
+        @media print {
+          body {
+            background: url("/seal.png") no-repeat center 30%;
+            background-size: 280px 280px;
+            background-attachment: fixed;
+          }
+          body::before {
+            content: "";
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 280px;
+            background: url("/seal.png") no-repeat center center;
+            background-size: contain;
+            opacity: 0.08;
+            z-index: 1;
+            pointer-events: none;
+          }
+          /* QR Code print styles */
+          img[alt*="QR Code"] {
+            width: 16pt !important;
+            height: 16pt !important;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+        }
+      `}</style>
 
-        <div className="flex items-center justify-between mb-1 px-8">
-          <div className="p-2">
-            <img
-              src="/goldbod-logo-green.png"
-              alt="GoldBod Logo"
-              className="h-12 w-auto"
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6 flex items-center justify-between">
+          <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
+          <div className="flex items-center gap-3">
+            <AssayDetailActions
+              jobCardId={id}
+              assayId={assayId}
+              // signatoryName="Dr. John Smith"
+              // signatoryPosition="Chief Assayer"
             />
           </div>
+        </div>
 
-          {/* <div className="bg-white p-4">
+        <div id="assay-detail-content" className="bg-white overflow-hidden">
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-base leading-6 font-medium text-gray-900">
+              Certificate #{assay.certificateNumber || "-"}
+            </h3>
+          </div>
+
+          <div className="flex items-center justify-between mb-1 px-8">
+            <div className="p-2">
+              <img
+                src="/goldbod-logo-green.png"
+                alt="GoldBod Logo"
+                className="h-12 w-auto"
+              />
+            </div>
+
+            {/* <div className="bg-white p-4">
             <img
               src="/coat-of-arms.jpg"
               alt="Coat of Arms"
@@ -235,248 +291,254 @@ export default function AssayDetailPage() {
             />
           </div> */}
 
-          {/* <div className="bg-white p-4">
+            {/* <div className="bg-white p-4">
             <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
           </div> */}
-        </div>
-
-        <div className="border-t border-gray-200 px-4 py-3 sm:p-4">
-          <div className="flex justify-center">
-            <h1 className="text-xl font-bold tracking-wider">
-              ASSAY REPORT ANALYSIS
-            </h1>
-          </div>
-          {/* Top: show exporter and assay date above the measurements table */}
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Exporter</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {jobCard?.exporter?.name || "-"}
-              </dd>
-            </div>
-            <div className="text-right">
-              <dt className="text-sm font-medium text-gray-500">Assay Date</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {assay.assayDate
-                  ? formatDate(new Date(assay.assayDate))
-                  : formatDate(new Date(assay.createdAt || Date.now()))}
-              </dd>
-            </div>
           </div>
 
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Reference</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {jobCard?.referenceNumber || "-"}
-              </dd>
+          <div className="border-t border-gray-200 px-4 py-3 sm:p-4">
+            <div className="flex justify-center">
+              <h1 className="text-xl font-bold tracking-wider">
+                ASSAY REPORT ANALYSIS
+              </h1>
+            </div>
+            {/* Top: show exporter and assay date above the measurements table */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Exporter</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {jobCard?.exporter?.name || "-"}
+                </dd>
+              </div>
+              <div className="text-right">
+                <dt className="text-sm font-medium text-gray-500">
+                  Assay Date
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {assay.assayDate
+                    ? formatDate(new Date(assay.assayDate))
+                    : formatDate(new Date(assay.createdAt || Date.now()))}
+                </dd>
+              </div>
             </div>
 
-            <div>
-              <dt className="text-sm font-medium text-gray-500">
-                Shipment Type
-              </dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {assay?.shipmentType?.name || "-"}
-              </dd>
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Exporter Values (top left) */}
-              <div className="bg-white overflow-hidden">
-                <div className="px-4 py-2 bg-gray-50">
-                  <h4 className="text-sm font-medium text-gray-900">
-                    EXPORTER VALUES
-                  </h4>
-                </div>
-                <div>
-                  <table className="w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Gross Weight
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Fineness
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Net Weight
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      <tr>
-                        <td className="px-4 py-2 text-sm text-gray-700">
-                          {jobCard?.totalGrossWeight != null
-                            ? Number(jobCard.totalGrossWeight).toFixed(2)
-                            : assay.jbGrossWeight != null
-                            ? Number(assay.jbGrossWeight).toFixed(2)
-                            : "-"}
-                        </td>
-                        <td className="px-4 py-2 text-sm text-gray-700">
-                          {jobCard?.fineness != null
-                            ? Number(jobCard.fineness).toFixed(2)
-                            : assay.jbFineness != null
-                            ? Number(assay.jbFineness).toFixed(2)
-                            : "-"}
-                        </td>
-                        <td className="px-4 py-2 text-sm text-gray-700">
-                          {jobCard?.totalNetWeight != null
-                            ? Number(jobCard.totalNetWeight).toFixed(2)
-                            : assay.jbNetWeight != null
-                            ? Number(assay.jbNetWeight).toFixed(2)
-                            : "-"}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Reference</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {jobCard?.referenceNumber || "-"}
+                </dd>
               </div>
 
-              {/* GoldBod Values (top right) */}
-              <div className="bg-white overflow-hidden">
-                <div className="px-4 py-2 bg-gray-50">
-                  <h4 className="text-sm font-medium text-gray-900">
-                    GOLDBOD VALUES
-                  </h4>
-                </div>
-                <div>
-                  <table className="w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Gross Weight
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Fineness
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Net Weight
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {(assay.measurements || []).map((m: any, idx: number) => (
-                        <tr key={m.id || idx}>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                            {m.grossWeight != null
-                              ? Number(m.grossWeight).toFixed(2)
+              <div>
+                <dt className="text-sm font-medium text-gray-500">
+                  Shipment Type
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {assay?.shipmentType?.name || "-"}
+                </dd>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Exporter Values (top left) */}
+                <div className="bg-white overflow-hidden">
+                  <div className="px-4 py-2 bg-gray-50">
+                    <h4 className="text-sm font-medium text-gray-900">
+                      EXPORTER VALUES
+                    </h4>
+                  </div>
+                  <div>
+                    <table className="w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Gross Weight
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Fineness
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Net Weight
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        <tr>
+                          <td className="px-4 py-2 text-sm text-gray-700">
+                            {jobCard?.totalGrossWeight != null
+                              ? Number(jobCard.totalGrossWeight).toFixed(2)
+                              : assay.jbGrossWeight != null
+                              ? Number(assay.jbGrossWeight).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                            {m.fineness ?? "-"}
+                          <td className="px-4 py-2 text-sm text-gray-700">
+                            {jobCard?.fineness != null
+                              ? Number(jobCard.fineness).toFixed(2)
+                              : assay.jbFineness != null
+                              ? Number(assay.jbFineness).toFixed(2)
+                              : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                            {m.netWeight != null
-                              ? Number(m.netWeight).toFixed(2)
+                          <td className="px-4 py-2 text-sm text-gray-700">
+                            {jobCard?.totalNetWeight != null
+                              ? Number(jobCard.totalNetWeight).toFixed(2)
+                              : assay.jbNetWeight != null
+                              ? Number(assay.jbNetWeight).toFixed(2)
                               : "-"}
                           </td>
                         </tr>
-                      ))}
-                      {/* Total Row */}
-                      <tr className="bg-gray-50 font-semibold">
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                          {(() => {
-                            const total = (assay.measurements || []).reduce(
-                              (acc: number, m: any) =>
-                                acc + (Number(m.grossWeight) || 0),
-                              0
-                            );
-                            return total > 0 ? total.toFixed(2) : "-";
-                          })()}
-                        </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                          {(() => {
-                            const grossTotal = (
-                              assay.measurements || []
-                            ).reduce(
-                              (acc: number, m: any) =>
-                                acc + (Number(m.grossWeight) || 0),
-                              0
-                            );
-                            const netTotal = (assay.measurements || []).reduce(
-                              (acc: number, m: any) =>
-                                acc + (Number(m.netWeight) || 0),
-                              0
-                            );
-                            if (grossTotal > 0 && netTotal > 0) {
-                              const fineness = (netTotal / grossTotal) * 100;
-                              return fineness.toFixed(2) + "%";
-                            }
-                            return "-";
-                          })()}
-                        </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                          {(() => {
-                            const total = (assay.measurements || []).reduce(
-                              (acc: number, m: any) =>
-                                acc + (Number(m.netWeight) || 0),
-                              0
-                            );
-                            return total > 0 ? total.toFixed(2) : "-";
-                          })()}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
 
-              {/* Exporter Summary (bottom left) */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h5 className="text-sm font-medium text-gray-900 mb-3">
-                  Exporter Valuation Summary
-                </h5>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Weight in Ounces:
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {jobCard?.numberOfOunces != null
-                          ? Number(jobCard.numberOfOunces).toFixed(3)
-                          : assay.jbWeightInOz != null
-                          ? Number(assay.jbWeightInOz).toFixed(3)
-                          : "0.000"}{" "}
-                        oz
-                      </dd>
-                    </div>
+                {/* GoldBod Values (top right) */}
+                <div className="bg-white overflow-hidden">
+                  <div className="px-4 py-2 bg-gray-50">
+                    <h4 className="text-sm font-medium text-gray-900">
+                      GOLDBOD VALUES
+                    </h4>
                   </div>
-
                   <div>
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Price per Ounce:
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {jobCard?.pricePerOunce != null
-                          ? formatCurrency(jobCard.pricePerOunce, "USD")
-                          : assay.jbPricePerOz != null
-                          ? formatCurrency(assay.jbPricePerOz, "USD")
-                          : formatCurrency(0, "USD")}
-                      </dd>
-                    </div>
+                    <table className="w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Gross Weight
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Fineness
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Net Weight
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {(assay.measurements || []).map(
+                          (m: any, idx: number) => (
+                            <tr key={m.id || idx}>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                                {m.grossWeight != null
+                                  ? Number(m.grossWeight).toFixed(2)
+                                  : "-"}
+                              </td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                                {m.fineness ?? "-"}
+                              </td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                                {m.netWeight != null
+                                  ? Number(m.netWeight).toFixed(2)
+                                  : "-"}
+                              </td>
+                            </tr>
+                          )
+                        )}
+                        {/* Total Row */}
+                        <tr className="bg-gray-50 font-semibold">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                            {(() => {
+                              const total = (assay.measurements || []).reduce(
+                                (acc: number, m: any) =>
+                                  acc + (Number(m.grossWeight) || 0),
+                                0
+                              );
+                              return total > 0 ? total.toFixed(2) : "-";
+                            })()}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                            {(() => {
+                              const grossTotal = (
+                                assay.measurements || []
+                              ).reduce(
+                                (acc: number, m: any) =>
+                                  acc + (Number(m.grossWeight) || 0),
+                                0
+                              );
+                              const netTotal = (
+                                assay.measurements || []
+                              ).reduce(
+                                (acc: number, m: any) =>
+                                  acc + (Number(m.netWeight) || 0),
+                                0
+                              );
+                              if (grossTotal > 0 && netTotal > 0) {
+                                const fineness = (netTotal / grossTotal) * 100;
+                                return fineness.toFixed(2) + "%";
+                              }
+                              return "-";
+                            })()}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                            {(() => {
+                              const total = (assay.measurements || []).reduce(
+                                (acc: number, m: any) =>
+                                  acc + (Number(m.netWeight) || 0),
+                                0
+                              );
+                              return total > 0 ? total.toFixed(2) : "-";
+                            })()}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
+                </div>
 
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Total USD Value:
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {jobCard?.valueUsd != null
-                          ? formatCurrency(jobCard.valueUsd, "USD")
-                          : assay.jbTotalUsdValue != null
-                          ? formatCurrency(assay.jbTotalUsdValue, "USD")
-                          : formatCurrency(0, "USD")}
-                      </dd>
+                {/* Exporter Summary (bottom left) */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h5 className="text-sm font-medium text-gray-900 mb-3">
+                    Exporter Valuation Summary
+                  </h5>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Weight in Ounces:
+                        </dt>
+                        <dd className="text-sm font-semibold text-gray-900">
+                          {jobCard?.numberOfOunces != null
+                            ? Number(jobCard.numberOfOunces).toFixed(3)
+                            : assay.jbWeightInOz != null
+                            ? Number(assay.jbWeightInOz).toFixed(3)
+                            : "0.000"}{" "}
+                          oz
+                        </dd>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* <div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Price per Ounce:
+                        </dt>
+                        <dd className="text-sm font-semibold text-gray-900">
+                          {jobCard?.pricePerOunce != null
+                            ? formatCurrency(jobCard.pricePerOunce, "USD")
+                            : assay.jbPricePerOz != null
+                            ? formatCurrency(assay.jbPricePerOz, "USD")
+                            : formatCurrency(0, "USD")}
+                        </dd>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Total USD Value:
+                        </dt>
+                        <dd className="text-sm font-semibold text-gray-900">
+                          {jobCard?.valueUsd != null
+                            ? formatCurrency(jobCard.valueUsd, "USD")
+                            : assay.jbTotalUsdValue != null
+                            ? formatCurrency(assay.jbTotalUsdValue, "USD")
+                            : formatCurrency(0, "USD")}
+                        </dd>
+                      </div>
+                    </div>
+
+                    {/* <div>
                     <div className="flex items-center gap-2">
                       <dt className="text-sm font-medium text-gray-500">
                         Total GHS Value:
@@ -490,118 +552,123 @@ export default function AssayDetailPage() {
                       </dd>
                     </div>
                   </div> */}
+                  </div>
                 </div>
-              </div>
 
-              {/* GoldBod Valuation Summary (bottom right) */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h5 className="text-sm font-medium text-gray-900 mb-3">
-                  GOLDBOD Valuation Summary
-                </h5>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Weight in Ounces:
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {assay.weightInOz != null
-                          ? Number(assay.weightInOz).toFixed(3)
-                          : (() => {
-                              const totalGrams = (
-                                assay.measurements || []
-                              ).reduce(
-                                (acc: number, m: any) =>
-                                  acc +
-                                  convertToGrams(
-                                    m.netWeight,
-                                    m?.unitOfMeasure ?? jobCard?.unitOfMeasure
-                                  ),
-                                0
-                              );
-                              const GRAMS_PER_TROY_OUNCE = 31.1035;
-                              const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                              return totalGrams > 0 ? oz.toFixed(3) : "0.000";
-                            })()}{" "}
-                        oz
-                      </dd>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Price per Ounce:
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {assay.pricePerOz != null
-                          ? formatCurrency(assay.pricePerOz, "USD")
-                          : assay.comments && typeof assay.comments === "string"
-                          ? (() => {
-                              try {
-                                const parsed = JSON.parse(
-                                  assay.comments || "{}"
+                {/* GoldBod Valuation Summary (bottom right) */}
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h5 className="text-sm font-medium text-gray-900 mb-3">
+                    GOLDBOD Valuation Summary
+                  </h5>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Weight in Ounces:
+                        </dt>
+                        <dd className="text-sm font-semibold text-gray-900">
+                          {assay.weightInOz != null
+                            ? Number(assay.weightInOz).toFixed(3)
+                            : (() => {
+                                const totalGrams = (
+                                  assay.measurements || []
+                                ).reduce(
+                                  (acc: number, m: any) =>
+                                    acc +
+                                    convertToGrams(
+                                      m.netWeight,
+                                      m?.unitOfMeasure ?? jobCard?.unitOfMeasure
+                                    ),
+                                  0
                                 );
-                                const mp = parsed?.meta?.dailyPrice;
-                                return mp != null
-                                  ? formatCurrency(mp, "USD")
-                                  : commodityPrice != null
-                                  ? formatCurrency(commodityPrice, "USD")
-                                  : formatCurrency(0, "USD");
-                              } catch {
-                                return commodityPrice != null
-                                  ? formatCurrency(commodityPrice, "USD")
-                                  : formatCurrency(0, "USD");
-                              }
-                            })()
-                          : assay.comments?.meta?.dailyPrice != null
-                          ? formatCurrency(
-                              assay.comments.meta.dailyPrice,
-                              "USD"
-                            )
-                          : commodityPrice != null
-                          ? formatCurrency(commodityPrice, "USD")
-                          : formatCurrency(0, "USD")}
-                      </dd>
+                                const GRAMS_PER_TROY_OUNCE = 31.1035;
+                                const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
+                                return totalGrams > 0 ? oz.toFixed(3) : "0.000";
+                              })()}{" "}
+                          oz
+                        </dd>
+                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Total USD Value:
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {assay.totalUsdValue != null
-                          ? formatCurrency(assay.totalUsdValue, "USD")
-                          : assay.comments && typeof assay.comments === "string"
-                          ? (() => {
-                              try {
-                                const parsed = JSON.parse(
-                                  assay.comments || "{}"
-                                );
-                                const v = parsed?.meta?.valueUsd;
-                                return v != null
-                                  ? formatCurrency(v, "USD")
-                                  : totalUsd != null
-                                  ? formatCurrency(totalUsd, "USD")
-                                  : formatCurrency(0, "USD");
-                              } catch {
-                                return totalUsd != null
-                                  ? formatCurrency(totalUsd, "USD")
-                                  : formatCurrency(0, "USD");
-                              }
-                            })()
-                          : assay.comments?.meta?.valueUsd != null
-                          ? formatCurrency(assay.comments.meta.valueUsd, "USD")
-                          : totalUsd != null
-                          ? formatCurrency(totalUsd, "USD")
-                          : formatCurrency(0, "USD")}
-                      </dd>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Price per Ounce:
+                        </dt>
+                        <dd className="text-sm font-semibold text-gray-900">
+                          {assay.pricePerOz != null
+                            ? formatCurrency(assay.pricePerOz, "USD")
+                            : assay.comments &&
+                              typeof assay.comments === "string"
+                            ? (() => {
+                                try {
+                                  const parsed = JSON.parse(
+                                    assay.comments || "{}"
+                                  );
+                                  const mp = parsed?.meta?.dailyPrice;
+                                  return mp != null
+                                    ? formatCurrency(mp, "USD")
+                                    : commodityPrice != null
+                                    ? formatCurrency(commodityPrice, "USD")
+                                    : formatCurrency(0, "USD");
+                                } catch {
+                                  return commodityPrice != null
+                                    ? formatCurrency(commodityPrice, "USD")
+                                    : formatCurrency(0, "USD");
+                                }
+                              })()
+                            : assay.comments?.meta?.dailyPrice != null
+                            ? formatCurrency(
+                                assay.comments.meta.dailyPrice,
+                                "USD"
+                              )
+                            : commodityPrice != null
+                            ? formatCurrency(commodityPrice, "USD")
+                            : formatCurrency(0, "USD")}
+                        </dd>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* <div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <dt className="text-sm font-medium text-gray-500">
+                          Total USD Value:
+                        </dt>
+                        <dd className="text-sm font-semibold text-gray-900">
+                          {assay.totalUsdValue != null
+                            ? formatCurrency(assay.totalUsdValue, "USD")
+                            : assay.comments &&
+                              typeof assay.comments === "string"
+                            ? (() => {
+                                try {
+                                  const parsed = JSON.parse(
+                                    assay.comments || "{}"
+                                  );
+                                  const v = parsed?.meta?.valueUsd;
+                                  return v != null
+                                    ? formatCurrency(v, "USD")
+                                    : totalUsd != null
+                                    ? formatCurrency(totalUsd, "USD")
+                                    : formatCurrency(0, "USD");
+                                } catch {
+                                  return totalUsd != null
+                                    ? formatCurrency(totalUsd, "USD")
+                                    : formatCurrency(0, "USD");
+                                }
+                              })()
+                            : assay.comments?.meta?.valueUsd != null
+                            ? formatCurrency(
+                                assay.comments.meta.valueUsd,
+                                "USD"
+                              )
+                            : totalUsd != null
+                            ? formatCurrency(totalUsd, "USD")
+                            : formatCurrency(0, "USD")}
+                        </dd>
+                      </div>
+                    </div>
+
+                    {/* <div>
                     <div className="flex items-center gap-2">
                       <dt className="text-sm font-medium text-gray-500">
                         Total GHS Value:
@@ -615,15 +682,15 @@ export default function AssayDetailPage() {
                       </dd>
                     </div>
                   </div> */}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Assay details moved to bottom with labels */}
-          <div className="mt-4 border-t pt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              {/* <div>
+            {/* Assay details moved to bottom with labels */}
+            <div className="mt-4 border-t pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                {/* <div>
                 <div className="border-b border-gray-400 mb-2 pt-4"></div>
                 <div className="flex flex-col gap-1">
                   <dt className="text-xs font-medium text-gray-500 text-center">
@@ -635,95 +702,109 @@ export default function AssayDetailPage() {
                 </div>
               </div> */}
 
-              <div>
-                <div className="flex items-center gap-2">
-                  <dt className="text-xs font-medium text-gray-500 text-center">
-                    Security Seal No.:
-                  </dt>
-                  <dd className="text-xs text-gray-900 text-center">
-                    {assay.securitySealNo || "-"}
-                  </dd>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <dt className="text-xs font-medium text-gray-500 text-center">
+                      Security Seal No.:
+                    </dt>
+                    <dd className="text-xs text-gray-900 text-center">
+                      {assay.securitySealNo || "-"}
+                    </dd>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2">
+                    <dt className="text-xs font-medium text-gray-500 text-center">
+                      GOLDBOD Seal No.:
+                    </dt>
+                    <dd className="text-xs text-gray-900 text-center">
+                      {assay.goldbodSealNo || "-"}
+                    </dd>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2">
+                    <dt className="text-xs font-medium text-gray-500 text-center">
+                      Customs Seal No.:
+                    </dt>
+                    <dd className="text-xs text-gray-900 text-center">
+                      {assay.customsSealNo || "-"}
+                    </dd>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center gap-2">
-                  <dt className="text-xs font-medium text-gray-500 text-center">
-                    GOLDBOD Seal No.:
-                  </dt>
-                  <dd className="text-xs text-gray-900 text-center">
-                    {assay.goldbodSealNo || "-"}
-                  </dd>
+              {/* Signatories */}
+              <div className="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                  <div className="border-b border-gray-400 mb-2 pt-4"></div>
+                  <div className="flex flex-col gap-1">
+                    <dt className="text-xs font-medium text-gray-500 text-center">
+                      Exporter Authorized Signatory
+                    </dt>
+                    <dd className="text-xs text-gray-900 text-center">
+                      {jobCard?.exporter?.authorizedSignatory ||
+                        jobCard?.exporter?.contactPerson ||
+                        "-"}
+                    </dd>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="border-b border-gray-400 mb-2 pt-4"></div>
+                  <div className="flex flex-col gap-1">
+                    <dt className="text-xs font-medium text-gray-500 text-center">
+                      Customs Officer
+                    </dt>
+                    <dd className="text-xs text-gray-900 text-center">
+                      {jobCard?.customsOfficer?.name || "-"}
+                    </dd>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="border-b border-gray-400 mb-2 pt-4"></div>
+                  <div className="flex flex-col gap-1">
+                    <dt className="text-xs font-medium text-gray-500 text-center">
+                      Technical Director
+                    </dt>
+                    <dd className="text-xs text-gray-900 text-center">
+                      {jobCard?.technicalDirector?.name || "-"}
+                    </dd>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="border-b border-gray-400 mb-2 pt-4"></div>
+                  <div className="flex flex-col gap-1">
+                    <dt className="text-xs font-medium text-gray-500 text-center">
+                      Assay Officer
+                    </dt>
+                    <dd className="text-xs text-gray-900 text-center">
+                      {assay.signatory || assay.comments?.signatory || "-"}
+                    </dd>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center gap-2">
-                  <dt className="text-xs font-medium text-gray-500 text-center">
-                    Customs Seal No.:
-                  </dt>
-                  <dd className="text-xs text-gray-900 text-center">
-                    {assay.customsSealNo || "-"}
-                  </dd>
-                </div>
-              </div>
-            </div>
-
-            {/* Signatories */}
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div>
-                <div className="border-b border-gray-400 mb-2 pt-4"></div>
-                <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 text-center">
-                    Exporter Authorized Signatory
-                  </dt>
-                  <dd className="text-xs text-gray-900 text-center">
-                    {jobCard?.exporter?.authorizedSignatory ||
-                      jobCard?.exporter?.contactPerson ||
-                      "-"}
-                  </dd>
-                </div>
-              </div>
-
-              <div>
-                <div className="border-b border-gray-400 mb-2 pt-4"></div>
-                <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 text-center">
-                    Customs Officer
-                  </dt>
-                  <dd className="text-xs text-gray-900 text-center">
-                    {jobCard?.customsOfficer?.name || "-"}
-                  </dd>
-                </div>
-              </div>
-
-              <div>
-                <div className="border-b border-gray-400 mb-2 pt-4"></div>
-                <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 text-center">
-                    Technical Director
-                  </dt>
-                  <dd className="text-xs text-gray-900 text-center">
-                    {jobCard?.technicalDirector?.name || "-"}
-                  </dd>
-                </div>
-              </div>
-
-              <div>
-                <div className="border-b border-gray-400 mb-2 pt-4"></div>
-                <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 text-center">
-                    Assay Officer
-                  </dt>
-                  <dd className="text-xs text-gray-900 text-center">
-                    {assay.signatory || assay.comments?.signatory || "-"}
-                  </dd>
+              {/* QR Code Section */}
+              <div className="mt-8 flex justify-end">
+                <div className="flex items-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                      "https://goldbod.gov.gh/"
+                    )}`}
+                    alt="QR Code - Visit GoldBod Website"
+                    className="w-16 h-16"
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

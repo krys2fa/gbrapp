@@ -94,6 +94,61 @@ export default function AssayResultsPage() {
 
   return (
     <>
+      {/* Watermark Styles */}
+      <style jsx>{`
+        #assay-content {
+          position: relative;
+        }
+        #assay-content::before {
+          content: "";
+          position: absolute;
+          top: 30%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 280px;
+          height: 280px;
+          background: url("/seal.png") no-repeat center center;
+          background-size: contain;
+          opacity: 0.08;
+          z-index: 1;
+          pointer-events: none;
+        }
+        #assay-content > * {
+          position: relative;
+          z-index: 2;
+        }
+
+        /* Multi-page watermark for print */
+        @media print {
+          body {
+            background: url("/seal.png") no-repeat center 30%;
+            background-size: 280px 280px;
+            background-attachment: fixed;
+          }
+          body::before {
+            content: "";
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 280px;
+            background: url("/seal.png") no-repeat center center;
+            background-size: contain;
+            opacity: 0.08;
+            z-index: 1;
+            pointer-events: none;
+          }
+          /* QR Code print styles */
+          img[alt*="QR Code"] {
+            width: 16pt !important;
+            height: 16pt !important;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+        }
+      `}</style>
+
       {/* Header with Logo and Navigation */}
       <div className="bg-white shadow-sm rounded-t-lg print:hidden">
         <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200">
@@ -465,6 +520,19 @@ export default function AssayResultsPage() {
                       </p>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* QR Code Section */}
+              <div className="mt-8 flex justify-end px-4 sm:px-6 lg:px-8 pb-6">
+                <div className="flex items-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                      "https://goldbod.gov.gh/"
+                    )}`}
+                    alt="QR Code - Visit GoldBod Website"
+                    className="w-16 h-16"
+                  />
                 </div>
               </div>
             </div>

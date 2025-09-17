@@ -158,7 +158,10 @@ export default async function LargeScaleInvoicePage(props: any) {
           />
         </div>
 
-        <div className="bg-white shadow rounded-lg p-6" id="invoice-content">
+        <div
+          className="bg-white shadow rounded-lg p-6 watermark-container"
+          id="invoice-content"
+        >
           <div className="flex items-center justify-between mb-1 px-8">
             <div className="p-2">
               <img
@@ -316,6 +319,19 @@ export default async function LargeScaleInvoicePage(props: any) {
             <p className="text-lg font-bold flex justify-between">
               <span>Grand Total:</span> {formatCurrency(grandTotal, "GHS")}
             </p>
+          </div>
+
+          {/* QR Code Section */}
+          <div className="mt-6 flex justify-end">
+            <div className="flex items-center">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                  "https://goldbod.gov.gh/"
+                )}`}
+                alt="QR Code - Visit GoldBod Website"
+                className="w-16 h-16"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -163,7 +163,6 @@ export default async function InvoicePage(props: any) {
       </div>
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center justify-end mb-6">
-
           {/* Client actions: back + download */}
           <InvoiceActions
             jobCardId={jobCardId}
@@ -172,7 +171,10 @@ export default async function InvoicePage(props: any) {
           />
         </div>
 
-        <div className="bg-white shadow rounded-lg p-6" id="invoice-content">
+        <div
+          className="bg-white shadow rounded-lg p-6 watermark-container"
+          id="invoice-content"
+        >
           <div className="flex items-center justify-between mb-1">
             <div className="py-2">
               <img
@@ -325,16 +327,15 @@ export default async function InvoicePage(props: any) {
           </div>
 
           {/* QR Code Section */}
-          <div className="my-6 flex justify-start">
-            <div className="text-center">
+          <div className="my-6 flex justify-end">
+            <div className="flex items-center">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
                   "https://goldbod.gov.gh/"
                 )}`}
                 alt="QR Code - Visit GoldBod Website"
-                className="w-40 h-40 mx-auto mb-2"
+                className="w-16 h-16"
               />
-              {/* <p className="text-xs text-gray-500">Scan to visit GoldBod</p> */}
             </div>
           </div>
         </div>
