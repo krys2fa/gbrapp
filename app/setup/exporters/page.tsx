@@ -59,38 +59,38 @@ const ExportersPage = () => {
   const [viewingExporter, setViewingExporter] = useState<any>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
-  // Fetch exporters from API
-  React.useEffect(() => {
-    async function fetchExporters() {
-      setExportersLoading(true);
+  // Fetch exporters from API - reusable function
+  const fetchExporters = async () => {
+    setExportersLoading(true);
+    try {
+      let url = "/api/exporters";
+      const params = [];
+      if (nameFilter) params.push(`search=${encodeURIComponent(nameFilter)}`);
+      if (emailFilter) params.push(`email=${encodeURIComponent(emailFilter)}`);
+      if (phoneFilter) params.push(`phone=${encodeURIComponent(phoneFilter)}`);
+      if (params.length) url += `?${params.join("&")}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setExporters(Array.isArray(data) ? data : []);
+      // fetch exporter types as well
       try {
-        let url = "/api/exporters";
-        const params = [];
-        if (nameFilter) params.push(`search=${encodeURIComponent(nameFilter)}`);
-        if (emailFilter)
-          params.push(`email=${encodeURIComponent(emailFilter)}`);
-        if (phoneFilter)
-          params.push(`phone=${encodeURIComponent(phoneFilter)}`);
-        if (params.length) url += `?${params.join("&")}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        setExporters(Array.isArray(data) ? data : []);
-        // fetch exporter types as well
-        try {
-          const typesRes = await fetch("/api/exporter-types");
-          if (typesRes.ok) {
-            const types = await typesRes.json();
-            setExporterTypes(Array.isArray(types) ? types : []);
-          }
-        } catch (e) {
-          setExporterTypes([]);
+        const typesRes = await fetch("/api/exporter-types");
+        if (typesRes.ok) {
+          const types = await typesRes.json();
+          setExporterTypes(Array.isArray(types) ? types : []);
         }
-      } catch {
-        setExporters([]);
-      } finally {
-        setExportersLoading(false);
+      } catch (e) {
+        setExporterTypes([]);
       }
+    } catch {
+      setExporters([]);
+    } finally {
+      setExportersLoading(false);
     }
+  };
+
+  // Load data on component mount and filter changes
+  React.useEffect(() => {
     fetchExporters();
   }, [filterTrigger]);
 
@@ -147,6 +147,8 @@ const ExportersPage = () => {
         throw new Error(errorData.error || "Failed to create exporter");
       }
       toast.success("Exporter created successfully!", { id: toastId });
+      // Refresh the exporters list to show the new exporter
+      await fetchExporters();
       setForm({
         name: "",
         tin: "",
@@ -266,6 +268,8 @@ const ExportersPage = () => {
         throw new Error(errorData.error || "Failed to update exporter");
       }
       toast.success("Exporter updated successfully!", { id: toastId });
+      // Refresh the exporters list to show the updated exporter
+      await fetchExporters();
       setEditingExporter(null);
       setForm({
         name: "",
@@ -316,6 +320,8 @@ const ExportersPage = () => {
       });
       if (!res.ok) throw new Error("Failed to delete exporter");
       toast.success("Exporter deleted successfully!", { id: toastId });
+      // Refresh the exporters list to remove the deleted exporter
+      await fetchExporters();
     } catch (err: any) {
       toast.error(err.message || "Error deleting exporter", { id: toastId });
     } finally {

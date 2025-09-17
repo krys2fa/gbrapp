@@ -300,14 +300,12 @@ Rate: ${rate}
 Week: ${weekStart}
 Submitted By: ${submittedBy}
 
-Please review and approve/reject this week's exchange rate in the system.
-
-This is an automated notification from the GBR System.
+Please review and approve/reject this week's exchange rate at https://gbrapp.vercel.app/setup/pending-approvals.
     `.trim();
 
-    // Send immediate SMS notification to SUPERADMIN and CEO
+    // Send immediate SMS notification to SUPERADMIN, CEO, and DEPUTY_CEO
     await this.notifyUsersWithRoles(
-      ["SUPERADMIN", "CEO"],
+      ["SUPERADMIN", "CEO", "DEPUTY_CEO"],
       subject,
       message,
       "sms"
@@ -330,9 +328,7 @@ Rate: ${rate}
 Week: ${weekStart}
 Submitted By: ${submittedBy}
 
-This rate requires immediate attention. Please review and approve/reject via the admin panel.
-
-This is an automated urgent notification from GBR Application.
+This rate requires immediate attention. Please review and approve/reject via https://gbrapp.vercel.app/setup/pending-approvals.
     `.trim();
 
     // Send delayed SMS notification to DEPUTY_CEO and SUPERADMIN
