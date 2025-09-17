@@ -1,11 +1,11 @@
 "use client";
 import React, { useState } from "react";
+import { toast } from "react-hot-toast";
 import {
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
   MagnifyingGlassIcon,
-  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
 import { Building2 } from "lucide-react";
@@ -45,8 +45,6 @@ const ExportersPage = () => {
     notifiedPartyMobile: "",
   });
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   // Table state
   const [exporters, setExporters] = useState<any[]>([]);
   const [exportersLoading, setExportersLoading] = useState(true);
@@ -94,7 +92,7 @@ const ExportersPage = () => {
       }
     }
     fetchExporters();
-  }, [success, filterTrigger]);
+  }, [filterTrigger]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -107,8 +105,7 @@ const ExportersPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
+    const toastId = toast.loading("Creating exporter...");
     try {
       const res = await fetch("/api/exporters", {
         method: "POST",
@@ -149,7 +146,7 @@ const ExportersPage = () => {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to create exporter");
       }
-      setSuccess("Exporter created successfully!");
+      toast.success("Exporter created successfully!", { id: toastId });
       setForm({
         name: "",
         tin: "",
@@ -182,7 +179,7 @@ const ExportersPage = () => {
         notifiedPartyMobile: "",
       });
     } catch (err: any) {
-      setError(err.message || "Error creating exporter");
+      toast.error(err.message || "Error creating exporter", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -227,8 +224,7 @@ const ExportersPage = () => {
     e.preventDefault();
     if (!editingExporter) return;
     setLoading(true);
-    setError("");
-    setSuccess("");
+    const toastId = toast.loading("Updating exporter...");
     try {
       const res = await fetch(`/api/exporters/${editingExporter.id}`, {
         method: "PUT",
@@ -269,7 +265,7 @@ const ExportersPage = () => {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to update exporter");
       }
-      setSuccess("Exporter updated successfully!");
+      toast.success("Exporter updated successfully!", { id: toastId });
       setEditingExporter(null);
       setForm({
         name: "",
@@ -303,7 +299,7 @@ const ExportersPage = () => {
         notifiedPartyMobile: "",
       });
     } catch (err: any) {
-      setError(err.message || "Error updating exporter");
+      toast.error(err.message || "Error updating exporter", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -313,16 +309,15 @@ const ExportersPage = () => {
     if (!window.confirm("Are you sure you want to delete this exporter?"))
       return;
     setLoading(true);
-    setError("");
-    setSuccess("");
+    const toastId = toast.loading("Deleting exporter...");
     try {
       const res = await fetch(`/api/exporters/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete exporter");
-      setSuccess("Exporter deleted successfully!");
+      toast.success("Exporter deleted successfully!", { id: toastId });
     } catch (err: any) {
-      setError(err.message || "Error deleting exporter");
+      toast.error(err.message || "Error deleting exporter", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -364,36 +359,6 @@ const ExportersPage = () => {
           >
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                {error && (
-                  <div className="rounded-md bg-red-50 p-4 mb-6">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        {/* Error icon */}
-                        <svg
-                          className="h-5 w-5 text-red-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-red-800">
-                          Error Creating Exporter
-                        </h3>
-                        <div className="mt-2 text-sm text-red-700 whitespace-pre-wrap">
-                          {error}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <label
@@ -969,7 +934,7 @@ const ExportersPage = () => {
             {exportersLoading ? (
               <div className="flex justify-center items-center py-10">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                <span className="ml-2 text-gray-500">Loading exporters...</span>
+                {/* <span className="ml-2 text-gray-500">Loading exporters...</span> */}
               </div>
             ) : (
               <>

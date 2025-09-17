@@ -217,85 +217,111 @@ export async function PUT(req: NextRequest) {
     if (requestData.numberOfOunces !== undefined) {
       updateData.numberOfOunces = parseFloat(requestData.numberOfOunces);
     }
-    if (
-      requestData.customsOfficer !== undefined &&
-      typeof requestData.customsOfficer === "string" &&
-      requestData.customsOfficer.trim() !== ""
-    ) {
-      // Find or create customs officer
-      let customsOfficer = await prisma.customsOfficer.findFirst({
-        where: { name: requestData.customsOfficer.trim() },
-      });
-      if (!customsOfficer) {
-        customsOfficer = await prisma.customsOfficer.create({
-          data: {
-            name: requestData.customsOfficer.trim(),
-            badgeNumber: `AUTO-${Date.now()}-${Math.random()
-              .toString(36)
-              .substr(2, 5)}`,
-          },
+    // Handle customs officer assignment
+    if (requestData.customsOfficer !== undefined) {
+      if (
+        typeof requestData.customsOfficer === "string" &&
+        requestData.customsOfficer.trim() !== ""
+      ) {
+        // Find or create customs officer
+        let customsOfficer = await prisma.customsOfficer.findFirst({
+          where: { name: requestData.customsOfficer.trim() },
         });
+        if (!customsOfficer) {
+          customsOfficer = await prisma.customsOfficer.create({
+            data: {
+              name: requestData.customsOfficer.trim(),
+              badgeNumber: `AUTO-${Date.now()}-${Math.random()
+                .toString(36)
+                .substr(2, 5)}`,
+            },
+          });
+        }
+        updateData.customsOfficer = { connect: { id: customsOfficer.id } };
+      } else {
+        updateData.customsOfficer = { disconnect: true };
       }
-      updateData.customsOfficer = { connect: { id: customsOfficer.id } };
     }
-    if (
-      requestData.technicalDirector !== undefined &&
-      typeof requestData.technicalDirector === "string" &&
-      requestData.technicalDirector.trim() !== ""
-    ) {
-      // Find or create technical director
-      let technicalDirector = await prisma.technicalDirector.findFirst({
-        where: { name: requestData.technicalDirector.trim() },
-      });
-      if (!technicalDirector) {
-        technicalDirector = await prisma.technicalDirector.create({
-          data: {
-            name: requestData.technicalDirector.trim(),
-            badgeNumber: `AUTO-${Date.now()}-${Math.random()
-              .toString(36)
-              .substr(2, 5)}`,
-          },
+    // Handle technical director assignment
+    if (requestData.technicalDirector !== undefined) {
+      if (
+        typeof requestData.technicalDirector === "string" &&
+        requestData.technicalDirector.trim() !== ""
+      ) {
+        // Find or create technical director
+        let technicalDirector = await prisma.technicalDirector.findFirst({
+          where: { name: requestData.technicalDirector.trim() },
         });
+        if (!technicalDirector) {
+          technicalDirector = await prisma.technicalDirector.create({
+            data: {
+              name: requestData.technicalDirector.trim(),
+              badgeNumber: `AUTO-${Date.now()}-${Math.random()
+                .toString(36)
+                .substr(2, 5)}`,
+            },
+          });
+        }
+        updateData.technicalDirector = {
+          connect: { id: technicalDirector.id },
+        };
+      } else {
+        updateData.technicalDirector = { disconnect: true };
       }
-      updateData.technicalDirector = { connect: { id: technicalDirector.id } };
     }
 
     // Handle officer ID fields (for dropdown selections)
-    if (
-      requestData.customsOfficerId !== undefined &&
-      requestData.customsOfficerId !== ""
-    ) {
-      updateData.customsOfficer = {
-        connect: { id: requestData.customsOfficerId },
-      };
+    if (requestData.customsOfficerId !== undefined) {
+      if (requestData.customsOfficerId && requestData.customsOfficerId !== "") {
+        updateData.customsOfficer = {
+          connect: { id: requestData.customsOfficerId },
+        };
+      } else {
+        updateData.customsOfficer = { disconnect: true };
+      }
     }
-    if (
-      requestData.assayOfficerId !== undefined &&
-      requestData.assayOfficerId !== ""
-    ) {
-      updateData.assayOfficer = { connect: { id: requestData.assayOfficerId } };
+    // Handle officer assignments - disconnect if null/empty, connect if valid ID
+    if (requestData.assayOfficerId !== undefined) {
+      if (requestData.assayOfficerId && requestData.assayOfficerId !== "") {
+        updateData.assayOfficer = {
+          connect: { id: requestData.assayOfficerId },
+        };
+      } else {
+        updateData.assayOfficer = { disconnect: true };
+      }
     }
-    if (
-      requestData.technicalDirectorId !== undefined &&
-      requestData.technicalDirectorId !== ""
-    ) {
-      updateData.technicalDirector = {
-        connect: { id: requestData.technicalDirectorId },
-      };
+    if (requestData.technicalDirectorId !== undefined) {
+      if (
+        requestData.technicalDirectorId &&
+        requestData.technicalDirectorId !== ""
+      ) {
+        updateData.technicalDirector = {
+          connect: { id: requestData.technicalDirectorId },
+        };
+      } else {
+        updateData.technicalDirector = { disconnect: true };
+      }
     }
-    if (
-      requestData.nacobOfficerId !== undefined &&
-      requestData.nacobOfficerId !== ""
-    ) {
-      updateData.nacobOfficer = { connect: { id: requestData.nacobOfficerId } };
+    if (requestData.nacobOfficerId !== undefined) {
+      if (requestData.nacobOfficerId && requestData.nacobOfficerId !== "") {
+        updateData.nacobOfficer = {
+          connect: { id: requestData.nacobOfficerId },
+        };
+      } else {
+        updateData.nacobOfficer = { disconnect: true };
+      }
     }
-    if (
-      requestData.nationalSecurityOfficerId !== undefined &&
-      requestData.nationalSecurityOfficerId !== ""
-    ) {
-      updateData.securityOfficer = {
-        connect: { id: requestData.nationalSecurityOfficerId },
-      };
+    if (requestData.nationalSecurityOfficerId !== undefined) {
+      if (
+        requestData.nationalSecurityOfficerId &&
+        requestData.nationalSecurityOfficerId !== ""
+      ) {
+        updateData.securityOfficer = {
+          connect: { id: requestData.nationalSecurityOfficerId },
+        };
+      } else {
+        updateData.securityOfficer = { disconnect: true };
+      }
     }
 
     console.log("Updating with data:", updateData);
@@ -633,9 +659,54 @@ export async function PUT(req: NextRequest) {
         const refreshed = await prisma.jobCard.findUnique({
           where: { id },
           include: {
-            exporter: true,
-            assays: true,
+            exporter: {
+              include: {
+                exporterType: true,
+              },
+            },
+            commodity: true,
+            customsOfficer: true,
+            nacobOfficer: true,
+            securityOfficer: true,
+            assayOfficer: true,
+            technicalDirector: true,
+            seals: true,
+            assays: {
+              select: {
+                id: true,
+                jobCardId: true,
+                assayOfficerId: true,
+                technicalDirectorId: true,
+                goldContent: true,
+                silverContent: true,
+                comments: true,
+                assayDate: true,
+                certificateNumber: true,
+                remarks: true,
+                measurements: true,
+                grossWeight: true,
+                fineness: true,
+                netWeight: true,
+                weightInOz: true,
+                pricePerOz: true,
+                totalUsdValue: true,
+                totalGhsValue: true,
+                commodityPrice: true,
+                exchangeRate: true,
+                securitySealNo: true,
+                goldbodSealNo: true,
+                customsSealNo: true,
+                exporterSignatory: true,
+                goldbodSignatory: true,
+                shipmentTypeId: true,
+                shipmentType: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
             invoices: true,
+            fees: true,
+            levies: true,
           },
         });
         return NextResponse.json(refreshed);

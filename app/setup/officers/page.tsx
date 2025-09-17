@@ -40,8 +40,6 @@ const OfficersPage = () => {
     officerType: officerTypes[0].value,
   });
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const [officers, setOfficers] = useState([]);
   const [officersLoading, setOfficersLoading] = useState(true);
   const [editingOfficer, setEditingOfficer] = useState<any>(null);
@@ -68,7 +66,7 @@ const OfficersPage = () => {
       }
     }
     fetchOfficers();
-  }, [success, filterTrigger]);
+  }, [filterTrigger]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -79,8 +77,7 @@ const OfficersPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
+    const toastId = toast.loading("Creating officer...");
     try {
       const res = await fetch("/api/officers", {
         method: "POST",
@@ -91,7 +88,7 @@ const OfficersPage = () => {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to create officer");
       }
-      setSuccess("Officer created successfully!");
+      toast.success("Officer created successfully!", { id: toastId });
       setForm({
         name: "",
         badgeNumber: "",
@@ -100,7 +97,7 @@ const OfficersPage = () => {
         officerType: officerTypes[0].value,
       });
     } catch (err: any) {
-      setError(err.message || "Error creating officer");
+      toast.error(err.message || "Error creating officer", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -121,8 +118,7 @@ const OfficersPage = () => {
     e.preventDefault();
     if (!editingOfficer) return;
     setLoading(true);
-    setError("");
-    setSuccess("");
+    const toastId = toast.loading("Updating officer...");
     try {
       const res = await fetch(`/api/officers/${editingOfficer.id}`, {
         method: "PUT",
@@ -133,7 +129,7 @@ const OfficersPage = () => {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to update officer");
       }
-      setSuccess("Officer updated successfully!");
+      toast.success("Officer updated successfully!", { id: toastId });
       setEditingOfficer(null);
       setForm({
         name: "",
@@ -143,7 +139,7 @@ const OfficersPage = () => {
         officerType: officerTypes[0].value,
       });
     } catch (err: any) {
-      setError(err.message || "Error updating officer");
+      toast.error(err.message || "Error updating officer", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -151,15 +147,16 @@ const OfficersPage = () => {
 
   const handleDeleteOfficer = async (id: string) => {
     if (!confirm("Are you sure you want to delete this officer?")) return;
+    const toastId = toast.loading("Deleting officer...");
     try {
       const res = await fetch(`/api/officers/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete officer");
-      setSuccess("Officer deleted successfully!");
+      toast.success("Officer deleted successfully!", { id: toastId });
       setFilterTrigger((prev) => prev + 1);
     } catch (err: any) {
-      setError(err.message || "Error deleting officer");
+      toast.error(err.message || "Error deleting officer", { id: toastId });
     }
   };
 
@@ -206,63 +203,6 @@ const OfficersPage = () => {
                       : "Add a new officer to the system."}
                   </p>
                 </div>
-
-                {error && (
-                  <div className="rounded-md bg-red-50 p-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <svg
-                          className="h-5 w-5 text-red-400"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-red-800">
-                          Error {editingOfficer ? "Updating" : "Creating"}{" "}
-                          Officer
-                        </h3>
-                        <div className="mt-2 text-sm text-red-700 whitespace-pre-wrap">
-                          {error}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {success && (
-                  <div className="rounded-md bg-green-50 p-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <svg
-                          className="h-5 w-5 text-green-400"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-green-800">
-                          Success
-                        </h3>
-                        <div className="mt-2 text-sm text-green-700">
-                          {success}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
@@ -371,6 +311,7 @@ const OfficersPage = () => {
                           phone: "",
                           officerType: officerTypes[0].value,
                         });
+                        toast.success("Edit cancelled");
                       }}
                       className="bg-gray-500 text-white px-6 py-2 rounded-md shadow hover:bg-gray-600 transition"
                     >
@@ -422,7 +363,10 @@ const OfficersPage = () => {
                 ))}
               </select>
               <button
-                onClick={() => setFilterTrigger((prev) => prev + 1)}
+                onClick={() => {
+                  setFilterTrigger((prev) => prev + 1);
+                  toast.success("Refreshing officers list...");
+                }}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 <MagnifyingGlassIcon className="h-4 w-4 inline mr-2" />
