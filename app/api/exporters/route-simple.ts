@@ -6,9 +6,6 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function GET(req: NextRequest) {
   try {
-    console.log("GET /api/exporters - Starting request");
-    console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
-
     const { searchParams } = new URL(req.url);
     const exporterTypeId = searchParams.get("exporterTypeId");
     const search = searchParams.get("search");
@@ -30,7 +27,6 @@ export async function GET(req: NextRequest) {
       where.phone = { contains: phone, mode: "insensitive" };
     }
 
-    console.log("About to query database with where:", where);
     const exporters = await prisma.exporter.findMany({
       where,
       include: {
@@ -46,18 +42,9 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    console.log("Query successful, found", exporters.length, "exporters");
     return NextResponse.json(exporters);
   } catch (error) {
     console.error("Error fetching exporters:", error);
-    console.error(
-      "Error details:",
-      error instanceof Error ? error.message : "Unknown error"
-    );
-    console.error(
-      "Error stack:",
-      error instanceof Error ? error.stack : "No stack"
-    );
     return NextResponse.json(
       {
         error: "Error fetching exporters",
@@ -73,11 +60,7 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    console.log("POST /api/exporters - Starting request");
-    console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
-
     const data = await req.json();
-    console.log("Request data received:", Object.keys(data));
 
     // Validate required fields
     if (!data.name) {
@@ -87,7 +70,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("Checking for existing exporter with name:", data.name);
     // Check if exporter with same name already exists
     const existingExporter = await prisma.exporter.findFirst({
       where: {
@@ -96,31 +78,20 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingExporter) {
-      console.log("Exporter already exists");
       return NextResponse.json(
         { error: "An exporter with this name already exists" },
         { status: 409 }
       );
     }
 
-    console.log("Creating new exporter");
     // Create the exporter
     const exporter = await prisma.exporter.create({
       data,
     });
 
-    console.log("Exporter created successfully with ID:", exporter.id);
     return NextResponse.json(exporter, { status: 201 });
   } catch (error) {
     console.error("Error creating exporter:", error);
-    console.error(
-      "Error details:",
-      error instanceof Error ? error.message : "Unknown error"
-    );
-    console.error(
-      "Error stack:",
-      error instanceof Error ? error.stack : "No stack"
-    );
     return NextResponse.json(
       {
         error: "Error creating exporter",
