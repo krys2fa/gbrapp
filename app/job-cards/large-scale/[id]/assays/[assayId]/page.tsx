@@ -176,17 +176,27 @@ export default function AssayResultsPage() {
           border-collapse: collapse;
           width: 100%;
           margin-bottom: 15pt;
+          background: transparent;
+          position: relative;
+          z-index: 2;
         }
         th, td {
           border: 1px solid #000;
           padding: 6pt;
           text-align: center;
           font-size: 10pt;
+          background: rgba(255, 255, 255, 0.9);
         }
         th {
-          background-color: #f0f0f0;
+          background-color: rgba(240, 240, 240, 0.9);
           font-weight: bold;
           text-transform: uppercase;
+        }
+        tbody tr:nth-child(even) td {
+          background: rgba(249, 250, 251, 0.9);
+        }
+        .bg-gray-50 {
+          background-color: rgba(249, 250, 251, 0.9) !important;
         }
 
         /* Image styling */
@@ -216,6 +226,50 @@ export default function AssayResultsPage() {
           .header-section { page-break-after: avoid; }
           .table-section { page-break-inside: avoid; }
           .signature-section { page-break-inside: avoid; }
+        }
+
+        /* Watermark - Multi-page support */
+        body {
+          background: url('/seal.png') no-repeat center 30%;
+          background-size: 280px 280px;
+          background-attachment: fixed;
+          opacity: 1;
+        }
+        body::before {
+          content: "";
+          position: fixed;
+          top: 30%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 280px;
+          height: 280px;
+          background: url('/seal.png') no-repeat center center;
+          background-size: contain;
+          opacity: 0.15;
+          z-index: 1;
+          pointer-events: none;
+        }
+        #assay-content {
+          position: relative;
+          background: transparent;
+        }
+        #assay-content::before {
+          content: "";
+          position: absolute;
+          top: 30%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-45deg);
+          width: 280px;
+          height: 280px;
+          background: url('/seal.png') no-repeat center center;
+          background-size: contain;
+          opacity: 0.15;
+          z-index: 1;
+          pointer-events: none;
+        }
+        #assay-content > * {
+          position: relative;
+          z-index: 3;
         }
 
         /* Hide elements not needed for print */
@@ -369,6 +423,71 @@ export default function AssayResultsPage() {
 
   return (
     <>
+      {/* Watermark Styles */}
+      <style jsx>{`
+        #assay-content {
+          position: relative;
+        }
+        #assay-content::before {
+          content: "";
+          position: absolute;
+          top: 30%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 280px;
+          height: 280px;
+          background: url("/seal.png") no-repeat center center;
+          background-size: contain;
+          opacity: 0.15;
+          z-index: 1;
+          pointer-events: none;
+        }
+        #assay-content > * {
+          position: relative;
+          z-index: 3;
+        }
+
+        /* Table transparency for watermark visibility */
+        table {
+          background: transparent !important;
+        }
+        table th {
+          background: rgba(212, 175, 55, 0.9) !important;
+        }
+        table td {
+          background: rgba(255, 255, 255, 0.9) !important;
+        }
+        table tbody tr:nth-child(even) td {
+          background: rgba(249, 250, 251, 0.9) !important;
+        }
+        .bg-gray-50 {
+          background: rgba(249, 250, 251, 0.9) !important;
+        }
+
+        /* Multi-page watermark for print */
+        @media print {
+          body {
+            background: url("/seal.png") no-repeat center 30%;
+            background-size: 280px 280px;
+            background-attachment: fixed;
+          }
+          body::before {
+            content: "";
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 280px;
+            background: url("/seal.png") no-repeat center center;
+            background-size: contain;
+            opacity: 0.15;
+            z-index: 1;
+            pointer-events: none;
+          }
+        }
+      `}</style>
+
       {/* Header with Logo and Navigation */}
       <div className="bg-white shadow-sm rounded-t-lg print:hidden max-w-7xl mx-auto">
         <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200">
@@ -427,7 +546,6 @@ export default function AssayResultsPage() {
                 </div>
               </div>
             </div>
-
 
             {/* Professional Assay Information */}
             <div className="px-6 py-4">
