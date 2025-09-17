@@ -1317,25 +1317,25 @@ function NewLargeScaleJobCardPage() {
                     Exporter Details
                   </h4>
                   {selectedExporter && (
-                    <div className="text-sm text-blue-700">
+                    <div className="text-sm text-black">
                       <p>
-                        <strong>Name:</strong> {selectedExporter.name}
+                        <strong className="text-blue-700">Name:</strong> <strong>{selectedExporter.name}</strong>
                       </p>
                       <p>
-                        <strong>Type:</strong>{" "}
-                        {selectedExporter.exporterType?.name}
+                        <strong className="text-blue-700">Type:</strong>{" "}
+                        <strong>{selectedExporter.exporterType?.name}</strong>
                       </p>
                       <p>
-                        <strong>License:</strong>{" "}
-                        {selectedExporter.licenseNumber || "N/A"}
+                        <strong className="text-blue-700">License:</strong>{" "}
+                        <strong>{selectedExporter.licenseNumber || "N/A"}</strong>
                       </p>
                       <p>
-                        <strong>Email:</strong>{" "}
-                        {selectedExporter.email || "N/A"}
+                        <strong className="text-blue-700">Email:</strong>{" "}
+                        <strong>{selectedExporter.email || "N/A"}</strong>
                       </p>
                       <p>
-                        <strong>Phone:</strong>{" "}
-                        {selectedExporter.phone || "N/A"}
+                        <strong className="text-blue-700">Phone:</strong>{" "}
+                        <strong>{selectedExporter.phone || "N/A"}</strong>
                       </p>
                     </div>
                   )}
@@ -1343,30 +1343,30 @@ function NewLargeScaleJobCardPage() {
 
                 {/* Market Data */}
                 <div className="space-y-2">
-                  <h4 className="text-2xl font-medium text-blue-800">
+                  <h4 className="text-xl font-medium text-blue-800">
                     Latest Market Data
                   </h4>
                   <div className="text-sm text-blue-700">
                     <p>
                       <strong>Exchange Rate:</strong>{" "}
-                      <span
+                      <strong
                         className={
                           exchangeRate && exchangeRate !== "Loading..."
-                            ? "text-green-600"
+                            ? "text-black"
                             : "text-gray-500"
                         }
                       >
                         {exchangeRate || "Loading..."}
-                      </span>
+                      </strong>
                     </p>
                     <p>
                       <strong>Gold Price:</strong>{" "}
-                      <span
+                      <strong
                         className={
                           goldPrice &&
                           goldPrice !== "Loading..." &&
                           goldPrice !== "Not Available"
-                            ? "text-green-600"
+                            ? "text-black"
                             : goldPrice === "Not Available"
                             ? "text-red-500"
                             : "text-gray-500"
@@ -1374,16 +1374,16 @@ function NewLargeScaleJobCardPage() {
                       >
                         {goldPrice || "Loading..."}
                         {goldPrice === "Not Available" && " (Setup Required)"}
-                      </span>
+                      </strong>
                     </p>
                     <p>
                       <strong>Silver Price:</strong>{" "}
-                      <span
+                      <strong
                         className={
                           silverPrice &&
                           silverPrice !== "Loading..." &&
                           silverPrice !== "Not Available"
-                            ? "text-green-600"
+                            ? "text-black"
                             : silverPrice === "Not Available"
                             ? "text-red-500"
                             : "text-gray-500"
@@ -1391,7 +1391,7 @@ function NewLargeScaleJobCardPage() {
                       >
                         {silverPrice || "Loading..."}
                         {silverPrice === "Not Available" && " (Setup Required)"}
-                      </span>
+                      </strong>
                     </p>
                   </div>
                 </div>

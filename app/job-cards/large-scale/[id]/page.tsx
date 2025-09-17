@@ -273,9 +273,9 @@ function LargeScaleJobCardDetailPage() {
               <h1 className="text-3xl font-bold text-gray-900">
                 Large Scale Job Card Details
               </h1>
-              <p className="mt-2 text-sm text-gray-600">
+              {/* <p className="mt-2 text-sm text-gray-600">
                 Reference: {jobCard.referenceNumber}
-              </p>
+              </p> */}
             </div>
             <div className="flex gap-3">
               <Link

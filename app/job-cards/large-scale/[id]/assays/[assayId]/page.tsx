@@ -47,6 +47,19 @@ export default function AssayResultsPage() {
           print-color-adjust: exact;
         }
         * { box-sizing: border-box; }
+        
+        /* A4 Document Layout - Only for Print */
+        body {
+          width: 210mm !important;
+          max-width: 100% !important;
+          margin: 0 auto !important;
+        }
+        #assay-content {
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0 !important;
+          padding: 15mm !important;
+        }
 
         /* Layout and positioning */
         .flex { display: flex; }
@@ -292,7 +305,7 @@ export default function AssayResultsPage() {
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <span className="ml-2 text-gray-500">Loading assay results...</span>
+          {/* <span className="ml-2 text-gray-500">Loading assay results...</span> */}
         </div>
       </div>
     );
@@ -357,7 +370,7 @@ export default function AssayResultsPage() {
   return (
     <>
       {/* Header with Logo and Navigation */}
-      <div className="bg-white shadow-sm rounded-t-lg print:hidden">
+      <div className="bg-white shadow-sm rounded-t-lg print:hidden max-w-7xl mx-auto">
         <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="print:hidden">
@@ -394,60 +407,55 @@ export default function AssayResultsPage() {
                   />
                 </div>
 
-                <div className="flex-1 text-center">
+                {/* <div className="flex-1 text-center">
                   <div className="title-section font-bold uppercase underline">
                     Ghana Gold Board
                   </div>
+                </div> */}
+
+                <div className="title-section uppercase mx-auto text-center font-bold">
+                  REPORT OF GOLD SAMPLE ANALYSIS FROM LARGE SCALE GOLD MINING
+                  COMPANIES
                 </div>
 
                 <div className="flex items-center">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                      "https://goldbod.gov.gh/"
-                    )}`}
-                    alt="QR Code - Visit GoldBod Website"
-                    className="w-16 h-16"
+                    src="/coat-of-arms.jpg"
+                    alt="Ghana Coat of Arms"
+                    className="h-16 w-auto"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="title-section uppercase mx-auto text-center font-bold">
-              REPORT OF GOLD SAMPLE ANALYSIS FROM LARGE SCALE GOLD MINING
-              COMPANIES
-            </div>
 
             {/* Professional Assay Information */}
             <div className="px-6 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="header-info">
-                  <span className="info-label uppercase">Mining company:</span>
+                  <span className="info-label">Mining company:</span>
                   <span className="info-value font-bold ml-2">
                     {jobCard?.exporter?.name || "N/A"}
                   </span>
                 </div>
 
-                <div className="header-info">
-                  <span className="info-label uppercase">
-                    Number of Samples:
-                  </span>
-                  <span className="info-value font-bold ml-2">
+                <div className="header-info text-right pr-0 mr-0">
+                  <span className="info-label">Number of Samples:</span>
+                  <span className="info-value font-bold ml-1">
                     {assay?.measurements?.length || 0}
                   </span>
                 </div>
 
                 <div className="header-info">
-                  <span className="info-label uppercase">Sample Type:</span>
+                  <span className="info-label">Sample Type:</span>
                   <span className="info-value font-bold ml-2">
                     {assay?.sampleType || "N/A"}
                   </span>
                 </div>
 
-                <div className="header-info">
-                  <span className="info-label uppercase">
-                    Date of Analysis:
-                  </span>
-                  <span className="info-value font-bold ml-2">
+                <div className="header-info text-right pr-0 mr-0">
+                  <span className="info-label">Date of Analysis:</span>
+                  <span className="info-value font-bold ml-1">
                     {assay?.dateOfAnalysis
                       ? formatDate(assay.dateOfAnalysis)
                       : "N/A"}
@@ -461,11 +469,9 @@ export default function AssayResultsPage() {
                   </span>
                 </div>
 
-                <div className="header-info">
-                  <span className="info-label uppercase">
-                    Data Sheet Dates:
-                  </span>
-                  <span className="info-value font-bold ml-2">
+                <div className="header-info text-right pr-0 mr-0">
+                  <span className="info-label ">Data Sheet Dates:</span>
+                  <span className="info-value font-bold ml-1">
                     {assay?.dataSheetDates
                       ? formatDate(assay.dataSheetDates)
                       : "N/A"}
@@ -473,9 +479,7 @@ export default function AssayResultsPage() {
                 </div>
 
                 <div className="header-info">
-                  <span className="info-label uppercase">
-                    Sample Bottle Dates:
-                  </span>
+                  <span className="info-label ">Sample Bottle Dates:</span>
                   <span className="info-value font-bold ml-2">
                     {assay?.sampleBottleDates
                       ? formatDate(assay.sampleBottleDates)
@@ -483,9 +487,9 @@ export default function AssayResultsPage() {
                   </span>
                 </div>
 
-                <div className="header-info">
-                  <span className="info-label uppercase">Number of Bars:</span>
-                  <span className="info-value font-bold ml-2">
+                <div className="header-info text-right pr-0 mr-0">
+                  <span className="info-label ">Number of Bars:</span>
+                  <span className="info-value font-bold ml-1">
                     {assay?.numberOfBars || "N/A"}
                   </span>
                 </div>
@@ -502,22 +506,22 @@ export default function AssayResultsPage() {
                         <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
                           SN
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
                           Bar No. NGGL
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
                           Gross Weight ({jobCard?.unitOfMeasure})
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
                           Gold Fineness (%)
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
                           Gold Net Weight ({jobCard?.unitOfMeasure})
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
                           Silver Fineness (%)
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2  text-right text-xs font-bold uppercase bg-[#d4af37]">
                           Silver Net Weight ({jobCard?.unitOfMeasure})
                         </th>
                       </tr>
@@ -528,30 +532,30 @@ export default function AssayResultsPage() {
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
                             {idx + 1}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right">
                             {m.barNumber || "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right">
                             {m.grossWeight != null
                               ? Number(m.grossWeight).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right">
                             {m.goldAssay != null
                               ? Number(m.goldAssay).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
                             {m.netGoldWeight != null
                               ? Number(m.netGoldWeight).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
                             {m.silverAssay != null
                               ? Number(m.silverAssay).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
                             {m.netSilverWeight != null
                               ? Number(m.netSilverWeight).toFixed(2)
                               : "-"}
@@ -566,7 +570,7 @@ export default function AssayResultsPage() {
                         >
                           TOTAL
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                           {(() => {
                             const total = (assay.measurements || []).reduce(
                               (acc: number, m: any) =>
@@ -576,7 +580,7 @@ export default function AssayResultsPage() {
                             return total > 0 ? total.toFixed(2) : "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                           {(() => {
                             const grossTotal = (
                               assay.measurements || []
@@ -600,7 +604,7 @@ export default function AssayResultsPage() {
                             return "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                           {(() => {
                             const total = (assay.measurements || []).reduce(
                               (acc: number, m: any) =>
@@ -610,7 +614,7 @@ export default function AssayResultsPage() {
                             return total > 0 ? total.toFixed(2) : "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                           {(() => {
                             const grossTotal = (
                               assay.measurements || []
@@ -634,7 +638,7 @@ export default function AssayResultsPage() {
                             return "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                           {(() => {
                             const total = (assay.measurements || []).reduce(
                               (acc: number, m: any) =>
@@ -665,15 +669,13 @@ export default function AssayResultsPage() {
                       </dd>
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        NET WEIGHT OF SILVER (Oz):
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {assay?.totalNetSilverWeightOz.toFixed(3)}
-                      </dd>
-                    </div>
+                  <div className="flex-1 text-right pr-0 mr-0">
+                    <dt className="text-sm font-medium text-gray-500 inline">
+                      NET WEIGHT OF SILVER (Oz):
+                    </dt>
+                    <dd className="text-sm font-semibold text-gray-900 ml-1 inline">
+                      {assay?.totalNetSilverWeightOz.toFixed(3)}
+                    </dd>
                   </div>
                 </div>
 
@@ -691,18 +693,16 @@ export default function AssayResultsPage() {
                       </dd>
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500 uppercase">
-                        Unit price per ounce:
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {(() => {
-                          const pricePerOz = assay?.pricePerOz || 0;
-                          return formatCurrency(pricePerOz, "USD");
-                        })()}
-                      </dd>
-                    </div>
+                  <div className="flex-1 text-right pr-0 mr-0">
+                    <dt className="text-sm font-medium text-gray-500 uppercase inline">
+                      Unit price per ounce:
+                    </dt>
+                    <dd className="text-sm font-semibold text-gray-900 ml-1 inline">
+                      {(() => {
+                        const pricePerOz = assay?.pricePerOz || 0;
+                        return formatCurrency(pricePerOz, "USD");
+                      })()}
+                    </dd>
                   </div>
                 </div>
 
@@ -717,15 +717,13 @@ export default function AssayResultsPage() {
                       </dd>
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        VALUE OF SILVER (US$):
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {formatCurrency(assay?.totalSilverValue, "USD")}
-                      </dd>
-                    </div>
+                  <div className="flex-1 text-right pr-0 mr-0">
+                    <dt className="text-sm font-medium text-gray-500 inline">
+                      VALUE OF SILVER (US$):
+                    </dt>
+                    <dd className="text-sm font-semibold text-gray-900 ml-1 inline">
+                      {formatCurrency(assay?.totalSilverValue, "USD")}
+                    </dd>
                   </div>
                 </div>
 
@@ -766,13 +764,22 @@ export default function AssayResultsPage() {
 
             {/* Technical Director Signature Section */}
             <div className="px-4 sm:px-6 lg:px-8 py-8">
-              <div className="flex justify-start">
+              <div className="flex justify-between items-center">
                 <div className="border-t border-gray-300 pt-4 w-64">
                   <div className="text-center">
                     <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
                       Technical Director
                     </p>
                   </div>
+                </div>
+                <div className="flex items-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                      "https://goldbod.gov.gh/"
+                    )}`}
+                    alt="QR Code - Visit GoldBod Website"
+                    className="w-16 h-16"
+                  />
                 </div>
               </div>
             </div>
