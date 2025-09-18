@@ -292,13 +292,22 @@ export class NotificationService {
     submittedBy: string
   ): Promise<void> {
     const subject = `Exchange Rate Approval Required: ${exchangeName}`;
-    const message = `
-New exchange rate requires approval:
+//     const message = `
+// New exchange rate requires approval:
+
+// Exchange: ${exchangeName}
+// Rate: ${rate}
+// Week: ${weekStart}
+// Submitted By: ${submittedBy}
+
+// Please review and approve/reject this week's exchange rate at https://gbrapp.vercel.app/setup/pending-approvals.
+//     `.trim();
+
+const message = `
+Exchange rate approval required:
 
 Exchange: ${exchangeName}
 Rate: ${rate}
-Week: ${weekStart}
-Submitted By: ${submittedBy}
 
 Please review and approve/reject this week's exchange rate at https://gbrapp.vercel.app/setup/pending-approvals.
     `.trim();
@@ -320,15 +329,24 @@ Please review and approve/reject this week's exchange rate at https://gbrapp.ver
     submittedBy: string
   ): Promise<void> {
     const subject = `URGENT: Exchange Rate Still Pending Approval: ${exchangeName}`;
-    const message = `
-URGENT: An exchange rate has been pending approval for 5 minutes:
+//     const message = `
+// URGENT: An exchange rate has been pending approval for 5 minutes:
+
+// Exchange: ${exchangeName}
+// Rate: ${rate}
+// Week: ${weekStart}
+// Submitted By: ${submittedBy}
+
+// This rate requires immediate attention. Please review and approve/reject via https://gbrapp.vercel.app/setup/pending-approvals.
+//     `.trim();
+
+const message = `
+URGENT: Exchange rate approval pending for 5 minutes:
 
 Exchange: ${exchangeName}
 Rate: ${rate}
-Week: ${weekStart}
-Submitted By: ${submittedBy}
 
-This rate requires immediate attention. Please review and approve/reject via https://gbrapp.vercel.app/setup/pending-approvals.
+Immediate attention required. Please review via https://gbrapp.vercel.app/setup/pending-approvals.
     `.trim();
 
     // Send delayed SMS notification to DEPUTY_CEO and SUPERADMIN

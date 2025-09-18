@@ -646,13 +646,19 @@ function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6 gap-4">
             {[
               {
-                label: "New Job Card",
+                label: "New Small Scale Job",
                 icon: <Plus className="h-6 w-6" />,
                 color: "bg-yellow-600",
                 href: "/job-cards/new",
               },
               {
-                label: "Manage Daily Prices",
+                label: "New Large Scale Job",
+                icon: <Plus className="h-6 w-6" />,
+                color: "bg-yellow-300",
+                href: "/job-cards/large-scale/new",
+              },
+              {
+                label: "Manage Daily Commodity Prices",
                 description: "Set up daily commodity prices.",
                 icon: <DollarSign className="h-6 w-6" />,
                 href: "/setup/daily-prices",
@@ -662,7 +668,7 @@ function DashboardPage() {
                 label: "Manage Weekly Exchange Rates",
                 description: "Set up weekly exchange rates.",
                 icon: <Repeat className="h-6 w-6" />,
-                href: "/setup/daily-exchange",
+                href: "/setup/weekly-exchange",
                 color: "bg-purple-600",
               },
               {

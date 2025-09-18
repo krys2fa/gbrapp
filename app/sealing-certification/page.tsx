@@ -7,8 +7,13 @@ import { ArrowPathIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { Header } from "../components/layout/header";
 import { Award, Loader2 } from "lucide-react";
 import Select from "react-select";
+import { toast } from "react-hot-toast";
 
-function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
+function SealingList({
+  onAddSeal,
+}: {
+  onAddSeal?: (id: string, type: string) => void;
+}) {
   const [jobCards, setJobCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,11 +46,41 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
       if (startDateFilter) params.append("startDate", startDateFilter);
       if (endDateFilter) params.append("endDate", endDateFilter);
 
-      const res = await fetch(`/api/job-cards?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch job cards");
-      const data = await res.json();
-      setJobCards(data.jobCards || []);
-      setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
+      // Fetch both regular and large scale job cards
+      const [regularRes, largeScaleRes] = await Promise.all([
+        fetch(`/api/job-cards?${params.toString()}`),
+        fetch(`/api/large-scale-job-cards?${params.toString()}`),
+      ]);
+
+      const regularData = regularRes.ok
+        ? await regularRes.json()
+        : { jobCards: [], total: 0 };
+      const largeScaleData = largeScaleRes.ok
+        ? await largeScaleRes.json()
+        : { jobCards: [], total: 0 };
+
+      // Add type identifier to each job card
+      const regularJobCards = (regularData.jobCards || []).map((jc: any) => ({
+        ...jc,
+        jobCardType: "regular",
+      }));
+
+      const largeScaleJobCards = (largeScaleData.jobCards || []).map(
+        (jc: any) => ({
+          ...jc,
+          jobCardType: "large-scale",
+        })
+      );
+
+      // Combine and sort by creation date (most recent first)
+      const allJobCards = [...regularJobCards, ...largeScaleJobCards].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      setJobCards(allJobCards);
+      const totalItems = (regularData.total || 0) + (largeScaleData.total || 0);
+      setTotalPages(Math.ceil(totalItems / itemsPerPage));
     } catch (err) {
       console.error(err);
     } finally {
@@ -138,7 +173,7 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
                     Security Seal Ref
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    PMMC Seal
+                    GOLDBOD Seal
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Other Seal
@@ -164,22 +199,32 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
                     return s ? s.sealNumber || String(s.notes || "") : "";
                   };
 
-                  // Determine if this is a large scale job card
-                  const isLargeScale = !!(jc._count || jc.largeScaleJobCardId);
-
                   return (
                     <tr key={jc.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                        <Link
-                          href={
-                            isLargeScale
-                              ? `/job-cards/large-scale/${jc.id}`
-                              : `/job-cards/${jc.id}`
-                          }
-                          className="hover:underline"
-                        >
-                          {jc.referenceNumber}
-                        </Link>
+                        <div className="flex items-center space-x-2">
+                          <Link
+                            href={
+                              jc.jobCardType === "large-scale"
+                                ? `/job-cards/large-scale/${jc.id}`
+                                : `/job-cards/${jc.id}`
+                            }
+                            className="hover:underline"
+                          >
+                            {jc.referenceNumber}
+                          </Link>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              jc.jobCardType === "large-scale"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-blue-100 text-blue-800"
+                            }`}
+                          >
+                            {jc.jobCardType === "large-scale"
+                              ? "Large Scale"
+                              : "Regular"}
+                          </span>
+                        </div>
                       </td>
                       {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {assay
@@ -230,7 +275,8 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
                             return (
                               <button
                                 onClick={() => {
-                                  if (onAddSeal) return onAddSeal(jc.id);
+                                  if (onAddSeal)
+                                    return onAddSeal(jc.id, jc.jobCardType);
                                   const ev = new CustomEvent(
                                     "openAddSealModal",
                                     { detail: { jobCardId: jc.id } }
@@ -244,7 +290,11 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
                             );
                           })()}
                           <Link
-                            href={`/job-cards/${jc.id}`}
+                            href={
+                              jc.jobCardType === "large-scale"
+                                ? `/job-cards/large-scale/${jc.id}`
+                                : `/job-cards/${jc.id}`
+                            }
                             className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
                           >
                             <EyeIcon className="h-4 w-4 mr-1" />
@@ -338,10 +388,12 @@ function SealingList({ onAddSeal }: { onAddSeal?: (id: string) => void }) {
 function SealingCertificationPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalJobCardId, setModalJobCardId] = useState<string | null>(null);
+  const [modalJobCardType, setModalJobCardType] = useState<string>("regular");
 
-  const openModalFor = (id: string) => {
+  const openModalFor = (id: string, type: string) => {
     setModalJobCardId(id);
-    console.debug("openModalFor called for", id);
+    setModalJobCardType(type);
+    console.debug("openModalFor called for", id, "type:", type);
     setModalOpen(true);
   };
 
@@ -349,6 +401,7 @@ function SealingCertificationPage() {
   const closeModal = (refresh = true) => {
     setModalOpen(false);
     setModalJobCardId(null);
+    setModalJobCardType("regular");
     if (refresh) {
       // trigger a refresh event for the list
       window.dispatchEvent(new CustomEvent("refreshSealingList"));
@@ -373,6 +426,7 @@ function SealingCertificationPage() {
         <AddSealModal
           open={modalOpen}
           jobCardId={modalJobCardId}
+          jobCardType={modalJobCardType}
           onClose={(refresh = true) => closeModal(refresh)}
         />
       </div>
@@ -385,10 +439,12 @@ export default withClientAuth(SealingCertificationPage);
 function AddSealModal({
   open,
   jobCardId,
+  jobCardType,
   onClose,
 }: {
   open: boolean;
   jobCardId: string | null;
+  jobCardType: string;
   onClose: (refresh?: boolean) => void;
 }) {
   console.debug("AddSealModal render", { open, jobCardId });
@@ -488,6 +544,7 @@ function AddSealModal({
   const submit = async () => {
     if (!jobCardId) return;
     setSaving(true);
+    const toastId = toast.loading("Saving seal information...");
     try {
       // Get officer names from IDs
       const customsOfficerName = customsOfficerId
@@ -530,17 +587,30 @@ function AddSealModal({
           notes,
         });
 
-      const res = await fetch(`/api/job-cards/${jobCardId}`, {
+      const apiEndpoint =
+        jobCardType === "large-scale"
+          ? `/api/large-scale-job-cards/${jobCardId}`
+          : `/api/job-cards/${jobCardId}`;
+
+      const res = await fetch(apiEndpoint, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Failed to save seal");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to save seal information");
+      }
+
+      toast.success("Seal information saved successfully!", { id: toastId });
       // close and request a refresh so the list updates
       onClose(true);
     } catch (err) {
       console.error(err);
-      alert("Failed to save seal");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save seal information",
+        { id: toastId }
+      );
     } finally {
       setSaving(false);
     }
@@ -553,7 +623,11 @@ function AddSealModal({
     (async () => {
       setLoadingExisting(true);
       try {
-        const res = await fetch(`/api/job-cards/${jobCardId}`);
+        const apiEndpoint =
+          jobCardType === "large-scale"
+            ? `/api/large-scale-job-cards/${jobCardId}`
+            : `/api/job-cards/${jobCardId}`;
+        const res = await fetch(apiEndpoint);
         if (!res.ok) throw new Error("Failed to load job card");
         const jc = await res.json();
         if (!mounted) return;
@@ -616,7 +690,7 @@ function AddSealModal({
     return () => {
       mounted = false;
     };
-  }, [open, jobCardId, officers]);
+  }, [open, jobCardId, jobCardType, officers]);
 
   if (!open) return null;
 
@@ -717,7 +791,7 @@ function AddSealModal({
             />
           </label>
           <label className="flex flex-col">
-            <span className="text-sm text-gray-600">PMMC Seal Ref</span>
+            <span className="text-sm text-gray-600">GOLDBOD Seal Ref</span>
             <input
               value={pmmcSeal}
               onChange={(e) => setPmmcSeal(e.target.value)}

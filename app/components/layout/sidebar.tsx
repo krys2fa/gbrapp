@@ -186,12 +186,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         },
       ],
     },
-    {
-      id: "valuations",
-      label: "Valuations",
-      href: "/valuations",
-      icon: <ClipboardCheck className="h-5 w-5" />,
-    },
+    // {
+    //   id: "valuations",
+    //   label: "Valuations",
+    //   href: "/valuations",
+    //   icon: <ClipboardCheck className="h-5 w-5" />,
+    // },
     {
       id: "payment-receipting",
       label: "Payment & Receipting",

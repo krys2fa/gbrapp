@@ -11,11 +11,208 @@ function csvEscape(v: any) {
   return s;
 }
 
+async function handleRevenueAnalyticsDownload(feesReportParam: string) {
+  const feesReport = feesReportParam || "daily-summary";
+  const feesIsDaily = feesReport.startsWith("daily");
+  const feesIsSummary = feesReport.includes("summary");
+  const feesPeriodDays = feesIsDaily
+    ? 1
+    : feesReport.startsWith("weekly")
+    ? 7
+    : 30;
+  const feesSinceDate = new Date(
+    Date.now() - feesPeriodDays * 24 * 60 * 60 * 1000
+  );
+
+  // Fetch comprehensive financial data
+  const [fees, jobCards, largeScaleJobCards] = await Promise.all([
+    prisma.fee.findMany({
+      where: { createdAt: { gte: feesSinceDate } },
+      include: {
+        jobCard: { include: { exporter: true } },
+        largeScaleJobCard: { include: { exporter: true } },
+        currency: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 2000,
+    }),
+    prisma.jobCard.findMany({
+      where: { createdAt: { gte: feesSinceDate } },
+      include: { exporter: true, assays: true },
+    }),
+    prisma.largeScaleJobCard.findMany({
+      where: { createdAt: { gte: feesSinceDate } },
+      include: { exporter: true, assays: true },
+    }),
+  ]);
+
+  if (feesIsSummary) {
+    // Revenue by exporter summary
+    const exporterMap = new Map<
+      string,
+      {
+        exporter: string;
+        revenue: number;
+        jobCardCount: number;
+        assayCount: number;
+        avgJobCardValue: number;
+        lastActivity: Date;
+      }
+    >();
+
+    // Process fees by exporter
+    for (const f of fees) {
+      const exporter =
+        f.jobCard?.exporter?.name ||
+        f.largeScaleJobCard?.exporter?.name ||
+        "Unknown";
+      const current = exporterMap.get(exporter) || {
+        exporter,
+        revenue: 0,
+        jobCardCount: 0,
+        assayCount: 0,
+        avgJobCardValue: 0,
+        lastActivity: new Date(0),
+      };
+
+      current.revenue += Number(f.amountPaid || 0);
+      current.lastActivity =
+        f.createdAt > current.lastActivity ? f.createdAt : current.lastActivity;
+      exporterMap.set(exporter, current);
+    }
+
+    // Add job card counts
+    [...jobCards, ...largeScaleJobCards].forEach((jc) => {
+      const exporter = jc.exporter?.name || "Unknown";
+      const current = exporterMap.get(exporter);
+      if (current) {
+        current.jobCardCount += 1;
+        current.assayCount += jc.assays?.length || 0;
+        current.avgJobCardValue =
+          current.jobCardCount > 0 ? current.revenue / current.jobCardCount : 0;
+      }
+    });
+
+    const exporterStats = Array.from(exporterMap.values()).sort(
+      (a, b) => b.revenue - a.revenue
+    );
+    const totalRevenue = exporterStats.reduce(
+      (sum, stat) => sum + stat.revenue,
+      0
+    );
+
+    // Build CSV for summary
+    const headers = [
+      "Exporter",
+      "Total_Revenue_USD",
+      "Job_Cards",
+      "Assays",
+      "Avg_Value_Per_Card",
+      "Market_Share_Percent",
+      "Last_Activity",
+    ];
+    const lines = [headers.join(",")];
+
+    for (const stat of exporterStats) {
+      const marketShare =
+        totalRevenue > 0 ? (stat.revenue / totalRevenue) * 100 : 0;
+      const cols = [
+        csvEscape(stat.exporter),
+        csvEscape(stat.revenue.toFixed(2)),
+        csvEscape(stat.jobCardCount.toString()),
+        csvEscape(stat.assayCount.toString()),
+        csvEscape(stat.avgJobCardValue.toFixed(2)),
+        csvEscape(marketShare.toFixed(2)),
+        csvEscape(stat.lastActivity.toISOString().split("T")[0]),
+      ];
+      lines.push(cols.join(","));
+    }
+
+    const csv = lines.join("\n");
+    return new Response(csv, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="revenue-analytics-summary-${Date.now()}.csv"`,
+      },
+    });
+  } else {
+    // Comprehensive transaction details
+    const transactionDetails = fees.map((f: any) => {
+      const exporter =
+        f.jobCard?.exporter?.name ||
+        f.largeScaleJobCard?.exporter?.name ||
+        "Unknown";
+      const jobCardType = f.jobCard ? "Regular" : "Large Scale";
+      const amount = Number(f.amountPaid || 0);
+
+      return {
+        id: f.id,
+        date: f.createdAt,
+        exporter,
+        jobCardType,
+        amount,
+        receiptNumber: f.receiptNumber || "-",
+        status: f.status || "pending",
+        paymentDate: f.paymentDate,
+        currency: f.currency?.code || "USD",
+      };
+    });
+
+    // Build CSV for comprehensive
+    const headers = [
+      "Transaction_Date",
+      "Exporter",
+      "Job_Card_Type",
+      "Amount_USD",
+      "Status",
+      "Receipt_Number",
+      "Payment_Date",
+      "Currency",
+    ];
+    const lines = [headers.join(",")];
+
+    for (const tx of transactionDetails) {
+      const cols = [
+        csvEscape(tx.date ? new Date(tx.date).toISOString().split("T")[0] : ""),
+        csvEscape(tx.exporter),
+        csvEscape(tx.jobCardType),
+        csvEscape(tx.amount.toFixed(2)),
+        csvEscape(tx.status),
+        csvEscape(tx.receiptNumber),
+        csvEscape(
+          tx.paymentDate
+            ? new Date(tx.paymentDate).toISOString().split("T")[0]
+            : ""
+        ),
+        csvEscape(tx.currency),
+      ];
+      lines.push(cols.join(","));
+    }
+
+    const csv = lines.join("\n");
+    return new Response(csv, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="revenue-analytics-comprehensive-${Date.now()}.csv"`,
+      },
+    });
+  }
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const reportParam = (
     url.searchParams.get("report") || "weekly-summary"
   ).toString();
+  const feesReportParam = url.searchParams.get("feesReport");
+
+  // Handle revenue analytics download
+  if (reportParam === "revenue-analytics" && feesReportParam) {
+    return handleRevenueAnalyticsDownload(feesReportParam);
+  }
+
   const isWeekly = reportParam.startsWith("weekly");
   const isSummary = reportParam.includes("summary");
   const periodDays = isWeekly ? 7 : 30;
@@ -107,11 +304,27 @@ export async function GET(req: Request) {
   // Build CSV
   const headers = [] as string[];
   if (!isSummary) headers.push("Date");
-  headers.push("Exporter", "NetGold_g", "NetSilver_g", "EstimatedValue_USD");
+  headers.push(
+    "Exporter",
+    "NetGold_g",
+    "Gold_oz",
+    "NetSilver_g",
+    "MarketValue_USD"
+  );
+  if (isSummary) headers.push("MarketShare_Percent");
 
   const lines = [headers.join(",")];
+  const totalValue = rows.reduce(
+    (sum, row) => sum + (row.estimatedValue || 0),
+    0
+  );
+
   for (const r of rows) {
     const cols: string[] = [];
+    const goldOz = r.netGoldGrams / GRAMS_PER_TROY_OUNCE;
+    const marketShare =
+      totalValue > 0 ? (r.estimatedValue / totalValue) * 100 : 0;
+
     if (!isSummary)
       cols.push(
         csvEscape(r.createdAt ? new Date(r.createdAt).toISOString() : "")
@@ -122,6 +335,7 @@ export async function GET(req: Request) {
         r.netGoldGrams?.toFixed ? r.netGoldGrams.toFixed(2) : r.netGoldGrams
       )
     );
+    cols.push(csvEscape(goldOz.toFixed(4)));
     cols.push(
       csvEscape(
         r.netSilverGrams?.toFixed
@@ -136,6 +350,7 @@ export async function GET(req: Request) {
           : r.estimatedValue
       )
     );
+    if (isSummary) cols.push(csvEscape(marketShare.toFixed(2)));
     lines.push(cols.join(","));
   }
 
