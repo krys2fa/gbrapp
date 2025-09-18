@@ -261,7 +261,7 @@ export default function AssayResultsPage() {
                         (assay.measurements || []).map(
                           (m: any, idx: number) => (
                             <tr key={`${assay.id}-${idx}`}>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
                                 {`${idx + 1}`}
                               </td>
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
@@ -286,7 +286,7 @@ export default function AssayResultsPage() {
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                           {"TOTAL"}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                           {(() => {
                             const total = assays.reduce(
                               (acc: number, assay: any) =>
@@ -301,7 +301,7 @@ export default function AssayResultsPage() {
                             return total > 0 ? total.toFixed(2) : "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                           {(() => {
                             const grossTotal = assays.reduce(
                               (acc: number, assay: any) =>
@@ -330,7 +330,7 @@ export default function AssayResultsPage() {
                             return "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                           {(() => {
                             const total = assays.reduce(
                               (acc: number, assay: any) =>

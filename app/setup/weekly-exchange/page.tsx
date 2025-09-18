@@ -552,12 +552,12 @@ export default function WeeklyExchangePage() {
                                 </button>
                               </>
                             )}
-                            <button
+                            {/* <button
                               className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
                               onClick={() => handleEdit(rate)}
                             >
                               <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
-                            </button>
+                            </button> */}
                             <button
                               className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
                               onClick={() => handleDeleteClick(rate)}

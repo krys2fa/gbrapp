@@ -304,12 +304,11 @@ export class NotificationService {
 //     `.trim();
 
 const message = `
-Exchange rate approval required:
+USD rate approval required:
 
-Exchange: ${exchangeName}
 Rate: ${rate}
 
-Please review and approve/reject this week's exchange rate at https://gbrapp.vercel.app/setup/pending-approvals.
+Please review this rate at https://gbrapp.vercel.app/setup/pending-approvals.
     `.trim();
 
     // Send immediate SMS notification to SUPERADMIN, CEO, and DEPUTY_CEO
@@ -341,12 +340,11 @@ Please review and approve/reject this week's exchange rate at https://gbrapp.ver
 //     `.trim();
 
 const message = `
-URGENT: Exchange rate approval pending for 5 minutes:
+URGENT: USD rate approval pending for 5 minutes:
 
-Exchange: ${exchangeName}
 Rate: ${rate}
 
-Immediate attention required. Please review via https://gbrapp.vercel.app/setup/pending-approvals.
+Please review via https://gbrapp.vercel.app/setup/pending-approvals.
     `.trim();
 
     // Send delayed SMS notification to DEPUTY_CEO and SUPERADMIN

@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { DollarSign } from "lucide-react";
 import BackLink from "@/app/components/ui/BackLink";
 import { formatExchangeRate } from "@/app/lib/utils";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
@@ -27,13 +27,12 @@ export default function DailyPricesPage() {
   const [newExchange, setNewExchange] = useState("");
   const [addExchangeLoading, setAddExchangeLoading] = useState(false);
 
-
   // Commodity creation moved to /setup/commodities
 
   const handleAddExchange = async (e: React.FormEvent) => {
     e.preventDefault();
     setAddExchangeLoading(true);
-    
+
     try {
       const res = await fetch("/api/exchange", {
         method: "POST",
@@ -41,7 +40,7 @@ export default function DailyPricesPage() {
         body: JSON.stringify({ name: newExchange, symbol: newExchangeSymbol }),
       });
       if (!res.ok) throw new Error("Failed to add exchange");
-      
+
       toast.success("Exchange added successfully!");
       setNewExchange("");
       setNewExchangeSymbol("");
@@ -116,7 +115,7 @@ export default function DailyPricesPage() {
   const handleCommoditySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setCommodityLoading(true);
-    
+
     try {
       const payload = {
         type: "COMMODITY",
@@ -135,15 +134,17 @@ export default function DailyPricesPage() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Failed to save price");
-      
-      const successMessage = editingPrice ? "Commodity price updated successfully!" : "Commodity price added successfully!";
+
+      const successMessage = editingPrice
+        ? "Commodity price updated successfully!"
+        : "Commodity price added successfully!";
       toast.success(successMessage);
       setCommodityId(commodities[0]?.id || "");
       setCommodityPrice("");
       setEditingPrice(null);
-      
+
       // Refresh the prices list
-      setFilterTrigger(prev => prev + 1);
+      setFilterTrigger((prev) => prev + 1);
     } catch (err: any) {
       toast.error(err.message || "Error saving commodity price");
     } finally {
@@ -154,7 +155,7 @@ export default function DailyPricesPage() {
   const handleExchangeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setExchangeLoading(true);
-    
+
     try {
       const payload = {
         type: "EXCHANGE",
@@ -173,15 +174,17 @@ export default function DailyPricesPage() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Failed to save rate");
-      
-      const successMessage = editingPrice ? "Exchange rate updated successfully!" : "Exchange rate added successfully!";
+
+      const successMessage = editingPrice
+        ? "Exchange rate updated successfully!"
+        : "Exchange rate added successfully!";
       toast.success(successMessage);
       setExchangeId(exchanges[0]?.id || "");
       setExchangeRate("");
       setEditingPrice(null);
-      
+
       // Refresh the prices list
-      setFilterTrigger(prev => prev + 1);
+      setFilterTrigger((prev) => prev + 1);
     } catch (err: any) {
       toast.error(err.message || "Error saving exchange rate");
     } finally {
@@ -203,14 +206,14 @@ export default function DailyPricesPage() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Delete this price entry?")) return;
     setDeleteLoading(id);
-    
+
     try {
       const res = await fetch(`/api/daily-prices/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete price");
       toast.success("Price deleted successfully!");
-      
+
       // Refresh the prices list
-      setFilterTrigger(prev => prev + 1);
+      setFilterTrigger((prev) => prev + 1);
     } catch (err: any) {
       toast.error(err.message || "Error deleting price");
     } finally {
@@ -300,10 +303,13 @@ export default function DailyPricesPage() {
                     {commodityLoading && (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                     )}
-                    {commodityLoading 
-                      ? (editingPrice ? "Updating..." : "Adding...") 
-                      : (editingPrice ? "Update Price" : "Add Price")
-                    }
+                    {commodityLoading
+                      ? editingPrice
+                        ? "Updating..."
+                        : "Adding..."
+                      : editingPrice
+                      ? "Update Price"
+                      : "Add Price"}
                   </button>
                 </div>
               </div>
@@ -504,7 +510,9 @@ export default function DailyPricesPage() {
                                 ) : (
                                   <TrashIcon className="h-4 w-4 mr-1" />
                                 )}
-                                {deleteLoading === priceObj.id ? "Deleting..." : "Delete"}
+                                {deleteLoading === priceObj.id
+                                  ? "Deleting..."
+                                  : "Delete"}
                               </button>
                             </td>
                           </tr>

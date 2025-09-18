@@ -182,7 +182,7 @@ const ExchangeSetupPage = () => {
             />
           </div>
           {exchangesLoading ? (
-            <p className="text-gray-500">Loading rates...</p>
+            <p className="mt-2 text-gray-500">Loading rates...</p>
           ) : (
             <>
               <table className="w-full divide-y divide-gray-200">

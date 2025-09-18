@@ -296,7 +296,9 @@ function DashboardPage() {
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                      <span className="text-gray-600 dark:text-gray-300 font-semibold">Ag</span>
+                      <span className="text-gray-600 dark:text-gray-300 font-semibold">
+                        Ag
+                      </span>
                     </div>
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                       Silver (GHS/oz)
