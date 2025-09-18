@@ -12,7 +12,15 @@ import {
 import { Header } from "../../components/layout/header";
 import BackLink from "@/app/components/ui/BackLink";
 
-const roles = ["SUPERADMIN", "ADMIN", "USER", "FINANCE", "CEO", "TELLER"];
+const roles = [
+  "SUPERADMIN",
+  "ADMIN",
+  "USER",
+  "FINANCE",
+  "CEO",
+  "DEPUTY_CEO",
+  "TELLER",
+];
 
 // Utility to capitalize only the first letter
 function capitalizeFirst(str: string) {
