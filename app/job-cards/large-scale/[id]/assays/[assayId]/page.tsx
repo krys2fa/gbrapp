@@ -618,28 +618,28 @@ export default function AssayResultsPage() {
             <div className="px-4 sm:px-6 lg:px-8 pt-4">
               <div className="bg-white overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                  <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           SN
                         </th>
-                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Bar No. NGGL
                         </th>
-                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Gross Weight ({jobCard?.unitOfMeasure})
                         </th>
-                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Gold Fineness (%)
                         </th>
-                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Gold Net Weight ({jobCard?.unitOfMeasure})
                         </th>
-                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Silver Fineness (%)
                         </th>
-                        <th className="px-4 py-2  text-right text-xs font-bold uppercase bg-[#d4af37]">
+                        <th className="px-4 py-2  text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Silver Net Weight ({jobCard?.unitOfMeasure})
                         </th>
                       </tr>
@@ -647,33 +647,33 @@ export default function AssayResultsPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {(assay.measurements || []).map((m: any, idx: number) => (
                         <tr key={`${assay.id}-${idx}`}>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-center border border-gray-300">
                             {idx + 1}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right border border-gray-300">
                             {m.barNumber || "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right border border-gray-300">
                             {m.grossWeight != null
                               ? Number(m.grossWeight).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right border border-gray-300">
                             {m.goldAssay != null
                               ? Number(m.goldAssay).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right border border-gray-300">
                             {m.netGoldWeight != null
                               ? Number(m.netGoldWeight).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right border border-gray-300">
                             {m.silverAssay != null
                               ? Number(m.silverAssay).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right border border-gray-300">
                             {m.netSilverWeight != null
                               ? Number(m.netSilverWeight).toFixed(2)
                               : "-"}
@@ -683,12 +683,12 @@ export default function AssayResultsPage() {
                       {/* Total Row */}
                       <tr className="bg-gray-50 font-semibold">
                         <td
-                          className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center"
+                          className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center border border-gray-300"
                           colSpan={2}
                         >
                           TOTAL
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
                           {(() => {
                             const total = (assay.measurements || []).reduce(
                               (acc: number, m: any) =>
@@ -698,7 +698,7 @@ export default function AssayResultsPage() {
                             return total > 0 ? total.toFixed(2) : "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
                           {(() => {
                             const grossTotal = (
                               assay.measurements || []
@@ -722,7 +722,7 @@ export default function AssayResultsPage() {
                             return "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
                           {(() => {
                             const total = (assay.measurements || []).reduce(
                               (acc: number, m: any) =>
@@ -732,7 +732,7 @@ export default function AssayResultsPage() {
                             return total > 0 ? total.toFixed(2) : "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
                           {(() => {
                             const grossTotal = (
                               assay.measurements || []
@@ -756,7 +756,7 @@ export default function AssayResultsPage() {
                             return "-";
                           })()}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
                           {(() => {
                             const total = (assay.measurements || []).reduce(
                               (acc: number, m: any) =>

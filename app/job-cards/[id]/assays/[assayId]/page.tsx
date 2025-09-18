@@ -290,12 +290,12 @@ export default function AssayDetailPage() {
             </div>
 
             <div className="bg-white p-4">
-            <img
-              src="/coat-of-arms.jpg"
-              alt="Coat of Arms"
-              className="h-20 w-auto"
-            />
-          </div>
+              <img
+                src="/coat-of-arms.jpg"
+                alt="Coat of Arms"
+                className="h-20 w-auto"
+              />
+            </div>
 
             {/* <div className="bg-white p-4">
             <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
@@ -356,37 +356,37 @@ export default function AssayDetailPage() {
                     </h4>
                   </div>
                   <div>
-                    <table className="w-full divide-y divide-gray-200">
+                    <table className="w-full divide-y divide-gray-200 border border-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
                             Gross Weight
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
                             Fineness
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
                             Net Weight
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         <tr>
-                          <td className="px-4 py-2 text-sm text-gray-700">
+                          <td className="px-4 py-2 text-sm text-gray-700 border border-gray-300">
                             {jobCard?.totalGrossWeight != null
                               ? Number(jobCard.totalGrossWeight).toFixed(2)
                               : assay.jbGrossWeight != null
                               ? Number(assay.jbGrossWeight).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 text-sm text-gray-700">
+                          <td className="px-4 py-2 text-sm text-gray-700 border border-gray-300">
                             {jobCard?.fineness != null
                               ? Number(jobCard.fineness).toFixed(2)
                               : assay.jbFineness != null
                               ? Number(assay.jbFineness).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 text-sm text-gray-700">
+                          <td className="px-4 py-2 text-sm text-gray-700 border border-gray-300">
                             {jobCard?.totalNetWeight != null
                               ? Number(jobCard.totalNetWeight).toFixed(2)
                               : assay.jbNetWeight != null
@@ -407,16 +407,16 @@ export default function AssayDetailPage() {
                     </h4>
                   </div>
                   <div>
-                    <table className="w-full divide-y divide-gray-200">
+                    <table className="w-full divide-y divide-gray-200 border border-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
                             Gross Weight
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
                             Fineness
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
                             Net Weight
                           </th>
                         </tr>
@@ -425,15 +425,15 @@ export default function AssayDetailPage() {
                         {(assay.measurements || []).map(
                           (m: any, idx: number) => (
                             <tr key={m.id || idx}>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 border border-gray-300">
                                 {m.grossWeight != null
                                   ? Number(m.grossWeight).toFixed(2)
                                   : "-"}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 border border-gray-300">
                                 {m.fineness ?? "-"}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 border border-gray-300">
                                 {m.netWeight != null
                                   ? Number(m.netWeight).toFixed(2)
                                   : "-"}
@@ -443,7 +443,7 @@ export default function AssayDetailPage() {
                         )}
                         {/* Total Row */}
                         <tr className="bg-gray-50 font-semibold">
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
                             {(() => {
                               const total = (assay.measurements || []).reduce(
                                 (acc: number, m: any) =>
@@ -453,7 +453,7 @@ export default function AssayDetailPage() {
                               return total > 0 ? total.toFixed(2) : "-";
                             })()}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
                             {(() => {
                               const grossTotal = (
                                 assay.measurements || []
@@ -476,7 +476,7 @@ export default function AssayDetailPage() {
                               return "-";
                             })()}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
                             {(() => {
                               const total = (assay.measurements || []).reduce(
                                 (acc: number, m: any) =>
