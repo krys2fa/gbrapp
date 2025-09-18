@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+// Trigger deployment after GitGuardian resolution
+
 export default function Home() {
   const router = useRouter();
 
