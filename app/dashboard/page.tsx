@@ -290,7 +290,27 @@ function DashboardPage() {
                 </div>
               )}
 
-            {/* 5. Exchange Rate */}
+            {/* 5. Silver Price */}
+            {dashboardData?.financials?.currentSilverPriceGhsPerOz &&
+              dashboardData?.financials?.currentSilverPriceGhsPerOz > 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                      <span className="text-gray-600 dark:text-gray-300 font-semibold">Ag</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                      Silver (GHS/oz)
+                    </span>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {dashboardData.financials.currentSilverPriceGhsPerOz.toFixed(
+                      2
+                    )}
+                  </p>
+                </div>
+              )}
+
+            {/* 6. Exchange Rate */}
             {dashboardData?.financials?.currentExchangeRateGhs &&
               dashboardData.financials.currentExchangeRateGhs > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
@@ -308,7 +328,7 @@ function DashboardPage() {
                 </div>
               )}
 
-            {/* 6. Total Quantity KG */}
+            {/* 7. Total Quantity KG */}
             {/* {dashboardData?.financials?.totalQuantityKg &&
               dashboardData.financials.totalQuantityKg > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
