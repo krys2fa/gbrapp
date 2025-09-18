@@ -161,7 +161,7 @@ export default async function InvoicePage(props: any) {
       <div className="my-4 ml-4">
         <HistoryBackLink label="Back" />
       </div>
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-4xl mx-auto py-10 px-4">
         <div className="flex items-center justify-end mb-6">
           {/* Client actions: back + download */}
           <InvoiceActions
@@ -175,66 +175,71 @@ export default async function InvoicePage(props: any) {
           className="bg-white shadow rounded-lg p-6 watermark-container"
           id="invoice-content"
         >
-          <div className="flex items-center justify-between mb-1">
-            <div className="py-2">
+          <div className="flex items-center justify-between mb-1 px-8">
+            <div className="p-2">
               <img
-                src="/goldbod-logo-green.png"
+                src="/goldbod-logo-black.png"
                 alt="GoldBod Logo"
                 className="h-12 w-auto"
               />
             </div>
 
-            {/* <div className="bg-white p-4">
+            <div className="flex justify-center">
+              <h1 className="text-xl font-bold tracking-wider">
+                ASSAY INVOICE
+              </h1>
+            </div>
+
+            <div className="bg-white p-4 flex justify-end">
               <img
                 src="/coat-of-arms.jpg"
                 alt="Coat of Arms"
                 className="h-20 w-auto"
               />
-            </div> */}
+            </div>
 
             {/* <div className="bg-white p-4">
               <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
             </div> */}
           </div>
 
-          <div className="flex justify-center mb-4">
-            <h1 className="text-xl font-bold tracking-wider">
-              GOLD ASSAY INVOICE
-            </h1>
-          </div>
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div>
-              <span className="text-sm text-gray-500 mr-2">Client:</span>
-              <span className="text-sm">{exporterName}</span>
-            </div>
-
-            <div>
-              <span className="text-sm text-gray-500 mr-2">Date:</span>
-              <span className="text-sm">
+            <div className="flex">
+              <p className="text-sm text-gray-500">Date</p>
+              <p className="text-sm ml-2">
                 {formatDate(invoice.issueDate || invoice.createdAt)}
-              </span>
-            </div>
-            <div>
-              <span className="text-sm text-gray-500 mr-2">Job Number:</span>
-              <span className="text-sm">{referenceNumber}</span>
+              </p>
             </div>
 
-            <div>
-              <span className="text-sm text-gray-500 mr-2">Assay Number:</span>
-              <span className="text-sm">{assayNumbers}</span>
+            <div className="flex text-right justify-end pr-0 mr-0">
+              <p className="text-sm text-gray-500">Assay Number:</p>
+              <p className="text-sm ml-1">{assayNumbers}</p>
+            </div>
+            <div className="flex">
+              <p className="text-sm text-gray-500">Exporter</p>
+              <p className="text-sm ml-2">{exporterName}</p>
+            </div>
+            <div className="flex text-right pr-0 mr-0 justify-end">
+              <p className="text-sm text-gray-500">Job Card ID:</p>
+              <p className="text-sm ml-1">{referenceNumber}</p>
             </div>
           </div>
 
           <div className="mb-6 grid grid-cols-2 gap-4">
-            <div>
-              <span className="text-sm text-gray-500 mr-2">Destination:</span>
-              <span className="text-sm">{destinationCountry}</span>
+            <div className="flex">
+              <p className="text-sm text-gray-500">Assay Rate</p>
+              <p className="text-sm ml-2">{rate}</p>
             </div>
 
-            <div>
-              <span className="text-sm text-gray-500 mr-2">BoG Rate:</span>
-              <span className="text-sm">{exchangeRate}</span>
+            <div className="flex text-right pr-0 mr-0 justify-end">
+              <p className="text-sm text-gray-500">Destination:</p>
+              <p className="text-sm ml-1">{destinationCountry}</p>
             </div>
+          </div>
+
+          <div className="flex">
+            <p className="text-sm text-gray-500">Exchange Rate</p>
+            <p className="text-sm ml-2">{exchangeRate}</p>
           </div>
 
           <table className="w-full mt-2 mb-6 table-auto border-collapse border border-gray-300">
@@ -279,55 +284,59 @@ export default async function InvoicePage(props: any) {
           </table>
 
           <div className="mb-4">
-            <div className="font-medium text-right mb-2">
-              <span className="text-gray-600 text mr-12">Exclusive:</span>
-              <span>{formatCurrency(totalExclusive, "GHS")}</span>
+            <h3 className="text-sm font-medium mb-2 text-center">
+              Total - Exclusive (GHS)
+            </h3>
+            <div className="grid grid-cols-2 gap-2 text-sm mb-2">
+              <div className="text-gray-600 text">Total - Exclusive</div>
+              <div className="font-medium text-right">
+                {formatCurrency(totalExclusive, "GHS")}
+              </div>
             </div>
+            <h3 className="text-sm font-medium mb-2 text-center">
+              Levies & Taxes
+            </h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="text-gray-600">NHIL (2.5%)</div>
+              <div className="font-medium text-right">
+                {formatCurrency(nhil, "GHS")}
+              </div>
+              <div className="text-gray-600">GETFund (2.5%)</div>
+              <div className="font-medium text-right">
+                {formatCurrency(getfund, "GHS")}
+              </div>
+              <div className="text-gray-600">COVID (1%)</div>
+              <div className="font-medium text-right">
+                {formatCurrency(covid, "GHS")}
+              </div>
 
-            <div className="font-medium text-right mb-2">
-              <span className="text-gray-600 mr-12">NHIL (2.5%):</span>
-              <span>{formatCurrency(nhil, "GHS")}</span>
-            </div>
-
-            <div className="font-medium text-right mb-2">
-              <span className="text-gray-600 mr-12">GETFund (2.5%):</span>
-              <span>{formatCurrency(getfund, "GHS")}</span>
-            </div>
-
-            <div className="font-medium text-right mb-2">
-              <span className="text-gray-600 mr-12">COVID (1%):</span>
-              <span>{formatCurrency(covid, "GHS")}</span>
-            </div>
-
-            <div className="font-semibold text-right pt-2 mt-2 mb-2 ">
-              <span className="mr-12">Sub Total:</span>
-              <span>{formatCurrency(subTotal, "GHS")}</span>
-            </div>
-
-            <div className="font-medium text-right mb-2">
-              <span className="text-gray-600 mr-12">VAT (15%):</span>
-              <span>{formatCurrency(vat, "GHS")}</span>
-            </div>
-
-            <div className="font-semibold text-right mb-4 pb-2">
-              <span className="text-gray-600 mr-12">Total:</span>
-              <span>{formatCurrency(grandTotal, "GHS")}</span>
-            </div>
-
-            <div>
-              <div className="text-right">
-                <p className="font-bold text-gray-800">
-                  <span className="mr-12">Grand Total:</span>
-                  <span className="border-y border-gray-400 py-2 my-2">
-                    {formatCurrency(grandTotal, "GHS")}
-                  </span>
-                </p>
+              <div className="text-gray-700 font-medium border-t border-gray-300 pt-2 mt-2">
+                Subtotal
+              </div>
+              <div className="font-semibold text-right border-t border-gray-300 pt-2 mt-2">
+                {formatCurrency(subTotal, "GHS")}
+              </div>
+              <div className="text-gray-600">VAT (15%)</div>
+              <div className="font-medium text-right">
+                {formatCurrency(vat, "GHS")}
+              </div>
+              <div className="text-gray-700 font-medium border-t border-gray-300 pt-2 mt-2">
+                Total
+              </div>
+              <div className="font-semibold text-right border-t border-gray-300 pt-2 mt-2">
+                {formatCurrency(grandTotal, "GHS")}
               </div>
             </div>
           </div>
 
+          <div className="pt-4 border-t text-left">
+            <p className="text-lg font-bold flex justify-between">
+              <span>Grand Total:</span> {formatCurrency(grandTotal, "GHS")}
+            </p>
+          </div>
+
           {/* QR Code Section */}
-          <div className="my-6 flex justify-end">
+          <div className="mt-6 flex justify-end">
             <div className="flex items-center">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(

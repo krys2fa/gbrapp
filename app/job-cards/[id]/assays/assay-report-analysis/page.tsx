@@ -1,25 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
-  ArrowPathIcon,
   ChartBarIcon,
   ArrowTrendingUpIcon,
   BeakerIcon,
 } from "@heroicons/react/24/outline";
-import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import {
-  formatDate,
-  formatExchangeRate,
-  formatCurrency,
+  formatDate
 } from "@/app/lib/utils";
 
 export default function AssayReportAnalysisPage() {
   const params = useParams();
   const id = (params?.id as string) || "";
-  const router = useRouter();
 
   const [jobCard, setJobCard] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);

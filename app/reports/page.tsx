@@ -758,7 +758,7 @@ async function FeesTable({ feesReportParam }: any) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <h3 className="text-sm font-medium text-blue-700">Total Revenue</h3>
-            <p className="text-2xl font-bold text-blue-900">
+            <p className="text-lg font-bold text-blue-900">
               {formatCurrency(totalRevenue)}
             </p>
             <p className="text-xs text-blue-600 mt-1">
@@ -769,7 +769,7 @@ async function FeesTable({ feesReportParam }: any) {
             <h3 className="text-sm font-medium text-green-700">
               Job Cards Processed
             </h3>
-            <p className="text-2xl font-bold text-green-900">
+            <p className="text-lg font-bold text-green-900">
               {totalJobCards.toLocaleString()}
             </p>
             <p className="text-xs text-green-600 mt-1">Regular + Large Scale</p>
@@ -778,7 +778,7 @@ async function FeesTable({ feesReportParam }: any) {
             <h3 className="text-sm font-medium text-purple-700">
               Avg Revenue/Job Card
             </h3>
-            <p className="text-2xl font-bold text-purple-900">
+            <p className="text-lg font-bold text-purple-900">
               {formatCurrency(avgRevenuePerJobCard)}
             </p>
             <p className="text-xs text-purple-600 mt-1">Revenue efficiency</p>
@@ -787,7 +787,7 @@ async function FeesTable({ feesReportParam }: any) {
             <h3 className="text-sm font-medium text-orange-700">
               Active Exporters
             </h3>
-            <p className="text-2xl font-bold text-orange-900">
+            <p className="text-lg font-bold text-orange-900">
               {exporterStats.length}
             </p>
             <p className="text-xs text-orange-600 mt-1">Generating revenue</p>

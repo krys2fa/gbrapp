@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import { useRouter } from "next/navigation";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { PrinterIcon } from "@heroicons/react/24/outline";
 
 export default function InvoiceActions({
   jobCardId,
@@ -221,18 +221,6 @@ export default function InvoiceActions({
   <div class="bg-white shadow rounded-lg p-6">
     ${clonedContent.innerHTML}
   </div>
-
-  <div class="signature-wrap">
-    <div class="sign-box">
-      <div class="sign-line"></div>
-      <div class="sign-name">${signatoryName || "Authorized Signatory"}</div>
-      <div class="muted">${signatoryPosition || "Designation"}</div>
-    </div>
-    <div class="qr-box">
-      <img src="${qrUrl}" alt="QR Code - Visit GoldBod Website" style="width: 120px; height: 120px; margin-bottom: 0.5rem;" />
-      <div class="muted">Scan to verify<br/>https://goldbod.gov.gh/</div>
-    </div>
-  </div>
 </body>
 </html>`;
 
@@ -273,8 +261,8 @@ export default function InvoiceActions({
         }}
         className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
       >
-        <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
-        Download
+        <PrinterIcon className="w-4 h-4 mr-2" />
+        Print Invoice
       </button>
     </div>
   );

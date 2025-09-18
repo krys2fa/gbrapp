@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { PrinterIcon } from "@heroicons/react/24/outline";
 
 export default function AssayDetailActions({
   jobCardId,
@@ -265,13 +265,6 @@ export default function AssayDetailActions({
   <div class="bg-white p-2">
     ${clonedContent.innerHTML}
   </div>
-
-  <div class="signature-wrap">
-    <div class="qr-box">
-      <img src="${qrUrl}" alt="QR Code - Visit GoldBod Website" style="width: 120px; height: 120px; margin-bottom: 0.5rem;" />
-      <div class="muted">Scan to verify<br/>https://goldbod.gov.gh/</div>
-    </div>
-  </div>
 </body>
 </html>`;
 
@@ -310,8 +303,8 @@ export default function AssayDetailActions({
         }}
         className="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
       >
-        <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-        Download Report
+        <PrinterIcon className="h-5 w-5 mr-2" />
+        Print Report
       </button>
     </div>
   );

@@ -156,7 +156,7 @@ export default function AssayDetailPage() {
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <span className="ml-2 text-gray-500">Loading assay...</span>
+          {/* <span className="ml-2 text-gray-500">Loading assay...</span> */}
         </div>
       </div>
     );
@@ -268,28 +268,34 @@ export default function AssayDetailPage() {
         </div>
 
         <div id="assay-detail-content" className="bg-white overflow-hidden">
-          <div className="px-4 py-5 sm:px-6">
+          {/* <div className="px-4 py-5 sm:px-6">
             <h3 className="text-base leading-6 font-medium text-gray-900">
               Certificate #{assay.certificateNumber || "-"}
             </h3>
-          </div>
+          </div> */}
 
           <div className="flex items-center justify-between mb-1 px-8">
             <div className="p-2">
               <img
-                src="/goldbod-logo-green.png"
+                src="/goldbod-logo-black.png"
                 alt="GoldBod Logo"
                 className="h-12 w-auto"
               />
             </div>
 
-            {/* <div className="bg-white p-4">
+            <div className="flex justify-center">
+              <h1 className="text-xl font-bold tracking-wider">
+                ASSAY REPORT ANALYSIS
+              </h1>
+            </div>
+
+            <div className="bg-white p-4">
             <img
               src="/coat-of-arms.jpg"
               alt="Coat of Arms"
               className="h-20 w-auto"
             />
-          </div> */}
+          </div>
 
             {/* <div className="bg-white p-4">
             <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
@@ -297,24 +303,24 @@ export default function AssayDetailPage() {
           </div>
 
           <div className="border-t border-gray-200 px-4 py-3 sm:p-4">
-            <div className="flex justify-center">
+            {/* <div className="flex justify-center">
               <h1 className="text-xl font-bold tracking-wider">
                 ASSAY REPORT ANALYSIS
               </h1>
-            </div>
+            </div> */}
             {/* Top: show exporter and assay date above the measurements table */}
             <div className="flex items-center justify-between mb-4">
-              <div>
+              <div className="flex">
                 <dt className="text-sm font-medium text-gray-500">Exporter</dt>
-                <dd className="mt-1 text-sm text-gray-900">
+                <dd className="ml-1 text-sm text-gray-900">
                   {jobCard?.exporter?.name || "-"}
                 </dd>
               </div>
-              <div className="text-right">
+              <div className="text-right flex">
                 <dt className="text-sm font-medium text-gray-500">
                   Assay Date
                 </dt>
-                <dd className="mt-1 text-sm text-gray-900">
+                <dd className="ml-1 text-sm text-gray-900">
                   {assay.assayDate
                     ? formatDate(new Date(assay.assayDate))
                     : formatDate(new Date(assay.createdAt || Date.now()))}
@@ -323,18 +329,18 @@ export default function AssayDetailPage() {
             </div>
 
             <div className="flex items-center justify-between mb-4">
-              <div>
+              <div className="flex">
                 <dt className="text-sm font-medium text-gray-500">Reference</dt>
-                <dd className="mt-1 text-sm text-gray-900">
+                <dd className="ml-1 text-sm text-gray-900">
                   {jobCard?.referenceNumber || "-"}
                 </dd>
               </div>
 
-              <div>
+              <div className="flex">
                 <dt className="text-sm font-medium text-gray-500">
                   Shipment Type
                 </dt>
-                <dd className="mt-1 text-sm text-gray-900">
+                <dd className="ml-1 text-sm text-gray-900">
                   {assay?.shipmentType?.name || "-"}
                 </dd>
               </div>

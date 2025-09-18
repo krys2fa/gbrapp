@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
 import AssayActions from "../AssayActions";
 import { formatDate, formatCurrency } from "@/app/lib/utils";
@@ -10,7 +9,6 @@ import { formatDate, formatCurrency } from "@/app/lib/utils";
 export default function AssayResultsPage() {
   const params = useParams();
   const id = (params?.id as string) || "";
-  const router = useRouter();
 
   const [jobCard, setJobCard] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -169,18 +167,24 @@ export default function AssayResultsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Content */}
           <div id="assay-content" className="bg-white shadow-sm">
-            <div className="px-4 sm:px-6 lg:px-8 py-6 pb-2">
-              <img
-                src="/goldbod-logo-green.png"
-                alt="GoldBod Logo"
-                className="h-12 w-auto"
-              />
-            </div>
-
-            <div className="px-4 sm:px-6 lg:px-8 pt-2 py-6 flex justify-center mb-2">
-              <h1 className="text-xl font-bold tracking-wider">
-                GOLD ASSAY RESULTS
-              </h1>
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
+              <div className="flex items-center">
+                <img
+                  src="/goldbod-logo-black.png"
+                  alt="GoldBod Logo"
+                  className="h-12 w-auto"
+                />
+              </div>
+                <h1 className="text-xl font-bold tracking-wider ml-4">
+                  ASSAY RESULTS
+                </h1>
+              <div className="flex items-center">
+                <img
+                  src="/coat-of-arms.jpg"
+                  alt="Coat of Arms"
+                  className="h-20 w-auto"
+                />
+              </div>
             </div>
 
             <div className="px-4 sm:px-6 lg:px-8 grid grid-cols-2 gap-4 mb-4">
@@ -524,7 +528,7 @@ export default function AssayResultsPage() {
               </div>
 
               {/* QR Code Section */}
-              <div className="mt-8 flex justify-end px-4 sm:px-6 lg:px-8 pb-6">
+              {/* <div className="mt-8 flex justify-end px-4 sm:px-6 lg:px-8 pb-6">
                 <div className="flex items-center">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
@@ -534,7 +538,7 @@ export default function AssayResultsPage() {
                     className="w-16 h-16"
                   />
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
