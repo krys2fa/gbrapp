@@ -2,6 +2,8 @@
 
 A comprehensive web application for managing gold buying and refining operations, built with Next.js, TypeScript, Prisma, and PostgreSQL.
 
+> **Latest Update**: Security enhanced - all deployment scripts now use environment variables for credentials.
+
 ## 🚀 Features
 
 - **Job Card Management**: Create, view, edit, and manage job cards for gold transactions
