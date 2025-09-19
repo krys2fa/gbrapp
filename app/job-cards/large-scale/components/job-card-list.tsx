@@ -51,10 +51,10 @@ interface LargeScaleJobCard {
 interface LargeScaleJobCardListProps {
   filters: {
     exporterId: string;
-    exporterTypeId: string;
     startDate: string;
     endDate: string;
     status: string;
+    miningSite: string;
   };
 }
 
@@ -76,10 +76,6 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
 
       if (filters.exporterId) {
         queryParams.append("exporterId", filters.exporterId);
-      }
-
-      if (filters.exporterTypeId) {
-        queryParams.append("exporterTypeId", filters.exporterTypeId);
       }
 
       if (filters.startDate) {

@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get("search");
     const email = searchParams.get("email");
     const phone = searchParams.get("phone");
+    const code = searchParams.get("code");
     const orderBy = searchParams.get("orderBy") || "name";
     const order = searchParams.get("order") || "asc";
 
@@ -30,6 +31,9 @@ export async function GET(req: NextRequest) {
     }
     if (phone) {
       where.phone = { contains: phone, mode: "insensitive" };
+    }
+    if (code) {
+      where.exporterCode = { contains: code, mode: "insensitive" };
     }
 
     console.log("About to query database with where:", where);
@@ -113,10 +117,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log("Generating exporterCode");
+    // Generate the next exporterCode by finding the highest existing one
+    const lastExporter = await prisma.exporter.findFirst({
+      where: {
+        exporterCode: {
+          startsWith: "EXP-",
+        },
+      },
+      orderBy: {
+        exporterCode: "desc",
+      },
+    });
+
+    let nextNumber = 1;
+    if (lastExporter && lastExporter.exporterCode) {
+      const match = lastExporter.exporterCode.match(/EXP-(\d+)/);
+      if (match) {
+        nextNumber = parseInt(match[1]) + 1;
+      }
+    }
+
+    const exporterCode = `EXP-${nextNumber.toString().padStart(3, "0")}`;
+    console.log("Generated exporterCode:", exporterCode);
+
     console.log("Creating new exporter");
-    // Create the exporter
+    // Create the exporter with the generated code
     const exporter = await prisma.exporter.create({
-      data,
+      data: {
+        ...data,
+        exporterCode,
+      },
     });
 
     console.log("Exporter created successfully with ID:", exporter.id);

@@ -243,7 +243,11 @@ export default function CertificateOfAssayPage() {
           <div>
             <div style="margin-bottom: 8px;">
               <span class="text-sm text-gray-500 mr-2">Client:</span>
-              <span class="text-sm">${jobCard?.exporter?.name || "N/A"}</span>
+              <span class="text-sm">${
+                jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
+                  ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                  : jobCard?.exporter?.name || "N/A"
+              }</span>
             </div>
             <div>
               <span class="text-sm text-gray-500 mr-2">Date:</span>
@@ -526,7 +530,9 @@ export default function CertificateOfAssayPage() {
               <div>
                 <span className="text-sm text-gray-500 mr-2">Client:</span>
                 <span className="text-sm">
-                  {jobCard?.exporter?.name || "N/A"}
+                  {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
+                    ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                    : jobCard?.exporter?.name || "N/A"}
                 </span>
               </div>
 

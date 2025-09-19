@@ -191,7 +191,9 @@ export default function AssayResultsPage() {
               <div>
                 <span className="text-sm text-gray-500 mr-2">Client:</span>
                 <span className="text-sm">
-                  {jobCard?.exporter?.name || "N/A"}
+                  {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
+                    ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                    : jobCard?.exporter?.name || "N/A"}
                 </span>
               </div>
 

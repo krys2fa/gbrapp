@@ -285,6 +285,7 @@ model ShipmentType {
 
 model Exporter {
   id                         String              @id @default(uuid())
+  exporterCode               String              @unique
   name                       String
   exporterTypeId             String
   contactPerson              String?

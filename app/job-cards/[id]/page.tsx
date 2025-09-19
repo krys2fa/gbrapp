@@ -1,13 +1,12 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
-import { formatCurrency, formatDate } from "@/app/lib/utils";
+import { formatDate } from "@/app/lib/utils";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   PencilIcon,
   TrashIcon,
-  ArrowPathIcon,
   XCircleIcon,
   EyeIcon,
   DocumentTextIcon,
@@ -138,7 +137,6 @@ function JobCardDetailPage() {
       });
 
       if (response.ok) {
-        const newInvoice = await response.json();
         // Refresh the job card data to show the new invoice
         const updatedResponse = await fetch(`/api/job-cards/${id}`);
         if (updatedResponse.ok) {

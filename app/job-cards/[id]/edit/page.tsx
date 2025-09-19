@@ -23,7 +23,12 @@ function EditJobCardPage() {
   const [canEdit, setCanEdit] = useState(true);
   const [editRestrictionReason, setEditRestrictionReason] = useState("");
   const [exporters, setExporters] = useState<
-    { id: string; name: string; exporterType: { id: string; name: string } }[]
+    {
+      id: string;
+      name: string;
+      exporterCode: string;
+      exporterType: { id: string; name: string };
+    }[]
   >([]);
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
@@ -489,7 +494,7 @@ function EditJobCardPage() {
                           <option value="">Select exporter</option>
                           {exporters.map((ex) => (
                             <option key={ex.id} value={ex.id}>
-                              {ex.name}
+                              {ex.name} ({ex.exporterCode})
                             </option>
                           ))}
                         </select>

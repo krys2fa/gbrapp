@@ -138,7 +138,10 @@ export default async function InvoicePage(props: any) {
 
   // Determine which job card type this invoice belongs to
   const jobCardData = invoice.jobCard || invoice.largeScaleJobCard;
-  const exporterName = jobCardData?.exporter?.name || "-";
+  const exporterName =
+    jobCardData?.exporter?.name && jobCardData?.exporter?.exporterCode
+      ? `${jobCardData.exporter.name} (${jobCardData.exporter.exporterCode})`
+      : jobCardData?.exporter?.name || "-";
   const destinationCountry = jobCardData?.destinationCountry || "-";
   const referenceNumber =
     jobCardData?.referenceNumber ||

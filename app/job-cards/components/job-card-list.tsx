@@ -33,7 +33,6 @@ interface JobCard {
 interface JobCardListProps {
   filters: {
     exporterId: string;
-    exporterTypeId: string;
     startDate: string;
     endDate: string;
     status: string;
@@ -57,10 +56,6 @@ export function JobCardList({ filters }: JobCardListProps) {
 
       if (filters.exporterId) {
         queryParams.append("exporterId", filters.exporterId);
-      }
-
-      if (filters.exporterTypeId) {
-        queryParams.append("exporterTypeId", filters.exporterTypeId);
       }
 
       if (filters.startDate) {

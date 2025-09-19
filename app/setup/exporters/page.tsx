@@ -50,6 +50,7 @@ const ExportersPage = () => {
   const [exportersLoading, setExportersLoading] = useState(true);
   const [page, setPage] = useState(1);
   const pageSize = 10;
+  const [codeFilter, setCodeFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
   const [phoneFilter, setPhoneFilter] = useState("");
@@ -65,6 +66,7 @@ const ExportersPage = () => {
     try {
       let url = "/api/exporters";
       const params = [];
+      if (codeFilter) params.push(`code=${encodeURIComponent(codeFilter)}`);
       if (nameFilter) params.push(`search=${encodeURIComponent(nameFilter)}`);
       if (emailFilter) params.push(`email=${encodeURIComponent(emailFilter)}`);
       if (phoneFilter) params.push(`phone=${encodeURIComponent(phoneFilter)}`);
@@ -914,6 +916,16 @@ const ExportersPage = () => {
           <div className="flex items-center gap-4 mb-4">
             <input
               type="text"
+              value={codeFilter}
+              onChange={(e) => {
+                setCodeFilter(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Filter by code (EXP-001)"
+              className="!w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
+            />
+            <input
+              type="text"
               value={nameFilter}
               onChange={(e) => {
                 setNameFilter(e.target.value);
@@ -963,6 +975,9 @@ const ExportersPage = () => {
                     <thead>
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Code
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Name
                         </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -993,6 +1008,9 @@ const ExportersPage = () => {
                         .slice((page - 1) * pageSize, page * pageSize)
                         .map((exporter: any) => (
                           <tr key={exporter.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-2 text-blue-600 font-semibold">
+                              {exporter.exporterCode}
+                            </td>
                             <td className="px-4 py-2 text-gray-900">
                               {exporter.name}
                             </td>

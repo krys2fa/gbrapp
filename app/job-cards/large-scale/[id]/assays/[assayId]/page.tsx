@@ -553,7 +553,9 @@ export default function AssayResultsPage() {
                 <div className="header-info">
                   <span className="info-label">Mining company:</span>
                   <span className="info-value font-bold ml-2">
-                    {jobCard?.exporter?.name || "N/A"}
+                    {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
+                      ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                      : jobCard?.exporter?.name || "N/A"}
                   </span>
                 </div>
 

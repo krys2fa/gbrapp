@@ -19,7 +19,12 @@ function NewJobCardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [exporters, setExporters] = useState<
-    { id: string; name: string; exporterType: { id: string; name: string } }[]
+    {
+      id: string;
+      name: string;
+      exporterCode: string;
+      exporterType: { id: string; name: string };
+    }[]
   >([]);
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
@@ -253,7 +258,8 @@ function NewJobCardPage() {
 
     // Basic client-side validation: commodity is required (DB has non-null constraint)
     if (!formData.commodityId) {
-      const errorMessage = "Please select a commodity before creating the job card.";
+      const errorMessage =
+        "Please select a commodity before creating the job card.";
       setError(errorMessage);
       toast.error(errorMessage);
       setLoading(false);
@@ -398,7 +404,7 @@ function NewJobCardPage() {
                         <option value="">Select exporter</option>
                         {exporters.map((ex) => (
                           <option key={ex.id} value={ex.id}>
-                            {ex.name}
+                            {ex.name} ({ex.exporterCode})
                           </option>
                         ))}
                       </select>

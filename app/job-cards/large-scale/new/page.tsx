@@ -42,7 +42,12 @@ function NewLargeScaleJobCardPage() {
     await logger.warn(LogCategory.JOB_CARD, message, metadata);
   };
   const [exporters, setExporters] = useState<
-    { id: string; name: string; exporterType: { id: string; name: string } }[]
+    {
+      id: string;
+      name: string;
+      exporterCode: string;
+      exporterType: { id: string; name: string };
+    }[]
   >([]);
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
@@ -1004,7 +1009,7 @@ function NewLargeScaleJobCardPage() {
 
         <div className="mt-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            New Large Scale Job Card
+            New Large Scale Job
           </h1>
           <p className="mt-2 text-sm text-gray-600">
             Create a new large scale mining operation job card with all required
@@ -1085,7 +1090,7 @@ function NewLargeScaleJobCardPage() {
                     <option value="">Select an exporter</option>
                     {exporters.map((exporter) => (
                       <option key={exporter.id} value={exporter.id}>
-                        {exporter.name}
+                        {exporter.name} ({exporter.exporterCode})
                       </option>
                     ))}
                   </select>
@@ -1319,7 +1324,8 @@ function NewLargeScaleJobCardPage() {
                   {selectedExporter && (
                     <div className="text-sm text-black">
                       <p>
-                        <strong className="text-blue-700">Name:</strong> <strong>{selectedExporter.name}</strong>
+                        <strong className="text-blue-700">Name:</strong>{" "}
+                        <strong>{selectedExporter.name}</strong>
                       </p>
                       <p>
                         <strong className="text-blue-700">Type:</strong>{" "}
@@ -1327,7 +1333,9 @@ function NewLargeScaleJobCardPage() {
                       </p>
                       <p>
                         <strong className="text-blue-700">License:</strong>{" "}
-                        <strong>{selectedExporter.licenseNumber || "N/A"}</strong>
+                        <strong>
+                          {selectedExporter.licenseNumber || "N/A"}
+                        </strong>
                       </p>
                       <p>
                         <strong className="text-blue-700">Email:</strong>{" "}

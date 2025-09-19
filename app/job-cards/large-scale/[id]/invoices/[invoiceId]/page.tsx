@@ -122,7 +122,10 @@ export default async function LargeScaleInvoicePage(props: any) {
       .filter(Boolean)
       .join(", ") || "-";
 
-  const exporterName = jobCardData?.exporter?.name || "-";
+  const exporterName =
+    jobCardData?.exporter?.name && jobCardData?.exporter?.exporterCode
+      ? `${jobCardData.exporter.name} (${jobCardData.exporter.exporterCode})`
+      : jobCardData?.exporter?.name || "-";
   const destinationCountry = jobCardData?.destinationCountry || "-";
   const referenceNumber =
     jobCardData?.referenceNumber || invoice.largeScaleJobCardId || jobCardId;
