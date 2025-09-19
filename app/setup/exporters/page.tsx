@@ -68,6 +68,8 @@ const ExportersPage = () => {
       if (nameFilter) params.push(`search=${encodeURIComponent(nameFilter)}`);
       if (emailFilter) params.push(`email=${encodeURIComponent(emailFilter)}`);
       if (phoneFilter) params.push(`phone=${encodeURIComponent(phoneFilter)}`);
+      // Add ordering by creation date descending
+      params.push(`orderBy=createdAt&order=desc`);
       if (params.length) url += `?${params.join("&")}`;
       const res = await fetch(url);
       const data = await res.json();
@@ -120,26 +122,26 @@ const ExportersPage = () => {
           authorizedSignatory: form.authorizedSignatory,
           exporterTypeId: form.exporterTypeId || undefined,
           // Consignee Information
-          consigneeAddress: form.consigneeAddress,
-          consigneeTelephone: form.consigneeTelephone,
-          consigneeMobile: form.consigneeMobile,
-          consigneeEmail: form.consigneeEmail,
-          // Buyer Information
-          buyerName: form.buyerName,
-          buyerAddress: form.buyerAddress,
+          // consigneeAddress: form.consigneeAddress,
+          // consigneeTelephone: form.consigneeTelephone,
+          // consigneeMobile: form.consigneeMobile,
+          // consigneeEmail: form.consigneeEmail,
+          // // Buyer Information
+          // buyerName: form.buyerName,
+          // buyerAddress: form.buyerAddress,
           // Exporter Details
-          deliveryLocation: form.deliveryLocation,
-          exporterTelephone: form.exporterTelephone,
-          exporterEmail: form.exporterEmail,
-          exporterWebsite: form.exporterWebsite,
-          exporterLicenseNumber: form.exporterLicenseNumber,
+          // deliveryLocation: form.deliveryLocation,
+          // exporterTelephone: form.exporterTelephone,
+          // exporterEmail: form.exporterEmail,
+          // exporterWebsite: form.exporterWebsite,
+          // exporterLicenseNumber: form.exporterLicenseNumber,
           // Notified Party Information
-          notifiedPartyName: form.notifiedPartyName,
-          notifiedPartyAddress: form.notifiedPartyAddress,
-          notifiedPartyEmail: form.notifiedPartyEmail,
-          notifiedPartyContactPerson: form.notifiedPartyContactPerson,
-          notifiedPartyTelephone: form.notifiedPartyTelephone,
-          notifiedPartyMobile: form.notifiedPartyMobile,
+          // notifiedPartyName: form.notifiedPartyName,
+          // notifiedPartyAddress: form.notifiedPartyAddress,
+          // notifiedPartyEmail: form.notifiedPartyEmail,
+          // notifiedPartyContactPerson: form.notifiedPartyContactPerson,
+          // notifiedPartyTelephone: form.notifiedPartyTelephone,
+          // notifiedPartyMobile: form.notifiedPartyMobile,
         }),
       });
       if (!res.ok) {
@@ -159,26 +161,26 @@ const ExportersPage = () => {
         authorizedSignatory: "",
         exporterTypeId: "",
         // Consignee Information
-        consigneeAddress: "",
-        consigneeTelephone: "",
-        consigneeMobile: "",
-        consigneeEmail: "",
+        // consigneeAddress: "",
+        // consigneeTelephone: "",
+        // consigneeMobile: "",
+        // consigneeEmail: "",
         // Buyer Information
-        buyerName: "",
-        buyerAddress: "",
-        // Exporter Details
-        deliveryLocation: "",
-        exporterTelephone: "",
-        exporterEmail: "",
-        exporterWebsite: "",
-        exporterLicenseNumber: "",
+        // buyerName: "",
+        // buyerAddress: "",
+        // // Exporter Details
+        // deliveryLocation: "",
+        // exporterTelephone: "",
+        // exporterEmail: "",
+        // exporterWebsite: "",
+        // exporterLicenseNumber: "",
         // Notified Party Information
-        notifiedPartyName: "",
-        notifiedPartyAddress: "",
-        notifiedPartyEmail: "",
-        notifiedPartyContactPerson: "",
-        notifiedPartyTelephone: "",
-        notifiedPartyMobile: "",
+        // notifiedPartyName: "",
+        // notifiedPartyAddress: "",
+        // notifiedPartyEmail: "",
+        // notifiedPartyContactPerson: "",
+        // notifiedPartyTelephone: "",
+        // notifiedPartyMobile: "",
       });
     } catch (err: any) {
       toast.error(err.message || "Error creating exporter", { id: toastId });
@@ -419,7 +421,6 @@ const ExportersPage = () => {
                       value={form.tin}
                       onChange={handleChange}
                       className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                      required
                     />
                   </div>
 
@@ -437,7 +438,6 @@ const ExportersPage = () => {
                       value={form.email}
                       onChange={handleChange}
                       className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                      required
                     />
                   </div>
                   <div>
@@ -454,7 +454,6 @@ const ExportersPage = () => {
                       value={form.contactPerson}
                       onChange={handleChange}
                       className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                      required
                     />
                   </div>
                   <div>
@@ -471,7 +470,6 @@ const ExportersPage = () => {
                       value={form.phone}
                       onChange={handleChange}
                       className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                      required
                     />
                   </div>
                   <div>
@@ -488,7 +486,6 @@ const ExportersPage = () => {
                       value={form.address}
                       onChange={handleChange}
                       className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                      required
                     />
                   </div>
                   <div>
@@ -510,8 +507,11 @@ const ExportersPage = () => {
                   </div>
                 </div>
 
-                {/* Consignee and Buyer Information Side by Side */}
-                <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                {/* Consignee and Buyer Information Side by Side - HIDDEN */}
+                <div
+                  className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2"
+                  style={{ display: "none" }}
+                >
                   {/* Consignee Information Section */}
                   <div>
                     <h4 className="text-md font-medium text-gray-900 mb-4">
@@ -633,8 +633,11 @@ const ExportersPage = () => {
                   </div>
                 </div>
 
-                {/* Exporter Details and Notified Party Information Side by Side */}
-                <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                {/* Exporter Details and Notified Party Information Side by Side - HIDDEN */}
+                <div
+                  className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2"
+                  style={{ display: "none" }}
+                >
                   {/* Exporter Details Section */}
                   <div>
                     <h4 className="text-md font-medium text-gray-900 mb-4">
@@ -886,9 +889,20 @@ const ExportersPage = () => {
                   )}
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
+                    disabled={loading}
+                    className={`px-6 py-2 rounded-md shadow transition ${
+                      loading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700"
+                    } text-white`}
                   >
-                    {editingExporter ? "Update Exporter" : "Create Exporter"}
+                    {loading
+                      ? editingExporter
+                        ? "Updating..."
+                        : "Creating..."
+                      : editingExporter
+                      ? "Update Exporter"
+                      : "Create Exporter"}
                   </button>
                 </div>
               </div>

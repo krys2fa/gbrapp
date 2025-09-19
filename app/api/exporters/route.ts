@@ -14,6 +14,8 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get("search");
     const email = searchParams.get("email");
     const phone = searchParams.get("phone");
+    const orderBy = searchParams.get("orderBy") || "name";
+    const order = searchParams.get("order") || "asc";
 
     // Build where clause for filtering
     const where: any = {};
@@ -31,6 +33,16 @@ export async function GET(req: NextRequest) {
     }
 
     console.log("About to query database with where:", where);
+
+    // Build dynamic orderBy based on parameters
+    const orderByClause: any = {};
+    if (orderBy === "createdAt" || orderBy === "updatedAt") {
+      orderByClause[orderBy] = order === "desc" ? "desc" : "asc";
+    } else {
+      // Default to name ordering for other fields
+      orderByClause["name"] = order === "desc" ? "desc" : "asc";
+    }
+
     const exporters = await prisma.exporter.findMany({
       where,
       include: {
@@ -41,9 +53,7 @@ export async function GET(req: NextRequest) {
           },
         },
       },
-      orderBy: {
-        name: "asc",
-      },
+      orderBy: orderByClause,
     });
 
     console.log("Query successful, found", exporters.length, "exporters");
