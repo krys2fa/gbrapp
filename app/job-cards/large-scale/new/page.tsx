@@ -106,8 +106,10 @@ function NewLargeScaleJobCardPage() {
 
   // Loading states for visual cues
   const [isLoadingExporter, setIsLoadingExporter] = useState<boolean>(false);
-  const [isLoadingExchangeRate, setIsLoadingExchangeRate] = useState<boolean>(false);
-  const [isLoadingCommodityPrices, setIsLoadingCommodityPrices] = useState<boolean>(false);
+  const [isLoadingExchangeRate, setIsLoadingExchangeRate] =
+    useState<boolean>(false);
+  const [isLoadingCommodityPrices, setIsLoadingCommodityPrices] =
+    useState<boolean>(false);
 
   // Ref for hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -308,7 +310,7 @@ function NewLargeScaleJobCardPage() {
           try {
             // Fetch gold price for the data sheet date
             const goldResponse = await fetch(
-              `/api/commodities/XAU/price?date=${form.dataSheetDates}`
+              `/api/commodities/Au/price?date=${form.dataSheetDates}`
             );
             if (goldResponse.ok) {
               const goldData = await goldResponse.json();
@@ -335,7 +337,7 @@ function NewLargeScaleJobCardPage() {
 
             // Fetch silver price for the data sheet date
             const silverResponse = await fetch(
-              `/api/commodities/XAG/price?date=${form.dataSheetDates}`
+              `/api/commodities/Ag/price?date=${form.dataSheetDates}`
             );
             if (silverResponse.ok) {
               const silverData = await silverResponse.json();
@@ -749,7 +751,7 @@ function NewLargeScaleJobCardPage() {
           // This ensures pricing is based on the date the data sheet was prepared, not the received date
           const pricingDate = form.dataSheetDates;
           const goldResponse = await fetch(
-            `/api/commodities/XAU/price?date=${pricingDate}`
+            `/api/commodities/Au/price?date=${pricingDate}`
           );
           if (goldResponse.ok) {
             const goldData = await goldResponse.json();
@@ -766,7 +768,7 @@ function NewLargeScaleJobCardPage() {
 
           // Fetch silver price for the data sheet date
           const silverResponse = await fetch(
-            `/api/commodities/XAG/price?date=${pricingDate}`
+            `/api/commodities/Ag/price?date=${pricingDate}`
           );
           if (silverResponse.ok) {
             const silverData = await silverResponse.json();
@@ -1302,26 +1304,43 @@ function NewLargeScaleJobCardPage() {
 
           {/* Meta Bar - Show when exporter is selected or data sheet date is set */}
           {(form.exporterId || form.dataSheetDates) && (
-            <div className={`bg-blue-50 border border-blue-200 rounded-lg p-4 transition-all duration-300 ${
-              (isLoadingExporter || isLoadingExchangeRate || isLoadingCommodityPrices) 
-                ? 'shadow-lg ring-2 ring-blue-300 ring-opacity-50' 
-                : ''
-            }`}>
+            <div
+              className={`bg-blue-50 border border-blue-200 rounded-lg p-4 transition-all duration-300 ${
+                isLoadingExporter ||
+                isLoadingExchangeRate ||
+                isLoadingCommodityPrices
+                  ? "shadow-lg ring-2 ring-blue-300 ring-opacity-50"
+                  : ""
+              }`}
+            >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-2xl font-medium text-blue-900">
                   Exporter Information & Market Data
                 </h3>
-                {(isLoadingExporter || isLoadingExchangeRate || isLoadingCommodityPrices) && (
+                {(isLoadingExporter ||
+                  isLoadingExchangeRate ||
+                  isLoadingCommodityPrices) && (
                   <div className="flex items-center gap-2 text-sm">
                     <div className="animate-pulse flex items-center gap-1">
                       <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce"></div>
-                      <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div
+                        className="h-2 w-2 bg-blue-500 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      ></div>
+                      <div
+                        className="h-2 w-2 bg-blue-500 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
                     </div>
                     <span className="text-blue-700 font-medium">
                       {isLoadingExporter && "Loading exporter details..."}
-                      {!isLoadingExporter && isLoadingExchangeRate && "Loading exchange rate..."}
-                      {!isLoadingExporter && !isLoadingExchangeRate && isLoadingCommodityPrices && "Loading commodity prices..."}
+                      {!isLoadingExporter &&
+                        isLoadingExchangeRate &&
+                        "Loading exchange rate..."}
+                      {!isLoadingExporter &&
+                        !isLoadingExchangeRate &&
+                        isLoadingCommodityPrices &&
+                        "Loading commodity prices..."}
                     </span>
                   </div>
                 )}
@@ -1333,11 +1352,29 @@ function NewLargeScaleJobCardPage() {
                     Exporter Details
                     {isLoadingExporter && (
                       <div className="inline-flex items-center">
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
-                        <span className="text-xs text-blue-600">Updating...</span>
+                        <span className="text-xs text-blue-600">
+                          Updating...
+                        </span>
                       </div>
                     )}
                   </h4>
@@ -1387,11 +1424,29 @@ function NewLargeScaleJobCardPage() {
                     Latest Market Data
                     {(isLoadingExchangeRate || isLoadingCommodityPrices) && (
                       <div className="inline-flex items-center">
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
-                        <span className="text-xs text-blue-600">Updating prices...</span>
+                        <span className="text-xs text-blue-600">
+                          Updating prices...
+                        </span>
                       </div>
                     )}
                   </h4>
@@ -1401,7 +1456,9 @@ function NewLargeScaleJobCardPage() {
                       {isLoadingExchangeRate ? (
                         <div className="flex items-center gap-1">
                           <div className="animate-spin h-3 w-3 border border-blue-500 rounded-full border-t-transparent"></div>
-                          <span className="text-gray-500 text-xs">Loading...</span>
+                          <span className="text-gray-500 text-xs">
+                            Loading...
+                          </span>
                         </div>
                       ) : (
                         <strong
@@ -1420,7 +1477,9 @@ function NewLargeScaleJobCardPage() {
                       {isLoadingCommodityPrices ? (
                         <div className="flex items-center gap-1">
                           <div className="animate-spin h-3 w-3 border border-blue-500 rounded-full border-t-transparent"></div>
-                          <span className="text-gray-500 text-xs">Loading...</span>
+                          <span className="text-gray-500 text-xs">
+                            Loading...
+                          </span>
                         </div>
                       ) : (
                         <strong
@@ -1444,7 +1503,9 @@ function NewLargeScaleJobCardPage() {
                       {isLoadingCommodityPrices ? (
                         <div className="flex items-center gap-1">
                           <div className="animate-spin h-3 w-3 border border-blue-500 rounded-full border-t-transparent"></div>
-                          <span className="text-gray-500 text-xs">Loading...</span>
+                          <span className="text-gray-500 text-xs">
+                            Loading...
+                          </span>
                         </div>
                       ) : (
                         <strong
@@ -1459,7 +1520,8 @@ function NewLargeScaleJobCardPage() {
                           }
                         >
                           {silverPrice || "Loading..."}
-                          {silverPrice === "Not Available" && " (Setup Required)"}
+                          {silverPrice === "Not Available" &&
+                            " (Setup Required)"}
                         </strong>
                       )}
                     </p>
