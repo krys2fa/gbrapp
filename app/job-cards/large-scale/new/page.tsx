@@ -2234,11 +2234,11 @@ function NewLargeScaleJobCardPage() {
                             <div className="bg-gray-50 rounded-lg p-4">
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {(() => {
-                                  const goldNetWeightGrams =
+                                  const goldNetWeightInFormUnit =
                                     parseFloat(
                                       calculateAssayersTotals().goldNetWeight
                                     ) || 0;
-                                  const silverNetWeightGrams =
+                                  const silverNetWeightInFormUnit =
                                     parseFloat(
                                       calculateAssayersTotals().silverNetWeight
                                     ) || 0;
@@ -2246,6 +2246,19 @@ function NewLargeScaleJobCardPage() {
                                     parseFloat(goldPrice) || 0;
                                   const silverPricePerOunce =
                                     parseFloat(silverPrice) || 0;
+
+                                  // Helper function to convert to grams (same logic as calculateValuationDetails)
+                                  const convertToGrams = (value: number, unit: string) => {
+                                    if (!value) return 0;
+                                    const u = unit.toString().toLowerCase();
+                                    if (u === "kilograms") return value * 1000;
+                                    if (u === "grams") return value;
+                                    return value; // default: treat as grams
+                                  };
+
+                                  // Convert to grams first based on unit of measure
+                                  const goldNetWeightGrams = convertToGrams(goldNetWeightInFormUnit, form.unitOfMeasure);
+                                  const silverNetWeightGrams = convertToGrams(silverNetWeightInFormUnit, form.unitOfMeasure);
 
                                   // Convert grams to troy ounces (1 troy ounce = 31.1035 grams)
                                   const GRAMS_PER_TROY_OUNCE = 31.1035;
@@ -2266,6 +2279,9 @@ function NewLargeScaleJobCardPage() {
                                       <div>
                                         <dt className="text-sm font-medium text-gray-500">
                                           Net Weight Gold (oz)
+                                          <span className="text-xs text-gray-400 ml-1">
+                                            (from {goldNetWeightInFormUnit.toFixed(4)} {form.unitOfMeasure.toLowerCase()})
+                                          </span>
                                         </dt>
                                         <dd className="mt-1 text-sm text-gray-900 font-semibold">
                                           {goldNetWeightOz.toLocaleString(
@@ -2280,6 +2296,9 @@ function NewLargeScaleJobCardPage() {
                                       <div>
                                         <dt className="text-sm font-medium text-gray-500">
                                           Net Weight Silver (oz)
+                                          <span className="text-xs text-gray-400 ml-1">
+                                            (from {silverNetWeightInFormUnit.toFixed(4)} {form.unitOfMeasure.toLowerCase()})
+                                          </span>
                                         </dt>
                                         <dd className="mt-1 text-sm text-gray-900 font-semibold">
                                           {silverNetWeightOz.toLocaleString(
