@@ -373,8 +373,9 @@ export default function AssayResultsPage() {
 
             {/* Professional Assay Information */}
             <div className="px-4 sm:px-6 lg:px-8 pt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center">
+              {/* Row 1: Exporter - Number of samples */}
+              <div className="flex justify-between items-center mb-2">
+                <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Exporter:
                   </span>
@@ -384,17 +385,19 @@ export default function AssayResultsPage() {
                       : jobCard?.exporter?.name || "N/A"}
                   </span>
                 </div>
-
-                <div className="flex items-center justify-start sm:justify-end">
-                  <span className="text-sm font-medium text-gray-500 mr-2">
+                <div>
+                  <span className="text-sm text-gray-500 mr-2 font-medium">
                     Number of Samples:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {assay?.measurements?.length || 0}
                   </span>
                 </div>
+              </div>
 
-                <div className="flex items-center">
+              {/* Row 2: Sample Type - Date of Analysis */}
+              <div className="flex justify-between items-center mb-2">
+                <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Sample Type:
                   </span>
@@ -402,9 +405,8 @@ export default function AssayResultsPage() {
                     {assay?.sampleType || "N/A"}
                   </span>
                 </div>
-
-                <div className="flex items-center justify-start sm:justify-end">
-                  <span className="text-sm font-medium text-gray-500 mr-2">
+                <div>
+                  <span className="text-sm text-gray-500 mr-2 font-medium">
                     Date of Analysis:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
@@ -413,8 +415,11 @@ export default function AssayResultsPage() {
                       : "N/A"}
                   </span>
                 </div>
+              </div>
 
-                <div className="flex items-center">
+              {/* Row 3: Shipment Number - Data Sheet Dates */}
+              <div className="flex justify-between items-center mb-2">
+                <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Shipment Number:
                   </span>
@@ -422,9 +427,8 @@ export default function AssayResultsPage() {
                     {assay?.shipmentNumber || "N/A"}
                   </span>
                 </div>
-
-                <div className="flex items-center justify-start sm:justify-end">
-                  <span className="text-sm font-medium text-gray-500 mr-2">
+                <div>
+                  <span className="text-sm text-gray-500 mr-2 font-medium">
                     Data Sheet Dates:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
@@ -433,8 +437,11 @@ export default function AssayResultsPage() {
                       : "N/A"}
                   </span>
                 </div>
+              </div>
 
-                <div className="flex items-center">
+              {/* Row 4: Sample Bottle Dates - Number of Bars */}
+              <div className="flex justify-between items-center mb-2">
+                <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Sample Bottle Dates:
                   </span>
@@ -444,9 +451,8 @@ export default function AssayResultsPage() {
                       : "N/A"}
                   </span>
                 </div>
-
-                <div className="flex items-center justify-start sm:justify-end">
-                  <span className="text-sm font-medium text-gray-500 mr-2">
+                <div>
+                  <span className="text-sm text-gray-500 mr-2 font-medium">
                     Number of Bars:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
@@ -454,12 +460,10 @@ export default function AssayResultsPage() {
                   </span>
                 </div>
               </div>
-            </div>
 
-            {/* Job Card and Assay Information */}
-            <div className="px-4 sm:px-6 lg:px-8 py-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center">
+              {/* Row 5: Job Card ID - Assay Number */}
+              <div className="flex justify-between items-center mb-2">
+                <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Job Card ID:
                   </span>
@@ -467,8 +471,8 @@ export default function AssayResultsPage() {
                     {jobCard?.humanReadableId || "N/A"}
                   </span>
                 </div>
-                <div className="flex items-center justify-start sm:justify-end">
-                  <span className="text-sm font-medium text-gray-500 mr-2">
+                <div>
+                  <span className="text-sm text-gray-500 mr-2 font-medium">
                     Assay Number:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">

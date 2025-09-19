@@ -448,7 +448,7 @@ export default function CertificateOfAssayPage() {
                     `https://goldbod.gov.gh/job-cards/large-scale/${id}/assays/certificate`
                   )}`}
                   alt="QR Code - Certificate Verification"
-                  className="w-24 h-24 mb-2 print:w-16 print:h-16"
+                  className="w-16 h-16 mb-2 print:w-16 print:h-16"
                 />
               </div>
             </div>
