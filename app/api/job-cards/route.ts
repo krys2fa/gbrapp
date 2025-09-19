@@ -13,6 +13,7 @@ async function getAllJobCards(req: NextRequest) {
     const exporterId = searchParams.get("exporterId");
     const exporterTypeId = searchParams.get("exporterTypeId");
     const reference = searchParams.get("reference");
+    const humanReadableId = searchParams.get("humanReadableId");
     const pmmc = searchParams.get("pmmc");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
@@ -38,6 +39,13 @@ async function getAllJobCards(req: NextRequest) {
 
     if (reference) {
       where.referenceNumber = { contains: reference };
+    }
+
+    if (humanReadableId) {
+      where.humanReadableId = {
+        contains: humanReadableId,
+        mode: "insensitive",
+      };
     }
 
     if (startDate && endDate) {
@@ -333,6 +341,7 @@ async function createJobCard(req: NextRequest) {
 
     const allowedKeys = [
       "referenceNumber",
+      "humanReadableId",
       "receivedDate",
       "exporterId",
       "status",
@@ -369,6 +378,33 @@ async function createJobCard(req: NextRequest) {
       data[k] = payload[k];
     }
 
+    // Generate human-readable ID for small scale job cards
+    const currentYear = new Date().getFullYear();
+
+    // Get the next sequential number for this year
+    const existingJobCards = await prisma.jobCard.findMany({
+      where: {
+        humanReadableId: {
+          startsWith: `SS-${currentYear}-`,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 1,
+    });
+
+    let nextSequence = 1;
+    if (existingJobCards.length > 0) {
+      const lastId = existingJobCards[0].humanReadableId;
+      const lastSequence = parseInt(lastId.split("-")[2]);
+      nextSequence = lastSequence + 1;
+    }
+
+    const humanReadableId = `SS-${currentYear}-${nextSequence
+      .toString()
+      .padStart(4, "0")}`;
+
     // Ensure referenceNumber and receivedDate defaulting logic
     data.referenceNumber =
       data.referenceNumber ||
@@ -376,6 +412,7 @@ async function createJobCard(req: NextRequest) {
     data.receivedDate = data.receivedDate
       ? new Date(String(data.receivedDate))
       : new Date();
+    data.humanReadableId = humanReadableId;
 
     // Numeric coercions
     if (data.exporterPricePerOz)
@@ -426,15 +463,19 @@ async function createJobCard(req: NextRequest) {
       try {
         const updateData: any = {};
         if (buyerInfo.buyerName) updateData.buyerName = buyerInfo.buyerName;
-        if (buyerInfo.buyerAddress) updateData.buyerAddress = buyerInfo.buyerAddress;
-        
+        if (buyerInfo.buyerAddress)
+          updateData.buyerAddress = buyerInfo.buyerAddress;
+
         await prisma.exporter.update({
           where: { id: data.exporterId },
           data: updateData,
         });
         console.log("Updated exporter with buyer information");
       } catch (exporterError) {
-        console.error("Failed to update exporter with buyer info:", exporterError);
+        console.error(
+          "Failed to update exporter with buyer info:",
+          exporterError
+        );
         // Continue with job card creation even if exporter update fails
       }
     }
@@ -445,6 +486,7 @@ async function createJobCard(req: NextRequest) {
     // Note: buyerName and buyerAddress are NOT included here as they belong to Exporter model
     const allowedFields = [
       "referenceNumber",
+      "humanReadableId",
       "receivedDate",
       "exporterId",
       "status",

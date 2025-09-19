@@ -15,6 +15,7 @@ function JobCardsPage() {
     startDate: "",
     endDate: "",
     status: "",
+    humanReadableId: "",
   });
 
   return (

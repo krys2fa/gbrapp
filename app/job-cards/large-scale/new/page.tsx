@@ -147,13 +147,9 @@ function NewLargeScaleJobCardPage() {
   };
 
   const [form, setForm] = useState({
-    referenceNumber: "",
     receivedDate: new Date().toISOString().split("T")[0], // Today's date as default
     exporterId: "",
     unitOfMeasure: UnitOfMeasure.KILOGRAMS,
-    miningLicenseNumber: "",
-    environmentalPermitNumber: "",
-    siteManager: "",
     destinationCountry: "",
     sourceOfGold: "Ghana", // Default to Ghana
     numberOfBars: "",
@@ -166,29 +162,6 @@ function NewLargeScaleJobCardPage() {
     shipmentNumber: "",
     status: "pending",
     notes: "",
-    customsOfficerId: "",
-    assayOfficerId: "",
-    technicalDirectorId: "",
-    nacobOfficerId: "",
-    nationalSecurityOfficerId: "",
-    // Consignee section (replacing buyer)
-    consigneeAddress: "",
-    consigneeTelephone: "",
-    consigneeMobile: "",
-    consigneeEmail: "",
-    // Exporter details section
-    deliveryLocation: "",
-    exporterTelephone: "",
-    exporterEmail: "",
-    exporterWebsite: "",
-    exporterLicenseNumber: "",
-    // Notified party section
-    notifiedPartyName: "",
-    notifiedPartyAddress: "",
-    notifiedPartyEmail: "",
-    notifiedPartyContactPerson: "",
-    notifiedPartyTelephone: "",
-    notifiedPartyMobile: "",
     commodities: [
       {
         id: "",
@@ -333,21 +306,13 @@ function NewLargeScaleJobCardPage() {
           const goldPriceData = pricesData.find((p: any) => {
             const name = p.commodity?.name?.toLowerCase() || "";
             const symbol = p.commodity?.symbol?.toLowerCase() || "";
-            return (
-              name.includes("gold") ||
-              symbol.includes("au") ||
-              symbol.includes("xau")
-            );
+            return name.includes("gold") || symbol.includes("au");
           });
 
           const silverPriceData = pricesData.find((p: any) => {
             const name = p.commodity?.name?.toLowerCase() || "";
             const symbol = p.commodity?.symbol?.toLowerCase() || "";
-            return (
-              name.includes("silver") ||
-              symbol.includes("ag") ||
-              symbol.includes("xag")
-            );
+            return name.includes("silver") || symbol.includes("ag");
           });
 
           await logInfo("Commodity price matching results", {
@@ -532,7 +497,7 @@ function NewLargeScaleJobCardPage() {
             updatedRow.goldNetWeight = (
               (goldFineness / 100) *
               grossWeight
-            ).toFixed(2);
+            ).toFixed(4);
           }
 
           if (field === "grossWeight" || field === "silverFineness") {
@@ -541,7 +506,7 @@ function NewLargeScaleJobCardPage() {
             updatedRow.silverNetWeight = (
               (silverFineness / 100) *
               grossWeight
-            ).toFixed(2);
+            ).toFixed(4);
           }
 
           return updatedRow;
@@ -575,11 +540,11 @@ function NewLargeScaleJobCardPage() {
         : 0;
 
     return {
-      grossWeight: totals.grossWeight.toFixed(2),
-      goldNetWeight: totals.goldNetWeight.toFixed(2),
-      silverNetWeight: totals.silverNetWeight.toFixed(2),
-      goldFineness: goldFineness.toFixed(2),
-      silverFineness: silverFineness.toFixed(2),
+      grossWeight: totals.grossWeight.toFixed(4),
+      goldNetWeight: totals.goldNetWeight.toFixed(4),
+      silverNetWeight: totals.silverNetWeight.toFixed(4),
+      goldFineness: goldFineness.toFixed(4),
+      silverFineness: silverFineness.toFixed(4),
     };
   };
 
@@ -649,9 +614,9 @@ function NewLargeScaleJobCardPage() {
 
     try {
       // Validate required fields
-      if (!form.referenceNumber || !form.receivedDate || !form.exporterId) {
+      if (!form.receivedDate || !form.exporterId) {
         const errorMessage =
-          "Please fill in all required fields: Reference Number, Received Date, and Exporter.";
+          "Please fill in all required fields: Received Date and Exporter.";
         setError(errorMessage);
         toast.error(errorMessage);
         setLoading(false);
@@ -922,7 +887,6 @@ function NewLargeScaleJobCardPage() {
       }
 
       const jobCardData = {
-        referenceNumber: form.referenceNumber,
         receivedDate: form.receivedDate,
         exporterId: form.exporterId,
         unitOfMeasure: form.unitOfMeasure,
@@ -1008,9 +972,7 @@ function NewLargeScaleJobCardPage() {
         />
 
         <div className="mt-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            New Large Scale Job
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">New Job</h1>
           <p className="mt-2 text-sm text-gray-600">
             Create a new large scale mining operation job card with all required
             details.
@@ -1031,7 +993,7 @@ function NewLargeScaleJobCardPage() {
                 Basic Information
               </h3>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
+                {/* <div>
                   <label
                     htmlFor="referenceNumber"
                     className="block text-sm font-medium text-gray-700"
@@ -1048,9 +1010,9 @@ function NewLargeScaleJobCardPage() {
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Enter reference number"
                   />
-                </div>
+                </div> */}
 
-                <div>
+                {/* <div>
                   <label
                     htmlFor="receivedDate"
                     className="block text-sm font-medium text-gray-700"
@@ -1070,7 +1032,7 @@ function NewLargeScaleJobCardPage() {
                     Required for pricing calculations. Gold, silver, and
                     exchange rates must be available for this date.
                   </p>
-                </div>
+                </div> */}
 
                 <div>
                   <label
@@ -1854,15 +1816,6 @@ function NewLargeScaleJobCardPage() {
                               {selectedExporter?.name || "N/A"}
                             </dd>
                           </div>
-                          <div>
-                            <dt className="text-sm font-medium text-gray-500">
-                              Reference
-                            </dt>
-                            <dd className="mt-1 text-sm text-gray-900">
-                              {form.referenceNumber || "N/A"}
-                            </dd>
-                          </div>
-
                           <div className="">
                             <dt className="text-sm font-medium text-gray-500">
                               Received Date

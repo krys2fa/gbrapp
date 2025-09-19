@@ -14,6 +14,7 @@ import { formatDate } from "@/app/lib/utils";
 interface JobCard {
   id: string;
   referenceNumber: string;
+  humanReadableId: string;
   receivedDate: string;
   status: string;
   exporter: {
@@ -36,6 +37,7 @@ interface JobCardListProps {
     startDate: string;
     endDate: string;
     status: string;
+    humanReadableId: string;
   };
 }
 
@@ -68,6 +70,10 @@ export function JobCardList({ filters }: JobCardListProps) {
 
       if (filters.status) {
         queryParams.append("status", filters.status);
+      }
+
+      if (filters.humanReadableId) {
+        queryParams.append("humanReadableId", filters.humanReadableId);
       }
 
       // Add pagination
@@ -171,7 +177,7 @@ export function JobCardList({ filters }: JobCardListProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <p className="text-sm font-medium text-indigo-600 truncate">
-                          {jobCard.referenceNumber}
+                          {jobCard.humanReadableId || jobCard.referenceNumber}
                         </p>
                         {/* If the job card has assays, treat it as Completed for the badge */}
                         {(() => {
@@ -418,14 +424,18 @@ export function JobCardList({ filters }: JobCardListProps) {
                         <div className="flex-shrink-0">
                           <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                             <span className="text-sm font-medium text-gray-700">
-                              {jobCard.referenceNumber.charAt(0)}
+                              {(
+                                jobCard.humanReadableId ||
+                                jobCard.referenceNumber
+                              ).charAt(0)}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="flex items-center">
                             <p className="text-sm font-medium text-gray-900">
-                              {jobCard.referenceNumber}
+                              {jobCard.humanReadableId ||
+                                jobCard.referenceNumber}
                             </p>
                             {(() => {
                               const hasAssays =

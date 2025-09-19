@@ -16,6 +16,7 @@ function LargeScaleJobCardsPage() {
     endDate: "",
     status: "",
     miningSite: "",
+    humanReadableId: "",
   });
 
   return (

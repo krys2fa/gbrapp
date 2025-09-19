@@ -102,7 +102,6 @@ function NewJobCardPage() {
   };
 
   const [formData, setFormData] = useState({
-    referenceNumber: "",
     receivedDate: new Date().toISOString().split("T")[0], // Today's date as default
     exporterId: "",
     commodityId: "",
@@ -517,18 +516,6 @@ function NewJobCardPage() {
 
                   <div className="col-span-6 md:col-span-3 space-y-6">
                     {/* Right column fields */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Job Reference Number
-                      </label>
-                      <input
-                        name="referenceNumber"
-                        value={(formData as any).referenceNumber || ""}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                      />
-                    </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Unit of Measure

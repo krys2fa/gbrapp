@@ -8,6 +8,7 @@ interface JobCardFiltersProps {
     startDate: string;
     endDate: string;
     status: string;
+    humanReadableId: string;
   };
   setFilters: React.Dispatch<
     React.SetStateAction<{
@@ -15,6 +16,7 @@ interface JobCardFiltersProps {
       startDate: string;
       endDate: string;
       status: string;
+      humanReadableId: string;
     }>
   >;
 }
@@ -69,6 +71,7 @@ export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
       startDate: "",
       endDate: "",
       status: "",
+      humanReadableId: "",
     });
   };
 
@@ -84,7 +87,25 @@ export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
           </p>
         </div>
         <div className="mt-5 md:mt-0 md:col-span-3">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
+            <div>
+              <label
+                htmlFor="humanReadableId"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Job Card ID
+              </label>
+              <input
+                type="text"
+                name="humanReadableId"
+                id="humanReadableId"
+                value={filters.humanReadableId}
+                onChange={handleChange}
+                placeholder="SS-2025-0001"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+
             <div>
               <label
                 htmlFor="exporterId"

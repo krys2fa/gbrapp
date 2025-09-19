@@ -12,6 +12,7 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
     const exporterId = searchParams.get("exporterId");
     const exporterTypeId = searchParams.get("exporterTypeId");
     const reference = searchParams.get("reference");
+    const humanReadableId = searchParams.get("humanReadableId");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const status = searchParams.get("status");
@@ -35,6 +36,13 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
 
     if (reference) {
       where.referenceNumber = { contains: reference };
+    }
+
+    if (humanReadableId) {
+      where.humanReadableId = {
+        contains: humanReadableId,
+        mode: "insensitive",
+      };
     }
 
     if (startDate && endDate) {
@@ -165,10 +173,15 @@ async function createLargeScaleJobCard(req: NextRequest) {
       pricePerOz,
     } = body;
 
+    // Generate reference number if not provided
+    const generatedReferenceNumber =
+      referenceNumber ||
+      `LS-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
     // Validate required fields
-    if (!referenceNumber || !receivedDate || !exporterId) {
+    if (!receivedDate || !exporterId) {
       return NextResponse.json(
-        { error: "referenceNumber, receivedDate, and exporterId are required" },
+        { error: "receivedDate and exporterId are required" },
         { status: 400 }
       );
     }
@@ -221,7 +234,7 @@ async function createLargeScaleJobCard(req: NextRequest) {
 
     // Check if reference number already exists
     const existingJobCard = await prisma.largeScaleJobCard.findUnique({
-      where: { referenceNumber },
+      where: { referenceNumber: generatedReferenceNumber },
     });
 
     if (existingJobCard) {
@@ -231,9 +244,37 @@ async function createLargeScaleJobCard(req: NextRequest) {
       );
     }
 
+    // Generate human-readable ID for large scale job cards
+    const currentYear = new Date().getFullYear();
+
+    // Get the next sequential number for this year
+    const existingJobCards = await prisma.largeScaleJobCard.findMany({
+      where: {
+        humanReadableId: {
+          startsWith: `LS-${currentYear}-`,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 1,
+    });
+
+    let nextSequence = 1;
+    if (existingJobCards.length > 0) {
+      const lastId = existingJobCards[0].humanReadableId;
+      const lastSequence = parseInt(lastId.split("-")[2]);
+      nextSequence = lastSequence + 1;
+    }
+
+    const humanReadableId = `LS-${currentYear}-${nextSequence
+      .toString()
+      .padStart(4, "0")}`;
+
     // Create the job card
     const jobCardData: any = {
-      referenceNumber,
+      referenceNumber: generatedReferenceNumber,
+      humanReadableId,
       receivedDate: new Date(receivedDate),
       exporterId,
       unitOfMeasure,

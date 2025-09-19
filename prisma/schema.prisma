@@ -71,6 +71,7 @@ model WeeklyPrice {
 model JobCard {
   id                  String                   @id @default(uuid())
   referenceNumber     String                   @unique
+  humanReadableId     String                   @unique
   receivedDate        DateTime
   exporterId          String
   customsOfficerId    String?
@@ -480,6 +481,7 @@ model AuditTrail {
 model LargeScaleJobCard {
   id                        String                       @id @default(uuid())
   referenceNumber           String                       @unique
+  humanReadableId           String                       @unique
   receivedDate              DateTime
   exporterId                String
   unitOfMeasure             String?

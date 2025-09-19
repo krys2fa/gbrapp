@@ -14,6 +14,7 @@ import { formatDate, formatCurrency } from "@/app/lib/utils";
 interface LargeScaleJobCard {
   id: string;
   referenceNumber: string;
+  humanReadableId: string;
   receivedDate: string;
   status: string;
   exporter: {
@@ -55,6 +56,7 @@ interface LargeScaleJobCardListProps {
     endDate: string;
     status: string;
     miningSite: string;
+    humanReadableId: string;
   };
 }
 
@@ -88,6 +90,10 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
 
       if (filters.status) {
         queryParams.append("status", filters.status);
+      }
+
+      if (filters.humanReadableId) {
+        queryParams.append("humanReadableId", filters.humanReadableId);
       }
 
       // Add pagination
@@ -190,14 +196,16 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                         <span className="text-sm font-medium text-gray-600">
-                          {jobCard.referenceNumber.charAt(0)}
+                          {(
+                            jobCard.humanReadableId || jobCard.referenceNumber
+                          ).charAt(0)}
                         </span>
                       </div>
                     </div>
                     <div className="ml-4">
                       <div className="flex items-center gap-4">
                         <p className="text-sm font-medium text-gray-900">
-                          {jobCard.referenceNumber}
+                          {jobCard.humanReadableId || jobCard.referenceNumber}
                         </p>
                         {(() => {
                           const hasAssays = !!(

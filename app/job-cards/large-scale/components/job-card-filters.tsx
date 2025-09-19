@@ -9,6 +9,7 @@ interface LargeScaleJobCardFiltersProps {
     endDate: string;
     status: string;
     miningSite: string;
+    humanReadableId: string;
   };
   setFilters: React.Dispatch<
     React.SetStateAction<{
@@ -17,6 +18,7 @@ interface LargeScaleJobCardFiltersProps {
       endDate: string;
       status: string;
       miningSite: string;
+      humanReadableId: string;
     }>
   >;
 }
@@ -82,6 +84,7 @@ export function LargeScaleJobCardFilters({
       endDate: "",
       status: "",
       miningSite: "",
+      humanReadableId: "",
     });
   };
 
@@ -96,7 +99,27 @@ export function LargeScaleJobCardFilters({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {/* Job Card ID Filter */}
+        <div>
+          <label
+            htmlFor="humanReadableId"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Job Card ID
+          </label>
+          <input
+            type="text"
+            id="humanReadableId"
+            value={filters.humanReadableId}
+            onChange={(e) =>
+              handleFilterChange("humanReadableId", e.target.value)
+            }
+            placeholder="LS-2025-0001"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+
         {/* Exporter Filter */}
         <div>
           <label
