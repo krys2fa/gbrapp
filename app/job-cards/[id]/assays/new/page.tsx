@@ -109,8 +109,7 @@ export default function NewAssayPage() {
           setCommodities(commoditiesBody);
         }
 
-        // Fetch commodity prices specifically for this job card's commodity so the
-        // server can attempt to fetch & persist today's price if missing.
+        // Fetch commodity prices specifically for this job card's commodity.
         let commodityPrices: any[] = [];
         if (jobBody?.commodityId) {
           const cpRes = await fetch(

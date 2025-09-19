@@ -10,6 +10,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
+import { toast } from "react-hot-toast";
 
 function capitalizeFirst(str: string) {
   if (!str) return "";
@@ -20,8 +21,6 @@ export default function CommoditiesPage() {
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const [commodities, setCommodities] = useState<any[]>([]);
   const [fetching, setFetching] = useState(true);
 
@@ -50,30 +49,34 @@ export default function CommoditiesPage() {
         setCommodities(data || []);
       } catch {
         setCommodities([]);
+        toast.error("Failed to load commodities");
       } finally {
         setFetching(false);
       }
     }
     load();
-  }, [success, filterTrigger]);
+  }, [filterTrigger, nameFilter, symbolFilter]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess("");
+    const toastId = toast.loading("Creating commodity...");
     try {
       const res = await fetch("/api/commodity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, symbol }),
       });
-      if (!res.ok) throw new Error("Failed to create commodity");
-      setSuccess("Commodity created");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to create commodity");
+      }
+      toast.success("Commodity created successfully!", { id: toastId });
       setName("");
       setSymbol("");
+      setFilterTrigger((prev) => prev + 1); // Refresh the list
     } catch (err: any) {
-      setError(err.message || "Error creating commodity");
+      toast.error(err.message || "Error creating commodity", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -89,21 +92,24 @@ export default function CommoditiesPage() {
     e.preventDefault();
     if (!editingCommodity) return;
     setLoading(true);
-    setError("");
-    setSuccess("");
+    const toastId = toast.loading("Updating commodity...");
     try {
       const res = await fetch(`/api/commodity/${editingCommodity.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, symbol }),
       });
-      if (!res.ok) throw new Error("Failed to update commodity");
-      setSuccess("Commodity updated");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to update commodity");
+      }
+      toast.success("Commodity updated successfully!", { id: toastId });
       setEditingCommodity(null);
       setName("");
       setSymbol("");
+      setFilterTrigger((prev) => prev + 1); // Refresh the list
     } catch (err: any) {
-      setError(err.message || "Error updating commodity");
+      toast.error(err.message || "Error updating commodity", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -113,14 +119,17 @@ export default function CommoditiesPage() {
     if (!window.confirm("Are you sure you want to delete this commodity?"))
       return;
     setLoading(true);
-    setError("");
-    setSuccess("");
+    const toastId = toast.loading("Deleting commodity...");
     try {
       const res = await fetch(`/api/commodity/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete commodity");
-      setSuccess("Commodity deleted");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to delete commodity");
+      }
+      toast.success("Commodity deleted successfully!", { id: toastId });
+      setFilterTrigger((prev) => prev + 1); // Refresh the list
     } catch (err: any) {
-      setError(err.message || "Error deleting commodity");
+      toast.error(err.message || "Error deleting commodity", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -133,7 +142,8 @@ export default function CommoditiesPage() {
       const data = await res.json();
       setViewingCommodity(data);
       setViewModalOpen(true);
-    } catch {
+    } catch (error) {
+      toast.error("Failed to fetch commodity details");
       setViewingCommodity(c);
       setViewModalOpen(true);
     }
@@ -157,8 +167,6 @@ export default function CommoditiesPage() {
           >
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                {error && <div className="text-red-600">{error}</div>}
-                {success && <div className="text-green-600">{success}</div>}
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -185,13 +193,31 @@ export default function CommoditiesPage() {
                     />
                   </div>
                 </div>
-                <div className="mt-6 flex justify-end">
+                <div className="mt-6 flex justify-end gap-3">
+                  {editingCommodity && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCommodity(null);
+                        setName("");
+                        setSymbol("");
+                      }}
+                      className="bg-gray-500 text-white px-6 py-2 rounded-md shadow hover:bg-gray-600 transition"
+                      disabled={loading}
+                    >
+                      Cancel
+                    </button>
+                  )}
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition"
+                    className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition disabled:opacity-50"
                     disabled={loading}
                   >
-                    {editingCommodity ? "Update Commodity" : "Create Commodity"}
+                    {loading
+                      ? "Processing..."
+                      : editingCommodity
+                      ? "Update Commodity"
+                      : "Create Commodity"}
                   </button>
                 </div>
               </div>

@@ -220,24 +220,22 @@ gbrapp/
 - `GET /api/exporter-types` - List exporter types
 - `GET /api/shipment-types` - List shipment types
 
-### Daily Prices & Exchange Rates (auto-fetch)
+### Daily Prices & Exchange Rates
 
 - `GET /api/daily-prices` - List daily prices. Optional query params:
 
   - `type=COMMODITY|EXCHANGE` - filter by price type.
   - `itemId=<id>` - when provided with `type=COMMODITY` or `type=EXCHANGE` the server will return prices for that item.
 
-- Auto-fetch behavior:
-  - When a client requests commodity prices for a specific commodity (GET `/api/daily-prices?type=COMMODITY&itemId=<commodityId>`) and no price exists for the current day, the server will attempt to fetch a spot price from a free external provider and persist it as a `DailyPrice` record, then return the updated list.
-  - When a client requests exchange rates (GET `/api/daily-prices?type=EXCHANGE&itemId=<exchangeId>`) and no rate exists for the current day, the server will attempt to fetch the USD->target currency rate (preferring the Bank of Ghana page where applicable) and persist it as a `DailyPrice` record, then return the updated list.
-  - If the request omits `itemId`, the server will try to fetch today's price/rate for all commodities/exchanges that lack a price for today.
+- **Manual Entry Only**: All commodity prices and exchange rates must be manually entered through the setup forms:
+  - **Commodity prices**: Use "Manage Daily Commodity Prices" setup form
+  - **Exchange rates**: Use "Manage Daily Commodity Prices" setup form (exchange rate section)
 
 Notes:
 
-- Default providers:
-  - Commodities: `https://api.metals.live/v1/spot` (primary), `https://data-asg.goldprice.org/dbXRates/USD` (fallback).
-  - Exchange rates: Bank of Ghana page (primary attempt via HTML parse), `https://api.exchangerate.host` (fallback).
-- Persisted prices are rounded to 2 decimal places before saving.
+- **No external API fetching** - all prices are manual entry only
+- Manual entry forms available in the Setup section
+- Persisted prices are rounded to 2 decimal places before saving
 - These external requests are performed server-side; they require outgoing network access from your deployment environment.
 - If you prefer a different provider (or an API key-based service), update `app/lib/external-prices.ts` and `app/lib/external-exchange.ts` to call the provider and store the result. You can store API keys in environment variables and use them inside these helpers.
 
