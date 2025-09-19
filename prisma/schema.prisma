@@ -71,7 +71,6 @@ model WeeklyPrice {
 model JobCard {
   id                  String                   @id @default(uuid())
   referenceNumber     String                   @unique
-  humanReadableId     String                   @unique
   receivedDate        DateTime
   exporterId          String
   customsOfficerId    String?
@@ -97,6 +96,7 @@ model JobCard {
   valueUsd            Float?
   valueGhs            Float?
   editCount           Int                      @default(0)
+  humanReadableId     String                   @unique
   assays              Assay[]
   fees                Fee?
   invoices            Invoice[]
@@ -286,7 +286,6 @@ model ShipmentType {
 
 model Exporter {
   id                         String              @id @default(uuid())
-  exporterCode               String              @unique
   name                       String
   exporterTypeId             String
   contactPerson              String?
@@ -315,6 +314,7 @@ model Exporter {
   notifiedPartyTelephone     String?
   buyerAddress               String?
   buyerName                  String?
+  exporterCode               String              @unique
   exporterType               ExporterType        @relation(fields: [exporterTypeId], references: [id])
   jobCards                   JobCard[]
   largeScaleJobCards         LargeScaleJobCard[]
@@ -481,7 +481,6 @@ model AuditTrail {
 model LargeScaleJobCard {
   id                        String                       @id @default(uuid())
   referenceNumber           String                       @unique
-  humanReadableId           String                       @unique
   receivedDate              DateTime
   exporterId                String
   unitOfMeasure             String?
@@ -497,6 +496,7 @@ model LargeScaleJobCard {
   nationalSecurityOfficerId String?
   createdAt                 DateTime                     @default(now())
   updatedAt                 DateTime                     @updatedAt
+  humanReadableId           String                       @unique
   fees                      Fee?
   invoices                  Invoice[]
   assays                    LargeScaleAssay[]

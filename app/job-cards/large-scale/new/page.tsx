@@ -235,17 +235,22 @@ function NewLargeScaleJobCardPage() {
     fetchData();
   }, []);
 
-  // Fetch meta bar data when exporter or date changes
+  // Fetch meta bar data when exporter or data sheet date changes
+  // This ensures that market data (exchange rates and commodity prices) update
+  // whenever the data sheet date changes, providing real-time pricing information
   useEffect(() => {
     const fetchMetaData = async () => {
-      if (!form.exporterId) return;
-
       try {
-        // Fetch exporter details
-        const exporterRes = await fetch(`/api/exporters/${form.exporterId}`);
-        if (exporterRes.ok) {
-          const exporterData = await exporterRes.json();
-          setSelectedExporter(exporterData);
+        // Fetch exporter details only if an exporter is selected
+        if (form.exporterId) {
+          const exporterRes = await fetch(`/api/exporters/${form.exporterId}`);
+          if (exporterRes.ok) {
+            const exporterData = await exporterRes.json();
+            setSelectedExporter(exporterData);
+          }
+        } else {
+          // Clear exporter data if no exporter is selected
+          setSelectedExporter(null);
         }
 
         // Fetch latest exchange rate from weekly prices
@@ -283,86 +288,87 @@ function NewLargeScaleJobCardPage() {
           toast.error("Failed to load weekly exchange rate");
         }
 
-        // Fetch latest gold and silver daily prices
-        await logInfo("Fetching daily commodity prices...");
-        const goldRes = await fetch(`/api/daily-prices?type=COMMODITY`);
-        await logInfo("Daily commodity prices response received", {
-          status: goldRes.status,
-        });
-
-        if (goldRes.ok) {
-          const pricesData = await goldRes.json();
-          await logInfo("Daily commodity prices data received", {
-            dataLength: pricesData.length,
-            commodities: pricesData.map((p: any) => ({
-              name: p.commodity?.name,
-              symbol: p.commodity?.symbol,
-              price: p.price,
-              date: p.date,
-            })),
+        // Fetch commodity prices based on data sheet date (if available)
+        if (form.dataSheetDates) {
+          await logInfo("Fetching commodity prices for data sheet date", {
+            pricingDate: form.dataSheetDates,
           });
 
-          // Find gold and silver prices with more flexible matching
-          const goldPriceData = pricesData.find((p: any) => {
-            const name = p.commodity?.name?.toLowerCase() || "";
-            const symbol = p.commodity?.symbol?.toLowerCase() || "";
-            return name.includes("gold") || symbol.includes("au");
-          });
+          try {
+            // Fetch gold price for the data sheet date
+            const goldResponse = await fetch(
+              `/api/commodities/XAU/price?date=${form.dataSheetDates}`
+            );
+            if (goldResponse.ok) {
+              const goldData = await goldResponse.json();
+              if (goldData.available) {
+                setGoldPrice(goldData.price?.toString() || "");
+                await logInfo("Gold price set successfully", {
+                  price: goldData.price,
+                  date: form.dataSheetDates,
+                });
+              } else {
+                setGoldPrice("Not Available");
+                await logWarn("Gold price not available for data sheet date", {
+                  date: form.dataSheetDates,
+                  error: goldData.error,
+                });
+              }
+            } else {
+              setGoldPrice("Not Available");
+              await logError("Failed to fetch gold price", {
+                status: goldResponse.status,
+                date: form.dataSheetDates,
+              });
+            }
 
-          const silverPriceData = pricesData.find((p: any) => {
-            const name = p.commodity?.name?.toLowerCase() || "";
-            const symbol = p.commodity?.symbol?.toLowerCase() || "";
-            return name.includes("silver") || symbol.includes("ag");
-          });
-
-          await logInfo("Commodity price matching results", {
-            goldFound: !!goldPriceData,
-            goldPrice: goldPriceData?.price || null,
-            silverFound: !!silverPriceData,
-            silverPrice: silverPriceData?.price || null,
-          });
-
-          if (goldPriceData) {
-            setGoldPrice(goldPriceData.price || "");
-            await logInfo("Gold price set successfully", {
-              price: goldPriceData.price,
-            });
-          } else {
+            // Fetch silver price for the data sheet date
+            const silverResponse = await fetch(
+              `/api/commodities/XAG/price?date=${form.dataSheetDates}`
+            );
+            if (silverResponse.ok) {
+              const silverData = await silverResponse.json();
+              if (silverData.available) {
+                setSilverPrice(silverData.price?.toString() || "");
+                await logInfo("Silver price set successfully", {
+                  price: silverData.price,
+                  date: form.dataSheetDates,
+                });
+              } else {
+                setSilverPrice("Not Available");
+                await logWarn(
+                  "Silver price not available for data sheet date",
+                  {
+                    date: form.dataSheetDates,
+                    error: silverData.error,
+                  }
+                );
+              }
+            } else {
+              setSilverPrice("Not Available");
+              await logError("Failed to fetch silver price", {
+                status: silverResponse.status,
+                date: form.dataSheetDates,
+              });
+            }
+          } catch (error) {
+            await logError(
+              "Error fetching commodity prices for data sheet date",
+              {
+                error: error instanceof Error ? error.message : String(error),
+                date: form.dataSheetDates,
+              }
+            );
             setGoldPrice("Not Available");
-            await logWarn("No gold price found in daily commodity prices");
-          }
-
-          if (silverPriceData) {
-            setSilverPrice(silverPriceData.price || "");
-            await logInfo("Silver price set successfully", {
-              price: silverPriceData.price,
-            });
-          } else {
             setSilverPrice("Not Available");
-            await logWarn("No silver price found in daily commodity prices");
-          }
-
-          // Show informational message if no commodity prices are available
-          if (!goldPriceData && !silverPriceData) {
-            await logError("No daily commodity prices are available");
-            toast.error(
-              "No daily commodity prices are available. Please add commodity prices in the setup section."
-            );
-          } else if (!goldPriceData || !silverPriceData) {
-            const missing = !goldPriceData ? "gold" : "silver";
-            await logWarn(`Missing ${missing} price`, { missing });
-            toast.error(
-              `No daily ${missing} price available. Please add ${missing} prices in the setup section.`
-            );
           }
         } else {
-          const errorText = await goldRes.text();
-          await logError("Failed to fetch daily commodity prices", {
-            status: goldRes.status,
-            statusText: goldRes.statusText,
-            errorResponse: errorText,
-          });
-          toast.error("Failed to load daily commodity prices");
+          // No data sheet date selected, show placeholder values
+          setGoldPrice("Select data sheet date");
+          setSilverPrice("Select data sheet date");
+          await logInfo(
+            "No data sheet date selected, showing placeholder values"
+          );
         }
       } catch (error) {
         await logError("Error fetching meta data", {
@@ -373,7 +379,7 @@ function NewLargeScaleJobCardPage() {
     };
 
     fetchMetaData();
-  }, [form.exporterId, form.receivedDate]);
+  }, [form.exporterId, form.dataSheetDates]);
 
   // Excel processing functions
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -700,10 +706,10 @@ function NewLargeScaleJobCardPage() {
     setError("");
 
     try {
-      // Validate that received date is provided (required for pricing lookups)
-      if (!form.receivedDate) {
+      // Validate that data sheet date is provided (required for pricing lookups)
+      if (!form.dataSheetDates) {
         const errorMessage =
-          "Received Date is required for pricing calculations. Please select a date.";
+          "Data Sheet Date is required for commodity price and exchange rate calculations. Please select a date.";
         setError(errorMessage);
         toast.error(errorMessage);
         setLoading(false);
@@ -713,17 +719,20 @@ function NewLargeScaleJobCardPage() {
       // Calculate valuation details if assay data exists
       let valuationDetails = null;
       if (assayersData.length > 0) {
-        // Fetch current pricing information from APIs
+        // Fetch pricing information based on data sheet date
+        // IMPORTANT: All pricing (commodity prices and exchange rates) are fetched
+        // based on the data sheet date, not the received date or current date.
+        // This ensures accurate pricing for the specific assaying date.
         let commodityPrice = 0;
         let pricePerOz = 0;
         let exchangeRate = 1;
 
         try {
-          // Fetch gold price for the job card date
-          const jobCardDate =
-            form.receivedDate || new Date().toISOString().split("T")[0];
+          // Use data sheet date for all pricing calculations (commodity prices and exchange rates)
+          // This ensures pricing is based on the date the data sheet was prepared, not the received date
+          const pricingDate = form.dataSheetDates;
           const goldResponse = await fetch(
-            `/api/commodities/XAU/price?date=${jobCardDate}`
+            `/api/commodities/XAU/price?date=${pricingDate}`
           );
           if (goldResponse.ok) {
             const goldData = await goldResponse.json();
@@ -731,16 +740,16 @@ function NewLargeScaleJobCardPage() {
               commodityPrice = goldData.price || 0;
             } else {
               throw new Error(
-                `Gold price not available for ${jobCardDate}: ${goldData.error}`
+                `Gold price not available for ${pricingDate}: ${goldData.error}`
               );
             }
           } else {
             throw new Error("Failed to fetch gold price");
           }
 
-          // Fetch silver price for the job card date
+          // Fetch silver price for the data sheet date
           const silverResponse = await fetch(
-            `/api/commodities/XAG/price?date=${jobCardDate}`
+            `/api/commodities/XAG/price?date=${pricingDate}`
           );
           if (silverResponse.ok) {
             const silverData = await silverResponse.json();
@@ -748,7 +757,7 @@ function NewLargeScaleJobCardPage() {
               pricePerOz = silverData.price || 0;
             } else {
               throw new Error(
-                `Silver price not available for ${jobCardDate}: ${silverData.error}`
+                `Silver price not available for ${pricingDate}: ${silverData.error}`
               );
             }
           } else {
@@ -757,7 +766,7 @@ function NewLargeScaleJobCardPage() {
 
           // Fetch exchange rate from weekly prices
           await logInfo("Fetching weekly exchange rate for job card creation", {
-            jobCardDate,
+            pricingDate,
             apiEndpoint: `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`,
           });
 
@@ -801,7 +810,7 @@ function NewLargeScaleJobCardPage() {
               await logError(
                 "No approved weekly exchange rates found in response",
                 {
-                  jobCardDate,
+                  pricingDate,
                   responseData: exchangeData,
                   apiUrl: `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`,
                 }
@@ -816,7 +825,7 @@ function NewLargeScaleJobCardPage() {
               status: exchangeResponse.status,
               statusText: exchangeResponse.statusText,
               errorResponse: errorText,
-              jobCardDate,
+              pricingDate,
             });
             throw new Error(
               `Failed to fetch weekly exchange rate (${exchangeResponse.status}): ${errorText}`
@@ -896,7 +905,6 @@ function NewLargeScaleJobCardPage() {
         numberOfBars: form.numberOfBars
           ? parseInt(form.numberOfBars)
           : undefined,
-        deliveryLocation: form.deliveryLocation,
         // Assay-related fields
         assayMethod: assayMethod,
         authorizedSignatory: authorizedSignatory,
@@ -1201,7 +1209,11 @@ function NewLargeScaleJobCardPage() {
                     htmlFor="dataSheetDates"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Data Sheet Dates
+                    Data Sheet Dates *
+                    <span className="text-xs text-gray-500 block">
+                      (Used for commodity pricing and exchange rate
+                      calculations)
+                    </span>
                   </label>
                   <input
                     type="date"
