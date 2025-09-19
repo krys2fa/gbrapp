@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowPathIcon, PrinterIcon } from "@heroicons/react/24/outline";
+import { PrinterIcon } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
 import { formatDate, formatCurrency } from "@/app/lib/utils";
 
@@ -32,36 +32,23 @@ export default function AssayResultsPage() {
         .map((style) => style.outerHTML)
         .join("\n");
 
-      // Enhanced CSS for proper print styling
+      // Enhanced CSS for proper print styling - matching web page exactly
       const enhancedStyles = `
-        @page { size: A4; margin: 20mm; }
+        @page { size: A4; margin: 15mm; }
         html, body {
           height: 100%;
           margin: 0;
           padding: 0;
-          font-family: 'Times New Roman', serif;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           color: #000;
-          line-height: 1.4;
+          line-height: 1.5;
           font-size: 12pt;
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
         * { box-sizing: border-box; }
         
-        /* A4 Document Layout - Only for Print */
-        body {
-          width: 210mm !important;
-          max-width: 100% !important;
-          margin: 0 auto !important;
-        }
-        #assay-content {
-          width: 100% !important;
-          max-width: 100% !important;
-          margin: 0 !important;
-          padding: 15mm !important;
-        }
-
-        /* Layout and positioning */
+        /* Layout and positioning - exact web page matching */
         .flex { display: flex; }
         .inline-flex { display: inline-flex; }
         .grid { display: grid; }
@@ -76,127 +63,92 @@ export default function AssayResultsPage() {
         .justify-end { justify-content: flex-end; }
         .flex-1 { flex: 1 1 0%; }
         .whitespace-nowrap { white-space: nowrap; }
+        .bg-white { background-color: #ffffff; }
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
 
-        /* Spacing */
-        .mb-1 { margin-bottom: 0.25rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .mt-4 { margin-top: 1rem; }
-        .my-6 { margin: 1.5rem 0; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .pb-2 { padding-bottom: 0.5rem; }
-        .pb-6 { padding-bottom: 1.5rem; }
-        .pt-2 { padding-top: 0.5rem; }
-        .pt-4 { padding-top: 1rem; }
+        /* Spacing - exact web page matching */
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
         .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .px-8 { padding-left: 2rem; padding-right: 2rem; }
-        .gap-2 { gap: 0.5rem; }
-        .gap-3 { gap: 0.75rem; }
-        .gap-8 { gap: 2rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .pt-4 { padding-top: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .ml-1 { margin-left: 0.25rem; }
         .ml-2 { margin-left: 0.5rem; }
-
-        /* Grid */
-        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .mr-2 { margin-right: 0.5rem; }
         .gap-4 { gap: 1rem; }
 
-        /* Typography */
-        .text-xs { font-size: 10pt; line-height: 1.3; }
-        .text-sm { font-size: 11pt; line-height: 1.4; }
-        .text-lg { font-size: 14pt; line-height: 1.4; }
-        .text-xl { font-size: 16pt; line-height: 1.4; }
+        /* Grid system - exact web page matching */
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+        /* Typography - exact web page matching */
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
         .font-medium { font-weight: 500; }
         .font-semibold { font-weight: 600; }
         .font-bold { font-weight: 700; }
         .uppercase { text-transform: uppercase; }
-        .underline { text-decoration: underline; }
-        .tracking-wider { letter-spacing: 0.05em; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
 
-        /* Colors */
-        .text-gray-500 { color: #666666; }
-        .text-gray-700 { color: #333333; }
-        .text-gray-900 { color: #000000; }
-        .text-indigo-600 { color: #000000; }
-        .text-indigo-700 { color: #000000; }
-        .text-yellow-700 { color: #000000; }
+        /* Colors - exact web page matching */
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-900 { color: #111827; }
         .bg-gray-50 { background-color: #f9fafb; }
         .bg-gray-200 { background-color: #e5e7eb; }
-        .bg-indigo-600 { background-color: #000000; }
-        .bg-indigo-700 { background-color: #000000; }
-        .bg-yellow-50 { background-color: #ffffff; }
-        .bg-yellow-400 { background-color: #000000; }
-        .bg-[#d4af37] { background-color: #000000; }
+        .border-gray-200 { border-color: #e5e7eb; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .divide-gray-200 > * + * { border-top: 1px solid #e5e7eb; }
 
-        /* Borders */
+        /* Borders - exact web page matching */
         .border { border-width: 1px; }
-        .border-t { border-top-width: 1px; }
         .border-b { border-bottom-width: 1px; }
-        .border-l-4 { border-left-width: 4px; }
-        .border-collapse { border-collapse: collapse; }
-        .divide-gray-200 > * + * { border-color: #cccccc; }
+        .border-t { border-top-width: 1px; }
 
-        /* Header section */
+        /* Header section styling */
         .header-section {
           border-bottom: 2px solid #000;
-          padding-bottom: 15pt;
-          margin-bottom: 20pt;
+          padding-bottom: 1rem;
+          margin-bottom: 1.5rem;
         }
         .title-section {
           text-align: center;
-          font-size: 14pt;
-          font-weight: bold;
-          margin: 15pt 0;
-          text-transform: uppercase;
-          letter-spacing: 1pt;
+          margin: 1rem 0;
         }
 
-        /* Info section */
-        .header-info {
-          margin-bottom: 8pt;
-          line-height: 1.6;
-        }
-        .info-label {
-          font-weight: bold;
-          display: inline-block;
-          min-width: 120pt;
-        }
-        .info-value {
-          display: inline-block;
-        }
-
-        /* Table styling */
+        /* Table styling - exact web page matching */
         .min-w-full { min-width: 100%; }
-        .divide-y > * + * { border-top-width: 1px; }
+        .overflow-x-auto { overflow-x: auto; }
+        .overflow-hidden { overflow: hidden; }
         table {
           border-collapse: collapse;
           width: 100%;
-          margin-bottom: 15pt;
-          background: transparent;
-          position: relative;
-          z-index: 2;
+          margin-bottom: 1rem;
         }
         th, td {
-          border: 1px solid #000;
-          padding: 6pt;
+          border: 1px solid #d1d5db;
+          padding: 0.5rem;
           text-align: center;
-          font-size: 10pt;
-          background: rgba(255, 255, 255, 0.9);
+          font-size: 0.75rem;
         }
         th {
-          background-color: rgba(240, 240, 240, 0.9);
+          background-color: #d4af37;
           font-weight: bold;
           text-transform: uppercase;
+          color: #000;
         }
+        .text-right { text-align: right; }
         tbody tr:nth-child(even) td {
-          background: rgba(249, 250, 251, 0.9);
+          background-color: #f9fafb;
         }
-        .bg-gray-50 {
-          background-color: rgba(249, 250, 251, 0.9) !important;
+        tbody tr.bg-gray-50 td {
+          background-color: #f9fafb;
+          font-weight: 600;
         }
 
         /* Image styling */
@@ -207,74 +159,17 @@ export default function AssayResultsPage() {
         .h-16 { height: 4rem; }
         .w-16 { width: 4rem; }
         .w-auto { width: auto; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
 
-        /* Signature section */
-        .signature-section {
-          margin-top: 40pt;
-          border-top: 1px solid #000;
-          padding-top: 20pt;
-        }
-
-        /* Print-specific overrides */
-        @media print {
-          .print\\:hidden { display: none !important; }
-          body {
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-          }
-          .header-section { page-break-after: avoid; }
-          .table-section { page-break-inside: avoid; }
-          .signature-section { page-break-inside: avoid; }
-        }
-
-        /* Watermark - Multi-page support */
-        body {
-          background: url('/seal.png') no-repeat center 30%;
-          background-size: 280px 280px;
-          background-attachment: fixed;
-          opacity: 1;
-        }
-        body::before {
-          content: "";
-          position: fixed;
-          top: 30%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 280px;
-          height: 280px;
-          background: url('/seal.png') no-repeat center center;
-          background-size: contain;
-          opacity: 0.15;
-          z-index: 1;
-          pointer-events: none;
-        }
-        #assay-content {
-          position: relative;
-          background: transparent;
-        }
-        #assay-content::before {
-          content: "";
-          position: absolute;
-          top: 30%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-45deg);
-          width: 280px;
-          height: 280px;
-          background: url('/seal.png') no-repeat center center;
-          background-size: contain;
-          opacity: 0.15;
-          z-index: 1;
-          pointer-events: none;
-        }
-        #assay-content > * {
-          position: relative;
-          z-index: 3;
-        }
+        /* Financial section styling */
+        .space-y-3 > * + * { margin-top: 0.75rem; }
 
         /* Hide elements not needed for print */
-        .no-print { display: none; }
-        .print\\:hidden { display: none; }
+        .print\\:hidden { display: none !important; }
+        
+        /* Remove any potential watermarks */
+        body { background: none !important; }
+        body::before { display: none !important; }
+        #assay-content::before { display: none !important; }
       `;
 
       const html = `<!doctype html>
@@ -286,9 +181,7 @@ export default function AssayResultsPage() {
   <style>${enhancedStyles}</style>
 </head>
 <body>
-  <div class="bg-white py-2">
-    ${clonedContent.innerHTML}
-  </div>
+  ${clonedContent.innerHTML}
 </body>
 </html>`;
 
@@ -423,71 +316,6 @@ export default function AssayResultsPage() {
 
   return (
     <>
-      {/* Watermark Styles */}
-      <style jsx>{`
-        #assay-content {
-          position: relative;
-        }
-        #assay-content::before {
-          content: "";
-          position: absolute;
-          top: 30%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 280px;
-          height: 280px;
-          background: url("/seal.png") no-repeat center center;
-          background-size: contain;
-          opacity: 0.15;
-          z-index: 1;
-          pointer-events: none;
-        }
-        #assay-content > * {
-          position: relative;
-          z-index: 3;
-        }
-
-        /* Table transparency for watermark visibility */
-        table {
-          background: transparent !important;
-        }
-        table th {
-          background: rgba(212, 175, 55, 0.9) !important;
-        }
-        table td {
-          background: rgba(255, 255, 255, 0.9) !important;
-        }
-        table tbody tr:nth-child(even) td {
-          background: rgba(249, 250, 251, 0.9) !important;
-        }
-        .bg-gray-50 {
-          background: rgba(249, 250, 251, 0.9) !important;
-        }
-
-        /* Multi-page watermark for print */
-        @media print {
-          body {
-            background: url("/seal.png") no-repeat center 30%;
-            background-size: 280px 280px;
-            background-attachment: fixed;
-          }
-          body::before {
-            content: "";
-            position: fixed;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            height: 280px;
-            background: url("/seal.png") no-repeat center center;
-            background-size: contain;
-            opacity: 0.15;
-            z-index: 1;
-            pointer-events: none;
-          }
-        }
-      `}</style>
-
       {/* Header with Logo and Navigation */}
       <div className="bg-white shadow-sm rounded-t-lg print:hidden max-w-7xl mx-auto">
         <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200">
@@ -520,97 +348,131 @@ export default function AssayResultsPage() {
               <div className="flex items-center justify-between px-6 py-4">
                 <div className="flex items-center">
                   <img
-                    src="/goldbod-logo-green.png"
+                    src="/goldbod-logo-black.png"
                     alt="GoldBod Logo"
                     className="h-16 w-auto"
                   />
                 </div>
 
-                {/* <div className="flex-1 text-center">
-                  <div className="title-section font-bold uppercase underline">
-                    Ghana Gold Board
-                  </div>
-                </div> */}
-
-                <div className="title-section uppercase mx-auto text-center font-bold">
-                  REPORT OF GOLD SAMPLE ANALYSIS FROM LARGE SCALE GOLD MINING
-                  COMPANIES
+                <div className="title-section uppercase mx-auto text-center">
+                  <p className="font-bold text-2xl">ASSAY REPORT</p>
+                  <p className="text-sm">LARGE SCALE OPERATIONS</p>
                 </div>
 
                 <div className="flex items-center">
                   <img
-                    src="/coat-of-arms.jpg"
-                    alt="Ghana Coat of Arms"
-                    className="h-16 w-auto"
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                      "https://goldbod.gov.gh/"
+                    )}`}
+                    alt="QR Code - Visit GoldBod Website"
+                    className="w-16 h-16"
                   />
                 </div>
               </div>
             </div>
 
             {/* Professional Assay Information */}
-            <div className="px-6 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="header-info">
-                  <span className="info-label">Mining company:</span>
-                  <span className="info-value font-bold ml-2">
+            <div className="px-4 sm:px-6 lg:px-8 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Exporter:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
                     {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
                       ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
                       : jobCard?.exporter?.name || "N/A"}
                   </span>
                 </div>
 
-                <div className="header-info text-right pr-0 mr-0">
-                  <span className="info-label">Number of Samples:</span>
-                  <span className="info-value font-bold ml-1">
+                <div className="flex items-center justify-start sm:justify-end">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Number of Samples:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
                     {assay?.measurements?.length || 0}
                   </span>
                 </div>
 
-                <div className="header-info">
-                  <span className="info-label">Sample Type:</span>
-                  <span className="info-value font-bold ml-2">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Sample Type:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
                     {assay?.sampleType || "N/A"}
                   </span>
                 </div>
 
-                <div className="header-info text-right pr-0 mr-0">
-                  <span className="info-label">Date of Analysis:</span>
-                  <span className="info-value font-bold ml-1">
+                <div className="flex items-center justify-start sm:justify-end">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Date of Analysis:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
                     {assay?.dateOfAnalysis
                       ? formatDate(assay.dateOfAnalysis)
                       : "N/A"}
                   </span>
                 </div>
 
-                <div className="header-info">
-                  <span className="info-label uppercase">Shipment Number:</span>
-                  <span className="info-value font-bold ml-2">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Shipment Number:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
                     {assay?.shipmentNumber || "N/A"}
                   </span>
                 </div>
 
-                <div className="header-info text-right pr-0 mr-0">
-                  <span className="info-label ">Data Sheet Dates:</span>
-                  <span className="info-value font-bold ml-1">
+                <div className="flex items-center justify-start sm:justify-end">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Data Sheet Dates:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
                     {assay?.dataSheetDates
                       ? formatDate(assay.dataSheetDates)
                       : "N/A"}
                   </span>
                 </div>
 
-                <div className="header-info">
-                  <span className="info-label ">Sample Bottle Dates:</span>
-                  <span className="info-value font-bold ml-2">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Sample Bottle Dates:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
                     {assay?.sampleBottleDates
                       ? formatDate(assay.sampleBottleDates)
                       : "N/A"}
                   </span>
                 </div>
 
-                <div className="header-info text-right pr-0 mr-0">
-                  <span className="info-label ">Number of Bars:</span>
-                  <span className="info-value font-bold ml-1">
+                <div className="flex items-center justify-start sm:justify-end">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Number of Bars:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
                     {assay?.numberOfBars || "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Job Card and Assay Information */}
+            <div className="px-4 sm:px-6 lg:px-8 py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Job Card ID:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {jobCard?.humanReadableId || "N/A"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-start sm:justify-end">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Assay Number:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {assay?.assayNumber || "N/A"}
                   </span>
                 </div>
               </div>
@@ -657,27 +519,54 @@ export default function AssayResultsPage() {
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right border border-gray-300">
                             {m.grossWeight != null
-                              ? Number(m.grossWeight).toFixed(2)
+                              ? Number(m.grossWeight).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 4,
+                                    maximumFractionDigits: 4,
+                                  }
+                                )
                               : "-"}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right border border-gray-300">
                             {m.goldAssay != null
-                              ? Number(m.goldAssay).toFixed(2)
+                              ? Number(m.goldAssay).toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })
                               : "-"}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right border border-gray-300">
                             {m.netGoldWeight != null
-                              ? Number(m.netGoldWeight).toFixed(2)
+                              ? Number(m.netGoldWeight).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )
                               : "-"}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right border border-gray-300">
                             {m.silverAssay != null
-                              ? Number(m.silverAssay).toFixed(2)
+                              ? Number(m.silverAssay).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )
                               : "-"}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right border border-gray-300">
                             {m.netSilverWeight != null
-                              ? Number(m.netSilverWeight).toFixed(2)
+                              ? Number(m.netSilverWeight).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )
                               : "-"}
                           </td>
                         </tr>
@@ -697,7 +586,12 @@ export default function AssayResultsPage() {
                                 acc + (Number(m.grossWeight) || 0),
                               0
                             );
-                            return total > 0 ? total.toFixed(2) : "-";
+                            return total > 0
+                              ? total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 4,
+                                  maximumFractionDigits: 4,
+                                })
+                              : "-";
                           })()}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
@@ -719,7 +613,10 @@ export default function AssayResultsPage() {
                             if (grossTotal > 0 && netGoldTotal > 0) {
                               const fineness =
                                 (netGoldTotal / grossTotal) * 100;
-                              return fineness.toFixed(2);
+                              return fineness.toLocaleString(undefined, {
+                                minimumFractionDigits: 4,
+                                maximumFractionDigits: 4,
+                              });
                             }
                             return "-";
                           })()}
@@ -731,7 +628,12 @@ export default function AssayResultsPage() {
                                 acc + (Number(m.netGoldWeight) || 0),
                               0
                             );
-                            return total > 0 ? total.toFixed(2) : "-";
+                            return total > 0
+                              ? total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 4,
+                                  maximumFractionDigits: 4,
+                                })
+                              : "-";
                           })()}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
@@ -753,7 +655,10 @@ export default function AssayResultsPage() {
                             if (grossTotal > 0 && netSilverTotal > 0) {
                               const fineness =
                                 (netSilverTotal / grossTotal) * 100;
-                              return fineness.toFixed(2);
+                              return fineness.toLocaleString(undefined, {
+                                minimumFractionDigits: 4,
+                                maximumFractionDigits: 4,
+                              });
                             }
                             return "-";
                           })()}
@@ -765,7 +670,12 @@ export default function AssayResultsPage() {
                                 acc + (Number(m.netSilverWeight) || 0),
                               0
                             );
-                            return total > 0 ? total.toFixed(2) : "-";
+                            return total > 0
+                              ? total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 4,
+                                  maximumFractionDigits: 4,
+                                })
+                              : "-";
                           })()}
                         </td>
                       </tr>
@@ -784,8 +694,11 @@ export default function AssayResultsPage() {
                       <dt className="text-sm font-medium text-gray-500">
                         NET WEIGHT OF GOLD (Oz):
                       </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {assay?.totalNetGoldWeightOz.toFixed(3)}
+                      <dd className="text-sm font-semibold text-gray-900 ml-1">
+                        {assay?.totalNetGoldWeightOz.toLocaleString(undefined, {
+                          minimumFractionDigits: 3,
+                          maximumFractionDigits: 3,
+                        })}
                       </dd>
                     </div>
                   </div>
@@ -794,7 +707,10 @@ export default function AssayResultsPage() {
                       NET WEIGHT OF SILVER (Oz):
                     </dt>
                     <dd className="text-sm font-semibold text-gray-900 ml-1 inline">
-                      {assay?.totalNetSilverWeightOz.toFixed(3)}
+                      {assay?.totalNetSilverWeightOz.toLocaleString(undefined, {
+                        minimumFractionDigits: 3,
+                        maximumFractionDigits: 3,
+                      })}
                     </dd>
                   </div>
                 </div>
@@ -849,18 +765,21 @@ export default function AssayResultsPage() {
 
                 <div className="flex mt-4 pt-4">
                   <div className="flex justify-between items-center">
-                    <dt className="text-sm font-medium text-gray-900">
+                    <dt className="text-sm font-medium text-gray-500">
                       PREVAILING BOG EXCHANGE RATE:
                     </dt>
                     <dd className="text-sm font-semibold text-gray-900 ml-1">
-                      {Number(assay?.exchangeRate).toFixed(4)}
+                      {Number(assay?.exchangeRate).toLocaleString(undefined, {
+                        minimumFractionDigits: 4,
+                        maximumFractionDigits: 4,
+                      })}
                     </dd>
                   </div>
                 </div>
 
                 <div className="flex mb-4">
                   <div className="text-center justify-between flex">
-                    <dt className="text-sm font-medium text-gray-900">
+                    <dt className="text-sm font-medium text-gray-500">
                       TOTAL VALUE OF SHIPMENT (GOLD & SILVER):
                     </dt>
                     <dd className="text-sm font-semibold text-gray-900 ml-1">
@@ -871,7 +790,7 @@ export default function AssayResultsPage() {
 
                 <div className="flex">
                   <div className="text-center justify-between flex">
-                    <dt className="text-sm font-medium text-gray-900">
+                    <dt className="text-sm font-medium text-gray-500">
                       TOTAL VALUE OF SHIPMENT (GOLD & SILVER):
                     </dt>
                     <dd className="text-sm font-semibold text-gray-900 ml-1">
@@ -892,13 +811,13 @@ export default function AssayResultsPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center">
+
+                {/* Official Seal */}
+                <div className="justify-end">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                      "https://goldbod.gov.gh/"
-                    )}`}
-                    alt="QR Code - Visit GoldBod Website"
-                    className="w-16 h-16"
+                    src="/seal.png"
+                    alt="Official Seal"
+                    className="w-32 h-24 mb-2 print:w-16 print:h-16"
                   />
                 </div>
               </div>

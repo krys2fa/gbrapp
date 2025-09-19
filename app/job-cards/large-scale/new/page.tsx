@@ -2163,10 +2163,16 @@ function NewLargeScaleJobCardPage() {
                                     Gold Net Weight
                                   </th>
                                   <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                                    Gold Net Weight (oz)
+                                  </th>
+                                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                                     Silver Fineness (%)
                                   </th>
                                   <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                                     Silver Net Weight
+                                  </th>
+                                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                                    Silver Net Weight (oz)
                                   </th>
                                 </tr>
                               </thead>
@@ -2189,10 +2195,80 @@ function NewLargeScaleJobCardPage() {
                                       {row.goldNetWeight || "N/A"}
                                     </td>
                                     <td className="px-4 py-2 text-sm text-gray-700 text-center">
+                                      {(() => {
+                                        const goldNetWeight =
+                                          parseFloat(row.goldNetWeight) || 0;
+                                        if (goldNetWeight === 0) return "N/A";
+
+                                        const convertToOunces = (
+                                          weight: number,
+                                          unit: string
+                                        ) => {
+                                          const GRAMS_TO_OUNCES = 31.1035;
+                                          if (
+                                            unit === UnitOfMeasure.KILOGRAMS
+                                          ) {
+                                            return (
+                                              (weight * 1000) / GRAMS_TO_OUNCES
+                                            );
+                                          } else {
+                                            return weight / GRAMS_TO_OUNCES;
+                                          }
+                                        };
+
+                                        const goldOz = convertToOunces(
+                                          goldNetWeight,
+                                          form.unitOfMeasure
+                                        );
+                                        return goldOz.toLocaleString(
+                                          undefined,
+                                          {
+                                            minimumFractionDigits: 3,
+                                            maximumFractionDigits: 3,
+                                          }
+                                        );
+                                      })()}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-700 text-center">
                                       {row.silverFineness || "N/A"}
                                     </td>
                                     <td className="px-4 py-2 text-sm text-gray-700 text-center">
                                       {row.silverNetWeight || "N/A"}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-700 text-center">
+                                      {(() => {
+                                        const silverNetWeight =
+                                          parseFloat(row.silverNetWeight) || 0;
+                                        if (silverNetWeight === 0) return "N/A";
+
+                                        const convertToOunces = (
+                                          weight: number,
+                                          unit: string
+                                        ) => {
+                                          const GRAMS_TO_OUNCES = 31.1035;
+                                          if (
+                                            unit === UnitOfMeasure.KILOGRAMS
+                                          ) {
+                                            return (
+                                              (weight * 1000) / GRAMS_TO_OUNCES
+                                            );
+                                          } else {
+                                            return weight / GRAMS_TO_OUNCES;
+                                          }
+                                        };
+
+                                        const silverOz = convertToOunces(
+                                          silverNetWeight,
+                                          form.unitOfMeasure
+                                        );
+                                        return silverOz.toLocaleString(
+                                          undefined,
+                                          {
+                                            minimumFractionDigits: 3,
+                                            maximumFractionDigits: 3,
+                                          }
+                                        );
+                                      })()}
                                     </td>
                                   </tr>
                                 ))}
@@ -2214,10 +2290,75 @@ function NewLargeScaleJobCardPage() {
                                     {calculateAssayersTotals().goldNetWeight}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                                    {(() => {
+                                      const totals = calculateAssayersTotals();
+                                      const goldNetWeight =
+                                        parseFloat(totals.goldNetWeight) || 0;
+                                      if (goldNetWeight === 0) return "0.000";
+
+                                      const convertToOunces = (
+                                        weight: number,
+                                        unit: string
+                                      ) => {
+                                        const GRAMS_TO_OUNCES = 31.1035;
+                                        if (unit === UnitOfMeasure.KILOGRAMS) {
+                                          return (
+                                            (weight * 1000) / GRAMS_TO_OUNCES
+                                          );
+                                        } else {
+                                          return weight / GRAMS_TO_OUNCES;
+                                        }
+                                      };
+
+                                      const goldOz = convertToOunces(
+                                        goldNetWeight,
+                                        form.unitOfMeasure
+                                      );
+                                      return goldOz.toLocaleString(undefined, {
+                                        minimumFractionDigits: 3,
+                                        maximumFractionDigits: 3,
+                                      });
+                                    })()}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 text-center">
                                     {calculateAssayersTotals().silverFineness}
                                   </td>
                                   <td className="px-4 py-2 text-sm text-gray-900 text-center">
                                     {calculateAssayersTotals().silverNetWeight}
+                                  </td>
+                                  <td className="px-4 py-2 text-sm text-gray-900 text-center">
+                                    {(() => {
+                                      const totals = calculateAssayersTotals();
+                                      const silverNetWeight =
+                                        parseFloat(totals.silverNetWeight) || 0;
+                                      if (silverNetWeight === 0) return "0.000";
+
+                                      const convertToOunces = (
+                                        weight: number,
+                                        unit: string
+                                      ) => {
+                                        const GRAMS_TO_OUNCES = 31.1035;
+                                        if (unit === UnitOfMeasure.KILOGRAMS) {
+                                          return (
+                                            (weight * 1000) / GRAMS_TO_OUNCES
+                                          );
+                                        } else {
+                                          return weight / GRAMS_TO_OUNCES;
+                                        }
+                                      };
+
+                                      const silverOz = convertToOunces(
+                                        silverNetWeight,
+                                        form.unitOfMeasure
+                                      );
+                                      return silverOz.toLocaleString(
+                                        undefined,
+                                        {
+                                          minimumFractionDigits: 3,
+                                          maximumFractionDigits: 3,
+                                        }
+                                      );
+                                    })()}
                                   </td>
                                 </tr>
                               </tbody>
@@ -2234,45 +2375,52 @@ function NewLargeScaleJobCardPage() {
                             <div className="bg-gray-50 rounded-lg p-4">
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {(() => {
-                                  const goldNetWeightInFormUnit =
-                                    parseFloat(
-                                      calculateAssayersTotals().goldNetWeight
-                                    ) || 0;
-                                  const silverNetWeightInFormUnit =
-                                    parseFloat(
-                                      calculateAssayersTotals().silverNetWeight
-                                    ) || 0;
                                   const goldPricePerOunce =
                                     parseFloat(goldPrice) || 0;
                                   const silverPricePerOunce =
                                     parseFloat(silverPrice) || 0;
 
-                                  // Helper function to convert to grams (same logic as calculateValuationDetails)
-                                  const convertToGrams = (value: number, unit: string) => {
-                                    if (!value) return 0;
-                                    const u = unit.toString().toLowerCase();
-                                    if (u === "kilograms") return value * 1000;
-                                    if (u === "grams") return value;
-                                    return value; // default: treat as grams
-                                  };
+                                  // Convert assayersData to measurements format (same as save operation)
+                                  const measurements = assayersData.map(
+                                    (row, index) => ({
+                                      id: index + 1,
+                                      barNumber: row.barNo,
+                                      grossWeight:
+                                        parseFloat(row.grossWeight) || 0,
+                                      goldAssay:
+                                        parseFloat(row.goldFineness) || 0,
+                                      silverAssay:
+                                        parseFloat(row.silverFineness) || 0,
+                                      netGoldWeight:
+                                        parseFloat(row.goldNetWeight) || 0,
+                                      netSilverWeight:
+                                        parseFloat(row.silverNetWeight) || 0,
+                                    })
+                                  );
 
-                                  // Convert to grams first based on unit of measure
-                                  const goldNetWeightGrams = convertToGrams(goldNetWeightInFormUnit, form.unitOfMeasure);
-                                  const silverNetWeightGrams = convertToGrams(silverNetWeightInFormUnit, form.unitOfMeasure);
+                                  // Use the same calculation logic as the save operation
+                                  const valuationDetails =
+                                    calculateValuationDetails(
+                                      measurements,
+                                      form.unitOfMeasure,
+                                      goldPricePerOunce,
+                                      silverPricePerOunce,
+                                      parseFloat(exchangeRate) || 1
+                                    );
 
-                                  // Convert grams to troy ounces (1 troy ounce = 31.1035 grams)
-                                  const GRAMS_PER_TROY_OUNCE = 31.1035;
                                   const goldNetWeightOz =
-                                    goldNetWeightGrams / GRAMS_PER_TROY_OUNCE;
+                                    valuationDetails.totalNetGoldWeightOz;
                                   const silverNetWeightOz =
-                                    silverNetWeightGrams / GRAMS_PER_TROY_OUNCE;
-
-                                  // Calculate values
+                                    valuationDetails.totalNetSilverWeightOz;
                                   const goldValue =
-                                    goldNetWeightOz * goldPricePerOunce;
+                                    valuationDetails.totalGoldValue;
                                   const silverValue =
-                                    silverNetWeightOz * silverPricePerOunce;
-                                  const totalValue = goldValue + silverValue;
+                                    valuationDetails.totalSilverValue;
+                                  const totalValue =
+                                    valuationDetails.totalCombinedValue;
+
+                                  // Get totals for display reference
+                                  const totals = calculateAssayersTotals();
 
                                   return (
                                     <>
@@ -2280,7 +2428,8 @@ function NewLargeScaleJobCardPage() {
                                         <dt className="text-sm font-medium text-gray-500">
                                           Net Weight Gold (oz)
                                           <span className="text-xs text-gray-400 ml-1">
-                                            (from {goldNetWeightInFormUnit.toFixed(4)} {form.unitOfMeasure.toLowerCase()})
+                                            (from {totals.goldNetWeight}{" "}
+                                            {form.unitOfMeasure.toLowerCase()})
                                           </span>
                                         </dt>
                                         <dd className="mt-1 text-sm text-gray-900 font-semibold">
@@ -2297,7 +2446,8 @@ function NewLargeScaleJobCardPage() {
                                         <dt className="text-sm font-medium text-gray-500">
                                           Net Weight Silver (oz)
                                           <span className="text-xs text-gray-400 ml-1">
-                                            (from {silverNetWeightInFormUnit.toFixed(4)} {form.unitOfMeasure.toLowerCase()})
+                                            (from {totals.silverNetWeight}{" "}
+                                            {form.unitOfMeasure.toLowerCase()})
                                           </span>
                                         </dt>
                                         <dd className="mt-1 text-sm text-gray-900 font-semibold">

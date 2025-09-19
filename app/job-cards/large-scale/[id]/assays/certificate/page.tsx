@@ -31,38 +31,23 @@ export default function CertificateOfAssayPage() {
         .map((style) => style.outerHTML)
         .join("\n");
 
-      // Enhanced CSS for proper print styling - matching large scale assay results
+      // Enhanced CSS for proper print styling - exact match to web page
       const enhancedStyles = `
-        @page { size: A4; margin: 20mm; }
+        @page { size: A4; margin: 15mm; }
         html, body {
           height: 100%;
           margin: 0;
           padding: 0;
-          font-family: 'Times New Roman', serif;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           color: #000;
-          line-height: 1.4;
+          line-height: 1.5;
           font-size: 12pt;
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
         * { box-sizing: border-box; }
         
-        /* A4 Document Layout - Only for Print */
-        body {
-          width: 210mm !important;
-          max-width: 100% !important;
-          margin: 0 auto !important;
-        }
-        #assay-content {
-          width: 100% !important;
-          max-width: 100% !important;
-          margin: 0 !important;
-          padding: 15mm !important;
-          position: relative;
-          background: transparent;
-        }
-
-        /* Layout and positioning */
+        /* Layout and positioning - exact web page matching */
         .flex { display: flex; }
         .inline-flex { display: inline-flex; }
         .grid { display: grid; }
@@ -77,191 +62,148 @@ export default function CertificateOfAssayPage() {
         .justify-end { justify-content: flex-end; }
         .flex-1 { flex: 1 1 0%; }
         .whitespace-nowrap { white-space: nowrap; }
+        .bg-white { background-color: #ffffff; }
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        .uppercase { text-transform: uppercase; }
 
-        /* Spacing */
-        .mb-1 { margin-bottom: 0.25rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .mt-4 { margin-top: 1rem; }
-        .mt-8 { margin-top: 2rem; }
-        .my-6 { margin: 1.5rem 0; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .pb-2 { padding-bottom: 0.5rem; }
-        .pb-6 { padding-bottom: 1.5rem; }
-        .pt-2 { padding-top: 0.5rem; }
-        .pt-4 { padding-top: 1rem; }
+        /* Spacing - exact web page matching */
+        .p-4 { padding: 1rem; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
         .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
         .px-8 { padding-left: 2rem; padding-right: 2rem; }
-        .gap-2 { gap: 0.5rem; }
-        .gap-3 { gap: 0.75rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .pt-4 { padding-top: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mr-2 { margin-right: 0.5rem; }
         .gap-4 { gap: 1rem; }
-        .gap-8 { gap: 2rem; }
-        .ml-2 { margin-left: 0.5rem; }
-        .ml-auto { margin-left: auto; }
-        .mx-8 { margin-left: 2rem; margin-right: 2rem; }
+        .mt-8 { margin-top: 2rem; }
 
-        /* Grid */
+        /* Grid system - exact web page matching */
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
         .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        
+        /* Spacing utilities */
+        .space-x-12 > * + * { margin-left: 3rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .pt-4 { padding-top: 1rem; }
+        .w-64 { width: 16rem; }
 
-        /* Typography */
-        .text-xs { font-size: 10pt; line-height: 1.3; }
-        .text-sm { font-size: 11pt; line-height: 1.4; }
-        .text-lg { font-size: 14pt; line-height: 1.4; }
-        .text-xl { font-size: 16pt; line-height: 1.4; }
+        /* Typography - exact web page matching */
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
         .font-medium { font-weight: 500; }
         .font-semibold { font-weight: 600; }
         .font-bold { font-weight: 700; }
-        .uppercase { text-transform: uppercase; }
-        .underline { text-decoration: underline; }
-        .tracking-wider { letter-spacing: 0.05em; }
-        .text-left { text-align: left; }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
 
-        /* Colors */
-        .text-gray-500 { color: #666666; }
-        .text-gray-600 { color: #555555; }
-        .text-gray-700 { color: #333333; }
-        .text-gray-800 { color: #222222; }
-        .text-gray-900 { color: #000000; }
-        .text-black { color: #000000; }
-        .bg-gray-50 { background-color: rgba(249, 250, 251, 0.9); }
-        .bg-white { background-color: rgba(255, 255, 255, 0.9); }
+        /* Colors - exact web page matching */
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-900 { color: #111827; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-gray-200 { background-color: #e5e7eb; }
+        .border-gray-200 { border-color: #e5e7eb; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .border-gray-400 { border-color: #9ca3af; }
+        .divide-gray-200 > * + * { border-top: 1px solid #e5e7eb; }
 
-        /* Borders */
-        .border { border-width: 1px; border-color: #000; }
-        .border-t { border-top: 1px solid #000; }
-        .border-b { border-bottom: 1px solid #000; }
-        .border-gray-200 { border-color: #cccccc; }
-        .border-gray-300 { border-color: #000; }
-        .border-gray-400 { border-color: #000; }
+        /* Borders - exact web page matching */
+        .border { border-width: 1px; }
+        .border-b { border-bottom-width: 1px; }
+        .border-t { border-top-width: 1px; }
 
-        /* Table styling */
+        /* Table styling - exact web page matching */
+        .min-w-full { min-width: 100%; }
+        .overflow-x-auto { overflow-x: auto; }
+        .overflow-hidden { overflow: hidden; }
+        .divide-y { border-collapse: separate; }
         table {
           border-collapse: collapse;
           width: 100%;
-          margin-bottom: 15pt;
-          background: transparent;
-          position: relative;
-          z-index: 2;
+          margin-bottom: 1rem;
         }
         th, td {
-          border: 1px solid #000;
-          padding: 6pt;
+          border: 1px solid #d1d5db;
+          padding: 0.5rem 1rem;
           text-align: center;
-          font-size: 10pt;
-          background: rgba(255, 255, 255, 0.9);
+          font-size: 0.75rem;
         }
         th {
-          background-color: rgba(240, 240, 240, 0.9);
+          background-color: #d4af37;
           font-weight: bold;
+          text-transform: uppercase;
+          color: #000;
+        }
+        .bg-\\[\\#d4af37\\] { background-color: #d4af37; }
+        tbody tr:nth-child(even) td {
+          background-color: #f9fafb;
+        }
+        tbody tr.bg-gray-50 td {
+          background-color: #f9fafb;
+          font-weight: 600;
         }
 
-        /* Images */
-        .w-24 { width: 6rem; }
-        .h-24 { height: 6rem; }
-        .w-auto { width: auto; }
-        .h-12 { height: 3rem; }
-        .h-20 { height: 5rem; }
+        /* Image styling */
         img {
           max-width: 100%;
           height: auto;
         }
+        .h-12 { height: 3rem; }
+        .h-24 { height: 6rem; }
+        .w-24 { width: 6rem; }
+        .w-auto { width: auto; }
+        .w-32 { width: 8rem; }
+        
+        /* QR Code specific styling - same size as web view */
+        img[alt*="QR Code"] {
+          width: 6rem !important;
+          height: 6rem !important;
+          object-fit: contain !important;
+        }
+        
+        /* Seal specific styling - maintain aspect ratio */
+        img[alt*="Official Seal"] {
+          width: auto !important;
+          height: 4rem !important;
+          max-width: 8rem !important;
+          object-fit: contain !important;
+        }
 
-        /* Watermark - Multi-page support */
-        body {
-          background: url('/seal.png') no-repeat center 30%;
-          background-size: 280px 280px;
-          background-attachment: fixed;
-          opacity: 1;
+        /* Title section styling */
+        .title-section {
+          margin: 0 auto;
+          text-align: center;
         }
-        body::before {
-          content: "";
-          position: fixed;
-          top: 30%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 280px;
-          height: 280px;
-          background: url('/seal.png') no-repeat center center;
-          background-size: contain;
-          opacity: 0.15;
-          z-index: 1;
-          pointer-events: none;
-        }
-        #assay-content::before {
-          content: "";
-          position: absolute;
-          top: 30%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-45deg);
-          width: 280px;
-          height: 280px;
-          background: url('/seal.png') no-repeat center center;
-          background-size: contain;
-          opacity: 0.15;
-          z-index: 1;
-          pointer-events: none;
-        }
-        #assay-content > * {
-          position: relative;
-          z-index: 3;
-        }
+
+        /* Financial section styling */
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+
+        /* Signature section */
+        .justify-center { justify-content: center; }
 
         /* Hide elements not needed for print */
-        .no-print { display: none; }
-        .print\\:hidden { display: none; }
-
-        /* Remove border line under table */
-        .border-t.border-gray-200 {
-          border-top: none !important;
-        }
-
-        /* Certificate specific styling */
-        .title-section {
-          text-align: center;
-          font-size: 18pt;
-          font-weight: bold;
-          margin: 15pt 0;
-          text-transform: uppercase;
-          letter-spacing: 1pt;
+        .print\\:hidden { display: none !important; }
+        
+        /* Remove any potential watermarks */
+        body { background: none !important; }
+        body::before { display: none !important; }
+        #assay-content::before { display: none !important; }
+        
+        /* Ensure clean background */
+        #assay-content {
+          background: white !important;
+          background-image: none !important;
         }
       `;
-
-      // Modify the cloned content to adjust the layout for print
-      const clientInfoSection =
-        clonedContent.querySelector(".grid.grid-cols-2");
-      if (clientInfoSection) {
-        clientInfoSection.innerHTML = `
-          <div>
-            <div style="margin-bottom: 8px;">
-              <span class="text-sm text-gray-500 mr-2">Client:</span>
-              <span class="text-sm">${
-                jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
-                  ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
-                  : jobCard?.exporter?.name || "N/A"
-              }</span>
-            </div>
-            <div>
-              <span class="text-sm text-gray-500 mr-2">Date:</span>
-              <span class="text-sm">${formatDate(jobCard.receivedDate)}</span>
-            </div>
-          </div>
-          <div class="text-right">
-            <span class="text-sm text-gray-500 mr-2">Certificate Number:</span>
-            <span class="text-sm">${
-              assays[0]?.certificateNumber || "N/A"
-            }</span>
-          </div>
-        `;
-      }
 
       const html = `<!doctype html>
 <html>
@@ -272,9 +214,7 @@ export default function CertificateOfAssayPage() {
   <style>${enhancedStyles}</style>
 </head>
 <body>
-  <div class="bg-white py-2">
-    ${clonedContent.innerHTML}
-  </div>
+  ${clonedContent.innerHTML}
 </body>
 </html>`;
 
@@ -383,50 +323,24 @@ export default function CertificateOfAssayPage() {
 
   return (
     <>
-      {/* Watermark Styles */}
+      {/* Clean styles without watermark */}
       <style jsx>{`
         #assay-content {
           position: relative;
-        }
-        #assay-content::before {
-          content: "";
-          position: absolute;
-          top: 30%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 280px;
-          height: 280px;
-          background: url("/seal.png") no-repeat center center;
-          background-size: contain;
-          opacity: 0.15;
-          z-index: 1;
-          pointer-events: none;
+          background: white;
         }
         #assay-content > * {
           position: relative;
           z-index: 2;
         }
 
-        /* Multi-page watermark for print */
+        /* Print-specific styles for better layout - no watermark */
         @media print {
           body {
-            background: url("/seal.png") no-repeat center 30%;
-            background-size: 280px 280px;
-            background-attachment: fixed;
+            background: none !important;
           }
           body::before {
-            content: "";
-            position: fixed;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            height: 280px;
-            background: url("/seal.png") no-repeat center center;
-            background-size: contain;
-            opacity: 0.08;
-            z-index: 1;
-            pointer-events: none;
+            display: none !important;
           }
 
           /* Print-specific styles for better layout */
@@ -505,7 +419,14 @@ export default function CertificateOfAssayPage() {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Content */}
-          <div id="assay-content" className="bg-white shadow-sm">
+          <div
+            id="assay-content"
+            className="bg-white shadow-sm"
+            style={{
+              background: "white !important",
+              backgroundImage: "none !important",
+            }}
+          >
             <div className="flex justify-between items-center p-4">
               <div className="flex items-center">
                 <img
@@ -514,41 +435,55 @@ export default function CertificateOfAssayPage() {
                   className="h-12 w-auto"
                 />
               </div>
-              <h1 className="text-xl font-bold tracking-wider ml-4">
+              {/* <h1 className="text-xl font-bold tracking-wider ml-4">
                 CERTIFICATE OF ASSAY
-              </h1>
-              <div className="flex items-center">
+              </h1> */}
+              <div className="title-section uppercase mx-auto text-center">
+                <p className="font-bold text-2xl">CERTIFICATE OF ASSAY</p>
+                <p className="text-sm">LARGE SCALE OPERATIONS</p>
+              </div>
+              <div className="text-left">
                 <img
-                  src="/coat-of-arms.jpg"
-                  alt="Coat of Arms"
-                  className="h-20 w-auto"
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
+                    `https://goldbod.gov.gh/job-cards/large-scale/${id}/assays/certificate`
+                  )}`}
+                  alt="QR Code - Certificate Verification"
+                  className="w-24 h-24 mb-2 print:w-16 print:h-16"
                 />
               </div>
             </div>
 
-            <div className="px-4 sm:px-6 lg:px-8 grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <span className="text-sm text-gray-500 mr-2">Client:</span>
-                <span className="text-sm">
-                  {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
-                    ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
-                    : jobCard?.exporter?.name || "N/A"}
-                </span>
+            <div className="px-4 sm:px-6 lg:px-8 mb-4">
+              {/* Client and Certificate Number on same row */}
+              <div className="flex justify-between items-center mb-2">
+                <div>
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Client:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
+                      ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                      : jobCard?.exporter?.name || "N/A"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-sm text-gray-500 mr-2 font-medium">
+                    Certificate Number:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {assays[0]?.certificateNumber || "N/A"}
+                  </span>
+                </div>
               </div>
 
-              <div className="text-right">
-                <span className="text-sm text-gray-500 mr-2">
-                  Certificate Number:
-                </span>
-                <span className="text-sm">
-                  {assays[0]?.certificateNumber || "N/A"}
-                </span>
-              </div>
-
+              {/* Date on separate row */}
               <div>
-                <span className="text-sm text-gray-500 mr-2">Date:</span>
-                <span className="text-sm">
-                  {formatDate(jobCard.receivedDate)}
+                <span className="text-sm text-gray-500 font-medium mr-2">
+                  Date:
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {formatDate(jobCard?.dataSheetDate || jobCard?.receivedDate)}
                 </span>
               </div>
             </div>
@@ -596,27 +531,57 @@ export default function CertificateOfAssayPage() {
                               </td>
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right border border-gray-300">
                                 {m.grossWeight != null
-                                  ? Number(m.grossWeight).toFixed(2)
+                                  ? Number(m.grossWeight).toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits: 4,
+                                        maximumFractionDigits: 4,
+                                      }
+                                    )
                                   : "-"}
                               </td>
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right border border-gray-300">
                                 {m.goldAssay != null
-                                  ? Number(m.goldAssay).toFixed(2)
+                                  ? Number(m.goldAssay).toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits: 4,
+                                        maximumFractionDigits: 4,
+                                      }
+                                    )
                                   : "-"}
                               </td>
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right border border-gray-300">
                                 {m.netGoldWeight != null
-                                  ? Number(m.netGoldWeight).toFixed(2)
+                                  ? Number(m.netGoldWeight).toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits: 4,
+                                        maximumFractionDigits: 4,
+                                      }
+                                    )
                                   : "-"}
                               </td>
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right border border-gray-300">
                                 {m.silverAssay != null
-                                  ? Number(m.silverAssay).toFixed(2)
+                                  ? Number(m.silverAssay).toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits: 4,
+                                        maximumFractionDigits: 4,
+                                      }
+                                    )
                                   : "-"}
                               </td>
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right border border-gray-300">
                                 {m.netSilverWeight != null
-                                  ? Number(m.netSilverWeight).toFixed(2)
+                                  ? Number(m.netSilverWeight).toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits: 4,
+                                        maximumFractionDigits: 4,
+                                      }
+                                    )
                                   : "-"}
                               </td>
                             </tr>
@@ -643,7 +608,12 @@ export default function CertificateOfAssayPage() {
                                 ),
                               0
                             );
-                            return total > 0 ? total.toFixed(2) : "-";
+                            return total > 0
+                              ? total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 4,
+                                  maximumFractionDigits: 4,
+                                })
+                              : "-";
                           })()}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
@@ -670,7 +640,10 @@ export default function CertificateOfAssayPage() {
                             );
                             if (grossTotal > 0 && goldTotal > 0) {
                               const fineness = (goldTotal / grossTotal) * 100;
-                              return fineness.toFixed(2);
+                              return fineness.toLocaleString(undefined, {
+                                minimumFractionDigits: 4,
+                                maximumFractionDigits: 4,
+                              });
                             }
                             return "-";
                           })()}
@@ -687,7 +660,12 @@ export default function CertificateOfAssayPage() {
                                 ),
                               0
                             );
-                            return total > 0 ? total.toFixed(2) : "-";
+                            return total > 0
+                              ? total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 4,
+                                  maximumFractionDigits: 4,
+                                })
+                              : "-";
                           })()}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
@@ -714,7 +692,10 @@ export default function CertificateOfAssayPage() {
                             );
                             if (grossTotal > 0 && silverTotal > 0) {
                               const fineness = (silverTotal / grossTotal) * 100;
-                              return fineness.toFixed(2);
+                              return fineness.toLocaleString(undefined, {
+                                minimumFractionDigits: 4,
+                                maximumFractionDigits: 4,
+                              });
                             }
                             return "-";
                           })()}
@@ -731,7 +712,12 @@ export default function CertificateOfAssayPage() {
                                 ),
                               0
                             );
-                            return total > 0 ? total.toFixed(2) : "-";
+                            return total > 0
+                              ? total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 4,
+                                  maximumFractionDigits: 4,
+                                })
+                              : "-";
                           })()}
                         </td>
                       </tr>
@@ -751,7 +737,7 @@ export default function CertificateOfAssayPage() {
                   </div>
                   <div className="text-sm font-bold text-black ml-1">
                     {(() => {
-                      const totalGoldGrams = assays.reduce(
+                      const totalGoldInFormUnit = assays.reduce(
                         (acc: number, assay: any) =>
                           acc +
                           (assay.measurements || []).reduce(
@@ -761,9 +747,27 @@ export default function CertificateOfAssayPage() {
                           ),
                         0
                       );
+
+                      // Convert to grams based on unit of measure
+                      let totalGoldGrams = totalGoldInFormUnit;
+                      const unitOfMeasure =
+                        jobCard?.unitOfMeasure?.toLowerCase();
+                      if (
+                        unitOfMeasure === "kg" ||
+                        unitOfMeasure === "kilograms"
+                      ) {
+                        totalGoldGrams = totalGoldInFormUnit * 1000; // Convert kg to grams
+                      }
+                      // If already in grams, no conversion needed
+
                       const GRAMS_PER_TROY_OUNCE = 31.1035;
                       const goldOz = totalGoldGrams / GRAMS_PER_TROY_OUNCE;
-                      return goldOz > 0 ? goldOz.toFixed(3) : "0.000";
+                      return goldOz > 0
+                        ? goldOz.toLocaleString(undefined, {
+                            minimumFractionDigits: 3,
+                            maximumFractionDigits: 3,
+                          })
+                        : "0.000";
                     })()}{" "}
                     oz
                   </div>
@@ -776,7 +780,7 @@ export default function CertificateOfAssayPage() {
                   </div>
                   <div className="text-sm font-bold text-gray-900 ml-1">
                     {(() => {
-                      const totalSilverGrams = assays.reduce(
+                      const totalSilverInFormUnit = assays.reduce(
                         (acc: number, assay: any) =>
                           acc +
                           (assay.measurements || []).reduce(
@@ -786,70 +790,51 @@ export default function CertificateOfAssayPage() {
                           ),
                         0
                       );
+
+                      // Convert to grams based on unit of measure
+                      let totalSilverGrams = totalSilverInFormUnit;
+                      const unitOfMeasure =
+                        jobCard?.unitOfMeasure?.toLowerCase();
+                      if (
+                        unitOfMeasure === "kg" ||
+                        unitOfMeasure === "kilograms"
+                      ) {
+                        totalSilverGrams = totalSilverInFormUnit * 1000; // Convert kg to grams
+                      }
+                      // If already in grams, no conversion needed
+
                       const GRAMS_PER_TROY_OUNCE = 31.1035;
                       const silverOz = totalSilverGrams / GRAMS_PER_TROY_OUNCE;
-                      return silverOz > 0 ? silverOz.toFixed(3) : "0.000";
+                      return silverOz > 0
+                        ? silverOz.toLocaleString(undefined, {
+                            minimumFractionDigits: 3,
+                            maximumFractionDigits: 3,
+                          })
+                        : "0.000";
                     })()}{" "}
                     oz
                   </div>
                 </div>
               </div>
 
-              {/* Bottom Row: QR Code, Technical Director Signature, and Seal */}
-              <div className="mt-8 print:mt-6">
-                <div className="grid grid-cols-3 gap-8 items-center">
-                  {/* QR Code */}
-                  <div className="text-left">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
-                        `https://goldbod.gov.gh/job-cards/large-scale/${id}/assays/certificate`
-                      )}`}
-                      alt="QR Code - Certificate Verification"
-                      className="w-24 h-24 mb-2 print:w-16 print:h-16"
-                    />
-                    {/* <p className="text-xs text-gray-500 print:block">
-                      Scan to verify certificate
-                    </p> */}
-                  </div>
-
-                  {/* Technical Director Signature */}
-                  <div className="text-center">
-                    {jobCard.technicalDirector ? (
-                      <div>
-                        <div className="border-t border-gray-400 mt-8 mb-2 mx-8"></div>
-                        <p className="font-semibold text-gray-900 text-sm">
-                          {jobCard.technicalDirector.name}
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          Technical Director
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Badge: {jobCard.technicalDirector.badgeNumber}
-                        </p>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="border-t border-gray-400 mt-8 mb-2 mx-8"></div>
-                        <p className="font-semibold text-gray-900 text-sm">
-                          Technical Director
-                        </p>
-                        {/* <p className="text-xs text-gray-600">
-                          Ghana Boundary Commission
-                        </p> */}
-                      </div>
-                    )}
+              {/* Technical Director Signature Section */}
+              <div className="px-4 sm:px-6 lg:px-8 py-8">
+                <div className="flex justify-between items-center">
+                  <div className="border-t border-gray-300 pt-4 w-64">
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
+                        Technical Director
+                      </p>
+                    </div>
                   </div>
 
                   {/* Official Seal */}
-                  <div className="text-right">
+                  <div className="justify-end">
                     <img
                       src="/seal.png"
                       alt="Official Seal"
-                      className="w-24 h-24 ml-auto mb-2 print:w-16 print:h-16"
+                      className="w-32 h-24 mb-2 print:w-16 print:h-16"
                     />
-                    {/* <p className="text-xs text-gray-500 print:block">
-                      Official Seal
-                    </p> */}
                   </div>
                 </div>
               </div>
