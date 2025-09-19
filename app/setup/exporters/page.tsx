@@ -161,26 +161,26 @@ const ExportersPage = () => {
         authorizedSignatory: "",
         exporterTypeId: "",
         // Consignee Information
-        // consigneeAddress: "",
-        // consigneeTelephone: "",
-        // consigneeMobile: "",
-        // consigneeEmail: "",
+        consigneeAddress: "",
+        consigneeTelephone: "",
+        consigneeMobile: "",
+        consigneeEmail: "",
         // Buyer Information
-        // buyerName: "",
-        // buyerAddress: "",
-        // // Exporter Details
-        // deliveryLocation: "",
-        // exporterTelephone: "",
-        // exporterEmail: "",
-        // exporterWebsite: "",
-        // exporterLicenseNumber: "",
+        buyerName: "",
+        buyerAddress: "",
+        // Exporter Details
+        deliveryLocation: "",
+        exporterTelephone: "",
+        exporterEmail: "",
+        exporterWebsite: "",
+        exporterLicenseNumber: "",
         // Notified Party Information
-        // notifiedPartyName: "",
-        // notifiedPartyAddress: "",
-        // notifiedPartyEmail: "",
-        // notifiedPartyContactPerson: "",
-        // notifiedPartyTelephone: "",
-        // notifiedPartyMobile: "",
+        notifiedPartyName: "",
+        notifiedPartyAddress: "",
+        notifiedPartyEmail: "",
+        notifiedPartyContactPerson: "",
+        notifiedPartyTelephone: "",
+        notifiedPartyMobile: "",
       });
     } catch (err: any) {
       toast.error(err.message || "Error creating exporter", { id: toastId });
