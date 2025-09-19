@@ -104,6 +104,11 @@ function NewLargeScaleJobCardPage() {
   const [assayMethod, setAssayMethod] = useState<string>("x-ray");
   const [authorizedSignatory, setAuthorizedSignatory] = useState<string>("");
 
+  // Loading states for visual cues
+  const [isLoadingExporter, setIsLoadingExporter] = useState<boolean>(false);
+  const [isLoadingExchangeRate, setIsLoadingExchangeRate] = useState<boolean>(false);
+  const [isLoadingCommodityPrices, setIsLoadingCommodityPrices] = useState<boolean>(false);
+
   // Ref for hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -243,17 +248,21 @@ function NewLargeScaleJobCardPage() {
       try {
         // Fetch exporter details only if an exporter is selected
         if (form.exporterId) {
+          setIsLoadingExporter(true);
           const exporterRes = await fetch(`/api/exporters/${form.exporterId}`);
           if (exporterRes.ok) {
             const exporterData = await exporterRes.json();
             setSelectedExporter(exporterData);
           }
+          setIsLoadingExporter(false);
         } else {
           // Clear exporter data if no exporter is selected
           setSelectedExporter(null);
+          setIsLoadingExporter(false);
         }
 
         // Fetch latest exchange rate from weekly prices
+        setIsLoadingExchangeRate(true);
         await logInfo("Fetching exchange rate...");
         const exchangeRes = await fetch(
           `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`
@@ -287,9 +296,11 @@ function NewLargeScaleJobCardPage() {
           });
           toast.error("Failed to load weekly exchange rate");
         }
+        setIsLoadingExchangeRate(false);
 
         // Fetch commodity prices based on data sheet date (if available)
         if (form.dataSheetDates) {
+          setIsLoadingCommodityPrices(true);
           await logInfo("Fetching commodity prices for data sheet date", {
             pricingDate: form.dataSheetDates,
           });
@@ -362,10 +373,12 @@ function NewLargeScaleJobCardPage() {
             setGoldPrice("Not Available");
             setSilverPrice("Not Available");
           }
+          setIsLoadingCommodityPrices(false);
         } else {
           // No data sheet date selected, show placeholder values
           setGoldPrice("Select data sheet date");
           setSilverPrice("Select data sheet date");
+          setIsLoadingCommodityPrices(false);
           await logInfo(
             "No data sheet date selected, showing placeholder values"
           );
@@ -375,6 +388,10 @@ function NewLargeScaleJobCardPage() {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
+        // Reset loading states in case of error
+        setIsLoadingExporter(false);
+        setIsLoadingExchangeRate(false);
+        setIsLoadingCommodityPrices(false);
       }
     };
 
@@ -1283,19 +1300,56 @@ function NewLargeScaleJobCardPage() {
             </div>
           </div>
 
-          {/* Meta Bar - Show when exporter is selected */}
-          {form.exporterId && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="text-2xl font-medium text-blue-900 mb-4">
-                Exporter Information & Market Data
-              </h3>
+          {/* Meta Bar - Show when exporter is selected or data sheet date is set */}
+          {(form.exporterId || form.dataSheetDates) && (
+            <div className={`bg-blue-50 border border-blue-200 rounded-lg p-4 transition-all duration-300 ${
+              (isLoadingExporter || isLoadingExchangeRate || isLoadingCommodityPrices) 
+                ? 'shadow-lg ring-2 ring-blue-300 ring-opacity-50' 
+                : ''
+            }`}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-medium text-blue-900">
+                  Exporter Information & Market Data
+                </h3>
+                {(isLoadingExporter || isLoadingExchangeRate || isLoadingCommodityPrices) && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="animate-pulse flex items-center gap-1">
+                      <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce"></div>
+                      <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                    <span className="text-blue-700 font-medium">
+                      {isLoadingExporter && "Loading exporter details..."}
+                      {!isLoadingExporter && isLoadingExchangeRate && "Loading exchange rate..."}
+                      {!isLoadingExporter && !isLoadingExchangeRate && isLoadingCommodityPrices && "Loading commodity prices..."}
+                    </span>
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {/* Exporter Details */}
                 <div className="space-y-2">
-                  <h4 className="text-2xl font-medium text-blue-800">
+                  <h4 className="text-2xl font-medium text-blue-800 flex items-center gap-2">
                     Exporter Details
+                    {isLoadingExporter && (
+                      <div className="inline-flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="text-xs text-blue-600">Updating...</span>
+                      </div>
+                    )}
                   </h4>
-                  {selectedExporter && (
+                  {isLoadingExporter ? (
+                    <div className="text-sm text-gray-500 animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                    </div>
+                  ) : selectedExporter ? (
                     <div className="text-sm text-black">
                       <p>
                         <strong className="text-blue-700">Name:</strong>{" "}
@@ -1305,12 +1359,12 @@ function NewLargeScaleJobCardPage() {
                         <strong className="text-blue-700">Type:</strong>{" "}
                         <strong>{selectedExporter.exporterType?.name}</strong>
                       </p>
-                      <p>
+                      {/* <p>
                         <strong className="text-blue-700">License:</strong>{" "}
                         <strong>
                           {selectedExporter.licenseNumber || "N/A"}
                         </strong>
-                      </p>
+                      </p> */}
                       <p>
                         <strong className="text-blue-700">Email:</strong>{" "}
                         <strong>{selectedExporter.email || "N/A"}</strong>
@@ -1320,60 +1374,94 @@ function NewLargeScaleJobCardPage() {
                         <strong>{selectedExporter.phone || "N/A"}</strong>
                       </p>
                     </div>
+                  ) : (
+                    <div className="text-sm text-gray-500">
+                      <p>No exporter selected</p>
+                    </div>
                   )}
                 </div>
 
                 {/* Market Data */}
                 <div className="space-y-2">
-                  <h4 className="text-xl font-medium text-blue-800">
+                  <h4 className="text-xl font-medium text-blue-800 flex items-center gap-2">
                     Latest Market Data
+                    {(isLoadingExchangeRate || isLoadingCommodityPrices) && (
+                      <div className="inline-flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="text-xs text-blue-600">Updating prices...</span>
+                      </div>
+                    )}
                   </h4>
                   <div className="text-sm text-blue-700">
-                    <p>
+                    <p className="flex items-center gap-2">
                       <strong>Exchange Rate:</strong>{" "}
-                      <strong
-                        className={
-                          exchangeRate && exchangeRate !== "Loading..."
-                            ? "text-black"
-                            : "text-gray-500"
-                        }
-                      >
-                        {exchangeRate || "Loading..."}
-                      </strong>
+                      {isLoadingExchangeRate ? (
+                        <div className="flex items-center gap-1">
+                          <div className="animate-spin h-3 w-3 border border-blue-500 rounded-full border-t-transparent"></div>
+                          <span className="text-gray-500 text-xs">Loading...</span>
+                        </div>
+                      ) : (
+                        <strong
+                          className={
+                            exchangeRate && exchangeRate !== "Loading..."
+                              ? "text-black"
+                              : "text-gray-500"
+                          }
+                        >
+                          {exchangeRate || "Loading..."}
+                        </strong>
+                      )}
                     </p>
-                    <p>
+                    <p className="flex items-center gap-2">
                       <strong>Gold Price:</strong>{" "}
-                      <strong
-                        className={
-                          goldPrice &&
-                          goldPrice !== "Loading..." &&
-                          goldPrice !== "Not Available"
-                            ? "text-black"
-                            : goldPrice === "Not Available"
-                            ? "text-red-500"
-                            : "text-gray-500"
-                        }
-                      >
-                        {goldPrice || "Loading..."}
-                        {goldPrice === "Not Available" && " (Setup Required)"}
-                      </strong>
+                      {isLoadingCommodityPrices ? (
+                        <div className="flex items-center gap-1">
+                          <div className="animate-spin h-3 w-3 border border-blue-500 rounded-full border-t-transparent"></div>
+                          <span className="text-gray-500 text-xs">Loading...</span>
+                        </div>
+                      ) : (
+                        <strong
+                          className={
+                            goldPrice &&
+                            goldPrice !== "Loading..." &&
+                            goldPrice !== "Not Available"
+                              ? "text-black"
+                              : goldPrice === "Not Available"
+                              ? "text-red-500"
+                              : "text-gray-500"
+                          }
+                        >
+                          {goldPrice || "Loading..."}
+                          {goldPrice === "Not Available" && " (Setup Required)"}
+                        </strong>
+                      )}
                     </p>
-                    <p>
+                    <p className="flex items-center gap-2">
                       <strong>Silver Price:</strong>{" "}
-                      <strong
-                        className={
-                          silverPrice &&
-                          silverPrice !== "Loading..." &&
-                          silverPrice !== "Not Available"
-                            ? "text-black"
-                            : silverPrice === "Not Available"
-                            ? "text-red-500"
-                            : "text-gray-500"
-                        }
-                      >
-                        {silverPrice || "Loading..."}
-                        {silverPrice === "Not Available" && " (Setup Required)"}
-                      </strong>
+                      {isLoadingCommodityPrices ? (
+                        <div className="flex items-center gap-1">
+                          <div className="animate-spin h-3 w-3 border border-blue-500 rounded-full border-t-transparent"></div>
+                          <span className="text-gray-500 text-xs">Loading...</span>
+                        </div>
+                      ) : (
+                        <strong
+                          className={
+                            silverPrice &&
+                            silverPrice !== "Loading..." &&
+                            silverPrice !== "Not Available"
+                              ? "text-black"
+                              : silverPrice === "Not Available"
+                              ? "text-red-500"
+                              : "text-gray-500"
+                          }
+                        >
+                          {silverPrice || "Loading..."}
+                          {silverPrice === "Not Available" && " (Setup Required)"}
+                        </strong>
+                      )}
                     </p>
                   </div>
                 </div>
