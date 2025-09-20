@@ -91,27 +91,36 @@ function JobCardDetailPage() {
   }, [id]);
 
   const handleDelete = async () => {
+    console.log("Delete button clicked! Setting modal to open...");
     setDeleteModalOpen(true);
+    console.log("Modal should now be open");
   };
 
   const confirmDelete = async () => {
+    // Show loading toast
+    toast.loading("Deleting job card...", { id: "delete-job-card" });
+
     try {
       const response = await fetch(`/api/job-cards/${id}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
+        toast.dismiss("delete-job-card");
         toast.success("Job card deleted successfully!");
+        setDeleteModalOpen(false);
         // Redirect to job cards list
         window.location.href = "/job-cards";
       } else {
         const errorData = await response.json();
+        toast.dismiss("delete-job-card");
         toast.error(
           `Failed to delete job card: ${errorData.error || "Unknown error"}`
         );
       }
     } catch (error) {
       console.error("Error deleting job card:", error);
+      toast.dismiss("delete-job-card");
       toast.error("An error occurred while deleting the job card.");
     }
   };
@@ -221,6 +230,12 @@ function JobCardDetailPage() {
     jobCard.invoices.some((inv: any) => inv.status === "paid");
   const canEdit = !hasAssays && !hasPaidInvoices;
   const canDelete = !hasAssays; // Can delete if no assays exist
+
+  console.log("Job Card Debug Info:");
+  console.log("- hasAssays:", hasAssays);
+  console.log("- canDelete:", canDelete);
+  console.log("- canEdit:", canEdit);
+  console.log("- jobCard.assays:", jobCard.assays);
   const badgeStatus =
     hasPaidInvoices || jobCard.status === "paid"
       ? "paid"
@@ -286,24 +301,28 @@ function JobCardDetailPage() {
         <div>
           <BackLink href="/job-cards" label="Back to Job Cards" />
         </div>
-        {canEdit && (
-          <Link
-            href={`/job-cards/${id}/edit`}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <PencilIcon className="h-4 w-4 mr-2" />
-            Edit Job Card
-          </Link>
-        )}
-        {canDelete && (
-          <button
-            onClick={handleDelete}
-            className="inline-flex items-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
-          >
-            <TrashIcon className="h-4 w-4 mr-2" />
-            Delete Job Card
-          </button>
-        )}
+
+        {/* Action buttons */}
+        <div className="flex items-center space-x-3">
+          {canEdit && (
+            <Link
+              href={`/job-cards/${id}/edit`}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <PencilIcon className="h-4 w-4 mr-2" />
+              Edit Job Card
+            </Link>
+          )}
+          {/* {canDelete && (
+            <button
+              onClick={handleDelete}
+              className="inline-flex items-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+            >
+              <TrashIcon className="h-4 w-4 mr-2" />
+              Delete Job Card
+            </button>
+          )} */}
+        </div>
       </div>
 
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -1204,6 +1223,63 @@ function JobCardDetailPage() {
           </div>
         </>
       ) : null}
+
+      {/* Debug Modal State */}
+      <div className="fixed top-4 right-4 bg-yellow-200 p-2 text-xs z-[10000]">
+        Modal Open: {deleteModalOpen ? "TRUE" : "FALSE"}
+        <br />
+        Can Delete: {canDelete ? "TRUE" : "FALSE"}
+        <br />
+        Has Assays: {hasAssays ? "TRUE" : "FALSE"}
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 flex items-center justify-center w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-red-400"
+              onClick={cancelDelete}
+              aria-label="Close"
+            >
+              <span className="text-xl">&times;</span>
+            </button>
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <TrashIcon className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Delete Job Card
+                </h3>
+              </div>
+            </div>
+            <div className="mt-2">
+              <p className="text-sm text-gray-500">
+                Are you sure you want to delete job card{" "}
+                {jobCard?.referenceNumber}? This action cannot be undone and
+                will permanently remove the job card and all associated data.
+              </p>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                type="button"
+                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

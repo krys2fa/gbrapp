@@ -787,9 +787,12 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Start transaction for cascade deletion
+    console.log("Starting delete transaction for job card:", id);
     await prisma.$transaction(async (tx) => {
+      console.log("Inside transaction, deleting assay measurements...");
       // Delete assay measurements (through assays, but assays should be empty due to business rule)
       for (const assay of existingJobCard.assays) {
+        console.log("Deleting measurements for assay:", assay.id);
         await tx.assayMeasurement.deleteMany({
           where: { assayId: assay.id },
         });

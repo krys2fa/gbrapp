@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Loader2 } from "lucide-react";
 import { formatDate } from "@/app/lib/utils";
+import toast from "react-hot-toast";
 
 interface JobCard {
   id: string;
@@ -48,35 +49,30 @@ export function JobCardList({ filters }: JobCardListProps) {
   const [totalPages, setTotalPages] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [jobCardToDelete, setJobCardToDelete] = useState<string | null>(null);
+
   const itemsPerPage = 10;
 
   const fetchJobCards = useCallback(async () => {
-    setLoading(true);
     try {
-      // Build query string from filters
+      setLoading(true);
       const queryParams = new URLSearchParams();
 
       if (filters.exporterId) {
         queryParams.append("exporterId", filters.exporterId);
       }
-
       if (filters.startDate) {
         queryParams.append("startDate", filters.startDate);
       }
-
       if (filters.endDate) {
         queryParams.append("endDate", filters.endDate);
       }
-
-      if (filters.status) {
+      if (filters.status && filters.status !== "all") {
         queryParams.append("status", filters.status);
       }
-
       if (filters.humanReadableId) {
         queryParams.append("humanReadableId", filters.humanReadableId);
       }
 
-      // Add pagination
       queryParams.append("page", currentPage.toString());
       queryParams.append("limit", itemsPerPage.toString());
 
@@ -101,14 +97,14 @@ export function JobCardList({ filters }: JobCardListProps) {
   }, [fetchJobCards]);
 
   const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "paid":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "in_progress":
-        return "bg-blue-100 text-blue-800";
+    switch (status.toLowerCase()) {
       case "completed":
+        return "bg-green-100 text-green-800";
+      case "in_progress":
+        return "bg-yellow-100 text-yellow-800";
+      case "pending":
+        return "bg-blue-100 text-blue-800";
+      case "approved":
         return "bg-green-100 text-green-800";
       case "rejected":
         return "bg-red-100 text-red-800";
@@ -122,30 +118,48 @@ export function JobCardList({ filters }: JobCardListProps) {
     setJobCardToDelete(jobCardId);
     setDeleteModalOpen(true);
     console.log("Modal state set to open");
+    console.log("deleteModalOpen:", true);
+    console.log("jobCardToDelete:", jobCardId);
   };
 
   const confirmDelete = async () => {
+    console.log("confirmDelete called, jobCardToDelete:", jobCardToDelete);
     if (!jobCardToDelete) return;
 
+    // Show loading toast
+    toast.loading("Deleting job card...", { id: "delete-job-card" });
+
     try {
+      console.log(
+        "Making DELETE request to:",
+        `/api/job-cards/${jobCardToDelete}`
+      );
       const response = await fetch(`/api/job-cards/${jobCardToDelete}`, {
         method: "DELETE",
       });
 
+      console.log("Delete response:", response.status, response.statusText);
+
       if (response.ok) {
+        console.log("Delete successful, refreshing job cards list");
+        toast.dismiss("delete-job-card");
+        toast.success("Job card deleted successfully!");
         // Refresh the job cards list
         fetchJobCards();
         setDeleteModalOpen(false);
         setJobCardToDelete(null);
       } else {
         const errorData = await response.json();
-        alert(
+        console.error("Delete failed with error data:", errorData);
+        toast.dismiss("delete-job-card");
+        toast.error(
           `Failed to delete job card: ${errorData.error || "Unknown error"}`
         );
       }
     } catch (error) {
       console.error("Error deleting job card:", error);
-      alert("An error occurred while deleting the job card.");
+      toast.dismiss("delete-job-card");
+      toast.error("An error occurred while deleting the job card.");
     }
   };
 
@@ -154,7 +168,14 @@ export function JobCardList({ filters }: JobCardListProps) {
     setJobCardToDelete(null);
   };
 
-  return (
+  console.log(
+    "Rendering component - deleteModalOpen:",
+    deleteModalOpen,
+    "jobCardToDelete:",
+    jobCardToDelete
+  );
+
+  const jobCardsList = (
     <div className="bg-white shadow overflow-hidden sm:rounded-md">
       {loading ? (
         <div className="flex justify-center items-center py-10">
@@ -169,104 +190,79 @@ export function JobCardList({ filters }: JobCardListProps) {
         </div>
       ) : (
         <>
-          <ul className="divide-y divide-gray-200">
+          <ul role="list" className="divide-y divide-gray-200">
             {jobCards.map((jobCard) => (
               <li key={jobCard.id}>
-                <div className="block hover:bg-gray-50">
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
+                <div className="px-4 py-4 flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-10 w-10">
+                      <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                        <span className="text-sm font-medium text-gray-700">
+                          {jobCard.humanReadableId}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-4">
                       <div className="flex items-center">
-                        <p className="text-sm font-medium text-indigo-600 truncate">
-                          {jobCard.humanReadableId || jobCard.referenceNumber}
+                        <p className="text-sm font-medium text-gray-900">
+                          {jobCard.referenceNumber}
                         </p>
-                        {/* If the job card has assays, treat it as Completed for the badge */}
-                        {(() => {
-                          const hasAssays = !!(
-                            jobCard._count &&
-                            jobCard._count.assays &&
-                            jobCard._count.assays > 0
-                          );
-                          const hasPaidInvoices = !!(
-                            jobCard.invoices &&
-                            jobCard.invoices.some(
-                              (invoice) => invoice.status === "paid"
-                            )
-                          );
-
-                          let statusText =
-                            jobCard.status.charAt(0).toUpperCase() +
-                            jobCard.status.slice(1).replace("_", " ");
-                          let statusKey = jobCard.status;
-
-                          if (hasPaidInvoices) {
-                            statusText = "Paid";
-                            statusKey = "paid";
-                          } else if (hasAssays) {
-                            statusText = "Completed";
-                            statusKey = "completed";
-                          }
-
-                          return (
-                            <span
-                              className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
-                                statusKey
-                              )}`}
-                            >
-                              {statusText}
-                            </span>
-                          );
-                        })()}
-                      </div>
-                      <div className="flex space-x-2">
-                        <Link
-                          href={`/job-cards/${jobCard.id}`}
-                          className="inline-flex items-center p-1.5 border border-gray-300 rounded-md text-xs font-medium bg-white hover:bg-gray-50 text-gray-700"
+                        <span
+                          className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
+                            jobCard.status
+                          )}`}
                         >
-                          <EyeIcon className="h-4 w-4 mr-1" />
-                          View
-                        </Link>
-                        {(!jobCard._count?.assays ||
-                          jobCard._count.assays === 0) && (
-                          <Link
-                            href={`/job-cards/${jobCard.id}/edit`}
-                            className="inline-flex items-center p-1.5 border border-gray-300 rounded-md text-xs font-medium bg-white hover:bg-gray-50 text-gray-700"
-                          >
-                            <PencilSquareIcon className="h-4 w-4 mr-1" />
-                            Edit
-                          </Link>
-                        )}
-                        {(!jobCard._count?.assays ||
-                          jobCard._count.assays === 0) && (
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              console.log(
-                                "Delete button clicked for:",
-                                jobCard.id
-                              );
-                              handleDelete(jobCard.id);
-                            }}
-                            className="inline-flex items-center p-1.5 border border-red-300 rounded-md text-xs font-medium bg-white hover:bg-red-50 text-red-700"
-                          >
-                            <TrashIcon className="h-4 w-4 mr-1" />
-                            Delete
-                          </button>
+                          {jobCard.status.replace("_", " ")}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-500 mt-1">
+                        <span>{jobCard.exporter.name}</span>
+                        <span className="mx-2">•</span>
+                        <span>
+                          Received: {formatDate(jobCard.receivedDate)}
+                        </span>
+                        {jobCard._count && (
+                          <>
+                            <span className="mx-2">•</span>
+                            <span>
+                              Assays: {jobCard._count.assays || 0} | Invoices:{" "}
+                              {jobCard._count.invoices || 0}
+                            </span>
+                          </>
                         )}
                       </div>
                     </div>
-                    <div className="mt-2 sm:flex sm:justify-between">
-                      <div className="sm:flex">
-                        <p className="flex items-center text-sm text-gray-500">
-                          Exporter: {jobCard.exporter.name}
-                        </p>
-                      </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                        <p>
-                          Received: {formatDate(new Date(jobCard.receivedDate))}
-                        </p>
-                      </div>
-                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Link
+                      href={`/job-cards/${jobCard.id}`}
+                      className="text-indigo-600 hover:text-indigo-900"
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                    </Link>
+                    <Link
+                      href={`/job-cards/${jobCard.id}/edit`}
+                      className="text-green-600 hover:text-green-900"
+                    >
+                      <PencilSquareIcon className="h-5 w-5" />
+                    </Link>
+                    {(!jobCard._count?.assays ||
+                      jobCard._count.assays === 0) && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log(
+                            `Delete button clicked for: ${jobCard.id}`
+                          );
+                          handleDelete(jobCard.id);
+                        }}
+                        className="text-red-600 hover:text-red-900"
+                        title="Delete job card"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </li>
@@ -274,78 +270,92 @@ export function JobCardList({ filters }: JobCardListProps) {
           </ul>
 
           {/* Pagination */}
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing{" "}
-                  <span className="font-medium">
-                    {(currentPage - 1) * itemsPerPage + 1}
-                  </span>{" "}
-                  to{" "}
-                  <span className="font-medium">
-                    {Math.min(
-                      currentPage * itemsPerPage,
-                      totalPages * itemsPerPage
-                    )}
-                  </span>{" "}
-                  of{" "}
-                  <span className="font-medium">
-                    {totalPages * itemsPerPage}
-                  </span>{" "}
-                  results
-                </p>
-              </div>
-              <div>
-                <nav
-                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                  aria-label="Pagination"
+          {totalPages > 1 && (
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
-                    disabled={currentPage === 1}
-                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                      currentPage === 1
-                        ? "text-gray-300 cursor-not-allowed"
-                        : "text-gray-500 hover:bg-gray-50"
-                    }`}
+                  Previous
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing{" "}
+                    <span className="font-medium">
+                      {(currentPage - 1) * itemsPerPage + 1}
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-medium">
+                      {Math.min(
+                        currentPage * itemsPerPage,
+                        totalPages * itemsPerPage
+                      )}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-medium">
+                      {totalPages * itemsPerPage}
+                    </span>{" "}
+                    results
+                  </p>
+                </div>
+                <div>
+                  <nav
+                    className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                    aria-label="Pagination"
                   >
-                    Previous
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`relative inline-flex items-center px-4 py-2 border ${
-                          currentPage === page
-                            ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                        } text-sm font-medium`}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
-                  <button
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                    }
-                    disabled={currentPage === totalPages}
-                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                      currentPage === totalPages
-                        ? "text-gray-300 cursor-not-allowed"
-                        : "text-gray-500 hover:bg-gray-50"
-                    }`}
-                  >
-                    Next
-                  </button>
-                </nav>
+                    <button
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Previous</span>
+                      <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            page === currentPage
+                              ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    )}
+                    <button
+                      onClick={() =>
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      }
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Next</span>
+                      <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </nav>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </>
       )}
     </div>
@@ -355,7 +365,7 @@ export function JobCardList({ filters }: JobCardListProps) {
     <>
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
             <button
               className="absolute top-2 right-2 flex items-center justify-center w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-red-400"
@@ -401,243 +411,7 @@ export function JobCardList({ filters }: JobCardListProps) {
         </div>
       )}
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        {loading ? (
-          <div className="flex justify-center items-center py-10">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mr-2" />
-            <span className="text-gray-500">Loading job cards...</span>
-          </div>
-        ) : jobCards.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-gray-500">
-              No job cards found matching the filters.
-            </p>
-          </div>
-        ) : (
-          <>
-            <ul role="list" className="divide-y divide-gray-200">
-              {jobCards.map((jobCard) => (
-                <li key={jobCard.id}>
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-700">
-                              {(
-                                jobCard.humanReadableId ||
-                                jobCard.referenceNumber
-                              ).charAt(0)}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="flex items-center">
-                            <p className="text-sm font-medium text-gray-900">
-                              {jobCard.humanReadableId ||
-                                jobCard.referenceNumber}
-                            </p>
-                            {(() => {
-                              const hasAssays =
-                                jobCard._count?.assays &&
-                                jobCard._count.assays > 0;
-                              const statusText = hasAssays
-                                ? "Completed"
-                                : jobCard.status.charAt(0).toUpperCase() +
-                                  jobCard.status.slice(1).replace("_", " ");
-                              const statusKey = hasAssays
-                                ? "completed"
-                                : jobCard.status;
-                              return (
-                                <span
-                                  className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
-                                    statusKey
-                                  )}`}
-                                >
-                                  {statusText}
-                                </span>
-                              );
-                            })()}
-                          </div>
-                          <div className="flex space-x-2">
-                            <Link
-                              href={`/job-cards/${jobCard.id}`}
-                              className="inline-flex items-center p-1.5 border border-gray-300 rounded-md text-xs font-medium bg-white hover:bg-gray-50 text-gray-700"
-                            >
-                              <EyeIcon className="h-4 w-4 mr-1" />
-                              View
-                            </Link>
-                            {(!jobCard._count?.assays ||
-                              jobCard._count.assays === 0) && (
-                              <Link
-                                href={`/job-cards/${jobCard.id}/edit`}
-                                className="inline-flex items-center p-1.5 border border-gray-300 rounded-md text-xs font-medium bg-white hover:bg-gray-50 text-gray-700"
-                              >
-                                <PencilSquareIcon className="h-4 w-4 mr-1" />
-                                Edit
-                              </Link>
-                            )}
-                            {(!jobCard._count?.assays ||
-                              jobCard._count.assays === 0) && (
-                              <button
-                                onClick={() => handleDelete(jobCard.id)}
-                                className="inline-flex items-center p-1.5 border border-red-300 rounded-md text-xs font-medium bg-white hover:bg-red-50 text-red-700"
-                              >
-                                <TrashIcon className="h-4 w-4 mr-1" />
-                                Delete
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        <div className="mt-2 sm:flex sm:justify-between">
-                          <div className="sm:flex">
-                            <p className="flex items-center text-sm text-gray-500">
-                              Exporter: {jobCard.exporter.name}
-                            </p>
-                          </div>
-                          <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                            <p className="text-sm text-gray-500">
-                              Received:{" "}
-                              {formatDate(new Date(jobCard.receivedDate))}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-              <div className="flex-1 flex justify-between sm:hidden">
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1}
-                  className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                    currentPage === 1
-                      ? "text-gray-300 cursor-not-allowed bg-gray-50"
-                      : "text-gray-700 bg-white hover:bg-gray-50"
-                  }`}
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                  className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                    currentPage === totalPages
-                      ? "text-gray-300 cursor-not-allowed bg-gray-50"
-                      : "text-gray-700 bg-white hover:bg-gray-50"
-                  }`}
-                >
-                  Next
-                </button>
-              </div>
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Showing{" "}
-                    <span className="font-medium">
-                      {(currentPage - 1) * itemsPerPage + 1}
-                    </span>{" "}
-                    to{" "}
-                    <span className="font-medium">
-                      {Math.min(
-                        currentPage * itemsPerPage,
-                        totalPages * itemsPerPage
-                      )}
-                    </span>{" "}
-                    of{" "}
-                    <span className="font-medium">
-                      {totalPages * itemsPerPage}
-                    </span>{" "}
-                    results
-                  </p>
-                </div>
-                <div>
-                  <nav
-                    className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                    aria-label="Pagination"
-                  >
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
-                      disabled={currentPage === 1}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                        currentPage === 1
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50"
-                      }`}
-                    >
-                      <span className="sr-only">Previous</span>
-                      <svg
-                        className="h-5 w-5"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (page) => (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                            page === currentPage
-                              ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      )
-                    )}
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                      }
-                      disabled={currentPage === totalPages}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                        currentPage === totalPages
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50"
-                      }`}
-                    >
-                      <span className="sr-only">Next</span>
-                      <svg
-                        className="h-5 w-5"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+      {jobCardsList}
     </>
   );
 }

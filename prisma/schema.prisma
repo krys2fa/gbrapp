@@ -97,6 +97,8 @@ model JobCard {
   humanReadableId     String                   @unique
   customsOfficerName     String?
   technicalDirectorName  String?
+  buyerName           String?
+  buyerAddress        String?
   assays              Assay[]
   fees                Fee?
   invoices            Invoice[]

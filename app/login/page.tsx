@@ -35,8 +35,8 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left Side - Form (2/3 width on large screens) */}
-      <div className="flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 w-full lg:w-2/3">
-        <div className="mx-auto w-full max-w-sm lg:max-w-md">
+      <div className="flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 w-full ">
+        <div className="mx-auto w-full max-w-sm ">
           <div className="mb-10 ">
             <div className="flex justify-center mb-6 bg-[#2e7030]">
               <Image
@@ -172,69 +172,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right Side - Demo Credentials (1/3 width on large screens) */}
-      <div className="relative hidden lg:flex w-0 lg:w-1/3 flex-1">
-        <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-yellow-600 to-yellow-800 flex flex-col items-center justify-center">
-          <div className="text-center px-8">
-            {/* <div className="flex justify-center mb-8">
-              <Image
-                src="/goldbod-logo.webp"
-                alt="GBR Logo"
-                width={150}
-                height={150}
-                className="h-auto w-auto"
-                priority
-              />
-            </div> */}
-            {/* <h1 className="text-4xl font-bold text-white mb-6">
-              GBR Management System
-            </h1> */}
-            {/* <p className="text-xl text-yellow-100 max-w-md mx-auto mb-8">
-              A comprehensive platform for managing gold buying and refining
-              operations
-            </p> */}
-
-            {/* Login Credentials Section */}
-            <div className="bg-black/20 backdrop-blur-sm rounded-lg p-6 max-w-sm mx-auto">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Demo Login Credentials
-              </h3>
-              <div className="space-y-4 text-left">
-                <div className="bg-white/10 rounded-md p-3 flex items-center gap-3">
-                  <Shield
-                    className="h-5 w-5 text-yellow-400"
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-yellow-200">
-                      Super Administrator
-                    </p>
-                    <p className="text-xs text-white mt-1">
-                      Email: superadmin@gbrapp.com
-                    </p>
-                    <p className="text-xs text-white">Password: admin123</p>
-                  </div>
-                </div>
-                <div className="bg-white/10 rounded-md p-3 flex items-center gap-3">
-                  <User
-                    className="h-5 w-5 text-yellow-400"
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-yellow-200">
-                      Administrator
-                    </p>
-                    <p className="text-xs text-white mt-1">
-                      Email: admin@gbrapp.com
-                    </p>
-                    <p className="text-xs text-white">Password: admin123</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

@@ -481,7 +481,7 @@ async function createJobCard(req: NextRequest) {
     // Prepare the arguments we will pass to Prisma so we can log them exactly
     // Build an explicit whitelist of scalar fields to avoid accidentally
     // passing nested relation objects (e.g. exporter: {...}) to Prisma.
-    // Note: buyerName and buyerAddress are NOT included here as they belong to Exporter model
+    // Include buyerName and buyerAddress to save directly to job card as well as exporter
     const allowedFields = [
       "referenceNumber",
       "humanReadableId",
@@ -489,6 +489,8 @@ async function createJobCard(req: NextRequest) {
       "exporterId",
       "status",
       "unitOfMeasure",
+      "buyerName",
+      "buyerAddress",
       "teamLeader",
       "totalGrossWeight",
       "destinationCountry",

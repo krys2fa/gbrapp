@@ -112,27 +112,22 @@ function EditJobCardPage() {
     totalNetWeight: "",
     numberOfBoxes: "",
     status: "pending",
-    notes: "",
     valueGhs: "",
     valueUsd: "",
     pricePerOunce: "",
     numberOfOunces: "",
     buyerAddress: "",
-    customsOfficerId: "",
-    assayOfficerId: "",
-    technicalDirectorId: "",
   });
 
   useEffect(() => {
     // Fetch job card data and reference data
     const fetchData = async () => {
       try {
-        const [jobCardRes, exportersRes, commoditiesRes, officersRes] =
+        const [jobCardRes, exportersRes, commoditiesRes] =
           await Promise.all([
             fetch(`/api/job-cards/${id}`),
             fetch("/api/exporters"),
             fetch("/api/commodity"),
-            fetch("/api/officers"),
           ]);
 
         if (jobCardRes.ok) {
@@ -178,15 +173,11 @@ function EditJobCardPage() {
             totalNetWeight: jobCardData.totalNetWeight?.toString() || "",
             numberOfBoxes: jobCardData.numberOfBoxes?.toString() || "",
             status: jobCardData.status || "pending",
-            notes: jobCardData.notes || "",
             valueGhs: jobCardData.valueGhs?.toString() || "",
             valueUsd: jobCardData.valueUsd?.toString() || "",
             pricePerOunce: jobCardData.pricePerOunce?.toString() || "",
             numberOfOunces: jobCardData.numberOfOunces?.toString() || "",
             buyerAddress: jobCardData.buyerAddress || "",
-            customsOfficerId: jobCardData.customsOfficer?.id || "",
-            assayOfficerId: jobCardData.assayOfficer?.id || "",
-            technicalDirectorId: jobCardData.technicalDirector?.id || "",
           });
         } else {
           throw new Error("Failed to fetch job card");
@@ -202,22 +193,6 @@ function EditJobCardPage() {
           setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
         }
 
-        if (officersRes.ok) {
-          const officersData = await officersRes.json();
-          // Group officers by type
-          const groupedOfficers = {
-            customsOfficers: officersData.filter(
-              (o: any) => o.officerType === "CUSTOMS_OFFICER"
-            ),
-            assayOfficers: officersData.filter(
-              (o: any) => o.officerType === "ASSAY_OFFICER"
-            ),
-            technicalDirectors: officersData.filter(
-              (o: any) => o.officerType === "TECHNICAL_DIRECTOR"
-            ),
-          };
-          setOfficers(groupedOfficers);
-        }
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load job card data. Please try again.");
@@ -240,33 +215,7 @@ function EditJobCardPage() {
     }));
   };
 
-  // Handle officer selection from react-select
-  const handleCustomsOfficerChange = (
-    selectedOption: { value: string; label: string } | null
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      customsOfficerId: selectedOption ? selectedOption.value : "",
-    }));
-  };
 
-  const handleAssayOfficerChange = (
-    selectedOption: { value: string; label: string } | null
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      assayOfficerId: selectedOption ? selectedOption.value : "",
-    }));
-  };
-
-  const handleTechnicalDirectorChange = (
-    selectedOption: { value: string; label: string } | null
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      technicalDirectorId: selectedOption ? selectedOption.value : "",
-    }));
-  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -525,99 +474,6 @@ function EditJobCardPage() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
-                          Customs Officer
-                        </label>
-                        <Select
-                          options={officers.customsOfficers.map((officer) => ({
-                            value: officer.id,
-                            label: `${officer.name} (${officer.badgeNumber})`,
-                          }))}
-                          value={
-                            formData.customsOfficerId
-                              ? officers.customsOfficers
-                                  .map((officer) => ({
-                                    value: officer.id,
-                                    label: `${officer.name} (${officer.badgeNumber})`,
-                                  }))
-                                  .find(
-                                    (o) => o.value === formData.customsOfficerId
-                                  )
-                              : null
-                          }
-                          onChange={handleCustomsOfficerChange}
-                          className="mt-1 form-control-select"
-                          classNamePrefix="react-select"
-                          styles={customSelectStyles}
-                          isClearable
-                          placeholder="Select customs officer"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Assay Officer
-                        </label>
-                        <Select
-                          options={officers.assayOfficers.map((officer) => ({
-                            value: officer.id,
-                            label: `${officer.name} (${officer.badgeNumber})`,
-                          }))}
-                          value={
-                            formData.assayOfficerId
-                              ? officers.assayOfficers
-                                  .map((officer) => ({
-                                    value: officer.id,
-                                    label: `${officer.name} (${officer.badgeNumber})`,
-                                  }))
-                                  .find(
-                                    (o) => o.value === formData.assayOfficerId
-                                  )
-                              : null
-                          }
-                          onChange={handleAssayOfficerChange}
-                          className="mt-1 form-control-select"
-                          classNamePrefix="react-select"
-                          styles={customSelectStyles}
-                          isClearable
-                          placeholder="Select assay officer"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Technical Director
-                        </label>
-                        <Select
-                          options={officers.technicalDirectors.map(
-                            (officer) => ({
-                              value: officer.id,
-                              label: `${officer.name} (${officer.badgeNumber})`,
-                            })
-                          )}
-                          value={
-                            formData.technicalDirectorId
-                              ? officers.technicalDirectors
-                                  .map((officer) => ({
-                                    value: officer.id,
-                                    label: `${officer.name} (${officer.badgeNumber})`,
-                                  }))
-                                  .find(
-                                    (o) =>
-                                      o.value === formData.technicalDirectorId
-                                  )
-                              : null
-                          }
-                          onChange={handleTechnicalDirectorChange}
-                          className="mt-1 form-control-select"
-                          classNamePrefix="react-select"
-                          styles={customSelectStyles}
-                          isClearable
-                          placeholder="Select technical director"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
                           Commodity
                         </label>
                         <select
@@ -665,6 +521,19 @@ function EditJobCardPage() {
                       {/* Right column fields */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
+                          Received Date
+                        </label>
+                        <input
+                          type="date"
+                          name="receivedDate"
+                          value={formData.receivedDate}
+                          onChange={handleChange}
+                          className="mt-1 form-control"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
                           Job Reference Number
                         </label>
                         <input
@@ -672,8 +541,34 @@ function EditJobCardPage() {
                           value={formData.referenceNumber}
                           onChange={handleChange}
                           className="mt-1 form-control"
+                          readOnly
+                          title="Reference number is automatically generated and cannot be changed"
                         />
                       </div>
+
+                      {/* <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Importer Name
+                        </label>
+                        <input
+                          name="buyerName"
+                          value={formData.buyerName}
+                          onChange={handleChange}
+                          className="mt-1 form-control"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Importer Address
+                        </label>
+                        <input
+                          name="buyerAddress"
+                          value={formData.buyerAddress}
+                          onChange={handleChange}
+                          className="mt-1 form-control"
+                        />
+                      </div> */}
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
@@ -782,137 +677,9 @@ function EditJobCardPage() {
                         />
                       </div>
                     </div>
-                    {/* Exporter Value (USD) */}
-                    {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="exporterValueUsd"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Exporter Value (USD)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      name="exporterValueUsd"
-                      id="exporterValueUsd"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.exporterValueUsd}
-                      onChange={handleChange}
-                    />
-                  </div> */}
+         
 
-                    {/* Exporter Value (GHS) */}
-                    {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="exporterValueGhs"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Exporter Value (GHS)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      name="exporterValueGhs"
-                      id="exporterValueGhs"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.exporterValueGhs}
-                      onChange={handleChange}
-                    />
-                  </div> */}
-
-                    {/* GRA Declaration Number */}
-                    {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="graDeclarationNumber"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      GRA Declaration Number
-                    </label>
-                    <input
-                      type="text"
-                      name="graDeclarationNumber"
-                      id="graDeclarationNumber"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.graDeclarationNumber}
-                      onChange={handleChange}
-                    />
-                  </div> */}
-
-                    {/* Number of Boxes */}
-                    {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="numberOfBoxes"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Number of Boxes
-                    </label>
-                    <input
-                      type="number"
-                      name="numberOfBoxes"
-                      id="numberOfBoxes"
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      value={formData.numberOfBoxes}
-                      onChange={handleChange}
-                    />
-                  </div> */}
-
-                    {/* Remittance Type */}
-                    {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="remittanceType"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Remittance Type
-                    </label>
-                    <input
-                      type="text"
-                      name="remittanceType"
-                      id="remittanceType"
-                      className="mt-1 form-control"
-                      value={formData.remittanceType}
-                      onChange={handleChange}
-                    />
-                  </div> */}
-
-                    {/* Status */}
-                    {/* <div className="col-span-6 sm:col-span-3">
-                    <label
-                      htmlFor="status"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Status
-                    </label>
-                    <select
-                      id="status"
-                      name="status"
-                      className="mt-1 form-control"
-                      value={formData.status}
-                      onChange={handleChange}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="completed">Completed</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
-                  </div> */}
-
-                    <div className="col-span-6">
-                      <label
-                        htmlFor="notes"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Notes
-                      </label>
-                      <textarea
-                        id="notes"
-                        name="notes"
-                        rows={3}
-                        className="mt-1 form-control"
-                        placeholder="Additional information or notes about this job card"
-                        value={formData.notes}
-                        onChange={handleChange}
-                      ></textarea>
-                    </div>
+                    
                   </div>
                 </div>
 
