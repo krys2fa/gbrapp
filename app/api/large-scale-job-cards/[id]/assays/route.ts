@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { withAuth } from "@/app/lib/with-auth";
 import { Role } from "@/app/generated/prisma";
+import { generateAssayNumber } from "@/lib/assay-number-generator";
 
 async function postAssay(
   request: NextRequest,
@@ -70,6 +71,7 @@ async function postAssay(
         totalSilverValue: body.totalSilverValue,
         totalCombinedValue: body.totalCombinedValue,
         totalValueGhs: body.totalValueGhs,
+        humanReadableAssayNumber: await generateAssayNumber("LS"),
         measurements: {
           create: body.measurements.map((measurement: any) => ({
             piece: measurement.piece,

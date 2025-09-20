@@ -17,8 +17,6 @@ const officerTypes = [
   { value: "CUSTOMS_OFFICER", label: "Customs Officer" },
   { value: "ASSAY_OFFICER", label: "Assay Officer" },
   { value: "TECHNICAL_DIRECTOR", label: "Technical Director" },
-  { value: "NACOB_OFFICER", label: "NACOB Officer" },
-  { value: "NATIONAL_SECURITY_OFFICER", label: "National Security Officer" },
 ];
 
 // Utility to capitalize only the first letter

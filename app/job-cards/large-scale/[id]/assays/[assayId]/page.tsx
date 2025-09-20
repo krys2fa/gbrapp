@@ -476,7 +476,7 @@ export default function AssayResultsPage() {
                     Assay Number:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assay?.assayNumber || "N/A"}
+                    {assay?.humanReadableAssayNumber || "N/A"}
                   </span>
                 </div>
               </div>

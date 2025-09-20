@@ -20,6 +20,27 @@ function formatDate(d?: Date | string | null) {
   return dt.toLocaleDateString();
 }
 
+function formatInvoiceNumber(
+  invoiceNumber: string,
+  createdAt: Date | string
+): string {
+  // If already in human-readable format (LS-INV-2025-XX), return as is
+  if (invoiceNumber.match(/^(LS|SS)-INV-\d{4}-\d+$/)) {
+    return invoiceNumber;
+  }
+
+  // Convert timestamp format to human-readable format
+  // Extract the random number from the end (after last dash)
+  const parts = invoiceNumber.split("-");
+  const randomNumber = parts[parts.length - 1];
+  const prefix = invoiceNumber.startsWith("LS-INV") ? "LS-INV" : "SS-INV";
+
+  // Get year from createdAt date
+  const year = new Date(createdAt).getFullYear();
+
+  return `${prefix}-${year}-${randomNumber}`;
+}
+
 export default async function LargeScaleInvoicePage(props: any) {
   // `params` may be a promise in Next.js server components; await before using
   const { id: jobCardId, invoiceId } = (await props.params) as {
@@ -58,14 +79,16 @@ export default async function LargeScaleInvoicePage(props: any) {
         largeScaleJobCard: {
           select: {
             id: true,
+            humanReadableId: true,
             referenceNumber: true,
             destinationCountry: true,
-            exporter: { select: { id: true, name: true } },
+            exporter: { select: { id: true, name: true, exporterCode: true } },
             assays: {
               select: {
                 id: true,
                 method: true,
                 dateOfAnalysis: true,
+                dataSheetDates: true,
                 comments: true,
                 totalCombinedValue: true,
                 totalValueGhs: true,
@@ -115,10 +138,10 @@ export default async function LargeScaleInvoicePage(props: any) {
   // Get job card data
   const jobCardData = invoice.largeScaleJobCard;
 
-  // Assay number(s): join assay IDs of linked assays if present
+  // Assay number(s): join human-readable assay numbers of linked assays if present
   const assayNumbers =
     (jobCardData?.assays || [])
-      .map((a: any) => `Assay-${a.id.slice(-8)}`)
+      .map((a: any) => a.humanReadableAssayNumber || `Assay-${a.id.slice(-8)}`)
       .filter(Boolean)
       .join(", ") || "-";
 
@@ -128,7 +151,10 @@ export default async function LargeScaleInvoicePage(props: any) {
       : jobCardData?.exporter?.name || "-";
   const destinationCountry = jobCardData?.destinationCountry || "-";
   const referenceNumber =
-    jobCardData?.referenceNumber || invoice.largeScaleJobCardId || jobCardId;
+    jobCardData?.humanReadableId ||
+    jobCardData?.referenceNumber ||
+    invoice.largeScaleJobCardId ||
+    jobCardId;
 
   // derive signatory info from first linked assay if available
   const firstAssay: any =
@@ -141,6 +167,10 @@ export default async function LargeScaleInvoicePage(props: any) {
     firstAssay?.comments?.signatoryPosition ||
     firstAssay?.comments?.designation ||
     null;
+
+  // Get data sheet date from the first assay, fallback to invoice date
+  const dataSheetDate =
+    firstAssay?.dataSheetDates || invoice.issueDate || invoice.createdAt;
 
   return (
     <>
@@ -161,8 +191,14 @@ export default async function LargeScaleInvoicePage(props: any) {
         </div>
 
         <div
-          className="bg-white shadow rounded-lg p-6 watermark-container"
+          className="bg-white shadow rounded-lg p-6"
           id="invoice-content"
+          style={{
+            position: "relative",
+            background: "white !important",
+            backgroundImage: "none !important",
+            zIndex: 2,
+          }}
         >
           <div className="flex items-center justify-between mb-1 px-8">
             <div className="p-2">
@@ -179,55 +215,79 @@ export default async function LargeScaleInvoicePage(props: any) {
               </h1>
             </div>
 
-            <div className="bg-white p-4 flex justify-end">
-              <img
-                src="/coat-of-arms.jpg"
-                alt="Coat of Arms"
-                className="h-20 w-auto"
-              />
+            {/* QR Code Section */}
+            <div className="mt-6 flex justify-end">
+              <div className="flex items-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                    "https://goldbod.gov.gh/"
+                  )}`}
+                  alt="QR Code - Visit GoldBod Website"
+                  className="w-16 h-16"
+                />
+              </div>
             </div>
-            {/* 
-            <div className="bg-white p-4">
-              <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
-            </div> */}
           </div>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="flex">
-              <p className="text-sm text-gray-500">Date</p>
-              <p className="text-sm ml-2">
-                {formatDate(invoice.issueDate || invoice.createdAt)}
+              <p className="text-sm font-medium text-gray-500">
+                Data Sheets Date:
+              </p>
+              <p className="text-sm font-semibold text-gray-900 ml-2">
+                {formatDate(dataSheetDate)}
               </p>
             </div>
 
             <div className="flex text-right justify-end pr-0 mr-0">
-              <p className="text-sm text-gray-500">Assay Number:</p>
-              <p className="text-sm ml-1">{assayNumbers}</p>
+              <p className="text-sm font-medium text-gray-500">Assay Number:</p>
+              <p className="text-sm font-sembold text-gray-900 ml-1">
+                {assayNumbers}
+              </p>
             </div>
             <div className="flex">
-              <p className="text-sm text-gray-500">Exporter</p>
-              <p className="text-sm ml-2">{exporterName}</p>
+              <p className="text-sm font-medium text-gray-500">Invoice Date:</p>
+              <p className="text-sm font-semibold text-gray-900 ml-2">
+                {formatDate(invoice.createdAt)}
+              </p>
             </div>
             <div className="flex text-right pr-0 mr-0 justify-end">
-              <p className="text-sm text-gray-500">Job Card ID:</p>
-              <p className="text-sm ml-1">{referenceNumber}</p>
+              <p className="text-sm font-medium text-gray-500">
+                Invoice Number:
+              </p>
+              <p className="text-sm font-semibold text-gray-900 ml-1">
+                {formatInvoiceNumber(invoice.invoiceNumber, invoice.createdAt)}
+              </p>
+            </div>
+            <div className="flex">
+              <p className="text-sm font-medium text-gray-500">Exporter:</p>
+              <p className="text-sm font-semibold text-gray-900 ml-2">
+                {exporterName}
+              </p>
+            </div>
+            <div className="flex text-right pr-0 mr-0 justify-end">
+              <p className="text-sm font-medium text-gray-500">Job Card ID:</p>
+              <p className="text-sm font-semibold text-gray-900 ml-1">
+                {referenceNumber}
+              </p>
             </div>
           </div>
 
           <div className="mb-6 grid grid-cols-2 gap-4">
             <div className="flex">
-              <p className="text-sm text-gray-500">Assay Rate</p>
-              <p className="text-sm ml-2">{rate}</p>
+              <p className="text-sm font-medium text-gray-500">
+                Exchange Rate:
+              </p>
+              <p className="text-sm font-semibold text-gray-900 ml-2">
+                {exchangeRate}
+              </p>
             </div>
 
             <div className="flex text-right pr-0 mr-0 justify-end">
-              <p className="text-sm text-gray-500">Destination:</p>
-              <p className="text-sm ml-1">{destinationCountry}</p>
+              <p className="text-sm font-medium text-gray-500">Destination:</p>
+              <p className="text-sm font-semibold text-gray-900 ml-1">
+                {destinationCountry}
+              </p>
             </div>
-          </div>
-
-          <div className="flex">
-            <p className="text-sm text-gray-500">Exchange Rate</p>
-            <p className="text-sm ml-2">{exchangeRate}</p>
           </div>
 
           <table className="w-full mt-2 mb-6 table-auto border-collapse border border-gray-300">
@@ -323,17 +383,8 @@ export default async function LargeScaleInvoicePage(props: any) {
             </p>
           </div>
 
-          {/* QR Code Section */}
-          <div className="mt-6 flex justify-end">
-            <div className="flex items-center">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                  "https://goldbod.gov.gh/"
-                )}`}
-                alt="QR Code - Visit GoldBod Website"
-                className="w-16 h-16"
-              />
-            </div>
+          <div className="bg-white p-4 justify-end flex">
+            <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
           </div>
         </div>
       </div>

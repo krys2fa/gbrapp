@@ -1,6 +1,7 @@
 import { Role } from "@/app/generated/prisma";
 import { prisma } from "@/app/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { generateAssayNumber } from "@/lib/assay-number-generator";
 
 // Helper to extract ID from the URL
 function getIdFromUrl(req: NextRequest): string | null {
@@ -433,6 +434,7 @@ export async function PUT(req: NextRequest) {
               certificateNumber: `ASSY-${Date.now()}-${Math.floor(
                 Math.random() * 1000
               )}`,
+              humanReadableAssayNumber: await generateAssayNumber("SS"),
 
               // Store calculated valuation fields
               grossWeight: totalGrossWeight > 0 ? totalGrossWeight : null,
@@ -512,12 +514,6 @@ export async function PUT(req: NextRequest) {
       const parts: string[] = [];
       if (requestData.customsOfficerName) {
         parts.push(`Customs Officer: ${requestData.customsOfficerName}`);
-      }
-      if (requestData.nacobOfficerName) {
-        parts.push(`NACOB Officer: ${requestData.nacobOfficerName}`);
-      }
-      if (requestData.nationalSecurityName) {
-        parts.push(`National Security: ${requestData.nationalSecurityName}`);
       }
 
       if (parts.length > 0) {

@@ -472,7 +472,7 @@ export default function CertificateOfAssayPage() {
                     Certificate Number:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assays[0]?.certificateNumber || "N/A"}
+                    {assays[0]?.humanReadableAssayNumber || "N/A"}
                   </span>
                 </div>
               </div>

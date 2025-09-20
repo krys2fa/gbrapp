@@ -78,14 +78,16 @@ function ValuationList() {
         ? combinedValuations.filter((jc: any) => {
             if (jc.valuationType === "regular") {
               const assay = jc.assays && jc.assays.length ? jc.assays[0] : null;
-              return assay?.certificateNumber
+              return (
+                assay?.humanReadableAssayNumber || assay?.certificateNumber
+              )
                 ?.toLowerCase()
                 .includes(certificateFilter.toLowerCase());
             } else {
               // For large scale, check certificate numbers in assay data
               const assay = jc.assays && jc.assays.length ? jc.assays[0] : null;
               return (
-                assay?.certificateNumber
+                (assay?.humanReadableAssayNumber || assay?.certificateNumber)
                   ?.toLowerCase()
                   .includes(certificateFilter.toLowerCase()) ||
                 assay?.securitySealNo

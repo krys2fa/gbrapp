@@ -661,7 +661,7 @@ function NewLargeScaleAssayPage() {
         </h1>
         <p className="mt-2 text-sm text-gray-600">
           Create a new assay valuation for large scale job card:{" "}
-          {jobCard?.referenceNumber}
+          {jobCard?.humanReadableId || jobCard?.referenceNumber}
         </p>
       </div>
 
@@ -801,9 +801,9 @@ function NewLargeScaleAssayPage() {
               </div>
 
               <div>
-                <div className="text-xs text-gray-500">Reference #</div>
+                <div className="text-xs text-gray-500">Job Card ID</div>
                 <div className="font-medium text-gray-900">
-                  {jobCard?.referenceNumber || "-"}
+                  {jobCard?.humanReadableId || jobCard?.referenceNumber || "-"}
                 </div>
               </div>
               <div>

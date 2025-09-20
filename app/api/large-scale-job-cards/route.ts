@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import * as jose from "jose";
+import { generateAssayNumber } from "@/lib/assay-number-generator";
 
 /**
  * GET handler for fetching all large scale job cards with optional filtering
@@ -340,6 +341,7 @@ async function createLargeScaleJobCard(req: NextRequest) {
         exchangeRate: exchangeRate ? Number(exchangeRate.toFixed(4)) : 1,
         commodityPrice: commodityPrice || 0,
         pricePerOz: pricePerOz || 0,
+        humanReadableAssayNumber: await generateAssayNumber("LS"),
       };
 
       // Add shipment type if provided

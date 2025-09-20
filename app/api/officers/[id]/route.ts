@@ -192,28 +192,6 @@ async function updateOfficerById(
           },
         });
         break;
-      case "NACOB_OFFICER":
-        officer = await prisma.nACOBOfficer.update({
-          where: { id },
-          data: {
-            name: data.name,
-            badgeNumber: data.badgeNumber,
-            email: data.email || null,
-            phone: data.phone || null,
-          },
-        });
-        break;
-      case "NATIONAL_SECURITY_OFFICER":
-        officer = await prisma.nationalSecurityOfficer.update({
-          where: { id },
-          data: {
-            name: data.name,
-            badgeNumber: data.badgeNumber,
-            email: data.email || null,
-            phone: data.phone || null,
-          },
-        });
-        break;
     }
 
     return NextResponse.json({ ...officer, officerType: type });
@@ -273,14 +251,6 @@ async function deleteOfficerById(
         });
         isUsed = !!directorUsage;
         break;
-      case "NACOB_OFFICER":
-        // NACOB officers might not be directly linked to job cards yet
-        isUsed = false;
-        break;
-      case "NATIONAL_SECURITY_OFFICER":
-        // National Security officers might not be directly linked to job cards yet
-        isUsed = false;
-        break;
     }
 
     if (isUsed) {
@@ -307,16 +277,6 @@ async function deleteOfficerById(
         break;
       case "TECHNICAL_DIRECTOR":
         await prisma.technicalDirector.delete({
-          where: { id },
-        });
-        break;
-      case "NACOB_OFFICER":
-        await prisma.nACOBOfficer.delete({
-          where: { id },
-        });
-        break;
-      case "NATIONAL_SECURITY_OFFICER":
-        await prisma.nationalSecurityOfficer.delete({
           where: { id },
         });
         break;

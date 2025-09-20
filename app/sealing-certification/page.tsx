@@ -164,12 +164,6 @@ function SealingList({
                     Customs Officer
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    NACOB Officer
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    National Security
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Security Seal Ref
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -211,7 +205,7 @@ function SealingList({
                             }
                             className="hover:underline"
                           >
-                            {jc.referenceNumber}
+                            {jc.humanReadableId || jc.referenceNumber}
                           </Link>
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
@@ -226,33 +220,14 @@ function SealingList({
                           </span>
                         </div>
                       </td>
-                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {assay
-                          ? formatDate(
-                              new Date(
-                                assay.assayDate || assay.createdAt || Date.now()
-                              )
-                            )
-                          : "-"}
-                      </td> */}
+                    
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {jc.notes
                           ? (jc.notes.match(/Customs Officer: ([^;\n]+)/) ||
                               [])[1] || ""
                           : ""}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {jc.notes
-                          ? (jc.notes.match(/NACOB Officer: ([^;\n]+)/) ||
-                              [])[1] || ""
-                          : ""}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {jc.notes
-                          ? (jc.notes.match(/National Security: ([^;\n]+)/) ||
-                              [])[1] || ""
-                          : ""}
-                      </td>
+                     
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {findSeal("CUSTOMS_SEAL")}
                       </td>
@@ -269,7 +244,7 @@ function SealingList({
                             const hasSealInfo =
                               (jc.seals && jc.seals.length) ||
                               (jc.notes &&
-                                /Customs Officer|NACOB Officer|National Security/.test(
+                                /Customs Officer/.test(
                                   jc.notes
                                 ));
                             return (
