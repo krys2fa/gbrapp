@@ -3,12 +3,25 @@ import { prisma } from "@/app/lib/prisma";
 import { withProtectedRoute } from "@/app/lib/with-protected-route";
 import { NextRequest, NextResponse } from "next/server";
 import { generateJobCardNumber } from "@/lib/job-card-number-generator";
+import {
+  validateAPIPermission,
+  createUnauthorizedResponse,
+} from "@/app/lib/api-validation";
 
 /**
  * GET handler for fetching all job cards with optional filtering
  */
 async function getAllJobCards(req: NextRequest) {
   try {
+    // Validate user has job-cards permission
+    const validation = await validateAPIPermission(req, "job-cards");
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     // Extract query parameters for filtering
     const { searchParams } = new URL(req.url);
     const exporterId = searchParams.get("exporterId");
@@ -315,6 +328,15 @@ async function getAllJobCards(req: NextRequest) {
  */
 async function createJobCard(req: NextRequest) {
   try {
+    // Validate user has job-cards permission
+    const validation = await validateAPIPermission(req, "job-cards");
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     const requestData = await req.json();
     console.log("Received data:", JSON.stringify(requestData, null, 2));
     // Build a safe, explicit data object from a whitelist of allowed scalar fields.
@@ -607,12 +629,6 @@ async function createJobCard(req: NextRequest) {
   }
 }
 
-// Wrap all handlers with auth and audit trail
-// export const GET = withProtectedRoute(getAllJobCards, {
-//   entityType: "JobCard",
-//   requiredRoles: [Role.ADMIN, Role.USER, Role.SUPERADMIN],
-// });
-
-// Allow unauthenticated access for GET and POST operations during development
+// Export handlers with role-based validation
 export const GET = getAllJobCards;
 export const POST = createJobCard;

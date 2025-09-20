@@ -3,12 +3,28 @@ import { prisma } from "@/app/lib/prisma";
 import * as jose from "jose";
 import { generateAssayNumber } from "@/lib/assay-number-generator";
 import { generateJobCardNumber } from "@/lib/job-card-number-generator";
+import {
+  validateAPIPermission,
+  createUnauthorizedResponse,
+} from "@/app/lib/api-validation";
 
 /**
  * GET handler for fetching all large scale job cards with optional filtering
  */
 async function getAllLargeScaleJobCards(req: NextRequest) {
   try {
+    // Validate user has large-scale job-cards permission
+    const validation = await validateAPIPermission(
+      req,
+      "job-cards/large-scale"
+    );
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     // Extract query parameters for filtering
     const { searchParams } = new URL(req.url);
     const exporterId = searchParams.get("exporterId");
@@ -132,6 +148,18 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
  */
 async function createLargeScaleJobCard(req: NextRequest) {
   try {
+    // Validate user has large-scale job-cards permission
+    const validation = await validateAPIPermission(
+      req,
+      "job-cards/large-scale"
+    );
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     const body = await req.json();
     const {
       referenceNumber,

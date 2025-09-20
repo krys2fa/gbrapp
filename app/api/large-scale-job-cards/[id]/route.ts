@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import * as jose from "jose";
+import {
+  validateAPIPermission,
+  createUnauthorizedResponse,
+} from "@/app/lib/api-validation";
 
 /**
  * GET handler for fetching a single large scale job card by ID
@@ -10,6 +14,18 @@ async function getLargeScaleJobCard(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate user has large-scale job-cards permission
+    const validation = await validateAPIPermission(
+      req,
+      "job-cards/large-scale"
+    );
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     const { id } = await params;
 
     const jobCard = await prisma.largeScaleJobCard.findUnique({
@@ -78,6 +94,18 @@ async function updateLargeScaleJobCard(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate user has large-scale job-cards permission
+    const validation = await validateAPIPermission(
+      req,
+      "job-cards/large-scale"
+    );
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     const { id } = await params;
     const body = await req.json();
 
@@ -277,6 +305,18 @@ async function deleteLargeScaleJobCard(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Validate user has large-scale job-cards permission
+    const validation = await validateAPIPermission(
+      req,
+      "job-cards/large-scale"
+    );
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     const { id } = await params;
 
     // Check if job card exists

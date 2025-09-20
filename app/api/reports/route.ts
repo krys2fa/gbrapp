@@ -1,4 +1,9 @@
 import { prisma } from "@/app/lib/prisma";
+import {
+  validateAPIPermission,
+  createUnauthorizedResponse,
+} from "@/app/lib/api-validation";
+import { NextRequest } from "next/server";
 
 const GRAMS_PER_TROY_OUNCE = 31.1035;
 
@@ -201,7 +206,13 @@ async function handleRevenueAnalyticsDownload(feesReportParam: string) {
   }
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
+  // Validate user has reports permission
+  const validation = await validateAPIPermission(req, "reports");
+  if (!validation.success) {
+    return createUnauthorizedResponse(validation.error!, validation.statusCode);
+  }
+
   const url = new URL(req.url);
   const reportParam = (
     url.searchParams.get("report") || "weekly-summary"

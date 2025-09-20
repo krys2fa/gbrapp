@@ -3,18 +3,23 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/auth-context";
-import { Role } from "@/app/generated/prisma";
+import {
+  hasPermission,
+  getModuleFromRoute,
+  type UserRole,
+  type PermissionModule,
+} from "@/app/lib/role-permissions";
 
 /**
  * Higher-order component for client-side route protection
  *
  * @param Component The component to wrap with authentication
- * @param requiredRoles Optional array of roles required to access the component
+ * @param requiredPermissions Optional array of permission modules required to access the component
  * @returns A new component with authentication logic
  */
 export function withClientAuth<P extends object>(
   Component: React.ComponentType<P>,
-  requiredRoles: Role[] = []
+  requiredPermissions: PermissionModule[] = []
 ) {
   return function ProtectedRoute(props: P) {
     const { user, isLoading, isAuthenticated } = useAuth();
@@ -35,16 +40,20 @@ export function withClientAuth<P extends object>(
         return;
       }
 
-      // Check roles if needed
-      if (
-        isAuthenticated &&
-        requiredRoles.length > 0 &&
-        user &&
-        !requiredRoles.includes(user.role as Role)
-      ) {
-        redirectTimeout = setTimeout(() => {
-          router.push("/unauthorized");
-        }, 300);
+      // Check permissions if needed
+      if (isAuthenticated && requiredPermissions.length > 0 && user) {
+        const userRole = user.role as UserRole;
+
+        // Check if user has any of the required permissions
+        const hasRequiredPermission = requiredPermissions.some((permission) =>
+          hasPermission(userRole, permission)
+        );
+
+        if (!hasRequiredPermission) {
+          redirectTimeout = setTimeout(() => {
+            router.push("/unauthorized");
+          }, 300);
+        }
       }
 
       return () => {
@@ -64,13 +73,16 @@ export function withClientAuth<P extends object>(
       );
     }
 
-    // If we have role requirements and the user doesn't match, don't render
-    if (
-      requiredRoles.length > 0 &&
-      user &&
-      !requiredRoles.includes(user.role as Role)
-    ) {
-      return null;
+    // If we have permission requirements and the user doesn't match, don't render
+    if (requiredPermissions.length > 0 && user) {
+      const userRole = user.role as UserRole;
+      const hasRequiredPermission = requiredPermissions.some((permission) =>
+        hasPermission(userRole, permission)
+      );
+
+      if (!hasRequiredPermission) {
+        return null;
+      }
     }
 
     // All checks passed, render the protected component

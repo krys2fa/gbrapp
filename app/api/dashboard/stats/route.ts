@@ -1,8 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import {
+  validateAPIPermission,
+  createUnauthorizedResponse,
+} from "@/app/lib/api-validation";
 
 export async function GET(req: NextRequest) {
   try {
+    // Validate user has dashboard access
+    const validation = await validateAPIPermission(req, "dashboard");
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     // Fetch actual counts from database
     const totalJobCardsCount = await prisma.jobCard.count();
     const activeJobCardsCount = await prisma.jobCard.count({

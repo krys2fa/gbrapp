@@ -5,7 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: Date | string | null | undefined): string {
+export function formatDate(
+  date: Date | string | null | undefined,
+  format?: string
+): string {
   if (!date) return "-";
 
   const dateObj = typeof date === "string" ? new Date(date) : date;
@@ -56,5 +59,13 @@ export function formatCurrency(
     maximumFractionDigits: 2,
   });
 
-  return showSymbol ? `${currencyCode === "USD" ? "$" : currencyCode === "GHS" ? "GHS" : currencyCode} ${formatted}` : formatted;
+  return showSymbol
+    ? `${
+        currencyCode === "USD"
+          ? "$"
+          : currencyCode === "GHS"
+          ? "GHS"
+          : currencyCode
+      } ${formatted}`
+    : formatted;
 }

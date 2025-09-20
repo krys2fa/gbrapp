@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
+import { useApiClient } from "@/app/lib/api-client";
 import {
   PencilSquareIcon,
   TrashIcon,
@@ -12,6 +13,7 @@ import { Building2 } from "lucide-react";
 import { Header } from "../../components/layout/header";
 
 const ExportersPage = () => {
+  const apiClient = useApiClient();
   // Form state
   const [form, setForm] = useState({
     name: "",
@@ -73,16 +75,12 @@ const ExportersPage = () => {
       // Add ordering by creation date descending
       params.push(`orderBy=createdAt&order=desc`);
       if (params.length) url += `?${params.join("&")}`;
-      const res = await fetch(url);
-      const data = await res.json();
+      const data = await apiClient.get(url);
       setExporters(Array.isArray(data) ? data : []);
       // fetch exporter types as well
       try {
-        const typesRes = await fetch("/api/exporter-types");
-        if (typesRes.ok) {
-          const types = await typesRes.json();
-          setExporterTypes(Array.isArray(types) ? types : []);
-        }
+        const types = await apiClient.get("/api/exporter-types");
+        setExporterTypes(Array.isArray(types) ? types : []);
       } catch (e) {
         setExporterTypes([]);
       }
@@ -111,45 +109,37 @@ const ExportersPage = () => {
     setLoading(true);
     const toastId = toast.loading("Creating exporter...");
     try {
-      const res = await fetch("/api/exporters", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          tin: form.tin,
-          email: form.email,
-          contactPerson: form.contactPerson,
-          phone: form.phone,
-          address: form.address,
-          authorizedSignatory: form.authorizedSignatory,
-          exporterTypeId: form.exporterTypeId || undefined,
-          // Consignee Information
-          // consigneeAddress: form.consigneeAddress,
-          // consigneeTelephone: form.consigneeTelephone,
-          // consigneeMobile: form.consigneeMobile,
-          // consigneeEmail: form.consigneeEmail,
-          // // Buyer Information
-          // buyerName: form.buyerName,
-          // buyerAddress: form.buyerAddress,
-          // Exporter Details
-          // deliveryLocation: form.deliveryLocation,
-          // exporterTelephone: form.exporterTelephone,
-          // exporterEmail: form.exporterEmail,
-          // exporterWebsite: form.exporterWebsite,
-          // exporterLicenseNumber: form.exporterLicenseNumber,
-          // Notified Party Information
-          // notifiedPartyName: form.notifiedPartyName,
-          // notifiedPartyAddress: form.notifiedPartyAddress,
-          // notifiedPartyEmail: form.notifiedPartyEmail,
-          // notifiedPartyContactPerson: form.notifiedPartyContactPerson,
-          // notifiedPartyTelephone: form.notifiedPartyTelephone,
-          // notifiedPartyMobile: form.notifiedPartyMobile,
-        }),
+      await apiClient.post("/api/exporters", {
+        name: form.name,
+        tin: form.tin,
+        email: form.email,
+        contactPerson: form.contactPerson,
+        phone: form.phone,
+        address: form.address,
+        authorizedSignatory: form.authorizedSignatory,
+        exporterTypeId: form.exporterTypeId || undefined,
+        // Consignee Information
+        // consigneeAddress: form.consigneeAddress,
+        // consigneeTelephone: form.consigneeTelephone,
+        // consigneeMobile: form.consigneeMobile,
+        // consigneeEmail: form.consigneeEmail,
+        // // Buyer Information
+        // buyerName: form.buyerName,
+        // buyerAddress: form.buyerAddress,
+        // Exporter Details
+        // deliveryLocation: form.deliveryLocation,
+        // exporterTelephone: form.exporterTelephone,
+        // exporterEmail: form.exporterEmail,
+        // exporterWebsite: form.exporterWebsite,
+        // exporterLicenseNumber: form.exporterLicenseNumber,
+        // Notified Party Information
+        // notifiedPartyName: form.notifiedPartyName,
+        // notifiedPartyAddress: form.notifiedPartyAddress,
+        // notifiedPartyEmail: form.notifiedPartyEmail,
+        // notifiedPartyContactPerson: form.notifiedPartyContactPerson,
+        // notifiedPartyTelephone: form.notifiedPartyTelephone,
+        // notifiedPartyMobile: form.notifiedPartyMobile,
       });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to create exporter");
-      }
       toast.success("Exporter created successfully!", { id: toastId });
       // Refresh the exporters list to show the new exporter
       await fetchExporters();
@@ -232,45 +222,37 @@ const ExportersPage = () => {
     setLoading(true);
     const toastId = toast.loading("Updating exporter...");
     try {
-      const res = await fetch(`/api/exporters/${editingExporter.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          tin: form.tin,
-          email: form.email,
-          contactPerson: form.contactPerson,
-          phone: form.phone,
-          address: form.address,
-          authorizedSignatory: form.authorizedSignatory,
-          exporterTypeId: form.exporterTypeId || undefined,
-          // Consignee Information
-          consigneeAddress: form.consigneeAddress,
-          consigneeTelephone: form.consigneeTelephone,
-          consigneeMobile: form.consigneeMobile,
-          consigneeEmail: form.consigneeEmail,
-          // Buyer Information
-          buyerName: form.buyerName,
-          buyerAddress: form.buyerAddress,
-          // Exporter Details
-          deliveryLocation: form.deliveryLocation,
-          exporterTelephone: form.exporterTelephone,
-          exporterEmail: form.exporterEmail,
-          exporterWebsite: form.exporterWebsite,
-          exporterLicenseNumber: form.exporterLicenseNumber,
-          // Notified Party Information
-          notifiedPartyName: form.notifiedPartyName,
-          notifiedPartyAddress: form.notifiedPartyAddress,
-          notifiedPartyEmail: form.notifiedPartyEmail,
-          notifiedPartyContactPerson: form.notifiedPartyContactPerson,
-          notifiedPartyTelephone: form.notifiedPartyTelephone,
-          notifiedPartyMobile: form.notifiedPartyMobile,
-        }),
+      await apiClient.put(`/api/exporters/${editingExporter.id}`, {
+        name: form.name,
+        tin: form.tin,
+        email: form.email,
+        contactPerson: form.contactPerson,
+        phone: form.phone,
+        address: form.address,
+        authorizedSignatory: form.authorizedSignatory,
+        exporterTypeId: form.exporterTypeId || undefined,
+        // Consignee Information
+        consigneeAddress: form.consigneeAddress,
+        consigneeTelephone: form.consigneeTelephone,
+        consigneeMobile: form.consigneeMobile,
+        consigneeEmail: form.consigneeEmail,
+        // Buyer Information
+        buyerName: form.buyerName,
+        buyerAddress: form.buyerAddress,
+        // Exporter Details
+        deliveryLocation: form.deliveryLocation,
+        exporterTelephone: form.exporterTelephone,
+        exporterEmail: form.exporterEmail,
+        exporterWebsite: form.exporterWebsite,
+        exporterLicenseNumber: form.exporterLicenseNumber,
+        // Notified Party Information
+        notifiedPartyName: form.notifiedPartyName,
+        notifiedPartyAddress: form.notifiedPartyAddress,
+        notifiedPartyEmail: form.notifiedPartyEmail,
+        notifiedPartyContactPerson: form.notifiedPartyContactPerson,
+        notifiedPartyTelephone: form.notifiedPartyTelephone,
+        notifiedPartyMobile: form.notifiedPartyMobile,
       });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to update exporter");
-      }
       toast.success("Exporter updated successfully!", { id: toastId });
       // Refresh the exporters list to show the updated exporter
       await fetchExporters();
@@ -319,10 +301,7 @@ const ExportersPage = () => {
     setLoading(true);
     const toastId = toast.loading("Deleting exporter...");
     try {
-      const res = await fetch(`/api/exporters/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to delete exporter");
+      await apiClient.delete(`/api/exporters/${id}`);
       toast.success("Exporter deleted successfully!", { id: toastId });
       // Refresh the exporters list to remove the deleted exporter
       await fetchExporters();
@@ -335,9 +314,7 @@ const ExportersPage = () => {
 
   const handleViewExporter = async (exporter: any) => {
     try {
-      const res = await fetch(`/api/exporters/${exporter.id}`);
-      if (!res.ok) throw new Error("Failed to fetch exporter details");
-      const details = await res.json();
+      const details = await apiClient.get(`/api/exporters/${exporter.id}`);
       setViewingExporter(details);
       setViewModalOpen(true);
     } catch {

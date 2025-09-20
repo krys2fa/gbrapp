@@ -1,47 +1,19 @@
 // app/api/weekly-prices/pending/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
-import * as jose from "jose";
+import {
+  validateAPIPermission,
+  createUnauthorizedResponse,
+} from "@/app/lib/api-validation";
 
 export async function GET(req: NextRequest) {
   try {
-    // Extract and verify JWT token to get user role
-    const authHeader = req.headers.get("authorization");
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        {
-          error: "Unauthorized. Authentication required.",
-        },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.substring(7);
-    const JWT_SECRET =
-      process.env.JWT_SECRET || "fallback-secret-for-development-only";
-    const secret = new TextEncoder().encode(JWT_SECRET);
-
-    let userRole: string;
-    try {
-      const { payload } = await jose.jwtVerify(token, secret);
-      userRole = payload.role as string;
-    } catch (error) {
-      return NextResponse.json(
-        {
-          error: "Unauthorized. Invalid token.",
-        },
-        { status: 401 }
-      );
-    }
-
-    // Only allow super admins to view pending approvals
-    if (userRole !== "SUPERADMIN") {
-      return NextResponse.json(
-        {
-          error: "Unauthorized. Only super admins can view pending approvals.",
-        },
-        { status: 403 }
+    // Validate user has pending-approvals permission
+    const validation = await validateAPIPermission(req, "pending-approvals");
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
       );
     }
 

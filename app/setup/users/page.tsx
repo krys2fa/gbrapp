@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
+import { useApiClient } from "@/app/lib/api-client";
 import { ChevronDown, UserPlus } from "lucide-react";
 import {
   PencilSquareIcon,
@@ -29,6 +30,7 @@ function capitalizeFirst(str: string) {
 }
 
 const CreateUserPage = () => {
+  const apiClient = useApiClient();
   const [nameFilter, setNameFilter] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
@@ -60,9 +62,7 @@ const CreateUserPage = () => {
         if (emailFilter)
           params.push(`search=${encodeURIComponent(emailFilter)}`);
         if (params.length) url += `?${params.join("&")}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to load users");
-        const data = await res.json();
+        const data = await apiClient.get(url);
         setUsers(data);
       } catch (err: any) {
         toast.error(err.message || "Failed to load users");

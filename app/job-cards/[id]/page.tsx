@@ -2,6 +2,7 @@
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
 import { formatDate } from "@/app/lib/utils";
+import { useApiClient } from "@/app/lib/api-client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -64,6 +65,7 @@ interface JobCardData {
 function JobCardDetailPage() {
   const params = useParams();
   const id = (params?.id as string) || "";
+  const apiClient = useApiClient();
   const [jobCard, setJobCard] = useState<JobCardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -73,11 +75,7 @@ function JobCardDetailPage() {
   useEffect(() => {
     const fetchJobCard = async () => {
       try {
-        const response = await fetch(`/api/job-cards/${id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch job card");
-        }
-        const data = await response.json();
+        const data = await apiClient.get(`/api/job-cards/${id}`);
         setJobCard(data);
       } catch (error) {
         console.error("Error fetching job card:", error);
@@ -88,7 +86,7 @@ function JobCardDetailPage() {
     };
 
     if (id) fetchJobCard();
-  }, [id]);
+  }, [id, apiClient]);
 
   const handleDelete = async () => {
     console.log("Delete button clicked! Setting modal to open...");
@@ -101,27 +99,19 @@ function JobCardDetailPage() {
     toast.loading("Deleting job card...", { id: "delete-job-card" });
 
     try {
-      const response = await fetch(`/api/job-cards/${id}`, {
-        method: "DELETE",
-      });
+      await apiClient.delete(`/api/job-cards/${id}`);
 
-      if (response.ok) {
-        toast.dismiss("delete-job-card");
-        toast.success("Job card deleted successfully!");
-        setDeleteModalOpen(false);
-        // Redirect to job cards list
-        window.location.href = "/job-cards";
-      } else {
-        const errorData = await response.json();
-        toast.dismiss("delete-job-card");
-        toast.error(
-          `Failed to delete job card: ${errorData.error || "Unknown error"}`
-        );
-      }
-    } catch (error) {
+      toast.dismiss("delete-job-card");
+      toast.success("Job card deleted successfully!");
+      setDeleteModalOpen(false);
+      // Redirect to job cards list
+      window.location.href = "/job-cards";
+    } catch (error: any) {
       console.error("Error deleting job card:", error);
       toast.dismiss("delete-job-card");
-      toast.error("An error occurred while deleting the job card.");
+      toast.error(
+        `Failed to delete job card: ${error.message || "Unknown error"}`
+      );
     }
   };
 
@@ -136,36 +126,22 @@ function JobCardDetailPage() {
     toast.loading("Generating invoice...", { id: "invoice-generation" });
 
     try {
-      const response = await fetch("/api/invoices", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          jobCardId: jobCard.id,
-        }),
+      await apiClient.post("/api/invoices", {
+        jobCardId: jobCard.id,
       });
 
-      if (response.ok) {
-        // Refresh the job card data to show the new invoice
-        const updatedResponse = await fetch(`/api/job-cards/${id}`);
-        if (updatedResponse.ok) {
-          const updatedData = await updatedResponse.json();
-          setJobCard(updatedData);
-        }
-        toast.dismiss("invoice-generation");
-        toast.success("Invoice generated successfully!");
-      } else {
-        const errorData = await response.json();
-        toast.dismiss("invoice-generation");
-        toast.error(
-          `Failed to generate invoice: ${errorData.error || "Unknown error"}`
-        );
-      }
-    } catch (error) {
+      // Refresh the job card data to show the new invoice
+      const updatedData = await apiClient.get(`/api/job-cards/${id}`);
+      setJobCard(updatedData);
+
+      toast.dismiss("invoice-generation");
+      toast.success("Invoice generated successfully!");
+    } catch (error: any) {
       console.error("Error generating invoice:", error);
       toast.dismiss("invoice-generation");
-      toast.error("An error occurred while generating the invoice.");
+      toast.error(
+        `Failed to generate invoice: ${error.message || "Unknown error"}`
+      );
     } finally {
       setGeneratingInvoice(false);
     }
@@ -246,8 +222,7 @@ function JobCardDetailPage() {
     if (badgeStatus === "paid") return "Paid";
     if (badgeStatus === "completed") return "Completed";
     return (
-      badgeStatus.charAt(0).toUpperCase() +
-      badgeStatus.slice(1).replace("_", " ")
+      (badgeStatus ? badgeStatus.charAt(0).toUpperCase() + badgeStatus.slice(1).replace("_", " ") : "Unknown")
     );
   })();
 
@@ -360,14 +335,14 @@ function JobCardDetailPage() {
                   {jobCard!.humanReadableId || jobCard!.referenceNumber}
                 </dd>
               </div>
-              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              {/* <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">
                   Reference Number
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                   {jobCard!.referenceNumber}
                 </dd>
-              </div>
+              </div> */}
               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">
                   Received Date
@@ -583,7 +558,7 @@ function JobCardDetailPage() {
             <h3 className="text-sm font-medium text-gray-900">Valuation</h3>
           </div>
           <div className="px-4 py-5 sm:p-0">
-            <dl className="sm:divide-y sm:divide-gray-200">
+            <dl className="flex sm:divide-y sm:divide-gray-200">
               {jobCard.numberOfOunces !== null &&
                 jobCard.numberOfOunces !== undefined && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -632,26 +607,6 @@ function JobCardDetailPage() {
             </dl>
           </div>
 
-          {/* Additional Information Section */}
-          {/* {jobCard.notes && (
-            <>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 border-t border-gray-200">
-                <h3 className="text-sm font-medium text-gray-900">
-                  Additional Information
-                </h3>
-              </div>
-              <div className="px-4 py-5 sm:p-0">
-                <dl className="sm:divide-y sm:divide-gray-200">
-                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Notes</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.notes}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            </>
-          )} */}
         </div>
       </div>
 
@@ -686,13 +641,6 @@ function JobCardDetailPage() {
                 <DocumentTextIcon className="w-4 h-4 mr-2" />
                 Certificate of Assay
               </Link>
-              {/* <Link
-                href={`/job-cards/${id}/assays/assay-report-analysis`}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <ChartBarIcon className="w-4 h-4 mr-2" />
-                Assay Report Analysis
-              </Link> */}
             </div>
           </div>
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
@@ -705,6 +653,7 @@ function JobCardDetailPage() {
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-medium text-indigo-600 truncate">
                             Certificate #{assay.certificateNumber}
+                          </p>
                           </p>
                           <div className="ml-2 flex-shrink-0 flex">
                             <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

@@ -4,6 +4,10 @@ import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import {
+  validateAPIPermission,
+  createUnauthorizedResponse,
+} from "@/app/lib/api-validation";
 
 /**
  * GET handler for fetching all users
@@ -11,6 +15,15 @@ import bcrypt from "bcryptjs";
  */
 async function getUsers(req: NextRequest) {
   try {
+    // Validate user has settings permission (admin functionality)
+    const validation = await validateAPIPermission(req, "settings");
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     // Extract query parameters for filtering
     const { searchParams } = new URL(req.url);
     const role = searchParams.get("role");
@@ -70,6 +83,15 @@ async function getUsers(req: NextRequest) {
  */
 async function createUser(req: NextRequest) {
   try {
+    // Validate user has settings permission (admin functionality)
+    const validation = await validateAPIPermission(req, "settings");
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     const { email, password, name, phone, role, isActive } = await req.json();
 
     // Validate input

@@ -1,6 +1,7 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
+import { useApiClient } from "@/app/lib/api-client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowPathIcon, EyeIcon } from "@heroicons/react/24/outline";
@@ -9,6 +10,7 @@ import { FileText, Loader2 } from "lucide-react";
 import { formatDate } from "@/app/lib/utils";
 
 function ValuationList() {
+  const apiClient = useApiClient();
   const [jobCards, setJobCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,18 +40,14 @@ function ValuationList() {
       if (endDateFilter) params.append("endDate", endDateFilter);
 
       // Fetch regular job cards with assays
-      const regularRes = await fetch(`/api/job-cards?${params.toString()}`);
-      if (!regularRes.ok) throw new Error("Failed to fetch regular job cards");
+      const regularData = await apiClient.get(
+        `/api/job-cards?${params.toString()}`
+      );
 
       // Fetch large scale job cards with assays
-      const largeScaleRes = await fetch(
+      const largeScaleData = await apiClient.get(
         `/api/large-scale-job-cards?${params.toString()}`
       );
-      if (!largeScaleRes.ok)
-        throw new Error("Failed to fetch large scale job cards");
-
-      const regularData = await regularRes.json();
-      const largeScaleData = await largeScaleRes.json();
 
       // Filter regular job cards that have assays
       const regularValued = (regularData.jobCards || []).filter(

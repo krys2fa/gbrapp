@@ -2,6 +2,7 @@
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
 import { formatDate } from "@/app/lib/utils";
+import { useApiClient } from "@/app/lib/api-client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -104,6 +105,7 @@ interface LargeScaleJobCard {
 function LargeScaleJobCardDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const apiClient = useApiClient();
   const [jobCard, setJobCard] = useState<LargeScaleJobCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -115,26 +117,24 @@ function LargeScaleJobCardDetailPage() {
       if (!params?.id) return;
 
       try {
-        const response = await fetch(`/api/large-scale-job-cards/${params.id}`);
-
-        if (response.ok) {
-          const data = await response.json();
-          setJobCard(data);
-        } else if (response.status === 404) {
+        const data = await apiClient.get(
+          `/api/large-scale-job-cards/${params.id}`
+        );
+        setJobCard(data);
+      } catch (error: any) {
+        console.error("Error fetching job card:", error);
+        if (error.message?.includes("404")) {
           setError("Large scale job card not found");
         } else {
           setError("Failed to load job card details");
         }
-      } catch (error) {
-        console.error("Error fetching job card:", error);
-        setError("An unexpected error occurred");
       } finally {
         setLoading(false);
       }
     };
 
     fetchJobCard();
-  }, [params?.id]);
+  }, [params?.id, apiClient]);
 
   const handleGenerateInvoice = async () => {
     if (!jobCard) return;
@@ -143,60 +143,35 @@ function LargeScaleJobCardDetailPage() {
     toast.loading("Generating invoice...", { id: "invoice-generation" });
 
     try {
-      const token = localStorage.getItem("auth-token");
-
-      if (!token) {
-        toast.dismiss("invoice-generation");
-        toast.error("Authentication required. Please log in again.");
-        router.push("/login");
-        return;
-      }
-
-      const response = await fetch(
+      const newInvoice = await apiClient.post(
         `/api/large-scale-job-cards/${jobCard.id}/invoices`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            jobCardId: jobCard.id,
-          }),
+          jobCardId: jobCard.id,
         }
       );
 
-      if (response.ok) {
-        const newInvoice = await response.json();
-        // Update the job card state to include the new invoice
-        setJobCard((prev) =>
-          prev
-            ? {
-                ...prev,
-                invoices: [newInvoice],
-              }
-            : null
-        );
-        toast.dismiss("invoice-generation");
-        toast.success("Invoice generated successfully!");
-      } else if (response.status === 401) {
-        // Token is invalid, clear it and redirect to login
-        localStorage.removeItem("auth-token");
-        localStorage.removeItem("auth-user");
-        toast.dismiss("invoice-generation");
+      // Update the job card state to include the new invoice
+      setJobCard((prev) =>
+        prev
+          ? {
+              ...prev,
+              invoices: [newInvoice],
+            }
+          : null
+      );
+      toast.dismiss("invoice-generation");
+      toast.success("Invoice generated successfully!");
+    } catch (error: any) {
+      console.error("Error generating invoice:", error);
+      toast.dismiss("invoice-generation");
+      if (error.message?.includes("401")) {
         toast.error("Session expired. Please log in again.");
         router.push("/login");
       } else {
-        const errorData = await response.json();
-        toast.dismiss("invoice-generation");
         toast.error(
-          `Failed to generate invoice: ${errorData.error || "Unknown error"}`
+          `Failed to generate invoice: ${error.message || "Unknown error"}`
         );
       }
-    } catch (error) {
-      console.error("Error generating invoice:", error);
-      toast.dismiss("invoice-generation");
-      toast.error("An error occurred while generating the invoice.");
     } finally {
       setGeneratingInvoice(false);
     }
@@ -219,7 +194,7 @@ function LargeScaleJobCardDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <BackLink
             href="/job-cards/large-scale"
-            label="Back to Large Scale Job Cards"
+            label="Back to Large Scale Jobs"
           />
           <div className="mt-8">
             <div className="rounded-md bg-red-50 p-4">
@@ -244,12 +219,7 @@ function LargeScaleJobCardDetailPage() {
         <div className="mt-8">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Large Scale Job Card Details
-              </h1>
-              {/* <p className="mt-2 text-sm text-gray-600">
-                Reference: {jobCard.referenceNumber}
-              </p> */}
+              <h1 className="text-3xl font-bold text-gray-900">Job Details</h1>
             </div>
             <div className="flex gap-3">
               <Link
@@ -280,7 +250,7 @@ function LargeScaleJobCardDetailPage() {
               <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
                 Basic Information
               </h3>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
                     Job Card ID
@@ -311,12 +281,6 @@ function LargeScaleJobCardDetailPage() {
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.unitOfMeasure}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Status</dt>
-                  <dd className="mt-1 text-sm text-gray-900 capitalize">
-                    {jobCard.status}
                   </dd>
                 </div>
                 <div>

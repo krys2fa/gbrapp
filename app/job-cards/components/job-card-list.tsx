@@ -11,6 +11,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { formatDate } from "@/app/lib/utils";
 import toast from "react-hot-toast";
+import { useApiClient } from "@/app/lib/api-client";
 
 interface JobCard {
   id: string;
@@ -50,7 +51,10 @@ export function JobCardList({ filters }: JobCardListProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [jobCardToDelete, setJobCardToDelete] = useState<string | null>(null);
 
+  // Number of items per page for pagination
   const itemsPerPage = 10;
+
+  const apiClient = useApiClient();
 
   const fetchJobCards = useCallback(async () => {
     try {
@@ -76,7 +80,9 @@ export function JobCardList({ filters }: JobCardListProps) {
       queryParams.append("page", currentPage.toString());
       queryParams.append("limit", itemsPerPage.toString());
 
-      const response = await fetch(`/api/job-cards?${queryParams.toString()}`);
+      const response = await apiClient.get(
+        `/api/job-cards?${queryParams.toString()}`
+      );
 
       if (response.ok) {
         const data = await response.json();

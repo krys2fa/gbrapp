@@ -2,6 +2,10 @@ import { Role } from "@/app/generated/prisma";
 import { prisma } from "@/app/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { generateAssayNumber } from "@/lib/assay-number-generator";
+import {
+  validateAPIPermission,
+  createUnauthorizedResponse,
+} from "@/app/lib/api-validation";
 
 // Helper to extract ID from the URL
 function getIdFromUrl(req: NextRequest): string | null {
@@ -23,6 +27,15 @@ function getIdFromUrl(req: NextRequest): string | null {
  */
 export async function GET(req: NextRequest) {
   try {
+    // Validate user has job-cards permission
+    const validation = await validateAPIPermission(req, "job-cards");
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     const id = await getIdFromUrl(req);
     console.log("GET request for job card with ID:", id);
 
@@ -43,9 +56,6 @@ export async function GET(req: NextRequest) {
           },
         },
         commodity: true,
-        customsOfficer: true,
-        assayOfficer: true,
-        technicalDirector: true,
         seals: true,
         assays: {
           select: {
@@ -103,17 +113,7 @@ export async function GET(req: NextRequest) {
     console.log("=== JOB CARD DATA DEBUG ===");
     console.log("ID:", jobCard.id);
     console.log("Reference Number:", jobCard.referenceNumber);
-    console.log("Notes:", jobCard.notes);
-    console.log(
-      "Customs Officer Name (dedicated field):",
-      jobCard.customsOfficerName
-    );
-    console.log(
-      "Technical Director Name (dedicated field):",
-      jobCard.technicalDirectorName
-    );
-    console.log("Customs Officer (relation):", jobCard.customsOfficer);
-    console.log("Technical Director (relation):", jobCard.technicalDirector);
+  
     console.log(
       "Assays:",
       jobCard.assays?.map((a) => ({
@@ -139,6 +139,15 @@ export async function GET(req: NextRequest) {
  */
 export async function PUT(req: NextRequest) {
   try {
+    // Validate user has job-cards permission
+    const validation = await validateAPIPermission(req, "job-cards");
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     const id = getIdFromUrl(req);
     console.log("PUT request for job card with ID:", id);
 
@@ -741,6 +750,15 @@ export async function PUT(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   try {
+    // Validate user has job-cards permission
+    const validation = await validateAPIPermission(req, "job-cards");
+    if (!validation.success) {
+      return createUnauthorizedResponse(
+        validation.error!,
+        validation.statusCode
+      );
+    }
+
     const id = getIdFromUrl(req);
     console.log("DELETE request for job card with ID:", id);
 

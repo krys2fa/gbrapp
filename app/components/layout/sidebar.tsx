@@ -14,12 +14,17 @@ import {
   Award,
   CreditCard,
   Activity,
-  ClipboardCheck,
+  CheckCircle,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/ui/button";
 import { useAuth } from "@/app/context/auth-context";
 import { LogoutButton } from "@/app/components/auth/logout-button";
+import {
+  hasPermission,
+  type UserRole,
+  type PermissionModule,
+} from "@/app/lib/role-permissions";
 
 interface SidebarProps {
   children?: React.ReactNode;
@@ -52,10 +57,12 @@ interface NavigationItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  permission: PermissionModule;
   hasSubmenu?: boolean;
   subItems?: Array<{
     label: string;
     href: string;
+    permission: PermissionModule;
   }>;
 }
 
@@ -168,72 +175,92 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       label: "Dashboard",
       href: "/dashboard",
       icon: <Activity className="h-5 w-5" />,
+      permission: "dashboard",
+    },
+    {
+      id: "pending-approvals",
+      label: "Pending Approvals",
+      href: "/weekly-prices/pending",
+      icon: <CheckCircle className="h-5 w-5" />,
+      permission: "pending-approvals",
     },
     {
       id: "job-cards",
       label: "Job Cards",
       href: "/job-cards",
       icon: <FileText className="h-5 w-5" />,
+      permission: "job-cards",
       hasSubmenu: true,
       subItems: [
         {
           label: "Large Scale Operations",
           href: "/job-cards/large-scale",
+          permission: "job-cards/large-scale",
         },
         {
           label: "Small Scale Operations",
           href: "/job-cards",
+          permission: "job-cards",
         },
       ],
     },
-    // {
-    //   id: "valuations",
-    //   label: "Valuations",
-    //   href: "/valuations",
-    //   icon: <ClipboardCheck className="h-5 w-5" />,
-    // },
     {
       id: "payment-receipting",
       label: "Payment & Receipting",
       href: "/payment-receipting",
       icon: <CreditCard className="h-5 w-5" />,
+      permission: "payment-receipting",
     },
     {
       id: "sealing-certification",
       label: "Sealing & Certification",
       href: "/sealing-certification",
       icon: <Award className="h-5 w-5" />,
+      permission: "sealing-certification",
     },
     {
       id: "reports",
       label: "Reports",
       href: "/reports",
       icon: <FileText className="h-5 w-5" />,
+      permission: "reports",
     },
     {
       id: "settings",
       label: "Settings",
       href: "/setup",
       icon: <Settings className="h-5 w-5" />,
+      permission: "settings",
     },
   ];
 
   // Role-based navigation filtering
   const getFilteredNavigation = () => {
-    if (!user?.role) return navigation;
+    if (!user?.role) return [];
 
-    switch (user.role) {
-      case "FINANCE":
-        return navigation.filter(
-          (item) => item.id === "dashboard" || item.id === "reports"
+    const userRole = user.role as UserRole;
+
+    return navigation.filter((item) => {
+      // Check if user has permission for this navigation item
+      const hasMainPermission = hasPermission(userRole, item.permission);
+
+      if (!hasMainPermission) return false;
+
+      // If item has submenus, filter them too
+      if (item.hasSubmenu && item.subItems) {
+        const filteredSubItems = item.subItems.filter((subItem) =>
+          hasPermission(userRole, subItem.permission)
         );
-      case "TELLER":
-        return navigation.filter(
-          (item) => item.id === "dashboard" || item.id === "payment-receipting"
-        );
-      default:
-        return navigation;
-    }
+
+        // Only show the main item if there are accessible subitems
+        if (filteredSubItems.length === 0) return false;
+
+        // Update the item with filtered subitems
+        item.subItems = filteredSubItems;
+      }
+
+      return true;
+    });
   };
 
   const filteredNavigation = getFilteredNavigation();

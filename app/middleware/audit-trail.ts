@@ -8,6 +8,10 @@ import type { NextRequest } from "next/server";
  */
 const AUDITABLE_ROUTES = [
   "/api/job-cards",
+  "/api/large-scale-job-cards",
+  "/api/users",
+  "/api/roles",
+  "/api/commodities",
   "/api/invoices",
   "/api/assays",
   "/api/seals",
