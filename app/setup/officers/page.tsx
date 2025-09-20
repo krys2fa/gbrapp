@@ -94,6 +94,7 @@ const OfficersPage = () => {
         phone: "",
         officerType: officerTypes[0].value,
       });
+      setFilterTrigger((prev) => prev + 1); // Refresh the officers list
     } catch (err: any) {
       toast.error(err.message || "Error creating officer", { id: toastId });
     } finally {
@@ -118,11 +119,14 @@ const OfficersPage = () => {
     setLoading(true);
     const toastId = toast.loading("Updating officer...");
     try {
-      const res = await fetch(`/api/officers/${editingOfficer.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      const res = await fetch(
+        `/api/officers/${editingOfficer.id}?type=${form.officerType}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to update officer");
@@ -136,6 +140,7 @@ const OfficersPage = () => {
         phone: "",
         officerType: officerTypes[0].value,
       });
+      setFilterTrigger((prev) => prev + 1); // Refresh the officers list
     } catch (err: any) {
       toast.error(err.message || "Error updating officer", { id: toastId });
     } finally {
@@ -183,8 +188,8 @@ const OfficersPage = () => {
       <div className="my-6 px-4" style={{ width: "100%" }}>
         <BackLink href="/setup" label="Back to Settings" />
       </div>
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-4xl">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 min-h-screen flex flex-col">
+        <div className="max-w-full flex flex-col flex-1">
           <form
             onSubmit={editingOfficer ? handleUpdateOfficer : handleSubmit}
             className="space-y-6"
@@ -332,7 +337,7 @@ const OfficersPage = () => {
             </div>
           </form>
 
-          <div className="mt-10">
+          <div className="mt-10 flex-1">
             <h3 className="text-lg font-semibold mb-4">All Officers</h3>
             <div className="flex items-center gap-4 mb-4">
               <input
@@ -375,11 +380,11 @@ const OfficersPage = () => {
             {officersLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                <span className="ml-2 text-gray-500">Loading officers...</span>
+                {/* <span className="ml-2 text-gray-500">Loading officers...</span> */}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+              <div className="overflow-x-auto flex-1">
+                <table className="min-w-full divide-y divide-gray-200 h-full">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

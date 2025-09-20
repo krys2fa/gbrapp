@@ -24,20 +24,12 @@ function NewJobCardPage() {
       name: string;
       exporterCode: string;
       exporterType: { id: string; name: string };
+      authorizedSignatory: string;
     }[]
   >([]);
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
   >([]);
-  const [officers, setOfficers] = useState<{
-    customsOfficers: { id: string; name: string; badgeNumber: string }[];
-    assayOfficers: { id: string; name: string; badgeNumber: string }[];
-    technicalDirectors: { id: string; name: string; badgeNumber: string }[];
-  }>({
-    customsOfficers: [],
-    assayOfficers: [],
-    technicalDirectors: [],
-  });
 
   // Get countries list for the dropdown
   const countryOptions = useMemo(() => countryList().getData(), []);
@@ -113,19 +105,15 @@ function NewJobCardPage() {
     valueUsd: "",
     pricePerOunce: "",
     numberOfOunces: "",
-    customsOfficerId: "",
-    assayOfficerId: "",
-    technicalDirectorId: "",
   });
 
   useEffect(() => {
-    // Fetch exporters, commodities, and officers
+        // Fetch exporters and commodities
     const fetchData = async () => {
       try {
-        const [exportersRes, commoditiesRes, officersRes] = await Promise.all([
+        const [exportersRes, commoditiesRes] = await Promise.all([
           fetch("/api/exporters"),
           fetch("/api/commodity"),
-          fetch("/api/officers"),
         ]);
 
         if (exportersRes.ok) {
@@ -136,23 +124,6 @@ function NewJobCardPage() {
         if (commoditiesRes.ok) {
           const commoditiesData = await commoditiesRes.json();
           setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
-        }
-
-        if (officersRes.ok) {
-          const officersData = await officersRes.json();
-          // Group officers by type
-          const groupedOfficers = {
-            customsOfficers: officersData.filter(
-              (o: any) => o.officerType === "CUSTOMS_OFFICER"
-            ),
-            assayOfficers: officersData.filter(
-              (o: any) => o.officerType === "ASSAY_OFFICER"
-            ),
-            technicalDirectors: officersData.filter(
-              (o: any) => o.officerType === "TECHNICAL_DIRECTOR"
-            ),
-          };
-          setOfficers(groupedOfficers);
         }
       } catch (error) {
         console.error("Error fetching form data:", error);
@@ -171,10 +142,21 @@ function NewJobCardPage() {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // If exporter is changed, also update the authorized signatory
+    if (name === "exporterId") {
+      const selectedExporter = exporters.find((ex) => ex.id === value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        teamLeader: selectedExporter?.authorizedSignatory || "",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   // Handle country selection from react-select
@@ -188,33 +170,7 @@ function NewJobCardPage() {
     }));
   };
 
-  // Handle officer selection from react-select
-  const handleCustomsOfficerChange = (
-    selectedOption: { value: string; label: string } | null
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      customsOfficerId: selectedOption ? selectedOption.value : "",
-    }));
-  };
 
-  const handleAssayOfficerChange = (
-    selectedOption: { value: string; label: string } | null
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      assayOfficerId: selectedOption ? selectedOption.value : "",
-    }));
-  };
-
-  const handleTechnicalDirectorChange = (
-    selectedOption: { value: string; label: string } | null
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      technicalDirectorId: selectedOption ? selectedOption.value : "",
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -425,13 +381,14 @@ function NewJobCardPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Team Leader
+                        Exporter Authorized Signatory
                       </label>
                       <input
                         name="teamLeader"
                         value={formData.teamLeader}
                         onChange={handleChange}
-                        className="mt-1 form-control"
+                        className="mt-1 form-control bg-gray-50"
+                        placeholder="Select an exporter to populate this field"
                       />
                     </div>
 
@@ -587,116 +544,8 @@ function NewJobCardPage() {
                         className="mt-1 form-control"
                       />
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Customs Officer
-                      </label>
-                      <Select
-                        options={officers.customsOfficers.map((officer) => ({
-                          value: officer.id,
-                          label: `${officer.name} (${officer.badgeNumber})`,
-                        }))}
-                        value={
-                          formData.customsOfficerId
-                            ? officers.customsOfficers
-                                .map((officer) => ({
-                                  value: officer.id,
-                                  label: `${officer.name} (${officer.badgeNumber})`,
-                                }))
-                                .find(
-                                  (o) => o.value === formData.customsOfficerId
-                                )
-                            : null
-                        }
-                        onChange={handleCustomsOfficerChange}
-                        className="mt-1 form-control-select"
-                        classNamePrefix="react-select"
-                        styles={customSelectStyles}
-                        isClearable
-                        placeholder="Select customs officer"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Assay Officer
-                      </label>
-                      <Select
-                        options={officers.assayOfficers.map((officer) => ({
-                          value: officer.id,
-                          label: `${officer.name} (${officer.badgeNumber})`,
-                        }))}
-                        value={
-                          formData.assayOfficerId
-                            ? officers.assayOfficers
-                                .map((officer) => ({
-                                  value: officer.id,
-                                  label: `${officer.name} (${officer.badgeNumber})`,
-                                }))
-                                .find(
-                                  (o) => o.value === formData.assayOfficerId
-                                )
-                            : null
-                        }
-                        onChange={handleAssayOfficerChange}
-                        className="mt-1 form-control-select"
-                        classNamePrefix="react-select"
-                        styles={customSelectStyles}
-                        isClearable
-                        placeholder="Select assay officer"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Technical Director
-                      </label>
-                      <Select
-                        options={officers.technicalDirectors.map((officer) => ({
-                          value: officer.id,
-                          label: `${officer.name} (${officer.badgeNumber})`,
-                        }))}
-                        value={
-                          formData.technicalDirectorId
-                            ? officers.technicalDirectors
-                                .map((officer) => ({
-                                  value: officer.id,
-                                  label: `${officer.name} (${officer.badgeNumber})`,
-                                }))
-                                .find(
-                                  (o) =>
-                                    o.value === formData.technicalDirectorId
-                                )
-                            : null
-                        }
-                        onChange={handleTechnicalDirectorChange}
-                        className="mt-1 form-control-select"
-                        classNamePrefix="react-select"
-                        styles={customSelectStyles}
-                        isClearable
-                        placeholder="Select technical director"
-                      />
-                    </div>
                   </div>
 
-                  <div className="col-span-6">
-                    <label
-                      htmlFor="notes"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Notes
-                    </label>
-                    <textarea
-                      id="notes"
-                      name="notes"
-                      rows={3}
-                      className="mt-1 form-control"
-                      placeholder="Additional information or notes about this job card"
-                      value={formData.notes}
-                      onChange={handleChange}
-                    ></textarea>
-                  </div>
                 </div>
               </div>
 

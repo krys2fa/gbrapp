@@ -170,8 +170,9 @@ export default async function LargeScaleInvoicePage(props: any) {
   return (
     <>
       {/* Clean styles without watermark for print/download */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           #invoice-content {
             position: relative;
             background: white;
@@ -212,8 +213,9 @@ export default async function LargeScaleInvoicePage(props: any) {
               background-image: none !important;
             }
           }
-        `
-      }} />
+        `,
+        }}
+      />
 
       <div className="my-4 ml-4 print:hidden">
         <HistoryBackLink label="Back" />

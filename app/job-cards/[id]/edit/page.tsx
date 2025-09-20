@@ -513,7 +513,7 @@ function EditJobCardPage() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
-                          Team Leader
+                          Exporter Authorized Signatory
                         </label>
                         <input
                           name="teamLeader"

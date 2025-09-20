@@ -112,7 +112,7 @@ Central entity for managing gold transactions with fields for:
 - Exporter and shipment information
 - Buyer details (ID, name, phone)
 - Gold specifications (weight, fineness, price)
-- Processing details (team leader, destination country)
+- Processing details (expoter authorized signatory, destination country)
 - Financial information (USD/GHS values)
 - Status tracking and notes
 
