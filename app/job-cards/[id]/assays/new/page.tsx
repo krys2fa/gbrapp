@@ -15,6 +15,7 @@ export default function NewAssayPage() {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [shipmentTypes, setShipmentTypes] = useState<
     { id: string; name: string }[]
   >([]);
@@ -440,10 +441,7 @@ export default function NewAssayPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     setError("");
-
-    toast.loading("Saving assay...", { id: "assay-save" });
 
     try {
       // fetch current job card
@@ -509,11 +507,31 @@ export default function NewAssayPage() {
           : "the job card received date";
         const msg = `Cannot create assay: No exchange rate available for the week of ${receivedDate}. Please add the required exchange rate before proceeding.`;
         setError(msg);
-        toast.dismiss("assay-save");
         toast.error(msg);
-        setSaving(false);
         return;
       }
+
+      // Show preview modal instead of saving directly
+      setShowPreviewModal(true);
+    } catch (err: any) {
+      console.error(err);
+      const errorMessage =
+        err?.message || "An error occurred while preparing the preview";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    }
+  };
+
+  // Separate function to handle the actual save after preview confirmation
+  const handleConfirmSave = async () => {
+    setSaving(true);
+    toast.loading("Saving assay...", { id: "assay-save" });
+
+    try {
+      // fetch current job card again
+      const res = await fetch(`/api/job-cards/${id}`);
+      if (!res.ok) throw new Error("Failed to load job card");
+      const jobCard = await res.json();
 
       const newAssay = {
         id: `local-${Date.now()}`,
@@ -913,7 +931,7 @@ export default function NewAssayPage() {
                   >
                     <div>
                       <label className="block text-xs text-gray-600">
-                        Gross weight
+                        Gross weight ({unitOfMeasure})
                       </label>
                       <input
                         type="number"
@@ -928,7 +946,7 @@ export default function NewAssayPage() {
                     {form.method !== "X_RAY" && (
                       <div>
                         <label className="block text-xs text-gray-600">
-                          Water weight
+                          Water weight ({unitOfMeasure})
                         </label>
                         <input
                           type="number"
@@ -943,7 +961,7 @@ export default function NewAssayPage() {
                     )}
                     <div>
                       <label className="block text-xs text-gray-600">
-                        Fineness
+                        Fineness (%)
                       </label>
                       <div className="mt-1 flex items-center gap-2">
                         <input
@@ -998,7 +1016,7 @@ export default function NewAssayPage() {
                     </div>
                     <div>
                       <label className="block text-xs text-gray-600">
-                        Net weight
+                        Net weight ({unitOfMeasure})
                       </label>
                       <input
                         type="number"
@@ -1039,6 +1057,378 @@ export default function NewAssayPage() {
           </div>
         </div>
       </form>
+
+      {/* Preview Modal */}
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div
+                className="absolute inset-0 bg-gray-500 opacity-75"
+                onClick={() => setShowPreviewModal(false)}
+              ></div>
+            </div>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                      Assay Valuation Preview
+                    </h3>
+
+                    {/* Preview Content */}
+                    <div className="bg-white overflow-hidden border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
+                      <div className="flex items-center justify-between mb-1 px-8">
+                        <div className="p-2">
+                          <img
+                            src="/goldbod-logo-green.png"
+                            alt="GoldBod Logo"
+                            className="h-12 w-auto"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="border-t border-gray-200 px-4 py-3 sm:p-4">
+                        <div className="flex justify-center">
+                          <h1 className="text-xl font-bold tracking-wider">
+                            ASSAY VALUATION REPORT
+                          </h1>
+                        </div>
+
+                        {/* Basic Information Display */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Exporter
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {jobCard?.exporter?.name || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Reference Number
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {jobCard?.humanReadableId || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Commodity
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {jobCard?.commodity?.name ||
+                                commodities.find(
+                                  (c) => c.id === jobCard?.commodityId
+                                )?.name ||
+                                "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Assay Method
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.method === "X_RAY"
+                                ? "X-Ray"
+                                : "Water Density"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Number of Pieces
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.pieces}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Type of Shipment
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.shipmentTypeId
+                                ? shipmentTypes.find(
+                                    (st) => st.id === form.shipmentTypeId
+                                  )?.name
+                                : "N/A"}
+                            </dd>
+                          </div>
+                          {/* <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Authorized Signatory
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.signatory || "N/A"}
+                            </dd>
+                          </div> */}
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Customs Officer
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.customsOfficer || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Technical Director
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.technicalDirector || "N/A"}
+                            </dd>
+                          </div>
+                        </div>
+
+                        {/* Measurements Table */}
+                        <div className="mt-6">
+                          <h4 className="text-sm font-medium text-gray-900 mb-3">
+                            Piece Measurements
+                          </h4>
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Piece
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Gross Weight ({unitOfMeasure})
+                                  </th>
+                                  {form.method !== "X_RAY" && (
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      Water Weight ({unitOfMeasure})
+                                    </th>
+                                  )}
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Fineness (%)
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Net Weight ({unitOfMeasure})
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {rows.map((row, index) => (
+                                  <tr key={index}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                      {index + 1}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                      {row.grossWeight?.toFixed(4) || "0.0000"}
+                                    </td>
+                                    {form.method !== "X_RAY" && (
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {row.waterWeight?.toFixed(4) ||
+                                          "0.0000"}
+                                      </td>
+                                    )}
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                      {row.fineness?.toFixed(2) || "0.00"}%
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                      {row.netWeight?.toFixed(4) || "0.0000"}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        {/* Exporter Valuation Summary */}
+                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t pt-4">
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Exporter Total Net Weight (oz)
+                            </dt>
+                            <dd className="mt-1 text-lg font-semibold text-gray-900">
+                              {displayNetWeightOz
+                                ? displayNetWeightOz.toFixed(3)
+                                : "0.000"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Exporter Value (USD)
+                            </dt>
+                            <dd className="mt-1 text-lg font-semibold text-gray-900">
+                              {displayUsdValue
+                                ? formatCurrency(displayUsdValue, "USD", false)
+                                : formatCurrency(0, "USD", false)}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Exporter Value (GHS)
+                            </dt>
+                            <dd className="mt-1 text-lg font-semibold text-gray-900">
+                              {displayGhsValue
+                                ? formatCurrency(displayGhsValue, "GHS", false)
+                                : formatCurrency(0, "GHS", false)}
+                            </dd>
+                          </div>
+                        </div>
+
+                        {/* GoldBod Valuation Summary */}
+                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t pt-4 bg-yellow-50 p-4 rounded-lg">
+                          <div className="col-span-3">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                              GOLDBOD Official Valuation
+                            </h4>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Total Net Weight (oz)
+                            </dt>
+                            <dd className="mt-1 text-lg font-semibold text-gray-900">
+                              {totalNetWeightOzDisplay
+                                ? totalNetWeightOzDisplay.toFixed(3)
+                                : "0.000"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Total Value (USD)
+                            </dt>
+                            <dd className="mt-1 text-lg font-semibold text-gray-900">
+                              {dailyPrice?.value && totalNetWeightOzDisplay
+                                ? formatCurrency(
+                                    Number(dailyPrice.value) *
+                                      totalNetWeightOzDisplay,
+                                    "USD",
+                                    false
+                                  )
+                                : formatCurrency(0, "USD", false)}
+                            </dd>
+                            <dt className="text-xs text-gray-400 mt-1">
+                              @{" "}
+                              {dailyPrice?.value
+                                ? formatCurrency(dailyPrice.value, "USD", false)
+                                : "$0.00"}
+                              /oz
+                              {jobCard?.receivedDate && (
+                                <span>
+                                  {" "}
+                                  (
+                                  {new Date(
+                                    jobCard.receivedDate
+                                  ).toLocaleDateString()}
+                                  )
+                                </span>
+                              )}
+                            </dt>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Total Value (GHS)
+                            </dt>
+                            <dd className="mt-1 text-lg font-semibold text-gray-900">
+                              {dailyPrice?.value &&
+                              weeklyExchange?.value &&
+                              totalNetWeightOzDisplay
+                                ? formatCurrency(
+                                    Number(dailyPrice.value) *
+                                      totalNetWeightOzDisplay *
+                                      Number(weeklyExchange.value),
+                                    "GHS",
+                                    false
+                                  )
+                                : formatCurrency(0, "GHS", false)}
+                            </dd>
+                            <dt className="text-xs text-gray-400 mt-1">
+                              @{" "}
+                              {weeklyExchange?.value
+                                ? formatExchangeRate(weeklyExchange.value)
+                                : "₵0.00"}
+                              {jobCard?.receivedDate && (
+                                <span>
+                                  {" "}
+                                  (week of{" "}
+                                  {new Date(
+                                    jobCard.receivedDate
+                                  ).toLocaleDateString()}
+                                  )
+                                </span>
+                              )}
+                            </dt>
+                          </div>
+                        </div>
+
+                        {/* Seal Information */}
+                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t pt-4">
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Security Seal No.
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.securitySealNo || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              GOLDBOD Seal No.
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.goldbodSealNo || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Customs Seal No.
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.customsSealNo || "N/A"}
+                            </dd>
+                          </div>
+                        </div>
+
+                        {/* Comments */}
+                        {form.comments && (
+                          <div className="mt-6 border-t pt-4">
+                            <dt className="text-sm font-medium text-gray-500">
+                              Comments
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.comments}
+                            </dd>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPreviewModal(false);
+                    handleConfirmSave();
+                  }}
+                  disabled={saving}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Confirm & Save"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPreviewModal(false)}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
