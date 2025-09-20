@@ -11,6 +11,7 @@ import { DocumentTextIcon } from "@heroicons/react/24/outline";
 
 interface LargeScaleJobCard {
   id: string;
+  humanReadableId: string;
   referenceNumber: string;
   receivedDate: string;
   exporter: {
@@ -293,7 +294,7 @@ function LargeScaleJobCardDetailPage() {
                     Received Date
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {new Date(jobCard.receivedDate).toLocaleDateString()}
+                    {formatDate(jobCard.receivedDate)}
                   </dd>
                 </div>
                 <div>
@@ -301,8 +302,7 @@ function LargeScaleJobCardDetailPage() {
                     Exporter
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {jobCard.exporter.name} (
-                    {jobCard.exporter.exporterCode})
+                    {jobCard.exporter.name} ({jobCard.exporter.exporterCode})
                   </dd>
                 </div>
                 <div>

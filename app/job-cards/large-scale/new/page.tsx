@@ -8,6 +8,7 @@ import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import Select from "react-select";
 import countryList from "react-select-country-list";
+import { formatDate } from "@/app/lib/utils";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 import { ClientLogger, LogLevel, LogCategory } from "@/lib/client-logger";
@@ -59,7 +60,6 @@ function NewLargeScaleJobCardPage() {
     customsOfficers: { id: string; name: string; badgeNumber: string }[];
     assayOfficers: { id: string; name: string; badgeNumber: string }[];
     technicalDirectors: { id: string; name: string; badgeNumber: string }[];
-
   }>({
     customsOfficers: [],
     assayOfficers: [],
@@ -1977,9 +1977,7 @@ function NewLargeScaleJobCardPage() {
                             </dt>
                             <dd className="mt-1 text-sm text-gray-900">
                               {form.receivedDate
-                                ? new Date(
-                                    form.receivedDate
-                                  ).toLocaleDateString()
+                                ? formatDate(form.receivedDate)
                                 : "N/A"}
                             </dd>
                           </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import HistoryBackLink from "@/app/components/ui/HistoryBackLink";
 import { prisma } from "@/app/lib/prisma";
+import { formatDate } from "@/app/lib/utils";
 import LargeScaleInvoiceActions from "../LargeScaleInvoiceActions"; // client component
 
 function formatCurrency(value: number | null | undefined, code = "GHS") {
@@ -12,12 +13,6 @@ function formatCurrency(value: number | null | undefined, code = "GHS") {
       maximumFractionDigits: 2,
     })
   );
-}
-
-function formatDate(d?: Date | string | null) {
-  if (!d) return "";
-  const dt = d instanceof Date ? d : new Date(d);
-  return dt.toLocaleDateString();
 }
 
 function formatInvoiceNumber(
@@ -174,7 +169,53 @@ export default async function LargeScaleInvoicePage(props: any) {
 
   return (
     <>
-      <div className="my-4 ml-4">
+      {/* Clean styles without watermark for print/download */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          #invoice-content {
+            position: relative;
+            background: white;
+          }
+          #invoice-content > * {
+            position: relative;
+            z-index: 2;
+          }
+
+          /* Print-specific styles - no watermark */
+          @media print {
+            body {
+              background: none !important;
+            }
+            body::before {
+              display: none !important;
+            }
+
+            /* Hide elements not needed for print */
+            .print\\:hidden {
+              display: none !important;
+            }
+
+            /* Remove any potential watermarks */
+            body {
+              background: none !important;
+            }
+            body::before {
+              display: none !important;
+            }
+            #invoice-content::before {
+              display: none !important;
+            }
+
+            /* Ensure clean background */
+            #invoice-content {
+              background: white !important;
+              background-image: none !important;
+            }
+          }
+        `
+      }} />
+
+      <div className="my-4 ml-4 print:hidden">
         <HistoryBackLink label="Back" />
       </div>
       <div className="max-w-4xl mx-auto py-10 px-4">
@@ -210,9 +251,10 @@ export default async function LargeScaleInvoicePage(props: any) {
             </div>
 
             <div className="flex justify-center">
-              <h1 className="text-xl font-bold tracking-wider">
-                ASSAY INVOICE
-              </h1>
+              <div className="title-section uppercase mx-auto text-center">
+                <p className="font-bold text-2xl">ASSAY INVOICE</p>
+                <p className="text-sm">LARGE SCALE OPERATIONS</p>
+              </div>
             </div>
 
             {/* QR Code Section */}
@@ -265,7 +307,7 @@ export default async function LargeScaleInvoicePage(props: any) {
               </p>
             </div>
             <div className="flex text-right pr-0 mr-0 justify-end">
-              <p className="text-sm font-medium text-gray-500">Job Card ID:</p>
+              <p className="text-sm font-medium text-gray-500">Job ID:</p>
               <p className="text-sm font-semibold text-gray-900 ml-1">
                 {referenceNumber}
               </p>

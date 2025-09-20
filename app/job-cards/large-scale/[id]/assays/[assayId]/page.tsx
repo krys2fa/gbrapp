@@ -465,7 +465,7 @@ export default function AssayResultsPage() {
               <div className="flex justify-between items-center mb-2">
                 <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
-                    Job Card ID:
+                    Job ID:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {jobCard?.humanReadableId || "N/A"}

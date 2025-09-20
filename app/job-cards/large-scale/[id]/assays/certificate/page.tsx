@@ -477,14 +477,29 @@ export default function CertificateOfAssayPage() {
                 </div>
               </div>
 
-              {/* Date on separate row */}
-              <div>
-                <span className="text-sm text-gray-500 font-medium mr-2">
-                  Date:
-                </span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {formatDate(jobCard?.dataSheetDate || jobCard?.receivedDate)}
-                </span>
+              {/* Date and Data Sheet Dates on separate row */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="text-sm text-gray-500 font-medium mr-2">
+                    Date:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {formatDate(
+                      jobCard?.dataSheetDate || jobCard?.receivedDate
+                    )}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-sm text-gray-500 font-medium mr-2">
+                    Data Sheet Dates:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {assays[0]?.dataSheetDates
+                      ? formatDate(assays[0].dataSheetDates)
+                      : "N/A"}
+                  </span>
+                </div>
               </div>
             </div>
 
