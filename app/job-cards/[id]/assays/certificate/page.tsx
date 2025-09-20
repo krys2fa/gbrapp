@@ -443,16 +443,14 @@ export default function CertificateOfAssayPage() {
                     </span>
                   </div>
 
-                  {/* <div>
+                  <div>
                     <span className="text-sm text-gray-500 mr-2 font-medium">
-                      Job Id:
+                      Certificate Number:
                     </span>
                     <span className="text-sm font-semibold text-gray-900">
-                      {assays[0]?.certificateNumber ||
-                        assays[0]?.humanReadableAssayNumber ||
-                        "N/A"}
+                      {jobCard?.certificateNumber || "N/A"}
                     </span>
-                  </div> */}
+                  </div>
                 </div>
               )}
 
@@ -602,7 +600,7 @@ export default function CertificateOfAssayPage() {
                   <div className="flex justify-start">
                     <div className="flex text-center ">
                       <h4 className="text-sm font-medium text-gray-500 uppercase">
-                        Total Net Weight: 
+                        Total Net Weight:
                       </h4>
                       <div className="ml-2 text-sm font-semibold text-gray-900">
                         {(() => {

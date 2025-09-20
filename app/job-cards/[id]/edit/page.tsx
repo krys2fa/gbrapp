@@ -117,18 +117,18 @@ function EditJobCardPage() {
     pricePerOunce: "",
     numberOfOunces: "",
     buyerAddress: "",
+    certificateNumber: "",
   });
 
   useEffect(() => {
     // Fetch job card data and reference data
     const fetchData = async () => {
       try {
-        const [jobCardRes, exportersRes, commoditiesRes] =
-          await Promise.all([
-            fetch(`/api/job-cards/${id}`),
-            fetch("/api/exporters"),
-            fetch("/api/commodity"),
-          ]);
+        const [jobCardRes, exportersRes, commoditiesRes] = await Promise.all([
+          fetch(`/api/job-cards/${id}`),
+          fetch("/api/exporters"),
+          fetch("/api/commodity"),
+        ]);
 
         if (jobCardRes.ok) {
           const jobCardData = await jobCardRes.json();
@@ -178,6 +178,7 @@ function EditJobCardPage() {
             pricePerOunce: jobCardData.pricePerOunce?.toString() || "",
             numberOfOunces: jobCardData.numberOfOunces?.toString() || "",
             buyerAddress: jobCardData.buyerAddress || "",
+            certificateNumber: jobCardData.certificateNumber || "",
           });
         } else {
           throw new Error("Failed to fetch job card");
@@ -192,7 +193,6 @@ function EditJobCardPage() {
           const commoditiesData = await commoditiesRes.json();
           setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
         }
-
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load job card data. Please try again.");
@@ -214,8 +214,6 @@ function EditJobCardPage() {
       destinationCountry: selectedOption ? selectedOption.label : "",
     }));
   };
-
-
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -493,6 +491,19 @@ function EditJobCardPage() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
+                          Certificate Number
+                        </label>
+                        <input
+                          name="certificateNumber"
+                          value={formData.certificateNumber}
+                          onChange={handleChange}
+                          className="mt-1 form-control"
+                          placeholder="Enter certificate number"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
                           Source of Commodity
                         </label>
                         <input
@@ -677,9 +688,6 @@ function EditJobCardPage() {
                         />
                       </div>
                     </div>
-         
-
-                    
                   </div>
                 </div>
 

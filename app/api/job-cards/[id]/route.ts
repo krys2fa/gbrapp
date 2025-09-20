@@ -248,6 +248,9 @@ export async function PUT(req: NextRequest) {
     if (requestData.valueUsd !== undefined) {
       updateData.valueUsd = parseFloat(requestData.valueUsd);
     }
+    if (requestData.certificateNumber !== undefined) {
+      updateData.certificateNumber = requestData.certificateNumber;
+    }
     if (requestData.pricePerOunce !== undefined) {
       updateData.pricePerOunce = parseFloat(requestData.pricePerOunce);
     }

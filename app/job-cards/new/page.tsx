@@ -105,10 +105,11 @@ function NewJobCardPage() {
     valueUsd: "",
     pricePerOunce: "",
     numberOfOunces: "",
+    certificateNumber: "",
   });
 
   useEffect(() => {
-        // Fetch exporters and commodities
+    // Fetch exporters and commodities
     const fetchData = async () => {
       try {
         const [exportersRes, commoditiesRes] = await Promise.all([
@@ -169,8 +170,6 @@ function NewJobCardPage() {
       destinationCountry: selectedOption ? selectedOption.label : "",
     }));
   };
-
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -413,6 +412,19 @@ function NewJobCardPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
+                        Certificate Number
+                      </label>
+                      <input
+                        name="certificateNumber"
+                        value={(formData as any).certificateNumber || ""}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                        placeholder="Enter certificate number"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
                         Source of Commodity
                       </label>
                       <input
@@ -545,7 +557,6 @@ function NewJobCardPage() {
                       />
                     </div>
                   </div>
-
                 </div>
               </div>
 

@@ -61,6 +61,7 @@ interface LargeScaleJobCard {
   valueGhs?: number;
   numberOfOunces?: number;
   pricePerOunce?: number;
+  certificateNumber?: string;
   assays?: any[];
   invoices?: any[];
   createdAt: string;
@@ -165,18 +166,18 @@ function EditLargeScaleJobCardPage() {
     valueGhs: "",
     numberOfOunces: "",
     pricePerOunce: "",
+    certificateNumber: "",
   });
 
   useEffect(() => {
     // Fetch job card data and reference data
     const fetchData = async () => {
       try {
-        const [jobCardRes, exportersRes, commoditiesRes] =
-          await Promise.all([
-            fetch(`/api/large-scale-job-cards/${id}`),
-            fetch("/api/exporters"),
-            fetch("/api/commodity"),
-          ]);
+        const [jobCardRes, exportersRes, commoditiesRes] = await Promise.all([
+          fetch(`/api/large-scale-job-cards/${id}`),
+          fetch("/api/exporters"),
+          fetch("/api/commodity"),
+        ]);
 
         if (jobCardRes.ok) {
           const jobCardData: LargeScaleJobCard = await jobCardRes.json();
@@ -211,7 +212,9 @@ function EditLargeScaleJobCardPage() {
               .toISOString()
               .split("T")[0],
             exporterId: jobCardData.exporter?.id || "",
-            unitOfMeasure: jobCardData.unitOfMeasure || UnitOfMeasure.GRAMS,
+            unitOfMeasure:
+              (jobCardData.unitOfMeasure as UnitOfMeasure) ||
+              UnitOfMeasure.GRAMS,
             status: jobCardData.status || "pending",
             notes: jobCardData.notes || "",
             destinationCountry: jobCardData.destinationCountry || "",
@@ -228,9 +231,7 @@ function EditLargeScaleJobCardPage() {
             valueGhs: jobCardData.valueGhs?.toString() || "",
             numberOfOunces: jobCardData.numberOfOunces?.toString() || "",
             pricePerOunce: jobCardData.pricePerOunce?.toString() || "",
-            customsOfficerId: jobCardData.customsOfficer?.id || "",
-            assayOfficerId: jobCardData.assayOfficer?.id || "",
-            technicalDirectorId: jobCardData.technicalDirector?.id || "",
+            certificateNumber: jobCardData.certificateNumber || "",
           });
         } else {
           throw new Error("Failed to fetch job card");
@@ -244,11 +245,6 @@ function EditLargeScaleJobCardPage() {
         if (commoditiesRes.ok) {
           const commoditiesData = await commoditiesRes.json();
           setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
-        }
-
-        if (officersRes.ok) {
-          const officersData = await officersRes.json();
-          setOfficers(officersData);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -331,9 +327,7 @@ function EditLargeScaleJobCardPage() {
           pricePerOunce: formData.pricePerOunce
             ? Number(formData.pricePerOunce)
             : undefined,
-          customsOfficerId: formData.customsOfficerId || undefined,
-          assayOfficerId: formData.assayOfficerId || undefined,
-          technicalDirectorId: formData.technicalDirectorId || undefined,
+          certificateNumber: formData.certificateNumber || undefined,
         }),
       });
 
@@ -371,9 +365,10 @@ function EditLargeScaleJobCardPage() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
-      <BackLink href="/job-cards/large-scale">
-        Back to Large Scale Job Cards
-      </BackLink>
+      <BackLink
+        href="/job-cards/large-scale"
+        label="Back to Large Scale Job Cards"
+      />
 
       <div className="mt-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">
@@ -448,6 +443,21 @@ function EditLargeScaleJobCardPage() {
                   onChange={handleInputChange}
                   disabled={!canEdit}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Certificate Number
+                </label>
+                <input
+                  type="text"
+                  name="certificateNumber"
+                  value={formData.certificateNumber}
+                  onChange={handleInputChange}
+                  disabled={!canEdit}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder="Enter certificate number"
                 />
               </div>
 
@@ -548,7 +558,8 @@ function EditLargeScaleJobCardPage() {
                 <Select
                   value={
                     countryOptions.find(
-                      (country: { value: string; label: string }) => country.value === formData.destinationCountry
+                      (country: { value: string; label: string }) =>
+                        country.value === formData.destinationCountry
                     )
                       ? {
                           value: formData.destinationCountry,
@@ -850,7 +861,7 @@ function EditLargeScaleJobCardPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Team Leader
+                  Exporter Authorized Signatory
                 </label>
                 <input
                   type="text"

@@ -99,6 +99,7 @@ model JobCard {
   technicalDirectorName  String?
   buyerName           String?
   buyerAddress        String?
+  certificateNumber   String?                  @unique
   assays              Assay[]
   fees                Fee?
   invoices            Invoice[]
@@ -124,8 +125,6 @@ model CustomsOfficer {
   jobCards           JobCard[]
   largeScaleJobCards LargeScaleJobCard[]
 }
-
-
 
 model Seal {
   id          String   @id @default(uuid())
@@ -467,6 +466,7 @@ model LargeScaleJobCard {
   createdAt                 DateTime                     @default(now())
   updatedAt                 DateTime                     @updatedAt
   humanReadableId           String                       @unique
+  certificateNumber         String?                     @unique
   fees                      Fee?
   invoices                  Invoice[]
   assays                    LargeScaleAssay[]

@@ -443,14 +443,14 @@ export default function CertificateOfAssayPage() {
                 <p className="text-sm">LARGE SCALE OPERATIONS</p>
               </div>
               <div className="flex items-center">
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                      "https://goldbod.gov.gh/"
-                    )}`}
-                    alt="QR Code - Visit GoldBod Website"
-                    className="w-16 h-16"
-                  />
-                </div>
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                    "https://goldbod.gov.gh/"
+                  )}`}
+                  alt="QR Code - Visit GoldBod Website"
+                  className="w-16 h-16"
+                />
+              </div>
             </div>
 
             <div className="px-4 sm:px-6 lg:px-8 mb-4">
@@ -469,10 +469,10 @@ export default function CertificateOfAssayPage() {
 
                 <div>
                   <span className="text-sm text-gray-500 mr-2 font-medium">
-                    Job Id:
+                    Certificate Number:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assays[0]?.humanReadableAssayNumber || "N/A"}
+                    {jobCard?.certificateNumber || "N/A"}
                   </span>
                 </div>
               </div>
