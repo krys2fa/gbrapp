@@ -2,6 +2,7 @@ import { Role } from "@/app/generated/prisma";
 import { prisma } from "@/app/lib/prisma";
 import { withProtectedRoute } from "@/app/lib/with-protected-route";
 import { NextRequest, NextResponse } from "next/server";
+import { generateJobCardNumber } from "@/lib/job-card-number-generator";
 
 /**
  * GET handler for fetching all job cards with optional filtering
@@ -407,8 +408,7 @@ async function createJobCard(req: NextRequest) {
 
     // Ensure referenceNumber and receivedDate defaulting logic
     data.referenceNumber =
-      data.referenceNumber ||
-      `JC-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      data.referenceNumber || (await generateJobCardNumber("SS"));
     data.receivedDate = data.receivedDate
       ? new Date(String(data.receivedDate))
       : new Date();

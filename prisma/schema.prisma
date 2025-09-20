@@ -286,6 +286,17 @@ model AssaySequence {
   @@unique([year, assayType])
 }
 
+model JobCardSequence {
+  id         String   @id @default(uuid())
+  year       Int
+  cardType   String   // 'SS' for small-scale job cards, 'LS' for large-scale
+  lastNumber Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([year, cardType])
+}
+
 model ShipmentType {
   id               String            @id @default(uuid())
   name             String            @unique

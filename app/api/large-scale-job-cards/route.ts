@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import * as jose from "jose";
 import { generateAssayNumber } from "@/lib/assay-number-generator";
+import { generateJobCardNumber } from "@/lib/job-card-number-generator";
 
 /**
  * GET handler for fetching all large scale job cards with optional filtering
@@ -176,8 +177,7 @@ async function createLargeScaleJobCard(req: NextRequest) {
 
     // Generate reference number if not provided
     const generatedReferenceNumber =
-      referenceNumber ||
-      `LS-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      referenceNumber || (await generateJobCardNumber("LS"));
 
     // Validate required fields
     if (!receivedDate || !exporterId) {
