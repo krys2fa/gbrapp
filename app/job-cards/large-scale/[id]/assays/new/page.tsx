@@ -1,7 +1,7 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
-import { useApiClient } from "@/app/lib/api-client";
+// import { useApiClient } from "@/app/lib/api-client";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
@@ -210,9 +210,11 @@ function NewLargeScaleAssayPage() {
             (c: any) => c.commodity.id
           );
           const pricePromises = commodityIds.map((commodityId: string) =>
-            apiClient.get(
-              `/api/weekly-prices?type=COMMODITY&itemId=${commodityId}&approvedOnly=true`
-            ).catch(() => [])
+            apiClient
+              .get(
+                `/api/weekly-prices?type=COMMODITY&itemId=${commodityId}&approvedOnly=true`
+              )
+              .catch(() => [])
           );
 
           const priceResults = await Promise.all(pricePromises);
@@ -337,7 +339,7 @@ function NewLargeScaleAssayPage() {
 
         // Set missing flags - check if we have prices for all commodities in the job card
         const hasAllCommodityPrices =
-          jobBody?.commodities?.every((commodityItem) =>
+          jobBody?.commodities?.every((commodityItem: any) =>
             commodityPrices.some(
               (price) => price.commodityId === commodityItem.commodity.id
             )
@@ -604,7 +606,10 @@ function NewLargeScaleAssayPage() {
       };
 
       // Save assay data to database via API
-      await apiClient.post(`/api/large-scale-job-cards/${id}/assays`, assayData);
+      await apiClient.post(
+        `/api/large-scale-job-cards/${id}/assays`,
+        assayData
+      );
 
       toast.dismiss("assay-save");
       toast.success("Assay saved successfully!");
