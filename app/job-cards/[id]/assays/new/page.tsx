@@ -27,8 +27,10 @@ export default function NewAssayPage() {
   const [dailyPrice, setDailyPrice] = useState<any | null>(null);
   const [weeklyExchange, setWeeklyExchange] = useState<any | null>(null);
   const [metaLoading, setMetaLoading] = useState(true);
-  const [missingTodayCommodity, setMissingTodayCommodity] = useState(false);
-  const [missingTodayExchange, setMissingTodayExchange] = useState(false);
+  const [missingJobCardDateCommodity, setMissingJobCardDateCommodity] =
+    useState(false);
+  const [missingJobCardWeekExchange, setMissingJobCardWeekExchange] =
+    useState(false);
 
   const [form, setForm] = useState({
     method: "X_RAY" as AssayMethod,
@@ -39,6 +41,8 @@ export default function NewAssayPage() {
     securitySealNo: "",
     goldbodSealNo: "",
     customsSealNo: "",
+    customsOfficer: "",
+    technicalDirector: "",
   });
 
   // rows for each piece: grossWeight, waterWeight, fineness (auto), netWeight
@@ -144,58 +148,73 @@ export default function NewAssayPage() {
                 new Date(a.createdAt).getTime()
             )[0];
 
-        const today = date;
+        // Use job card's received date instead of today's date
+        const jobCardReceivedDate = jobBody?.receivedDate
+          ? String(jobBody.receivedDate).split("T")[0]
+          : date;
 
-        // Calculate the start of the current week (Monday) in UTC
-        const todayDate = new Date(today + "T00:00:00.000Z");
-        const dayOfWeek = todayDate.getUTCDay();
-        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        const weekStart = new Date(todayDate);
-        weekStart.setUTCDate(todayDate.getUTCDate() - diff);
-        weekStart.setUTCHours(0, 0, 0, 0);
-        const currentWeekStart = weekStart.toISOString().split("T")[0];
-        console.log("Current week start:", currentWeekStart);
-        console.log("Today date:", today);
-        console.log("Week calculation for:", new Date(today).toISOString());
-
-        const todayCommodityMatches = (commodityPrices || []).filter(
-          (p: any) => String(p?.createdAt || "").split("T")[0] === today
+        // Calculate the start of the week for the job card's received date (Monday) in UTC
+        const jobCardReceivedDateObj = new Date(
+          jobCardReceivedDate + "T00:00:00.000Z"
         );
-        const todaysExchangeMatches = (exchangePrices || []).filter(
+        const jobCardDayOfWeek = jobCardReceivedDateObj.getUTCDay();
+        const jobCardDiff = jobCardDayOfWeek === 0 ? 6 : jobCardDayOfWeek - 1;
+        const jobCardWeekStart = new Date(jobCardReceivedDateObj);
+        jobCardWeekStart.setUTCDate(
+          jobCardReceivedDateObj.getUTCDate() - jobCardDiff
+        );
+        jobCardWeekStart.setUTCHours(0, 0, 0, 0);
+        const jobCardWeekStartStr = jobCardWeekStart
+          .toISOString()
+          .split("T")[0];
+        console.log("Job card week start:", jobCardWeekStartStr);
+        console.log("Today date:", date);
+        console.log("Job card received date:", jobCardReceivedDate);
+        console.log(
+          "Week calculation for job card received date:",
+          jobCardReceivedDateObj.toISOString()
+        );
+
+        const jobCardDateCommodityMatches = (commodityPrices || []).filter(
+          (p: any) =>
+            String(p?.createdAt || "").split("T")[0] === jobCardReceivedDate
+        );
+        const jobCardWeekExchangeMatches = (exchangePrices || []).filter(
           (p: any) => {
             const priceWeekStart = String(p?.weekStartDate || "").split("T")[0];
-            const matches = priceWeekStart === currentWeekStart;
+            const matches = priceWeekStart === jobCardWeekStartStr;
             console.log(
-              `Exchange rate ${p?.id}: weekStart=${priceWeekStart}, currentWeek=${currentWeekStart}, matches=${matches}`
+              `Exchange rate ${p?.id}: weekStart=${priceWeekStart}, jobCardWeek=${jobCardWeekStartStr}, matches=${matches}`
             );
             return matches;
           }
         );
 
-        console.log("Today's exchange matches:", todaysExchangeMatches);
+        console.log(
+          "Job card week exchange matches:",
+          jobCardWeekExchangeMatches
+        );
 
-        // Get commodity entry (can fall back to latest if today's is missing)
+        // Get commodity entry only for the job card's received date (no fallback)
         const commodityEntry =
           latestByDate(
-            todayCommodityMatches.filter((p: any) => p.type === "COMMODITY")
-          ) ||
-          latestByDate(
-            (commodityPrices || []).filter((p: any) => p.type === "COMMODITY")
-          ) ||
-          null;
+            jobCardDateCommodityMatches.filter(
+              (p: any) => p.type === "COMMODITY"
+            )
+          ) || null;
 
-        // Only use exchange rates from the current week - don't fall back to old rates
+        // Only use exchange rates from the job card's received date week - no fallback
         const exchangeEntry =
-          todaysExchangeMatches.length > 0
+          jobCardWeekExchangeMatches.length > 0
             ? latestByDate(
-                todaysExchangeMatches.filter(
+                jobCardWeekExchangeMatches.filter(
                   (p: any) => p.type === "EXCHANGE" && p.status === "APPROVED"
                 )
               )
-            : null; // No approved rate for current week
+            : null; // No approved rate for job card's week
 
         console.log("Selected exchange entry:", exchangeEntry);
-        console.log("Current week start:", currentWeekStart);
+        console.log("Job card week start:", jobCardWeekStartStr);
         console.log(
           "Available exchange rates:",
           exchangePrices?.map((p) => ({
@@ -206,8 +225,10 @@ export default function NewAssayPage() {
           }))
         );
 
-        setMissingTodayCommodity(todayCommodityMatches.length === 0);
-        setMissingTodayExchange(todaysExchangeMatches.length === 0);
+        setMissingJobCardDateCommodity(
+          jobCardDateCommodityMatches.length === 0
+        );
+        setMissingJobCardWeekExchange(jobCardWeekExchangeMatches.length === 0);
 
         setDailyPrice({
           value: commodityEntry ? Number(commodityEntry.price) : null,
@@ -301,8 +322,28 @@ export default function NewAssayPage() {
       const net = next[index].netWeight;
       const manualFineness = next[index].fineness;
 
+      // If grossWeight and fineness are provided, auto-calculate net weight
+      if (
+        (field === "grossWeight" || field === "fineness") &&
+        typeof gross === "number" &&
+        gross > 0 &&
+        typeof manualFineness === "number" &&
+        manualFineness > 0
+      ) {
+        const calculatedNet = Number(
+          ((manualFineness / 100) * gross).toFixed(4)
+        );
+        next[index].netWeight = calculatedNet;
+
+        // Clear fineness warnings since we're using the entered fineness value
+        setFinenessWarnings((prev) => {
+          const newWarnings = [...prev];
+          newWarnings[index] = { hasWarning: false };
+          return newWarnings;
+        });
+      }
       // If grossWeight or netWeight changed, recompute expected fineness
-      if (field === "netWeight" || field === "grossWeight") {
+      else if (field === "netWeight" || field === "grossWeight") {
         if (typeof gross === "number" && gross > 0 && typeof net === "number") {
           const expectedFineness = calculateExpectedFineness(gross, net);
           // Only auto-set fineness if it hasn't been manually edited or if it matches expected
@@ -339,9 +380,10 @@ export default function NewAssayPage() {
         }
       }
 
-      // If fineness is manually edited, check for discrepancy
-      if (field === "fineness") {
-        if (typeof gross === "number" && gross > 0 && typeof net === "number") {
+      // If fineness is manually edited, check for discrepancy (only if net weight wasn't auto-calculated)
+      if (field === "fineness" && typeof gross === "number" && gross > 0) {
+        // If we have existing net weight, check for discrepancy
+        if (typeof net === "number") {
           const expectedFineness = calculateExpectedFineness(gross, net);
           const hasDiscrepancy =
             typeof parsed === "number" && parsed !== expectedFineness;
@@ -356,7 +398,7 @@ export default function NewAssayPage() {
             return newWarnings;
           });
         } else {
-          // No gross/net to compare against, no warning
+          // No net weight to compare against, no warning
           setFinenessWarnings((prev) => {
             const newWarnings = [...prev];
             newWarnings[index] = { hasWarning: false };
@@ -448,19 +490,24 @@ export default function NewAssayPage() {
         return;
       }
 
-      // If today's price is missing, block saving and show an error
-      if (missingTodayCommodity) {
-        const msg = `Cannot save valuation: no daily commodity price for today set. Please add the required price before saving.`;
-        setError(msg);
+      // If commodity price for job card's received date is missing, show toast and return
+      if (missingJobCardDateCommodity) {
+        const receivedDate = jobCard?.receivedDate
+          ? new Date(jobCard.receivedDate).toLocaleDateString()
+          : "the job card received date";
+        const msg = `No commodity price set for ${receivedDate}. Cannot perform valuation.`;
         toast.dismiss("assay-save");
-        toast(msg, { icon: "⚠️" });
+        toast.error(msg);
         setSaving(false);
         return;
       }
 
       // Block saving if weekly exchange rate is missing - this ensures data integrity
-      if (missingTodayExchange) {
-        const msg = `Cannot create assay: No approved exchange rate available for the current week. Please contact a super admin to approve the pending exchange rate before proceeding.`;
+      if (missingJobCardWeekExchange) {
+        const receivedDate = jobCard?.receivedDate
+          ? new Date(jobCard.receivedDate).toLocaleDateString()
+          : "the job card received date";
+        const msg = `Cannot create assay: No exchange rate available for the week of ${receivedDate}. Please add the required exchange rate before proceeding.`;
         setError(msg);
         toast.dismiss("assay-save");
         toast.error(msg);
@@ -504,7 +551,11 @@ export default function NewAssayPage() {
 
       const updated = {
         ...jobCard,
-        assays: [...(jobCard.assays || []), newAssay],
+        // Only one assay per job card - replace existing assay
+        assays: [newAssay],
+        // Save officer information in the job card
+        customsOfficer: form.customsOfficer,
+        technicalDirector: form.technicalDirector,
       };
 
       // include totals and computed values on the job card update so server persists them
@@ -585,27 +636,57 @@ export default function NewAssayPage() {
               </div>
               <div>
                 <div className="text-xs text-gray-500">
-                  Daily Commodity Price (today)
-                </div>
-                <div className="font-medium text-gray-900">
-                  {dailyPrice?.value != null
-                    ? formatCurrency(dailyPrice.value, "USD", false)
-                    : "-"}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-gray-500">
-                  Weekly Exchange Price (current week)
+                  Daily Commodity Price (
+                  {jobCard?.receivedDate
+                    ? new Date(jobCard.receivedDate).toLocaleDateString()
+                    : "received date"}
+                  )
                 </div>
                 <div
                   className={`font-medium ${
-                    missingTodayExchange ? "text-red-600" : "text-gray-900"
+                    missingJobCardDateCommodity
+                      ? "text-red-600"
+                      : "text-gray-900"
                   }`}
                 >
-                  {missingTodayExchange ? (
+                  {missingJobCardDateCommodity ? (
                     <span className="flex items-center">
                       <span className="mr-1">❌</span>
-                      Not Approved
+                      No Price Set
+                    </span>
+                  ) : dailyPrice?.value != null ? (
+                    formatCurrency(dailyPrice.value, "USD", false)
+                  ) : (
+                    "-"
+                  )}
+                </div>
+                {missingJobCardDateCommodity && (
+                  <div className="text-xs text-red-500 mt-1">
+                    Add commodity price for this date
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">
+                  Weekly Exchange Price (
+                  {jobCard?.receivedDate
+                    ? `week of ${new Date(
+                        jobCard.receivedDate
+                      ).toLocaleDateString()}`
+                    : "received date week"}
+                  )
+                </div>
+                <div
+                  className={`font-medium ${
+                    missingJobCardWeekExchange
+                      ? "text-red-600"
+                      : "text-gray-900"
+                  }`}
+                >
+                  {missingJobCardWeekExchange ? (
+                    <span className="flex items-center">
+                      <span className="mr-1">❌</span>
+                      No Rate Set
                     </span>
                   ) : weeklyExchange?.value ? (
                     formatExchangeRate(weeklyExchange.value)
@@ -613,22 +694,26 @@ export default function NewAssayPage() {
                     <span className="text-gray-400">No Rate</span>
                   )}
                 </div>
-                {missingTodayExchange && (
+                {missingJobCardWeekExchange && (
                   <div className="text-xs text-red-500 mt-1">
-                    Contact super admin to approve pending rate
+                    Add exchange rate for this week
                   </div>
                 )}
               </div>
 
               <div>
-                <div className="text-xs text-gray-500">Net weight (oz)</div>
+                <div className="text-xs text-gray-500">
+                  Exporter Net weight (oz)
+                </div>
                 <div className="font-medium text-gray-900">
                   {displayNetWeightOz ? displayNetWeightOz.toFixed(3) : "0.000"}
                 </div>
               </div>
 
               <div>
-                <div className="text-xs text-gray-500">Value (USD)</div>
+                <div className="text-xs text-gray-500">
+                  Exporter Value (USD)
+                </div>
                 <div className="font-medium text-gray-900">
                   {displayUsdValue
                     ? formatCurrency(displayUsdValue, "USD", false)
@@ -637,7 +722,9 @@ export default function NewAssayPage() {
               </div>
 
               <div>
-                <div className="text-xs text-gray-500">Value (GHS)</div>
+                <div className="text-xs text-gray-500">
+                  Exporter Value (GHS)
+                </div>
                 <div className="font-medium text-gray-900">
                   {displayGhsValue
                     ? formatCurrency(displayGhsValue, "GHS", false)
@@ -689,43 +776,49 @@ export default function NewAssayPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Assay Method
+                  Type of shipment
                 </label>
                 <select
-                  name="method"
-                  value={form.method}
+                  name="shipmentTypeId"
+                  value={form.shipmentTypeId}
                   onChange={handleFormChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 >
-                  <option value="X_RAY">X-ray</option>
-                  <option value="WATER_DENSITY">Water density</option>
+                  <option value="">Select shipment type</option>
+                  {shipmentTypes.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Pieces
+                  Customs Officer
                 </label>
                 <input
-                  name="pieces"
-                  type="number"
-                  min={1}
-                  value={form.pieces}
+                  name="customsOfficer"
+                  type="text"
+                  value={form.customsOfficer || ""}
                   onChange={handleFormChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  placeholder="Enter customs officer name"
+                  required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Authorized Signatory
+                  Technical Director
                 </label>
                 <input
-                  name="signatory"
+                  name="technicalDirector"
                   type="text"
-                  value={form.signatory}
+                  value={form.technicalDirector || ""}
                   onChange={handleFormChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  placeholder="Enter technical director name"
                 />
               </div>
 
@@ -768,6 +861,35 @@ export default function NewAssayPage() {
                   onChange={handleFormChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                   placeholder="Enter customs seal number"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Assay Method
+                </label>
+                <select
+                  name="method"
+                  value={form.method}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="X_RAY">X-ray</option>
+                  <option value="WATER_DENSITY">Water density</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Pieces
+                </label>
+                <input
+                  name="pieces"
+                  type="number"
+                  min={1}
+                  value={form.pieces}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 />
               </div>
             </div>
@@ -892,59 +1014,26 @@ export default function NewAssayPage() {
                 ))}
               </div>
             </div>
-
-            <div className="pt-4 border-t">
-              <h4 className="text-sm font-medium text-gray-900">Additional</h4>
-              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Comments
-                  </label>
-                  <textarea
-                    name="comments"
-                    value={form.comments}
-                    onChange={handleFormChange}
-                    rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Type of shipment
-                  </label>
-                  <select
-                    name="shipmentTypeId"
-                    value={form.shipmentTypeId}
-                    onChange={handleFormChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                  >
-                    <option value="">Select shipment type</option>
-                    {shipmentTypes.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
             <button
               type="submit"
-              disabled={saving || missingTodayExchange}
+              disabled={saving || missingJobCardWeekExchange}
               className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
-                missingTodayExchange
+                missingJobCardWeekExchange
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-indigo-600 hover:bg-indigo-700"
               }`}
             >
               {saving ? "Saving..." : "Save Valuation"}
             </button>
-            {missingTodayExchange && (
+            {missingJobCardWeekExchange && (
               <p className="text-sm text-red-600 mt-2">
-                Cannot save: Missing approved exchange rate for current week
+                Cannot save: Missing exchange rate for the week of{" "}
+                {jobCard?.receivedDate
+                  ? new Date(jobCard.receivedDate).toLocaleDateString()
+                  : "job card received date"}
               </p>
             )}
           </div>
