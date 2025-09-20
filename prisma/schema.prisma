@@ -74,8 +74,6 @@ model JobCard {
   receivedDate        DateTime
   exporterId          String
   customsOfficerId    String?
-  nacobOfficerId      String?
-  securityOfficerId   String?
   assayOfficerId      String?
   technicalDirectorId String?
   status              String                   @default("pending")
@@ -104,8 +102,6 @@ model JobCard {
   commodity           Commodity?               @relation(fields: [commodityId], references: [id])
   customsOfficer      CustomsOfficer?          @relation(fields: [customsOfficerId], references: [id])
   exporter            Exporter                 @relation(fields: [exporterId], references: [id])
-  nacobOfficer        NACOBOfficer?            @relation(fields: [nacobOfficerId], references: [id])
-  securityOfficer     NationalSecurityOfficer? @relation(fields: [securityOfficerId], references: [id])
   technicalDirector   TechnicalDirector?       @relation(fields: [technicalDirectorId], references: [id])
   levies              Levy[]
   seals               Seal[]
@@ -125,33 +121,7 @@ model CustomsOfficer {
   largeScaleJobCards LargeScaleJobCard[]
 }
 
-model NACOBOfficer {
-  id                 String              @id @default(uuid())
-  name               String
-  badgeNumber        String              @unique
-  email              String?             @unique
-  phone              String?
-  userId             String?             @unique
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  jobCards           JobCard[]
-  largeScaleJobCards LargeScaleJobCard[]
-  user               User?               @relation(fields: [userId], references: [id])
-}
 
-model NationalSecurityOfficer {
-  id                 String              @id @default(uuid())
-  name               String
-  badgeNumber        String              @unique
-  email              String?             @unique
-  phone              String?
-  userId             String?             @unique
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  jobCards           JobCard[]
-  largeScaleJobCards LargeScaleJobCard[]
-  user               User?               @relation(fields: [userId], references: [id])
-}
 
 model Seal {
   id          String   @id @default(uuid())
@@ -362,29 +332,6 @@ model Currency {
   fees      Fee[]
   invoices  Invoice[]
   levies    Levy[]
-  prices    Price[]
-}
-
-model Price {
-  id             String    @id @default(uuid())
-  value          Float
-  priceTypeId    String
-  currencyId     String
-  effectiveDate  DateTime
-  expirationDate DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  currency       Currency  @relation(fields: [currencyId], references: [id])
-  priceType      PriceType @relation(fields: [priceTypeId], references: [id])
-}
-
-model PriceType {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  prices      Price[]
 }
 
 model Levy {
@@ -480,8 +427,6 @@ model User {
   assayOfficer       AssayOfficer?
   auditTrails        AuditTrail[]
   customsOfficer     CustomsOfficer?
-  nacobOfficer       NACOBOfficer?
-  securityOfficer    NationalSecurityOfficer?
   technicalDirector  TechnicalDirector?
   approvedRates      WeeklyPrice[]            @relation("ApprovedRates")
   submittedRates     WeeklyPrice[]            @relation("SubmittedRates")
@@ -515,8 +460,6 @@ model LargeScaleJobCard {
   customsOfficerId          String?
   assayOfficerId            String?
   technicalDirectorId       String?
-  nacobOfficerId            String?
-  nationalSecurityOfficerId String?
   createdAt                 DateTime                     @default(now())
   updatedAt                 DateTime                     @updatedAt
   humanReadableId           String                       @unique
@@ -526,8 +469,6 @@ model LargeScaleJobCard {
   assayOfficer              AssayOfficer?                @relation(fields: [assayOfficerId], references: [id])
   customsOfficer            CustomsOfficer?              @relation(fields: [customsOfficerId], references: [id])
   exporter                  Exporter                     @relation(fields: [exporterId], references: [id])
-  nacobOfficer              NACOBOfficer?                @relation(fields: [nacobOfficerId], references: [id])
-  nationalSecurityOfficer   NationalSecurityOfficer?     @relation(fields: [nationalSecurityOfficerId], references: [id])
   technicalDirector         TechnicalDirector?           @relation(fields: [technicalDirectorId], references: [id])
   commodities               LargeScaleJobCardCommodity[]
 }
@@ -678,9 +619,4 @@ enum ActionType {
   OTHER
 }
 
-enum IdType {
-  PASSPORT
-  GHANA_CARD
-  DRIVERS_LICENSE
-  TIN
-}
+
