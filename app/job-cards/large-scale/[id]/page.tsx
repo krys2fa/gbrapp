@@ -20,24 +20,7 @@ interface LargeScaleJobCard {
       id: string;
       name: string;
     };
-    // Consignee Information
-    consigneeAddress?: string;
-    consigneeTelephone?: string;
-    consigneeMobile?: string;
-    consigneeEmail?: string;
-    // Exporter Details
-    deliveryLocation?: string;
-    exporterTelephone?: string;
-    exporterEmail?: string;
-    exporterWebsite?: string;
-    exporterLicenseNumber?: string;
-    // Notified Party Information
-    notifiedPartyName?: string;
-    notifiedPartyAddress?: string;
-    notifiedPartyEmail?: string;
-    notifiedPartyContactPerson?: string;
-    notifiedPartyTelephone?: string;
-    notifiedPartyMobile?: string;
+    exporterCode?: string;
   };
   unitOfMeasure: string;
   status: string;
@@ -319,7 +302,7 @@ function LargeScaleJobCardDetailPage() {
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.exporter.name} (
-                    {jobCard.exporter.exporterType.name})
+                    {jobCard.exporter.exporterCode})
                   </dd>
                 </div>
                 <div>
