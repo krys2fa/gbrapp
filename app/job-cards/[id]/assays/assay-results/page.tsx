@@ -196,6 +196,15 @@ export default function AssayResultsPage() {
                   {assays[0]?.shipmentType.name || "N/A"}
                 </span>
               </div>
+
+               <div className="justify-end flex">
+                <span className="text-sm font-medium text-gray-500 mr-2">
+                  Certificate Number:
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {jobCard?.certificateNumber || "N/A"}
+                </span>
+              </div>
             </div>
 
             {/* Assay Measurements Table */}

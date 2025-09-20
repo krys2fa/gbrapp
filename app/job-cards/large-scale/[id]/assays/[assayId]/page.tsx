@@ -473,10 +473,10 @@ export default function AssayResultsPage() {
                 </div>
                 <div>
                   <span className="text-sm text-gray-500 mr-2 font-medium">
-                    Assay Number:
+                    Certificate Number:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assay?.humanReadableAssayNumber || "N/A"}
+                    {jobCard?.certificateNumber || "N/A"}
                   </span>
                 </div>
               </div>
