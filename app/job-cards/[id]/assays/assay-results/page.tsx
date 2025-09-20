@@ -92,51 +92,9 @@ export default function AssayResultsPage() {
 
   return (
     <>
-      {/* Watermark Styles */}
+      {/* Print styles for QR Code */}
       <style jsx>{`
-        #assay-content {
-          position: relative;
-        }
-        #assay-content::before {
-          content: "";
-          position: absolute;
-          top: 30%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 280px;
-          height: 280px;
-          background: url("/seal.png") no-repeat center center;
-          background-size: contain;
-          opacity: 0.08;
-          z-index: 1;
-          pointer-events: none;
-        }
-        #assay-content > * {
-          position: relative;
-          z-index: 2;
-        }
-
-        /* Multi-page watermark for print */
         @media print {
-          body {
-            background: url("/seal.png") no-repeat center 30%;
-            background-size: 280px 280px;
-            background-attachment: fixed;
-          }
-          body::before {
-            content: "";
-            position: fixed;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            height: 280px;
-            background: url("/seal.png") no-repeat center center;
-            background-size: contain;
-            opacity: 0.08;
-            z-index: 1;
-            pointer-events: none;
-          }
           /* QR Code print styles */
           img[alt*="QR Code"] {
             width: 16pt !important;
@@ -149,7 +107,7 @@ export default function AssayResultsPage() {
 
       {/* Header with Logo and Navigation */}
       <div className="bg-white shadow-sm rounded-t-lg print:hidden">
-        <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="print:hidden">
               <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
@@ -167,7 +125,7 @@ export default function AssayResultsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Content */}
           <div id="assay-content" className="bg-white shadow-sm">
-            <div className="flex justify-between items-center p-4 border-b border-gray-200">
+            <div className="flex justify-between items-center p-4">
               <div className="flex items-center">
                 <img
                   src="/goldbod-logo-black.png"
@@ -175,63 +133,68 @@ export default function AssayResultsPage() {
                   className="h-12 w-auto"
                 />
               </div>
-              <h1 className="text-xl font-bold tracking-wider ml-4">
-                ASSAY RESULTS
-              </h1>
-              <div className="flex items-center">
+              <div className="title-section uppercase mx-auto text-center">
+                <p className="font-bold text-2xl">ASSAY REPORT</p>
+                <p className="text-sm">SMALL SCALE OPERATIONS</p>
+              </div>
+              {/* QR Code */}
+              <div className="text-center flex-shrink-0">
                 <img
-                  src="/coat-of-arms.jpg"
-                  alt="Coat of Arms"
-                  className="h-20 w-auto"
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
+                    "https://goldbod.gov.gh/"
+                  )}`}
+                  alt="QR Code - Visit GoldBod Website"
+                  className="w-24 h-24 mx-auto mb-2"
                 />
               </div>
             </div>
 
             <div className="px-4 sm:px-6 lg:px-8 grid grid-cols-2 gap-4 mb-4">
               <div>
-                <span className="text-sm text-gray-500 mr-2">Client:</span>
-                <span className="text-sm">
+                <span className="text-sm font-medium text-gray-500 mr-2">
+                  Exporter:
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
                   {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
                     ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
                     : jobCard?.exporter?.name || "N/A"}
                 </span>
               </div>
 
-              <div>
-                <span className="text-sm text-gray-500 mr-2">Date:</span>
-                <span className="text-sm">
-                  {formatDate(jobCard.receivedDate)}
+              <div className="justify-end flex">
+                <span className="text-sm font-medium text-gray-500 mr-2 ">
+                  Data Sheet Dates:
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {assays[0]?.dataSheetDates
+                    ? formatDate(assays[0].dataSheetDates)
+                    : formatDate(jobCard.receivedDate)}
                 </span>
               </div>
 
               <div>
-                <span className="text-sm text-gray-500 mr-2">Job Number:</span>
-                <span className="text-sm">
-                  {jobCard?.referenceNumber || "N/A"}
+                <span className="text-sm font-medium text-gray-500 mr-2">
+                  Job Number:
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {jobCard?.humanReadableId || "N/A"}
                 </span>
               </div>
 
-              <div>
-                <span className="text-sm text-gray-500 mr-2">
-                  Assay Number:
+              <div className="justify-end flex">
+                <span className="text-sm font-medium text-gray-500 mr-2">
+                  Destination:
                 </span>
-                <span className="text-sm">
-                  {assays[0]?.certificateNumber || "N/A"}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-sm text-gray-500 mr-2">Destination:</span>
-                <span className="text-sm">
+                <span className="text-sm font-semibold text-gray-900">
                   {jobCard?.destinationCountry || "N/A"}
                 </span>
               </div>
 
               <div>
-                <span className="text-sm text-gray-500 mr-2">
+                <span className="text-sm font-medium text-gray-500 mr-2">
                   Type of Shipment:
                 </span>
-                <span className="text-sm">
+                <span className="text-sm font-semibold text-gray-900">
                   {assays[0]?.shipmentType.name || "N/A"}
                 </span>
               </div>
@@ -247,13 +210,13 @@ export default function AssayResultsPage() {
                         <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           SN
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Gross Weight ({jobCard?.unitOfMeasure})
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Fineness (%)
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
+                        <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Net Weight ({jobCard?.unitOfMeasure})
                         </th>
                       </tr>
@@ -498,49 +461,13 @@ export default function AssayResultsPage() {
               </div>
             </div>
 
-            {/* QR Code Section */}
-            <div className="bg-white shadow-sm rounded-b-lg">
-              <div className="my-6 px-4 sm:px-6 lg:px-8 pb-6">
-                <div className="flex items-start justify-between gap-8">
-                  {/* QR Code */}
-                  <div className="text-center flex-shrink-0">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
-                        "https://goldbod.gov.gh/"
-                      )}`}
-                      alt="QR Code - Visit GoldBod Website"
-                      className="w-40 h-40 mx-auto mb-2"
-                    />
-                  </div>
-
-                  {/* Comments Section */}
-                  <div className="flex-1 max-w-md">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Comments
-                    </label>
-                    <div className="comments-section border border-gray-300 rounded p-4 h-40 overflow-y-auto bg-gray-50">
-                      <p className="text-sm text-gray-900  whitespace-pre-wrap">
-                        {/* {assays.length > 0 && assays[0]?.comments
-                          ? assays[0].comments
-                          : "No comments available for this assay."} */}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* QR Code Section */}
-              {/* <div className="mt-8 flex justify-end px-4 sm:px-6 lg:px-8 pb-6">
-                <div className="flex items-center">
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                      "https://goldbod.gov.gh/"
-                    )}`}
-                    alt="QR Code - Visit GoldBod Website"
-                    className="w-16 h-16"
-                  />
-                </div>
-              </div> */}
+            {/* Official Seal */}
+            <div className="flex justify-end">
+              <img
+                src="/seal.png"
+                alt="Official Seal"
+                className="w-32 h-24 mb-2 print:w-16 print:h-16"
+              />
             </div>
           </div>
         </div>

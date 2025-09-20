@@ -331,9 +331,8 @@ export default function NewAssayPage() {
         typeof manualFineness === "number" &&
         manualFineness > 0
       ) {
-        const calculatedNet = Number(
-          ((manualFineness / 100) * gross).toFixed(4)
-        );
+        const calculatedNet =
+          Math.round((manualFineness / 100) * gross * 100) / 100;
         next[index].netWeight = calculatedNet;
 
         // Clear fineness warnings since we're using the entered fineness value
@@ -425,6 +424,22 @@ export default function NewAssayPage() {
     (s, r) => s + (Number(r.netWeight) || 0),
     0
   );
+
+  // Calculate totals for the measurements table
+  const totalGrossWeight = rows.reduce(
+    (s, r) => s + (Number(r.grossWeight) || 0),
+    0
+  );
+  const totalWaterWeight = rows.reduce(
+    (s, r) => s + (Number(r.waterWeight) || 0),
+    0
+  );
+  const averageFineness =
+    rows.length > 0
+      ? rows.reduce((s, r) => s + (Number(r.fineness) || 0), 0) /
+        rows.filter((r) => r.fineness).length
+      : 0;
+
   const unitOfMeasure = jobCard?.unitOfMeasure || "g"; // expect 'g' or 'kg' stored on jobCard
   const totalNetWeightOz = toOunces(totalInputNetWeight, unitOfMeasure);
   const totalNetWeightOzDisplay = Number.isFinite(totalNetWeightOz)
@@ -442,6 +457,8 @@ export default function NewAssayPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    toast.loading("Loading preview...", { id: "loading-preview" });
 
     try {
       // fetch current job card
@@ -482,9 +499,8 @@ export default function NewAssayPage() {
       if (metaMissing.length > 0) {
         const msg = `Cannot save valuation. Missing: ${metaMissing.join(", ")}`;
         setError(msg);
-        toast.dismiss("assay-save");
+        toast.dismiss("loading-preview");
         toast.error(msg);
-        setSaving(false);
         return;
       }
 
@@ -494,9 +510,8 @@ export default function NewAssayPage() {
           ? new Date(jobCard.receivedDate).toLocaleDateString()
           : "the job card received date";
         const msg = `No commodity price set for ${receivedDate}. Cannot perform valuation.`;
-        toast.dismiss("assay-save");
+        toast.dismiss("loading-preview");
         toast.error(msg);
-        setSaving(false);
         return;
       }
 
@@ -507,17 +522,20 @@ export default function NewAssayPage() {
           : "the job card received date";
         const msg = `Cannot create assay: No exchange rate available for the week of ${receivedDate}. Please add the required exchange rate before proceeding.`;
         setError(msg);
+        toast.dismiss("loading-preview");
         toast.error(msg);
         return;
       }
 
       // Show preview modal instead of saving directly
+      toast.dismiss("loading-preview");
       setShowPreviewModal(true);
     } catch (err: any) {
       console.error(err);
       const errorMessage =
         err?.message || "An error occurred while preparing the preview";
       setError(errorMessage);
+      toast.dismiss("loading-preview");
       toast.error(errorMessage);
     }
   };
@@ -557,8 +575,8 @@ export default function NewAssayPage() {
           meta: {
             unit: unitOfMeasure,
             totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(3)),
-            valueUsd: Number(displayUsdValue.toFixed(4)),
-            valueGhs: Number(displayGhsValue.toFixed(4)),
+            valueUsd: Number(displayUsdValue.toFixed(2)),
+            valueGhs: Number(displayGhsValue.toFixed(2)),
             weeklyExchange: Number(weeklyExchange?.value) || null,
             dailyPrice: Number(dailyPrice?.value) || null,
           },
@@ -724,7 +742,12 @@ export default function NewAssayPage() {
                   Exporter Net weight (oz)
                 </div>
                 <div className="font-medium text-gray-900">
-                  {displayNetWeightOz ? displayNetWeightOz.toFixed(3) : "0.000"}
+                  {displayNetWeightOz
+                    ? displayNetWeightOz.toLocaleString(undefined, {
+                        minimumFractionDigits: 3,
+                        maximumFractionDigits: 3,
+                      })
+                    : "0.000"}
                 </div>
               </div>
 
@@ -1030,6 +1053,53 @@ export default function NewAssayPage() {
                     </div>
                   </div>
                 ))}
+
+                {/* Totals Row */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <h5 className="text-sm font-medium text-gray-700 mb-2">
+                    Totals
+                  </h5>
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-${
+                      form.method === "X_RAY" ? "3" : "4"
+                    } gap-3 items-end bg-gray-50 p-3 rounded`}
+                  >
+                    <div>
+                      <label className="block text-xs text-gray-600 font-medium">
+                        Total Gross Weight ({unitOfMeasure})
+                      </label>
+                      <div className="mt-1 text-sm font-semibold text-gray-900">
+                        {totalGrossWeight.toFixed(2)}
+                      </div>
+                    </div>
+                    {form.method !== "X_RAY" && (
+                      <div>
+                        <label className="block text-xs text-gray-600 font-medium">
+                          Total Water Weight ({unitOfMeasure})
+                        </label>
+                        <div className="mt-1 text-sm font-semibold text-gray-900">
+                          {totalWaterWeight.toFixed(2)}
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <label className="block text-xs text-gray-600 font-medium">
+                        Average Fineness (%)
+                      </label>
+                      <div className="mt-1 text-sm font-semibold text-gray-900">
+                        {averageFineness.toFixed(2)}%
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 font-medium">
+                        Total Net Weight ({unitOfMeasure})
+                      </label>
+                      <div className="mt-1 text-sm font-semibold text-gray-900">
+                        {totalInputNetWeight.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1220,22 +1290,41 @@ export default function NewAssayPage() {
                                       {index + 1}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                      {row.grossWeight?.toFixed(4) || "0.0000"}
+                                      {row.grossWeight?.toFixed(2) || "0.00"}
                                     </td>
                                     {form.method !== "X_RAY" && (
                                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {row.waterWeight?.toFixed(4) ||
-                                          "0.0000"}
+                                        {row.waterWeight?.toFixed(2) || "0.00"}
                                       </td>
                                     )}
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                       {row.fineness?.toFixed(2) || "0.00"}%
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                      {row.netWeight?.toFixed(4) || "0.0000"}
+                                      {row.netWeight?.toFixed(2) || "0.00"}
                                     </td>
                                   </tr>
                                 ))}
+                                {/* Totals Row */}
+                                <tr className="bg-gray-50 border-t-2 border-gray-300">
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                    TOTALS
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                    {totalGrossWeight.toFixed(2)}
+                                  </td>
+                                  {form.method !== "X_RAY" && (
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                      {totalWaterWeight.toFixed(2)}
+                                    </td>
+                                  )}
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                    {averageFineness.toFixed(2)}% (avg)
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                    {totalInputNetWeight.toFixed(2)}
+                                  </td>
+                                </tr>
                               </tbody>
                             </table>
                           </div>
@@ -1249,7 +1338,10 @@ export default function NewAssayPage() {
                             </dt>
                             <dd className="mt-1 text-lg font-semibold text-gray-900">
                               {displayNetWeightOz
-                                ? displayNetWeightOz.toFixed(3)
+                                ? displayNetWeightOz.toLocaleString(undefined, {
+                                    minimumFractionDigits: 3,
+                                    maximumFractionDigits: 3,
+                                  })
                                 : "0.000"}
                             </dd>
                           </div>
@@ -1288,7 +1380,13 @@ export default function NewAssayPage() {
                             </dt>
                             <dd className="mt-1 text-lg font-semibold text-gray-900">
                               {totalNetWeightOzDisplay
-                                ? totalNetWeightOzDisplay.toFixed(3)
+                                ? totalNetWeightOzDisplay.toLocaleString(
+                                    undefined,
+                                    {
+                                      minimumFractionDigits: 3,
+                                      maximumFractionDigits: 3,
+                                    }
+                                  )
                                 : "0.000"}
                             </dd>
                           </div>
@@ -1310,7 +1408,7 @@ export default function NewAssayPage() {
                               @{" "}
                               {dailyPrice?.value
                                 ? formatCurrency(dailyPrice.value, "USD", false)
-                                : "$0.00"}
+                                : "0.00"}
                               /oz
                               {jobCard?.receivedDate && (
                                 <span>
@@ -1345,7 +1443,7 @@ export default function NewAssayPage() {
                               @{" "}
                               {weeklyExchange?.value
                                 ? formatExchangeRate(weeklyExchange.value)
-                                : "₵0.00"}
+                                : "0.0000"}
                               {jobCard?.receivedDate && (
                                 <span>
                                   {" "}
