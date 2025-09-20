@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
 import { formatExchangeRate, formatCurrency } from "@/app/lib/utils";
+import { useAuth } from "@/app/context/auth-context";
 
 type AssayMethod = "X_RAY" | "WATER_DENSITY";
 
@@ -12,6 +13,7 @@ export default function NewAssayPage() {
   const params = useParams();
   const id = (params?.id as string) || "";
   const router = useRouter();
+  const { user } = useAuth();
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +38,7 @@ export default function NewAssayPage() {
   const [form, setForm] = useState({
     method: "X_RAY" as AssayMethod,
     pieces: 1,
-    signatory: "",
+    signatory: user?.name || "",
     comments: "",
     shipmentTypeId: "",
     securitySealNo: "",
@@ -72,6 +74,13 @@ export default function NewAssayPage() {
     }
     return 0;
   };
+
+  // Update signatory when user data becomes available
+  useEffect(() => {
+    if (user?.name && !form.signatory) {
+      setForm((prev) => ({ ...prev, signatory: user.name }));
+    }
+  }, [user, form.signatory]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -572,6 +581,9 @@ export default function NewAssayPage() {
         // persist a JSON blob in comments so server can store structured metadata
         comments: JSON.stringify({
           note: form.comments || "",
+          customsOfficer: form.customsOfficer || "",
+          technicalDirector: form.technicalDirector || "",
+          signatory: form.signatory || "",
           meta: {
             unit: unitOfMeasure,
             totalNetWeightOz: Number(totalNetWeightOzDisplay.toFixed(3)),
@@ -590,8 +602,8 @@ export default function NewAssayPage() {
         // Only one assay per job card - replace existing assay
         assays: [newAssay],
         // Save officer information in the job card
-        customsOfficer: form.customsOfficer,
-        technicalDirector: form.technicalDirector,
+        customsOfficerName: form.customsOfficer,
+        technicalDirectorName: form.technicalDirector,
       };
 
       // include totals and computed values on the job card update so server persists them

@@ -248,11 +248,6 @@ export default function AssayDetailActions({
         }
       `;
 
-      const logoUrl = "/goldbod-logo.webp";
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
-        "https://goldbod.gov.gh/"
-      )}`;
-
       const html = `<!doctype html>
 <html>
 <head>

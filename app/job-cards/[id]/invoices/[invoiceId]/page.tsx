@@ -178,7 +178,7 @@ export default async function InvoicePage(props: any) {
           className="bg-white shadow rounded-lg p-6 watermark-container"
           id="invoice-content"
         >
-          <div className="flex items-center justify-between mb-1 px-8">
+          <div className="flex items-center justify-between mb-1 py-2">
             <div className="p-2">
               <img
                 src="/goldbod-logo-black.png"
@@ -188,62 +188,67 @@ export default async function InvoicePage(props: any) {
             </div>
 
             <div className="flex justify-center">
-              <h1 className="text-xl font-bold tracking-wider">
-                ASSAY INVOICE
-              </h1>
+               <div className="title-section uppercase mx-auto text-center">
+                <p className="font-bold text-2xl">ASSAY INVOICE</p>
+                <p className="text-sm">SMALL SCALE OPERATIONS</p>
+              </div>
             </div>
 
-            <div className="bg-white p-4 flex justify-end">
+          {/* QR Code Section */}
+          <div className="mt-6 flex justify-end">
+            <div className="flex items-center">
               <img
-                src="/coat-of-arms.jpg"
-                alt="Coat of Arms"
-                className="h-20 w-auto"
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                  "https://goldbod.gov.gh/"
+                )}`}
+                alt="QR Code - Visit GoldBod Website"
+                className="w-16 h-16"
               />
             </div>
-
-            {/* <div className="bg-white p-4">
-              <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
-            </div> */}
+          </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="flex">
-              <p className="text-sm text-gray-500">Date</p>
-              <p className="text-sm ml-2">
+          
+            <div className="flex justify-end mb-6">
+              <p className="text-sm font-medium text-gray-500">Date:</p>
+              <p className="text-sm font-semibold text-gray-900 ml-2">
                 {formatDate(invoice.issueDate || invoice.createdAt)}
               </p>
             </div>
 
-            <div className="flex text-right justify-end pr-0 mr-0">
+          <div className="grid grid-cols-2 gap-4 mb-6">
+
+            {/* <div className="flex text-right justify-end pr-0 mr-0">
               <p className="text-sm text-gray-500">Assay Number:</p>
               <p className="text-sm ml-1">{assayNumbers}</p>
-            </div>
+            </div> */}
             <div className="flex">
-              <p className="text-sm text-gray-500">Exporter</p>
-              <p className="text-sm ml-2">{exporterName}</p>
+              <p className="text-sm font-medium text-gray-500">Exporter:</p>
+              <p className="text-sm font-semibold text-gray-900 ml-2">{exporterName}</p>
             </div>
+
             <div className="flex text-right pr-0 mr-0 justify-end">
-              <p className="text-sm text-gray-500">Job Card ID:</p>
-              <p className="text-sm ml-1">{referenceNumber}</p>
+              <p className="text-sm font-medium text-gray-500">Job Card ID:</p>
+              <p className="text-sm font-semibold text-gray-900 ml-1">{referenceNumber}</p>
             </div>
           </div>
 
           <div className="mb-6 grid grid-cols-2 gap-4">
             <div className="flex">
-              <p className="text-sm text-gray-500">Assay Rate</p>
-              <p className="text-sm ml-2">{rate}</p>
+              <p className="text-sm font-medium text-gray-500">Exchange Rate:</p>
+              <p className="text-sm font-semibold text-gray-900 ml-2">{exchangeRate}</p>
             </div>
 
             <div className="flex text-right pr-0 mr-0 justify-end">
-              <p className="text-sm text-gray-500">Destination:</p>
-              <p className="text-sm ml-1">{destinationCountry}</p>
+              <p className="text-sm font-medium text-gray-500">Destination:</p>
+              <p className="text-sm font-semibold text-gray-900 ml-1">{destinationCountry}</p>
             </div>
           </div>
 
-          <div className="flex">
+          {/* <div className="flex">
             <p className="text-sm text-gray-500">Exchange Rate</p>
             <p className="text-sm ml-2">{exchangeRate}</p>
-          </div>
+          </div> */}
 
           <table className="w-full mt-2 mb-6 table-auto border-collapse border border-gray-300">
             <thead>
@@ -287,9 +292,9 @@ export default async function InvoicePage(props: any) {
           </table>
 
           <div className="mb-4">
-            <h3 className="text-sm font-medium mb-2 text-center">
+            {/* <h3 className="text-sm font-medium mb-2 text-center">
               Total - Exclusive (GHS)
-            </h3>
+            </h3> */}
             <div className="grid grid-cols-2 gap-2 text-sm mb-2">
               <div className="text-gray-600 text">Total - Exclusive</div>
               <div className="font-medium text-right">
@@ -338,18 +343,9 @@ export default async function InvoicePage(props: any) {
             </p>
           </div>
 
-          {/* QR Code Section */}
-          <div className="mt-6 flex justify-end">
-            <div className="flex items-center">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                  "https://goldbod.gov.gh/"
-                )}`}
-                alt="QR Code - Visit GoldBod Website"
-                className="w-16 h-16"
-              />
+           <div className="bg-white py-4 flex justify-end">
+              <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
             </div>
-          </div>
         </div>
       </div>
     </>

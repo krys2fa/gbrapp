@@ -78,6 +78,12 @@ export async function GET(req: NextRequest) {
             shipmentType: true,
             createdAt: true,
             updatedAt: true,
+            assayOfficer: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         invoices: true,
@@ -92,6 +98,31 @@ export async function GET(req: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Log full job card data to console for debugging
+    console.log("=== JOB CARD DATA DEBUG ===");
+    console.log("ID:", jobCard.id);
+    console.log("Reference Number:", jobCard.referenceNumber);
+    console.log("Notes:", jobCard.notes);
+    console.log(
+      "Customs Officer Name (dedicated field):",
+      jobCard.customsOfficerName
+    );
+    console.log(
+      "Technical Director Name (dedicated field):",
+      jobCard.technicalDirectorName
+    );
+    console.log("Customs Officer (relation):", jobCard.customsOfficer);
+    console.log("Technical Director (relation):", jobCard.technicalDirector);
+    console.log(
+      "Assays:",
+      jobCard.assays?.map((a) => ({
+        id: a.id,
+        comments: a.comments,
+        assayOfficer: a.assayOfficer,
+      }))
+    );
+    console.log("=== END DEBUG ===");
 
     return NextResponse.json(jobCard);
   } catch (error) {
@@ -203,6 +234,13 @@ export async function PUT(req: NextRequest) {
     }
     if (requestData.numberOfBoxes !== undefined) {
       updateData.numberOfBoxes = parseInt(requestData.numberOfBoxes);
+    }
+    // Handle officer name fields directly
+    if (requestData.customsOfficerName !== undefined) {
+      updateData.customsOfficerName = requestData.customsOfficerName;
+    }
+    if (requestData.technicalDirectorName !== undefined) {
+      updateData.technicalDirectorName = requestData.technicalDirectorName;
     }
     if (requestData.valueGhs !== undefined) {
       updateData.valueGhs = parseFloat(requestData.valueGhs);
@@ -483,12 +521,16 @@ export async function PUT(req: NextRequest) {
     // If seals array or officer names are provided, persist seals and/or update notes
     if (
       (Array.isArray(requestData.seals) && requestData.seals.length > 0) ||
-      requestData.customsOfficerName 
+      requestData.customsOfficerName ||
+      requestData.technicalDirectorName
     ) {
       // Append officer names to the notes field so we don't need DB migrations for officer relations here
       const parts: string[] = [];
       if (requestData.customsOfficerName) {
         parts.push(`Customs Officer: ${requestData.customsOfficerName}`);
+      }
+      if (requestData.technicalDirectorName) {
+        parts.push(`Technical Director: ${requestData.technicalDirectorName}`);
       }
 
       if (parts.length > 0) {
@@ -524,6 +566,27 @@ export async function PUT(req: NextRequest) {
                 sealNumber: String(requestData.customsOfficerName),
                 sealType: "CUSTOMS_SEAL",
                 notes: "Saved from sealing modal - customs officer",
+              },
+            });
+          }
+        }
+        if (requestData.technicalDirectorName) {
+          const existing = findExisting("OTHER_SEAL");
+          if (existing) {
+            await prisma.seal.update({
+              where: { id: existing.id },
+              data: {
+                sealNumber: String(requestData.technicalDirectorName),
+                notes: "Updated from sealing modal - technical director",
+              },
+            });
+          } else {
+            await prisma.seal.create({
+              data: {
+                jobCardId: id,
+                sealNumber: String(requestData.technicalDirectorName),
+                sealType: "OTHER_SEAL",
+                notes: "Saved from sealing modal - technical director",
               },
             });
           }

@@ -243,8 +243,8 @@ export default async function LargeScaleInvoicePage(props: any) {
             zIndex: 2,
           }}
         >
-          <div className="flex items-center justify-between mb-1 px-8">
-            <div className="p-2">
+          <div className="flex items-center justify-between mb-1 py-2">
+            <div className="py-2 flex justify-start">
               <img
                 src="/goldbod-logo-black.png"
                 alt="GoldBod Logo"
@@ -260,17 +260,15 @@ export default async function LargeScaleInvoicePage(props: any) {
             </div>
 
             {/* QR Code Section */}
-            <div className="mt-6 flex justify-end">
-              <div className="flex items-center">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                    "https://goldbod.gov.gh/"
-                  )}`}
-                  alt="QR Code - Visit GoldBod Website"
-                  className="w-16 h-16"
-                />
-              </div>
-            </div>
+            <div className="flex items-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                      "https://goldbod.gov.gh/"
+                    )}`}
+                    alt="QR Code - Visit GoldBod Website"
+                    className="w-16 h-16"
+                  />
+                </div>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="flex">
@@ -282,26 +280,26 @@ export default async function LargeScaleInvoicePage(props: any) {
               </p>
             </div>
 
-            <div className="flex text-right justify-end pr-0 mr-0">
+            {/* <div className="flex text-right justify-end pr-0 mr-0">
               <p className="text-sm font-medium text-gray-500">Assay Number:</p>
               <p className="text-sm font-sembold text-gray-900 ml-1">
                 {assayNumbers}
               </p>
-            </div>
-            <div className="flex">
+            </div> */}
+            <div className="flex justify-end">
               <p className="text-sm font-medium text-gray-500">Invoice Date:</p>
               <p className="text-sm font-semibold text-gray-900 ml-2">
                 {formatDate(invoice.createdAt)}
               </p>
             </div>
-            <div className="flex text-right pr-0 mr-0 justify-end">
+            {/* <div className="flex text-right pr-0 mr-0 justify-end">
               <p className="text-sm font-medium text-gray-500">
                 Invoice Number:
               </p>
               <p className="text-sm font-semibold text-gray-900 ml-1">
                 {formatInvoiceNumber(invoice.invoiceNumber, invoice.createdAt)}
               </p>
-            </div>
+            </div> */}
             <div className="flex">
               <p className="text-sm font-medium text-gray-500">Exporter:</p>
               <p className="text-sm font-semibold text-gray-900 ml-2">
@@ -376,9 +374,9 @@ export default async function LargeScaleInvoicePage(props: any) {
           </table>
 
           <div className="mb-4">
-            <h3 className="text-sm font-medium mb-2 text-center">
+            {/* <h3 className="text-sm font-medium mb-2 text-center">
               Total - Exclusive (GHS)
-            </h3>
+            </h3> */}
             <div className="grid grid-cols-2 gap-2 text-sm mb-2">
               <div className="text-gray-600 text">Total - Exclusive</div>
               <div className="font-medium text-right">

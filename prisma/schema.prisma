@@ -95,6 +95,8 @@ model JobCard {
   valueGhs            Float?
   editCount           Int                      @default(0)
   humanReadableId     String                   @unique
+  customsOfficerName     String?
+  technicalDirectorName  String?
   assays              Assay[]
   fees                Fee?
   invoices            Invoice[]

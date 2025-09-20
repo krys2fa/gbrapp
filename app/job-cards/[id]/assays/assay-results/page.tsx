@@ -138,13 +138,13 @@ export default function AssayResultsPage() {
                 <p className="text-sm">SMALL SCALE OPERATIONS</p>
               </div>
               {/* QR Code */}
-              <div className="text-center flex-shrink-0">
+              <div className="text-center flex-shrink-0 mr-4">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
                     "https://goldbod.gov.gh/"
                   )}`}
                   alt="QR Code - Visit GoldBod Website"
-                  className="w-24 h-24 mx-auto mb-2"
+                  className="w-16 h-16"
                 />
               </div>
             </div>
@@ -163,18 +163,16 @@ export default function AssayResultsPage() {
 
               <div className="justify-end flex">
                 <span className="text-sm font-medium text-gray-500 mr-2 ">
-                  Data Sheet Dates:
+                  Assay Date:
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
-                  {assays[0]?.dataSheetDates
-                    ? formatDate(assays[0].dataSheetDates)
-                    : formatDate(jobCard.receivedDate)}
+                  {formatDate(jobCard.receivedDate)}
                 </span>
               </div>
 
               <div>
                 <span className="text-sm font-medium text-gray-500 mr-2">
-                  Job Number:
+                  Job ID:
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {jobCard?.humanReadableId || "N/A"}

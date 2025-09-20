@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
 import AssayDetailActions from "./AssayDetailActions";
 import { formatDate, formatCurrency } from "@/app/lib/utils";
@@ -199,57 +198,341 @@ export default function AssayDetailPage() {
 
   return (
     <>
-      {/* Watermark Styles */}
+      {/* Comprehensive Print Styles - Match Web Page Exactly */}
       <style jsx>{`
-        #assay-detail-content {
-          position: relative;
-        }
-        #assay-detail-content::before {
-          content: "";
-          position: absolute;
-          top: 30%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 280px;
-          height: 280px;
-          background: url("/seal.png") no-repeat center center;
-          background-size: contain;
-          opacity: 0.08;
-          z-index: 1;
-          pointer-events: none;
-        }
-        #assay-detail-content > * {
-          position: relative;
-          z-index: 2;
-        }
-
-        /* Multi-page watermark for print */
         @media print {
-          body {
-            background: url("/seal.png") no-repeat center 30%;
-            background-size: 280px 280px;
-            background-attachment: fixed;
+          /* Force color printing */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          body::before {
-            content: "";
-            position: fixed;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            height: 280px;
-            background: url("/seal.png") no-repeat center center;
-            background-size: contain;
-            opacity: 0.08;
-            z-index: 1;
-            pointer-events: none;
+
+          /* Page setup */
+          @page {
+            margin: 0.5in;
+            size: A4;
           }
-          /* QR Code print styles */
+
+          /* Hide screen-only elements */
+          .print\\:hidden {
+            display: none !important;
+          }
+
+          /* Main container */
+          .px-4.sm\\:px-6.lg\\:px-8.py-8 {
+            padding: 0 !important;
+          }
+
+          /* Main content container */
+          #assay-detail-content {
+            background: white !important;
+            overflow: visible !important;
+          }
+
+          /* Header section with logo, title, and QR code */
+          .flex.items-center.justify-between.mb-1.px-8 {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            margin-bottom: 0.25rem !important;
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+          }
+
+          /* Logo */
+          img[alt="GoldBod Logo"] {
+            height: 3rem !important;
+            width: auto !important;
+          }
+
+          /* Title section */
+          .title-section {
+            text-transform: uppercase !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            text-align: center !important;
+          }
+
+          .title-section p:first-child {
+            font-weight: bold !important;
+            font-size: 1.5rem !important;
+            line-height: 2rem !important;
+          }
+
+          .title-section p:last-child {
+            font-size: 0.875rem !important;
+            line-height: 1.25rem !important;
+          }
+
+          /* QR Code */
           img[alt*="QR Code"] {
-            width: 16pt !important;
-            height: 16pt !important;
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
+            width: 4rem !important;
+            height: 4rem !important;
+          }
+
+          /* Content padding */
+          .px-4.py-3.sm\\:p-4 {
+            padding: 1rem !important;
+          }
+
+          /* Top info rows */
+          .flex.items-center.justify-between.mb-4 {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            margin-bottom: 1rem !important;
+          }
+
+          /* Labels and values */
+          .text-sm.font-medium.text-gray-500 {
+            font-size: 0.875rem !important;
+            line-height: 1.25rem !important;
+            font-weight: 500 !important;
+            color: #6b7280 !important;
+          }
+
+          .text-sm.font-semibold.text-gray-900 {
+            font-size: 0.875rem !important;
+            line-height: 1.25rem !important;
+            font-weight: 600 !important;
+            color: #111827 !important;
+          }
+
+          /* Grid layout */
+          .grid.grid-cols-1.sm\\:grid-cols-2.gap-6 {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 1.5rem !important;
+          }
+
+          /* Table containers */
+          .bg-white.overflow-hidden {
+            background-color: white !important;
+            overflow: visible !important;
+          }
+
+          /* Table headers */
+          .px-4.py-2.bg-gray-50 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+            background-color: #f9fafb !important;
+          }
+
+          .text-sm.font-medium.text-gray-900 {
+            font-size: 0.875rem !important;
+            line-height: 1.25rem !important;
+            font-weight: 500 !important;
+            color: #111827 !important;
+          }
+
+          /* Tables */
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+
+          .border.border-gray-300 {
+            border: 1px solid #d1d5db !important;
+          }
+
+          /* Table headers */
+          thead {
+            background-color: #f9fafb !important;
+          }
+
+          th {
+            padding: 0.5rem 1rem !important;
+            text-align: right !important;
+            font-size: 0.75rem !important;
+            line-height: 1rem !important;
+            font-weight: 500 !important;
+            color: #6b7280 !important;
+            text-transform: uppercase !important;
+            border: 1px solid #d1d5db !important;
+          }
+
+          /* Table cells */
+          td {
+            padding: 0.5rem 1rem !important;
+            font-size: 0.875rem !important;
+            line-height: 1.25rem !important;
+            color: #374151 !important;
+            border: 1px solid #d1d5db !important;
+            text-align: right !important;
+          }
+
+          /* Total row styling */
+          .bg-gray-50.font-semibold td {
+            background-color: #f9fafb !important;
+            font-weight: 600 !important;
+            color: #111827 !important;
+          }
+
+          /* Summary boxes */
+          .bg-gray-50.rounded-lg.p-4 {
+            background-color: #f9fafb !important;
+            border-radius: 0.5rem !important;
+            padding: 1rem !important;
+          }
+
+          .bg-blue-50.rounded-lg.p-4 {
+            background-color: #eff6ff !important;
+            border-radius: 0.5rem !important;
+            padding: 1rem !important;
+          }
+
+          /* Summary headers */
+          .text-sm.font-medium.text-gray-900.mb-3 {
+            font-size: 0.875rem !important;
+            line-height: 1.25rem !important;
+            font-weight: 500 !important;
+            color: #111827 !important;
+            margin-bottom: 0.75rem !important;
+          }
+
+          /* Summary content spacing */
+          .space-y-3 > * + * {
+            margin-top: 0.75rem !important;
+          }
+
+          .flex.items-center.gap-2 {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+          }
+
+          /* Bottom section */
+          .mt-4.border-t.pt-4 {
+            margin-top: 1rem !important;
+            border-top: 1px solid #e5e7eb !important;
+            padding-top: 1rem !important;
+          }
+
+          /* Seal numbers grid */
+          .grid.grid-cols-1.sm\\:grid-cols-4.gap-4 {
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 1rem !important;
+          }
+
+          /* Small text for seal numbers */
+          .text-xs.font-medium.text-gray-500.text-center {
+            font-size: 0.75rem !important;
+            line-height: 1rem !important;
+            font-weight: 500 !important;
+            color: #6b7280 !important;
+            text-align: center !important;
+          }
+
+          .text-xs.text-gray-900.text-center {
+            font-size: 0.75rem !important;
+            line-height: 1rem !important;
+            color: #111827 !important;
+            text-align: center !important;
+          }
+
+          /* Signatures section */
+          .mt-24 {
+            margin-top: 6rem !important;
+          }
+
+          /* Signature lines */
+          .border-b.border-gray-400.mb-2.pt-4 {
+            border-bottom: 1px solid #9ca3af !important;
+            margin-bottom: 0.5rem !important;
+            padding-top: 1rem !important;
+          }
+
+          /* Signature labels */
+          .flex.flex-col.gap-1 {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.25rem !important;
+          }
+
+          /* Ensure proper page breaks */
+          .page-break-avoid {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          /* Force backgrounds and colors to print */
+          .bg-gray-50,
+          .bg-blue-50,
+          .bg-white {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          /* Completely remove all watermarks and backgrounds */
+          img[alt="Seal"],
+          img[src="/seal.png"],
+          .print\\:hidden {
+            display: none !important;
+            visibility: hidden !important;
+          }
+
+          /* OVERRIDE GLOBAL WATERMARK CSS - Remove all watermarks completely */
+          html,
+          body {
+            background: white !important;
+            background-image: none !important;
+            background-attachment: initial !important;
+          }
+
+          /* Remove global body watermark pseudo-elements */
+          body::before,
+          body::after {
+            content: none !important;
+            display: none !important;
+            background: none !important;
+            background-image: none !important;
+          }
+
+          /* Override watermark-container styles */
+          .watermark-container::before,
+          .watermark-container::after {
+            content: none !important;
+            display: none !important;
+            background: none !important;
+            background-image: none !important;
+          }
+
+          /* Remove all pseudo-element watermarks */
+          *::before,
+          *::after {
+            content: none !important;
+            display: none !important;
+            background: none !important;
+            background-image: none !important;
+          }
+
+          /* Override any container backgrounds */
+          #__next,
+          .page-container,
+          .main-content,
+          #assay-detail-content {
+            background: white !important;
+            background-image: none !important;
+          }
+
+          /* Ensure content backgrounds are solid white */
+          .bg-white,
+          .bg-gray-50,
+          .bg-blue-50 {
+            background-image: none !important;
+            background-color: white !important;
+          }
+
+          .bg-gray-50 {
+            background-color: #f9fafb !important;
+          }
+
+          .bg-blue-50 {
+            background-color: #eff6ff !important;
           }
         }
       `}</style>
@@ -268,14 +551,8 @@ export default function AssayDetailPage() {
         </div>
 
         <div id="assay-detail-content" className="bg-white overflow-hidden">
-          {/* <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-base leading-6 font-medium text-gray-900">
-              Certificate #{assay.certificateNumber || "-"}
-            </h3>
-          </div> */}
-
-          <div className="flex items-center justify-between mb-1 px-8">
-            <div className="p-2">
+          <div className="flex items-center justify-between mb-1 py-2">
+            <div className="py-2 justify-start">
               <img
                 src="/goldbod-logo-black.png"
                 alt="GoldBod Logo"
@@ -284,43 +561,42 @@ export default function AssayDetailPage() {
             </div>
 
             <div className="flex justify-center">
-              <h1 className="text-xl font-bold tracking-wider">
-                ASSAY REPORT ANALYSIS
-              </h1>
+              <div className="title-section uppercase mx-auto text-center">
+                <p className="font-bold text-2xl">ASSAY REPORT ANALYSIS</p>
+                <p className="text-sm">SMALL SCALE OPERATIONS</p>
+              </div>
             </div>
 
-            <div className="bg-white p-4">
-              <img
-                src="/coat-of-arms.jpg"
-                alt="Coat of Arms"
-                className="h-20 w-auto"
-              />
+            {/* QR Code Section */}
+            <div className="mr-4">
+              <div className="flex justify-end">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                    "https://goldbod.gov.gh/"
+                  )}`}
+                  alt="QR Code - Visit GoldBod Website"
+                  className="w-16 h-16"
+                />
+              </div>
             </div>
-
-            {/* <div className="bg-white p-4">
-            <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
-          </div> */}
           </div>
 
-          <div className="border-t border-gray-200 px-4 py-3 sm:p-4">
-            {/* <div className="flex justify-center">
-              <h1 className="text-xl font-bold tracking-wider">
-                ASSAY REPORT ANALYSIS
-              </h1>
-            </div> */}
+          <div className="px-4 py-3 sm:p-4">
             {/* Top: show exporter and assay date above the measurements table */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex">
-                <dt className="text-sm font-medium text-gray-500">Exporter</dt>
-                <dd className="ml-1 text-sm text-gray-900">
-                  {jobCard?.exporter?.name || "-"}
+                <dt className="text-sm font-medium text-gray-500">Exporter:</dt>
+                <dd className="ml-1 text-sm font-semibold text-gray-900">
+                  {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
+                    ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                    : jobCard?.exporter?.name || "N/A"}
                 </dd>
               </div>
               <div className="text-right flex">
                 <dt className="text-sm font-medium text-gray-500">
-                  Assay Date
+                  Assay Date:
                 </dt>
-                <dd className="ml-1 text-sm text-gray-900">
+                <dd className="ml-1 text-sm font-semibold text-gray-900">
                   {assay.assayDate
                     ? formatDate(new Date(assay.assayDate))
                     : formatDate(new Date(assay.createdAt || Date.now()))}
@@ -330,17 +606,19 @@ export default function AssayDetailPage() {
 
             <div className="flex items-center justify-between mb-4">
               <div className="flex">
-                <dt className="text-sm font-medium text-gray-500">Reference</dt>
-                <dd className="ml-1 text-sm text-gray-900">
+                <dt className="text-sm font-medium text-gray-500">
+                  Reference:
+                </dt>
+                <dd className="ml-1 text-sm font-semibold text-gray-900">
                   {jobCard?.referenceNumber || "-"}
                 </dd>
               </div>
 
               <div className="flex">
                 <dt className="text-sm font-medium text-gray-500">
-                  Shipment Type
+                  Shipment Type:
                 </dt>
-                <dd className="ml-1 text-sm text-gray-900">
+                <dd className="ml-1 text-sm font-semibold text-gray-900">
                   {assay?.shipmentType?.name || "-"}
                 </dd>
               </div>
@@ -359,34 +637,34 @@ export default function AssayDetailPage() {
                     <table className="w-full divide-y divide-gray-200 border border-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
-                            Gross Weight
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                            Gross Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
-                            Fineness
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                            Fineness (%)
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
-                            Net Weight
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                            Net Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         <tr>
-                          <td className="px-4 py-2 text-sm text-gray-700 border border-gray-300">
+                          <td className="px-4 py-2 text-sm text-right text-gray-700 border border-gray-300">
                             {jobCard?.totalGrossWeight != null
                               ? Number(jobCard.totalGrossWeight).toFixed(2)
                               : assay.jbGrossWeight != null
                               ? Number(assay.jbGrossWeight).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 text-sm text-gray-700 border border-gray-300">
+                          <td className="px-4 py-2 text-sm text-right text-gray-700 border border-gray-300">
                             {jobCard?.fineness != null
                               ? Number(jobCard.fineness).toFixed(2)
                               : assay.jbFineness != null
                               ? Number(assay.jbFineness).toFixed(2)
                               : "-"}
                           </td>
-                          <td className="px-4 py-2 text-sm text-gray-700 border border-gray-300">
+                          <td className="px-4 py-2 text-sm text-right text-gray-700 border border-gray-300">
                             {jobCard?.totalNetWeight != null
                               ? Number(jobCard.totalNetWeight).toFixed(2)
                               : assay.jbNetWeight != null
@@ -410,14 +688,14 @@ export default function AssayDetailPage() {
                     <table className="w-full divide-y divide-gray-200 border border-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
-                            Gross Weight
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                            Gross Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
-                            Fineness
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                            Fineness (%)
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border border-gray-300">
-                            Net Weight
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                            Net Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
                         </tr>
                       </thead>
@@ -425,15 +703,15 @@ export default function AssayDetailPage() {
                         {(assay.measurements || []).map(
                           (m: any, idx: number) => (
                             <tr key={m.id || idx}>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 border border-gray-300">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-700 border border-gray-300">
                                 {m.grossWeight != null
                                   ? Number(m.grossWeight).toFixed(2)
                                   : "-"}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 border border-gray-300">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-700 border border-gray-300">
                                 {m.fineness ?? "-"}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 border border-gray-300">
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-700 border border-gray-300">
                                 {m.netWeight != null
                                   ? Number(m.netWeight).toFixed(2)
                                   : "-"}
@@ -443,7 +721,7 @@ export default function AssayDetailPage() {
                         )}
                         {/* Total Row */}
                         <tr className="bg-gray-50 font-semibold">
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                          <td className="px-4 py-2 whitespace-nowrap text-right text-sm text-gray-900 border border-gray-300">
                             {(() => {
                               const total = (assay.measurements || []).reduce(
                                 (acc: number, m: any) =>
@@ -453,7 +731,7 @@ export default function AssayDetailPage() {
                               return total > 0 ? total.toFixed(2) : "-";
                             })()}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                          <td className="px-4 py-2 whitespace-nowrap text-right text-sm text-gray-900 border border-gray-300">
                             {(() => {
                               const grossTotal = (
                                 assay.measurements || []
@@ -476,7 +754,7 @@ export default function AssayDetailPage() {
                               return "-";
                             })()}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                          <td className="px-4 py-2 whitespace-nowrap text-right text-sm text-gray-900 border border-gray-300">
                             {(() => {
                               const total = (assay.measurements || []).reduce(
                                 (acc: number, m: any) =>
@@ -696,18 +974,6 @@ export default function AssayDetailPage() {
             {/* Assay details moved to bottom with labels */}
             <div className="mt-4 border-t pt-4">
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                {/* <div>
-                <div className="border-b border-gray-400 mb-2 pt-4"></div>
-                <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 text-center">
-                    GOLDBOD Authorized Signatory
-                  </dt>
-                  <dd className="text-xs text-gray-900 text-center">
-                    {assay.signatory || assay.comments?.signatory || "-"}
-                  </dd>
-                </div>
-              </div> */}
-
                 <div>
                   <div className="flex items-center gap-2">
                     <dt className="text-xs font-medium text-gray-500 text-center">
@@ -743,7 +1009,7 @@ export default function AssayDetailPage() {
               </div>
 
               {/* Signatories */}
-              <div className="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="mt-24 grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                   <div className="border-b border-gray-400 mb-2 pt-4"></div>
                   <div className="flex flex-col gap-1">
@@ -765,7 +1031,40 @@ export default function AssayDetailPage() {
                       Customs Officer
                     </dt>
                     <dd className="text-xs text-gray-900 text-center">
-                      {jobCard?.customsOfficer?.name || "-"}
+                      {(() => {
+                        // First priority: Check dedicated customs officer name field
+                        if (jobCard?.customsOfficerName) {
+                          return jobCard.customsOfficerName;
+                        }
+
+                        // Second priority: Try to parse assay comments as JSON for assay-specific officer
+                        if (assay?.comments) {
+                          try {
+                            const parsed =
+                              typeof assay.comments === "string"
+                                ? JSON.parse(assay.comments)
+                                : assay.comments;
+                            if (parsed?.customsOfficer) {
+                              return parsed.customsOfficer;
+                            }
+                          } catch (e) {
+                            // If parsing fails, ignore and continue to fallback
+                          }
+                        }
+
+                        // Third priority: Check job card notes for "Customs Officer: [name]" pattern
+                        if (jobCard?.notes) {
+                          const match = jobCard.notes.match(
+                            /Customs Officer:\s*([^\n;]+)/i
+                          );
+                          if (match && match[1]) {
+                            return match[1].trim();
+                          }
+                        }
+
+                        // Fallback to job card customs officer relation
+                        return jobCard?.customsOfficer?.name || "-";
+                      })()}
                     </dd>
                   </div>
                 </div>
@@ -777,7 +1076,40 @@ export default function AssayDetailPage() {
                       Technical Director
                     </dt>
                     <dd className="text-xs text-gray-900 text-center">
-                      {jobCard?.technicalDirector?.name || "-"}
+                      {(() => {
+                        // First priority: Check dedicated technical director name field
+                        if (jobCard?.technicalDirectorName) {
+                          return jobCard.technicalDirectorName;
+                        }
+
+                        // Second priority: Try to parse assay comments as JSON for assay-specific director
+                        if (assay?.comments) {
+                          try {
+                            const parsed =
+                              typeof assay.comments === "string"
+                                ? JSON.parse(assay.comments)
+                                : assay.comments;
+                            if (parsed?.technicalDirector) {
+                              return parsed.technicalDirector;
+                            }
+                          } catch (e) {
+                            // If parsing fails, ignore and continue to fallback
+                          }
+                        }
+
+                        // Third priority: Check job card notes for "Technical Director: [name]" pattern
+                        if (jobCard?.notes) {
+                          const match = jobCard.notes.match(
+                            /Technical Director:\s*([^\n;]+)/i
+                          );
+                          if (match && match[1]) {
+                            return match[1].trim();
+                          }
+                        }
+
+                        // Fallback to job card technical director relation
+                        return jobCard?.technicalDirector?.name || "-";
+                      })()}
                     </dd>
                   </div>
                 </div>
@@ -789,23 +1121,49 @@ export default function AssayDetailPage() {
                       Assay Officer
                     </dt>
                     <dd className="text-xs text-gray-900 text-center">
-                      {assay.signatory || assay.comments?.signatory || "-"}
+                      {(() => {
+                        // First priority: Check assay comments for the actual user who performed the assay
+                        if (assay?.comments) {
+                          try {
+                            const parsed =
+                              typeof assay.comments === "string"
+                                ? JSON.parse(assay.comments)
+                                : assay.comments;
+                            if (parsed?.signatory) {
+                              return parsed.signatory;
+                            }
+                            if (parsed?.assayedBy) {
+                              return parsed.assayedBy;
+                            }
+                          } catch (e) {
+                            // If parsing fails, ignore and continue to fallback
+                          }
+                        }
+
+                        // Second priority: Check direct signatory field
+                        if (assay?.signatory) {
+                          return assay.signatory;
+                        }
+
+                        // Third priority: Check job card assay officer relation
+                        if (jobCard?.assayOfficer?.name) {
+                          return jobCard.assayOfficer.name;
+                        }
+
+                        // Fourth priority: Check assay officer relation from assay
+                        if (assay?.assayOfficer?.name) {
+                          return assay.assayOfficer.name;
+                        }
+
+                        return "-";
+                      })()}
                     </dd>
                   </div>
                 </div>
               </div>
 
-              {/* QR Code Section */}
-              <div className="mt-8 flex justify-end">
-                <div className="flex items-center">
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                      "https://goldbod.gov.gh/"
-                    )}`}
-                    alt="QR Code - Visit GoldBod Website"
-                    className="w-16 h-16"
-                  />
-                </div>
+              <div className="bg-white p-4 flex justify-end print:hidden">
+                <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
               </div>
             </div>
           </div>

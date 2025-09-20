@@ -614,7 +614,7 @@ function JobCardDetailPage() {
           </div>
 
           {/* Additional Information Section */}
-          {jobCard.notes && (
+          {/* {jobCard.notes && (
             <>
               <div className="bg-gray-50 px-4 py-3 sm:px-6 border-t border-gray-200">
                 <h3 className="text-sm font-medium text-gray-900">
@@ -632,7 +632,7 @@ function JobCardDetailPage() {
                 </dl>
               </div>
             </>
-          )}
+          )} */}
         </div>
       </div>
 
