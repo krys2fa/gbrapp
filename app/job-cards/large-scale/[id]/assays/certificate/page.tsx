@@ -458,7 +458,7 @@ export default function CertificateOfAssayPage() {
               <div className="flex justify-between items-center mb-2">
                 <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
-                    Client:
+                    Exporter:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
@@ -469,7 +469,7 @@ export default function CertificateOfAssayPage() {
 
                 <div>
                   <span className="text-sm text-gray-500 mr-2 font-medium">
-                    Certificate Number:
+                    Job Id:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {assays[0]?.humanReadableAssayNumber || "N/A"}
