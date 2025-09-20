@@ -37,18 +37,10 @@ function EditJobCardPage() {
     customsOfficers: { id: string; name: string; badgeNumber: string }[];
     assayOfficers: { id: string; name: string; badgeNumber: string }[];
     technicalDirectors: { id: string; name: string; badgeNumber: string }[];
-    nacobOfficers: { id: string; name: string; badgeNumber: string }[];
-    nationalSecurityOfficers: {
-      id: string;
-      name: string;
-      badgeNumber: string;
-    }[];
   }>({
     customsOfficers: [],
     assayOfficers: [],
     technicalDirectors: [],
-    nacobOfficers: [],
-    nationalSecurityOfficers: [],
   });
 
   // Get countries list for the dropdown
@@ -129,8 +121,6 @@ function EditJobCardPage() {
     customsOfficerId: "",
     assayOfficerId: "",
     technicalDirectorId: "",
-    nacobOfficerId: "",
-    nationalSecurityOfficerId: "",
   });
 
   useEffect(() => {
@@ -197,9 +187,6 @@ function EditJobCardPage() {
             customsOfficerId: jobCardData.customsOfficer?.id || "",
             assayOfficerId: jobCardData.assayOfficer?.id || "",
             technicalDirectorId: jobCardData.technicalDirector?.id || "",
-            nacobOfficerId: jobCardData.nacobOfficer?.id || "",
-            nationalSecurityOfficerId:
-              jobCardData.nationalSecurityOfficer?.id || "",
           });
         } else {
           throw new Error("Failed to fetch job card");
@@ -227,12 +214,6 @@ function EditJobCardPage() {
             ),
             technicalDirectors: officersData.filter(
               (o: any) => o.officerType === "TECHNICAL_DIRECTOR"
-            ),
-            nacobOfficers: officersData.filter(
-              (o: any) => o.officerType === "NACOB_OFFICER"
-            ),
-            nationalSecurityOfficers: officersData.filter(
-              (o: any) => o.officerType === "NATIONAL_SECURITY_OFFICER"
             ),
           };
           setOfficers(groupedOfficers);
@@ -284,24 +265,6 @@ function EditJobCardPage() {
     setFormData((prev) => ({
       ...prev,
       technicalDirectorId: selectedOption ? selectedOption.value : "",
-    }));
-  };
-
-  const handleNacobOfficerChange = (
-    selectedOption: { value: string; label: string } | null
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      nacobOfficerId: selectedOption ? selectedOption.value : "",
-    }));
-  };
-
-  const handleNationalSecurityOfficerChange = (
-    selectedOption: { value: string; label: string } | null
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      nationalSecurityOfficerId: selectedOption ? selectedOption.value : "",
     }));
   };
 
@@ -650,70 +613,6 @@ function EditJobCardPage() {
                           styles={customSelectStyles}
                           isClearable
                           placeholder="Select technical director"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          NACOB Officer
-                        </label>
-                        <Select
-                          options={officers.nacobOfficers.map((officer) => ({
-                            value: officer.id,
-                            label: `${officer.name} (${officer.badgeNumber})`,
-                          }))}
-                          value={
-                            formData.nacobOfficerId
-                              ? officers.nacobOfficers
-                                  .map((officer) => ({
-                                    value: officer.id,
-                                    label: `${officer.name} (${officer.badgeNumber})`,
-                                  }))
-                                  .find(
-                                    (o) => o.value === formData.nacobOfficerId
-                                  )
-                              : null
-                          }
-                          onChange={handleNacobOfficerChange}
-                          className="mt-1 form-control-select"
-                          classNamePrefix="react-select"
-                          styles={customSelectStyles}
-                          isClearable
-                          placeholder="Select NACOB officer"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          National Security Officer
-                        </label>
-                        <Select
-                          options={officers.nationalSecurityOfficers.map(
-                            (officer) => ({
-                              value: officer.id,
-                              label: `${officer.name} (${officer.badgeNumber})`,
-                            })
-                          )}
-                          value={
-                            formData.nationalSecurityOfficerId
-                              ? officers.nationalSecurityOfficers
-                                  .map((officer) => ({
-                                    value: officer.id,
-                                    label: `${officer.name} (${officer.badgeNumber})`,
-                                  }))
-                                  .find(
-                                    (o) =>
-                                      o.value ===
-                                      formData.nationalSecurityOfficerId
-                                  )
-                              : null
-                          }
-                          onChange={handleNationalSecurityOfficerChange}
-                          className="mt-1 form-control-select"
-                          classNamePrefix="react-select"
-                          styles={customSelectStyles}
-                          isClearable
-                          placeholder="Select national security officer"
                         />
                       </div>
 

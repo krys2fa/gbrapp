@@ -25,8 +25,6 @@ async function getAllOfficers(req: NextRequest) {
       customsOfficers,
       assayOfficers,
       technicalDirectors,
-      nacobOfficers,
-      nationalSecurityOfficers,
     ] = await Promise.all([
       prisma.customsOfficer.findMany({
         where:
@@ -76,38 +74,6 @@ async function getAllOfficers(req: NextRequest) {
           createdAt: true,
         },
       }),
-      prisma.nACOBOfficer.findMany({
-        where:
-          type === "NACOB_OFFICER"
-            ? where
-            : search
-            ? { name: { contains: search, mode: "insensitive" } }
-            : {},
-        select: {
-          id: true,
-          name: true,
-          badgeNumber: true,
-          email: true,
-          phone: true,
-          createdAt: true,
-        },
-      }),
-      prisma.nationalSecurityOfficer.findMany({
-        where:
-          type === "NATIONAL_SECURITY_OFFICER"
-            ? where
-            : search
-            ? { name: { contains: search, mode: "insensitive" } }
-            : {},
-        select: {
-          id: true,
-          name: true,
-          badgeNumber: true,
-          email: true,
-          phone: true,
-          createdAt: true,
-        },
-      }),
     ]);
 
     // Combine and format results
@@ -124,16 +90,7 @@ async function getAllOfficers(req: NextRequest) {
         ...officer,
         officerType: "TECHNICAL_DIRECTOR",
       })),
-      ...nacobOfficers.map((officer) => ({
-        ...officer,
-        officerType: "NACOB_OFFICER",
-      })),
-      ...nationalSecurityOfficers.map((officer) => ({
-        ...officer,
-        officerType: "NATIONAL_SECURITY_OFFICER",
-      })),
     ];
-
     // Sort by creation date (newest first)
     officers.sort(
       (a, b) =>
@@ -183,16 +140,6 @@ async function createOfficer(req: NextRequest) {
           where: { badgeNumber: data.badgeNumber },
         });
         break;
-      case "NACOB_OFFICER":
-        existingOfficer = await prisma.nACOBOfficer.findFirst({
-          where: { badgeNumber: data.badgeNumber },
-        });
-        break;
-      case "NATIONAL_SECURITY_OFFICER":
-        existingOfficer = await prisma.nationalSecurityOfficer.findFirst({
-          where: { badgeNumber: data.badgeNumber },
-        });
-        break;
       default:
         return NextResponse.json(
           { error: "Invalid officer type" },
@@ -232,26 +179,6 @@ async function createOfficer(req: NextRequest) {
         break;
       case "TECHNICAL_DIRECTOR":
         officer = await prisma.technicalDirector.create({
-          data: {
-            name: data.name,
-            badgeNumber: data.badgeNumber,
-            email: data.email || null,
-            phone: data.phone || null,
-          },
-        });
-        break;
-      case "NACOB_OFFICER":
-        officer = await prisma.nACOBOfficer.create({
-          data: {
-            name: data.name,
-            badgeNumber: data.badgeNumber,
-            email: data.email || null,
-            phone: data.phone || null,
-          },
-        });
-        break;
-      case "NATIONAL_SECURITY_OFFICER":
-        officer = await prisma.nationalSecurityOfficer.create({
           data: {
             name: data.name,
             badgeNumber: data.badgeNumber,

@@ -59,18 +59,11 @@ function NewLargeScaleJobCardPage() {
     customsOfficers: { id: string; name: string; badgeNumber: string }[];
     assayOfficers: { id: string; name: string; badgeNumber: string }[];
     technicalDirectors: { id: string; name: string; badgeNumber: string }[];
-    nacobOfficers: { id: string; name: string; badgeNumber: string }[];
-    nationalSecurityOfficers: {
-      id: string;
-      name: string;
-      badgeNumber: string;
-    }[];
+
   }>({
     customsOfficers: [],
     assayOfficers: [],
     technicalDirectors: [],
-    nacobOfficers: [],
-    nationalSecurityOfficers: [],
   });
 
   // Excel processing state

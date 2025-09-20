@@ -39,16 +39,6 @@ async function getOfficerById(
           where: { id },
         });
         break;
-      case "NACOB_OFFICER":
-        officer = await prisma.nACOBOfficer.findUnique({
-          where: { id },
-        });
-        break;
-      case "NATIONAL_SECURITY_OFFICER":
-        officer = await prisma.nationalSecurityOfficer.findUnique({
-          where: { id },
-        });
-        break;
       default:
         return NextResponse.json(
           { error: "Invalid officer type" },
@@ -120,22 +110,6 @@ async function updateOfficerById(
         break;
       case "TECHNICAL_DIRECTOR":
         existingOfficer = await prisma.technicalDirector.findFirst({
-          where: {
-            badgeNumber: data.badgeNumber,
-            id: { not: id },
-          },
-        });
-        break;
-      case "NACOB_OFFICER":
-        existingOfficer = await prisma.nACOBOfficer.findFirst({
-          where: {
-            badgeNumber: data.badgeNumber,
-            id: { not: id },
-          },
-        });
-        break;
-      case "NATIONAL_SECURITY_OFFICER":
-        existingOfficer = await prisma.nationalSecurityOfficer.findFirst({
           where: {
             badgeNumber: data.badgeNumber,
             id: { not: id },

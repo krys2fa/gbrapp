@@ -23,8 +23,6 @@ async function getLargeScaleJobCard(
         customsOfficer: true,
         assayOfficer: true,
         technicalDirector: true,
-        nacobOfficer: true,
-        nationalSecurityOfficer: true,
         commodities: {
           include: {
             commodity: true,
@@ -96,8 +94,6 @@ async function updateLargeScaleJobCard(
       customsOfficerId,
       assayOfficerId,
       technicalDirectorId,
-      nacobOfficerId,
-      nationalSecurityOfficerId,
       consigneeAddress,
       consigneeTelephone,
       consigneeMobile,
@@ -166,10 +162,6 @@ async function updateLargeScaleJobCard(
       updateData.assayOfficerId = assayOfficerId;
     if (technicalDirectorId !== undefined)
       updateData.technicalDirectorId = technicalDirectorId;
-    if (nacobOfficerId !== undefined)
-      updateData.nacobOfficerId = nacobOfficerId;
-    if (nationalSecurityOfficerId !== undefined)
-      updateData.nationalSecurityOfficerId = nationalSecurityOfficerId;
     if (consigneeAddress !== undefined)
       updateData.consigneeAddress = consigneeAddress;
     if (consigneeTelephone !== undefined)
@@ -212,8 +204,6 @@ async function updateLargeScaleJobCard(
         customsOfficer: true,
         assayOfficer: true,
         technicalDirector: true,
-        nacobOfficer: true,
-        nationalSecurityOfficer: true,
         commodities: {
           include: {
             commodity: true,
@@ -261,8 +251,6 @@ async function updateLargeScaleJobCard(
         customsOfficer: true,
         assayOfficer: true,
         technicalDirector: true,
-        nacobOfficer: true,
-        nationalSecurityOfficer: true,
         commodities: {
           include: {
             commodity: true,

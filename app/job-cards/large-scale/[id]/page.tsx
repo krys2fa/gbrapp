@@ -60,16 +60,6 @@ interface LargeScaleJobCard {
     name: string;
     badgeNumber: string;
   };
-  nacobOfficer?: {
-    id: string;
-    name: string;
-    badgeNumber: string;
-  };
-  nationalSecurityOfficer?: {
-    id: string;
-    name: string;
-    badgeNumber: string;
-  };
   assays?: {
     id: string;
     method: string;

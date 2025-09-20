@@ -44,8 +44,6 @@ export async function GET(req: NextRequest) {
         },
         commodity: true,
         customsOfficer: true,
-        nacobOfficer: true,
-        securityOfficer: true,
         assayOfficer: true,
         technicalDirector: true,
         seals: true,
@@ -303,27 +301,6 @@ export async function PUT(req: NextRequest) {
         updateData.technicalDirector = { disconnect: true };
       }
     }
-    if (requestData.nacobOfficerId !== undefined) {
-      if (requestData.nacobOfficerId && requestData.nacobOfficerId !== "") {
-        updateData.nacobOfficer = {
-          connect: { id: requestData.nacobOfficerId },
-        };
-      } else {
-        updateData.nacobOfficer = { disconnect: true };
-      }
-    }
-    if (requestData.nationalSecurityOfficerId !== undefined) {
-      if (
-        requestData.nationalSecurityOfficerId &&
-        requestData.nationalSecurityOfficerId !== ""
-      ) {
-        updateData.securityOfficer = {
-          connect: { id: requestData.nationalSecurityOfficerId },
-        };
-      } else {
-        updateData.securityOfficer = { disconnect: true };
-      }
-    }
 
     console.log("Updating with data:", updateData);
 
@@ -506,9 +483,7 @@ export async function PUT(req: NextRequest) {
     // If seals array or officer names are provided, persist seals and/or update notes
     if (
       (Array.isArray(requestData.seals) && requestData.seals.length > 0) ||
-      requestData.customsOfficerName ||
-      requestData.nacobOfficerName ||
-      requestData.nationalSecurityName
+      requestData.customsOfficerName 
     ) {
       // Append officer names to the notes field so we don't need DB migrations for officer relations here
       const parts: string[] = [];
@@ -549,49 +524,6 @@ export async function PUT(req: NextRequest) {
                 sealNumber: String(requestData.customsOfficerName),
                 sealType: "CUSTOMS_SEAL",
                 notes: "Saved from sealing modal - customs officer",
-              },
-            });
-          }
-        }
-        if (requestData.nacobOfficerName) {
-          // store NACOB as OTHER_SEAL to keep previous mapping
-          const existing = findExisting("OTHER_SEAL");
-          if (existing) {
-            await prisma.seal.update({
-              where: { id: existing.id },
-              data: {
-                sealNumber: String(requestData.nacobOfficerName),
-                notes: "Updated from sealing modal - NACOB officer",
-              },
-            });
-          } else {
-            await prisma.seal.create({
-              data: {
-                jobCardId: id,
-                sealNumber: String(requestData.nacobOfficerName),
-                sealType: "OTHER_SEAL",
-                notes: "Saved from sealing modal - NACOB officer",
-              },
-            });
-          }
-        }
-        if (requestData.nationalSecurityName) {
-          const existing = findExisting("OTHER_SEAL");
-          if (existing) {
-            await prisma.seal.update({
-              where: { id: existing.id },
-              data: {
-                sealNumber: String(requestData.nationalSecurityName),
-                notes: "Updated from sealing modal - national security",
-              },
-            });
-          } else {
-            await prisma.seal.create({
-              data: {
-                jobCardId: id,
-                sealNumber: String(requestData.nationalSecurityName),
-                sealType: "OTHER_SEAL",
-                notes: "Saved from sealing modal - national security",
               },
             });
           }
@@ -662,8 +594,6 @@ export async function PUT(req: NextRequest) {
             },
             commodity: true,
             customsOfficer: true,
-            nacobOfficer: true,
-            securityOfficer: true,
             assayOfficer: true,
             technicalDirector: true,
             seals: true,

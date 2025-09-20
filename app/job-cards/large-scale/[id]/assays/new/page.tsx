@@ -42,16 +42,6 @@ interface LargeScaleJobCard {
     name: string;
     badgeNumber: string;
   };
-  nacobOfficer?: {
-    id: string;
-    name: string;
-    badgeNumber: string;
-  };
-  nationalSecurityOfficer?: {
-    id: string;
-    name: string;
-    badgeNumber: string;
-  };
   consigneeAddress: string;
   consigneeTelephone: string;
   consigneeMobile: string;

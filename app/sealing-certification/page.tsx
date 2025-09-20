@@ -424,11 +424,7 @@ function AddSealModal({
 }) {
   console.debug("AddSealModal render", { open, jobCardId });
   const [customsOfficerId, setCustomsOfficerId] = useState<string | null>(null);
-  const [nacobOfficerId, setNacobOfficerId] = useState<string | null>(null);
-  const [nationalSecurityOfficerId, setNationalSecurityOfficerId] = useState<
-    string | null
-  >(null);
-  const [customsSeal, setCustomsSeal] = useState("");
+   const [customsSeal, setCustomsSeal] = useState("");
   const [pmmcSeal, setPmmcSeal] = useState("");
   const [otherSeal, setOtherSeal] = useState("");
   const [customsSealId, setCustomsSealId] = useState<string | null>(null);
@@ -441,16 +437,8 @@ function AddSealModal({
   // Officers state
   const [officers, setOfficers] = useState<{
     customsOfficers: { id: string; name: string; badgeNumber: string }[];
-    nacobOfficers: { id: string; name: string; badgeNumber: string }[];
-    nationalSecurityOfficers: {
-      id: string;
-      name: string;
-      badgeNumber: string;
-    }[];
   }>({
     customsOfficers: [],
-    nacobOfficers: [],
-    nationalSecurityOfficers: [],
   });
 
   // Custom styles for React Select to match other form inputs
@@ -484,12 +472,6 @@ function AddSealModal({
             customsOfficers: officersData.filter(
               (o: any) => o.officerType === "CUSTOMS_OFFICER"
             ),
-            nacobOfficers: officersData.filter(
-              (o: any) => o.officerType === "NACOB_OFFICER"
-            ),
-            nationalSecurityOfficers: officersData.filter(
-              (o: any) => o.officerType === "NATIONAL_SECURITY_OFFICER"
-            ),
           };
           setOfficers(groupedOfficers);
         }
@@ -505,8 +487,6 @@ function AddSealModal({
     // close without refreshing list
     onClose(false);
     setCustomsOfficerId(null);
-    setNacobOfficerId(null);
-    setNationalSecurityOfficerId(null);
     setCustomsSeal("");
     setPmmcSeal("");
     setOtherSeal("");
@@ -525,19 +505,9 @@ function AddSealModal({
       const customsOfficerName = customsOfficerId
         ? officers.customsOfficers.find((o) => o.id === customsOfficerId)?.name
         : undefined;
-      const nacobOfficerName = nacobOfficerId
-        ? officers.nacobOfficers.find((o) => o.id === nacobOfficerId)?.name
-        : undefined;
-      const nationalSecurityName = nationalSecurityOfficerId
-        ? officers.nationalSecurityOfficers.find(
-            (o) => o.id === nationalSecurityOfficerId
-          )?.name
-        : undefined;
 
       const payload: any = {
         customsOfficerName: customsOfficerName || undefined,
-        nacobOfficerName: nacobOfficerName || undefined,
-        nationalSecurityName: nationalSecurityName || undefined,
         seals: [],
       };
       if (customsSeal)
@@ -621,20 +591,6 @@ function AddSealModal({
           );
           setCustomsOfficerId(officer?.id || null);
         }
-        if (nacobMatch) {
-          const officerName = nacobMatch[1].trim();
-          const officer = officers.nacobOfficers.find(
-            (o) => o.name === officerName
-          );
-          setNacobOfficerId(officer?.id || null);
-        }
-        if (nationalMatch) {
-          const officerName = nationalMatch[1].trim();
-          const officer = officers.nationalSecurityOfficers.find(
-            (o) => o.name === officerName
-          );
-          setNationalSecurityOfficerId(officer?.id || null);
-        }
         // populate seals
         const seals = jc.seals || [];
         const findObj = (type: string) =>
@@ -699,60 +655,6 @@ function AddSealModal({
               styles={customSelectStyles}
               isClearable
               placeholder="Select customs officer"
-            />
-          </label>
-          <label className="flex flex-col">
-            <span className="text-sm text-gray-600">NACOB Officer</span>
-            <Select
-              options={officers.nacobOfficers.map((officer) => ({
-                value: officer.id,
-                label: `${officer.name} (${officer.badgeNumber})`,
-              }))}
-              value={
-                nacobOfficerId
-                  ? officers.nacobOfficers
-                      .map((officer) => ({
-                        value: officer.id,
-                        label: `${officer.name} (${officer.badgeNumber})`,
-                      }))
-                      .find((o) => o.value === nacobOfficerId)
-                  : null
-              }
-              onChange={(selectedOption) =>
-                setNacobOfficerId(selectedOption?.value || null)
-              }
-              className="mt-1"
-              classNamePrefix="react-select"
-              styles={customSelectStyles}
-              isClearable
-              placeholder="Select NACOB officer"
-            />
-          </label>
-          <label className="flex flex-col">
-            <span className="text-sm text-gray-600">National Security</span>
-            <Select
-              options={officers.nationalSecurityOfficers.map((officer) => ({
-                value: officer.id,
-                label: `${officer.name} (${officer.badgeNumber})`,
-              }))}
-              value={
-                nationalSecurityOfficerId
-                  ? officers.nationalSecurityOfficers
-                      .map((officer) => ({
-                        value: officer.id,
-                        label: `${officer.name} (${officer.badgeNumber})`,
-                      }))
-                      .find((o) => o.value === nationalSecurityOfficerId)
-                  : null
-              }
-              onChange={(selectedOption) =>
-                setNationalSecurityOfficerId(selectedOption?.value || null)
-              }
-              className="mt-1"
-              classNamePrefix="react-select"
-              styles={customSelectStyles}
-              isClearable
-              placeholder="Select national security officer"
             />
           </label>
           <label className="flex flex-col">

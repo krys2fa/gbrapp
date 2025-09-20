@@ -77,8 +77,6 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
         customsOfficer: true,
         assayOfficer: true,
         technicalDirector: true,
-        nacobOfficer: true,
-        nationalSecurityOfficer: true,
         commodities: {
           include: {
             commodity: true,
@@ -147,8 +145,6 @@ async function createLargeScaleJobCard(req: NextRequest) {
       customsOfficerId,
       assayOfficerId,
       technicalDirectorId,
-      nacobOfficerId,
-      nationalSecurityOfficerId,
       // Assay-related fields
       assayMethod,
       authorizedSignatory,
@@ -286,8 +282,6 @@ async function createLargeScaleJobCard(req: NextRequest) {
       customsOfficerId,
       assayOfficerId,
       technicalDirectorId,
-      nacobOfficerId,
-      nationalSecurityOfficerId,
       // Removed consignee and notified party fields - now stored in exporter
     };
 
@@ -302,8 +296,6 @@ async function createLargeScaleJobCard(req: NextRequest) {
         customsOfficer: true,
         assayOfficer: true,
         technicalDirector: true,
-        nacobOfficer: true,
-        nationalSecurityOfficer: true,
       },
     });
 
@@ -395,8 +387,6 @@ async function createLargeScaleJobCard(req: NextRequest) {
         customsOfficer: true,
         assayOfficer: true,
         technicalDirector: true,
-        nacobOfficer: true,
-        nationalSecurityOfficer: true,
         commodities: {
           include: {
             commodity: true,

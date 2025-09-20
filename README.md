@@ -137,8 +137,6 @@ Central entity for managing gold transactions with fields for:
 #### Personnel
 
 - **CustomsOfficer**: Customs department officials
-- **NACOBOfficer**: NACOB department officials
-- **NationalSecurityOfficer**: Security officials
 - **AssayOfficer**: Assay specialists
 - **TechnicalDirector**: Technical oversight
 

@@ -365,8 +365,6 @@ async function createJobCard(req: NextRequest) {
       "customsOfficerId",
       "assayOfficerId",
       "technicalDirectorId",
-      "nacobOfficerId",
-      "nationalSecurityOfficerId",
     ];
 
     const data: any = {};
@@ -507,8 +505,6 @@ async function createJobCard(req: NextRequest) {
       "customsOfficerId",
       "assayOfficerId",
       "technicalDirectorId",
-      "nacobOfficerId",
-      "nationalSecurityOfficerId",
     ];
 
     const createData: any = {};
