@@ -532,9 +532,9 @@ function EditJobCardPage() {
                         />
                       </div>
 
-                      <div>
+                      {/* <div>
                         <label className="block text-sm font-medium text-gray-700">
-                          Job Reference Number
+                          Job Id
                         </label>
                         <input
                           name="referenceNumber"
@@ -544,7 +544,7 @@ function EditJobCardPage() {
                           readOnly
                           title="Reference number is automatically generated and cannot be changed"
                         />
-                      </div>
+                      </div> */}
 
                       {/* <div>
                         <label className="block text-sm font-medium text-gray-700">
