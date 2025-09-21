@@ -634,14 +634,7 @@ export default function AssayDetailPage() {
                 </dd>
               </div>
 
-              <div className="flex">
-                <dt className="text-sm font-medium text-gray-500">
-                  Certificate Number:
-                </dt>
-                <dd className="ml-1 text-sm font-semibold text-gray-900">
-                  {jobCard?.certificateNumber || "-"}
-                </dd>
-              </div>
+              
             </div>
 
             <div className="mt-4">

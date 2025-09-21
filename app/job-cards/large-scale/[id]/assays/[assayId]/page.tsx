@@ -381,7 +381,7 @@ export default function AssayResultsPage() {
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
-                      ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                      ? `${jobCard.exporter.name}`
                       : jobCard?.exporter?.name || "N/A"}
                   </span>
                 </div>
@@ -471,14 +471,14 @@ export default function AssayResultsPage() {
                     {jobCard?.humanReadableId || "N/A"}
                   </span>
                 </div>
-                <div>
+                {/* <div>
                   <span className="text-sm text-gray-500 mr-2 font-medium">
                     Certificate Number:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {jobCard?.certificateNumber || "N/A"}
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -535,8 +535,8 @@ export default function AssayResultsPage() {
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700  text-right border border-gray-300">
                             {m.goldAssay != null
                               ? Number(m.goldAssay).toLocaleString(undefined, {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
+                                  minimumFractionDigits: 4,
+                                  maximumFractionDigits: 4,
                                 })
                               : "-"}
                           </td>
@@ -545,8 +545,8 @@ export default function AssayResultsPage() {
                               ? Number(m.netGoldWeight).toLocaleString(
                                   undefined,
                                   {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
+                                    minimumFractionDigits: 4,
+                                    maximumFractionDigits: 4,
                                   }
                                 )
                               : "-"}
@@ -556,8 +556,8 @@ export default function AssayResultsPage() {
                               ? Number(m.silverAssay).toLocaleString(
                                   undefined,
                                   {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
+                                    minimumFractionDigits: 4,
+                                    maximumFractionDigits: 4,
                                   }
                                 )
                               : "-"}
@@ -567,8 +567,8 @@ export default function AssayResultsPage() {
                               ? Number(m.netSilverWeight).toLocaleString(
                                   undefined,
                                   {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
+                                    minimumFractionDigits: 4,
+                                    maximumFractionDigits: 4,
                                   }
                                 )
                               : "-"}

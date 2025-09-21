@@ -156,7 +156,7 @@ export default function AssayResultsPage() {
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
-                    ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                    ? `${jobCard.exporter.name}`
                     : jobCard?.exporter?.name || "N/A"}
                 </span>
               </div>
@@ -197,14 +197,14 @@ export default function AssayResultsPage() {
                 </span>
               </div>
 
-               <div className="justify-end flex">
+               {/* <div className="justify-end flex">
                 <span className="text-sm font-medium text-gray-500 mr-2">
                   Certificate Number:
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {jobCard?.certificateNumber || "N/A"}
                 </span>
-              </div>
+              </div> */}
             </div>
 
             {/* Assay Measurements Table */}

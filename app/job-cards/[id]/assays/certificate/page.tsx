@@ -438,7 +438,7 @@ export default function CertificateOfAssayPage() {
                     <span className="text-sm font-semibold text-gray-900">
                       {jobCard?.exporter?.name &&
                       jobCard?.exporter?.exporterCode
-                        ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                        ? `${jobCard.exporter.name}`
                         : jobCard?.exporter?.name || "N/A"}
                     </span>
                   </div>
