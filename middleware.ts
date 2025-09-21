@@ -3,9 +3,9 @@ import type { NextRequest } from "next/server";
 import { auditTrailMiddleware } from "./app/middleware/audit-trail";
 import {
   extractTokenFromReq,
-  // validateTokenAndLoadUser,
+  validateTokenAndLoadUser,
   verifyTokenPayload,
-} from "./app/lib/auth-utils";
+} from "./app/lib/auth-server";
 import fs from "fs";
 import path from "path";
 import {

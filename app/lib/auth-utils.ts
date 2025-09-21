@@ -1,86 +1,89 @@
-import { NextRequest } from "next/server";
-import * as jose from "jose";
-import { prisma } from "@/app/lib/prisma";
+import {
+  type UserRole,
+  type PermissionModule,
+  getModuleFromRoute,
+  getDefaultRouteForRole,
+  hasPermission,
+} from "./role-permissions";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET || "fallback-secret-for-development-only";
-
-export async function extractTokenFromReq(
-  req: NextRequest
-): Promise<string | null> {
-  // Prefer Authorization header
-  const authHeader = req.headers.get("authorization");
-  if (authHeader && authHeader.startsWith("Bearer "))
-    return authHeader.substring(7);
-
-  // Fallback to cookie named auth-token
-  try {
-    const cookie = req.cookies.get("auth-token")?.value || null;
-    if (cookie) return cookie;
-  } catch (e) {
-    // ignore
-  }
-
-  return null;
+export interface EvaluateResult {
+  shouldRedirect: boolean;
+  redirectTo?: string;
+  message?: string | null;
+  module?: PermissionModule | null;
 }
 
-export async function validateTokenAndLoadUser(token: string | null) {
-  if (!token) {
-    return { success: false, error: "No token provided", statusCode: 401 };
-  }
-
-  try {
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const { payload } = await jose.jwtVerify(token, secret);
-
-    const userId = payload.userId as string;
-
-    if (!userId) {
-      return {
-        success: false,
-        error: "Invalid token payload",
-        statusCode: 401,
-      };
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, name: true, email: true, role: true, isActive: true },
-    });
-
-    if (!user) {
-      return { success: false, error: "User not found", statusCode: 401 };
-    }
-
-    // Optionally check isActive
-    if (user.isActive === false) {
-      return { success: false, error: "User inactive", statusCode: 403 };
-    }
-
-    return { success: true, user, tokenPayload: payload };
-  } catch (error: any) {
-    if (error?.name === "JWTExpired") {
-      return { success: false, error: "Token expired", statusCode: 401 };
-    }
-    return { success: false, error: "Invalid token", statusCode: 401 };
-  }
+function capitalize(s: string) {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// Lightweight token-only verification for use in Edge/middleware contexts.
-export async function verifyTokenPayload(token: string | null) {
-  if (!token)
-    return { success: false, error: "No token provided", statusCode: 401 };
+export function humanizeModule(module: PermissionModule | null | undefined) {
+  if (!module) return "this page";
+  const map: Record<string, string> = {
+    setup: "Settings",
+    "job-cards": "Job Cards",
+    "job-cards/large-scale": "Large-scale Job Cards",
+    dashboard: "Dashboard",
+    reports: "Reports",
+    "payment-receipting": "Payments",
+    "sealing-certification": "Sealing & Certification",
+    notifications: "Notifications",
+    valuations: "Valuations",
+    "pending-approvals": "Pending Approvals",
+    settings: "Settings",
+  };
 
-  try {
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const { payload } = await jose.jwtVerify(token, secret);
-
-    // Only return payload (don't query DB in Edge)
-    return { success: true, payload };
-  } catch (error: any) {
-    if (error?.name === "JWTExpired") {
-      return { success: false, error: "Token expired", statusCode: 401 };
-    }
-    return { success: false, error: "Invalid token", statusCode: 401 };
-  }
+  return map[module] || capitalize(module.replace(/-/g, " "));
 }
+
+export function humanizeRoute(route: string | undefined) {
+  if (!route) return "Dashboard";
+  // Try to infer module and humanize it
+  const module = getModuleFromRoute(route);
+  if (module) return humanizeModule(module);
+  // Fallback: use last segment
+  const parts = route.split("/").filter(Boolean);
+  if (parts.length === 0) return "Dashboard";
+  return capitalize(parts[parts.length - 1]);
+}
+
+export function evaluateRedirect(
+  userRole: UserRole,
+  route: string,
+  requiredPermissions: PermissionModule[] = []
+): EvaluateResult {
+  // Determine module either from requiredPermissions or route
+  const module =
+    requiredPermissions && requiredPermissions.length > 0
+      ? requiredPermissions[0]
+      : getModuleFromRoute(route);
+
+  if (!module) return { shouldRedirect: false, module: null };
+
+  if (hasPermission(userRole, module)) {
+    return { shouldRedirect: false, module };
+  }
+
+  const redirectTo = getDefaultRouteForRole(userRole) || "/dashboard";
+  const message = `You don't have access to ${humanizeModule(
+    module
+  )} — redirecting you to ${humanizeRoute(redirectTo)}`;
+
+  return {
+    shouldRedirect: true,
+    redirectTo,
+    message,
+    module,
+  };
+}
+
+export default evaluateRedirect;
+
+// Re-export server-side auth helpers for backward compatibility.
+// These live in a server-only module to avoid pulling server deps into client code.
+export {
+  extractTokenFromReq,
+  validateTokenAndLoadUser,
+  verifyTokenPayload,
+} from "./auth-server";

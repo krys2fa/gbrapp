@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/app/context/auth-context";
 import {
   hasPermission,
   getModuleFromRoute,
+  getDefaultRouteForRole,
   type UserRole,
   type PermissionModule,
 } from "@/app/lib/role-permissions";
+import toast from "react-hot-toast";
+import { evaluateRedirect } from "@/app/lib/auth-utils";
 
 /**
  * Higher-order component for client-side route protection
@@ -24,6 +27,7 @@ export function withClientAuth<P extends object>(
   return function ProtectedRoute(props: P) {
     const { user, isLoading, isAuthenticated } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
       let redirectTimeout: NodeJS.Timeout;
@@ -40,19 +44,52 @@ export function withClientAuth<P extends object>(
         return;
       }
 
-      // Check permissions if needed
-      if (isAuthenticated && requiredPermissions.length > 0 && user) {
+      // Check permissions if needed or infer from current route
+      if (isAuthenticated && user) {
         const userRole = user.role as UserRole;
 
-        // Check if user has any of the required permissions
-        const hasRequiredPermission = requiredPermissions.some((permission) =>
-          hasPermission(userRole, permission)
-        );
+        // If explicit required permissions provided, enforce them
+        if (requiredPermissions.length > 0) {
+          const hasRequiredPermission = requiredPermissions.some((permission) =>
+            hasPermission(userRole, permission)
+          );
 
-        if (!hasRequiredPermission) {
-          redirectTimeout = setTimeout(() => {
-            router.push("/unauthorized");
-          }, 300);
+          if (!hasRequiredPermission) {
+            const evalRes = evaluateRedirect(
+              userRole,
+              pathname || "",
+              requiredPermissions
+            );
+            if (evalRes.shouldRedirect) {
+              if (evalRes.message)
+                toast.error(evalRes.message, { id: "auth-redirect" });
+              redirectTimeout = setTimeout(() => {
+                router.push(evalRes.redirectTo || "/dashboard");
+              }, 300);
+            }
+          }
+        } else {
+          // No explicit requiredPermissions: infer module from pathname and enforce
+          try {
+            const currentPath =
+              pathname ||
+              (typeof window !== "undefined" ? window.location.pathname : "");
+            const module = getModuleFromRoute(currentPath || "");
+            if (module && !hasPermission(userRole, module)) {
+              const evalRes = evaluateRedirect(userRole, currentPath || "");
+              if (evalRes.shouldRedirect) {
+                if (evalRes.message)
+                  toast.error(evalRes.message, { id: "auth-redirect" });
+                redirectTimeout = setTimeout(() => {
+                  router.push(evalRes.redirectTo || "/dashboard");
+                }, 300);
+              }
+            }
+          } catch (e) {
+            // If anything goes wrong during inference, be conservative and allow access
+            // (do not block rendering due to inference errors)
+            /* intentionally empty */
+          }
         }
       }
 

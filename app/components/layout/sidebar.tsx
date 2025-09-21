@@ -435,7 +435,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
                 {user?.name || "Loading..."}
               </p>
               <p className="text-xs text-white/80 truncate">
-                {user?.email || "user@example.com"}
+                {user?.email || "Loading..."}
               </p>
             </div>
             <LogoutButton />

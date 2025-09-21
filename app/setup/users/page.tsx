@@ -401,52 +401,64 @@ const CreateUserPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {users
-                      .slice((page - 1) * pageSize, page * pageSize)
-                      .map((user: any) => (
-                        <tr key={user.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 text-gray-900">
-                            {user.name}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {user.email}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {user.phone || "N/A"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {capitalizeFirst(user.role)}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {user.isActive ? "Active" : "Inactive"}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {user.createdAt
-                              ? new Date(user.createdAt).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="px-4 py-2 flex gap-2">
-                            <button
-                              className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
-                              onClick={() => handleViewUser(user)}
-                            >
-                              <EyeIcon className="h-4 w-4 mr-1" /> View
-                            </button>
-                            <button
-                              className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
-                              onClick={() => handleEditUser(user)}
-                            >
-                              <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
-                            </button>
-                            <button
-                              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
-                              onClick={() => handleDeleteUser(user.id)}
-                            >
-                              <TrashIcon className="h-4 w-4 mr-1" /> Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                    {Array.isArray(users) && users.length > 0 ? (
+                      users
+                        .slice((page - 1) * pageSize, page * pageSize)
+                        .map((user: any) => (
+                          <tr key={user.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-2 text-gray-900">
+                              {user.name}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {user.email}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {user.phone || "N/A"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {capitalizeFirst(user.role)}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {user.isActive ? "Active" : "Inactive"}
+                            </td>
+                            <td className="px-4 py-2 text-gray-700">
+                              {user.createdAt
+                                ? new Date(user.createdAt).toLocaleDateString()
+                                : "-"}
+                            </td>
+                            <td className="px-4 py-2 flex gap-2">
+                              <button
+                                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
+                                onClick={() => handleViewUser(user)}
+                              >
+                                <EyeIcon className="h-4 w-4 mr-1" /> View
+                              </button>
+                              <button
+                                className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
+                                onClick={() => handleEditUser(user)}
+                              >
+                                <PencilSquareIcon className="h-4 w-4 mr-1" />{" "}
+                                Edit
+                              </button>
+                              <button
+                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
+                                onClick={() => handleDeleteUser(user.id)}
+                              >
+                                <TrashIcon className="h-4 w-4 mr-1" /> Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="px-4 py-6 text-center text-gray-500"
+                        >
+                          No users found.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
