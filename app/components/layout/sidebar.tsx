@@ -233,27 +233,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
     const userRole = user.role as UserRole;
 
-    return navigation.filter((item) => {
-      // Check if user has permission for this navigation item
-      const hasMainPermission = hasPermission(userRole, item.permission);
+    // Build a new filtered navigation array without mutating the original
+    const result: NavigationItem[] = [];
 
-      if (!hasMainPermission) return false;
-
-      // If item has submenus, filter them too
+    for (const item of navigation) {
+      // If the item has subitems, check subitem permissions first
       if (item.hasSubmenu && item.subItems) {
-        const filteredSubItems = item.subItems.filter((subItem) =>
+        const allowedSubItems = item.subItems.filter((subItem) =>
           hasPermission(userRole, subItem.permission)
         );
 
-        // Only show the main item if there are accessible subitems
-        if (filteredSubItems.length === 0) return false;
-
-        // Update the item with filtered subitems
-        item.subItems = filteredSubItems;
+        // If any subitem is allowed, include the main item with only allowed subitems
+        if (allowedSubItems.length > 0) {
+          result.push({
+            ...item,
+            subItems: allowedSubItems,
+          });
+          continue;
+        }
+        // No allowed subitems -> skip this main item
+        continue;
       }
 
-      return true;
-    });
+      // No subitems: require main permission to include
+      if (hasPermission(userRole, item.permission)) {
+        result.push({ ...item });
+      }
+    }
+
+    return result;
   };
 
   const filteredNavigation = getFilteredNavigation();

@@ -80,17 +80,12 @@ export function JobCardList({ filters }: JobCardListProps) {
       queryParams.append("page", currentPage.toString());
       queryParams.append("limit", itemsPerPage.toString());
 
-      const response = await apiClient.get(
+      // ApiClient.get() returns parsed JSON (not a Response object)
+      const data = await apiClient.get(
         `/api/job-cards?${queryParams.toString()}`
       );
-
-      if (response.ok) {
-        const data = await response.json();
-        setJobCards(data.jobCards || []);
-        setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
-      } else {
-        console.error("Failed to fetch job cards");
-      }
+      setJobCards(data.jobCards || []);
+      setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
     } catch (error) {
       console.error("Error fetching job cards:", error);
     } finally {
