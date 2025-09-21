@@ -514,7 +514,7 @@ export default function CertificateOfAssayPage() {
                           SN
                         </th>
                         <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
-                          Bar No. NGGL
+                          Bar No. 
                         </th>
                         <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Gross Weight ({jobCard?.unitOfMeasure})

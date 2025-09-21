@@ -1013,7 +1013,7 @@ function NewLargeScaleAssayPage() {
                   <div key={i} className="grid grid-cols-6 gap-3 items-end">
                     <div>
                       <label className="block text-xs text-gray-600">
-                        Bar Number (NGGL)
+                        Bar Number
                       </label>
                       <input
                         type="text"
