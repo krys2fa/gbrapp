@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import React, { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "./context/auth-context";
 import { LayoutWrapper } from "./components/layout/layout-wrapper";
@@ -34,7 +35,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <AuthProvider>
-          <LayoutWrapper>{children}</LayoutWrapper>
+          <Suspense fallback={<div>{/* loading layout... */}</div>}>
+            <LayoutWrapper>{children}</LayoutWrapper>
+          </Suspense>
           <Toaster
             position="top-right"
             toastOptions={{

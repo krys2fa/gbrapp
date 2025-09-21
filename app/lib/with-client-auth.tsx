@@ -63,9 +63,14 @@ export function withClientAuth<P extends object>(
             if (evalRes.shouldRedirect) {
               if (evalRes.message)
                 toast.error(evalRes.message, { id: "auth-redirect" });
+              // Give the toast a bit more time to render before navigation
               redirectTimeout = setTimeout(() => {
-                router.push(evalRes.redirectTo || "/dashboard");
-              }, 300);
+                try {
+                  router.replace(evalRes.redirectTo || "/dashboard");
+                } catch (e) {
+                  router.push(evalRes.redirectTo || "/dashboard");
+                }
+              }, 600);
             }
           }
         } else {
@@ -80,9 +85,14 @@ export function withClientAuth<P extends object>(
               if (evalRes.shouldRedirect) {
                 if (evalRes.message)
                   toast.error(evalRes.message, { id: "auth-redirect" });
+                // Give the toast a bit more time to render before navigation
                 redirectTimeout = setTimeout(() => {
-                  router.push(evalRes.redirectTo || "/dashboard");
-                }, 300);
+                  try {
+                    router.replace(evalRes.redirectTo || "/dashboard");
+                  } catch (e) {
+                    router.push(evalRes.redirectTo || "/dashboard");
+                  }
+                }, 600);
               }
             }
           } catch (e) {
