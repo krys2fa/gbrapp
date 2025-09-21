@@ -35,6 +35,12 @@ export function LargeScaleJobCardFilters({
       exporterType: { id: string; name: string };
     }[]
   >([]);
+  // only include exporters relevant to large-scale filters
+  const largeExporters = exporters.filter(
+    (ex) =>
+      (ex.exporterType?.name || "").toLowerCase().includes("mining") ||
+      (ex.exporterType?.name || "").toLowerCase().includes("large")
+  );
   const [miningSites, setMiningSites] = useState<string[]>([]);
   const statusOptions = [
     "all",
@@ -135,9 +141,9 @@ export function LargeScaleJobCardFilters({
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
             <option value="">All Exporters</option>
-            {exporters.map((exporter) => (
+            {largeExporters.map((exporter) => (
               <option key={exporter.id} value={exporter.id}>
-                {exporter.name} ({exporter.exporterCode})
+                {exporter.name}
               </option>
             ))}
           </select>

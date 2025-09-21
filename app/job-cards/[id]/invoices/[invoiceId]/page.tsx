@@ -140,7 +140,7 @@ export default async function InvoicePage(props: any) {
   const jobCardData = invoice.jobCard || invoice.largeScaleJobCard;
   const exporterName =
     jobCardData?.exporter?.name && jobCardData?.exporter?.exporterCode
-      ? `${jobCardData.exporter.name} (${jobCardData.exporter.exporterCode})`
+      ? `${jobCardData.exporter.name}`
       : jobCardData?.exporter?.name || "-";
   const destinationCountry = jobCardData?.destinationCountry || "-";
   const referenceNumber =

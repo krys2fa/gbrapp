@@ -22,7 +22,7 @@ export class ApiClient {
   /**
    * Make an authenticated GET request
    */
-  async get(url: string, options: RequestInit = {}): Promise<Response> {
+  async get(url: string, options: RequestInit = {}): Promise<any> {
     return this.request(url, {
       method: "GET",
       ...options,
@@ -32,11 +32,7 @@ export class ApiClient {
   /**
    * Make an authenticated POST request
    */
-  async post(
-    url: string,
-    data?: any,
-    options: RequestInit = {}
-  ): Promise<Response> {
+  async post(url: string, data?: any, options: RequestInit = {}): Promise<any> {
     return this.request(url, {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
@@ -47,11 +43,7 @@ export class ApiClient {
   /**
    * Make an authenticated PUT request
    */
-  async put(
-    url: string,
-    data?: any,
-    options: RequestInit = {}
-  ): Promise<Response> {
+  async put(url: string, data?: any, options: RequestInit = {}): Promise<any> {
     return this.request(url, {
       method: "PUT",
       body: data ? JSON.stringify(data) : undefined,
@@ -62,7 +54,7 @@ export class ApiClient {
   /**
    * Make an authenticated DELETE request
    */
-  async delete(url: string, options: RequestInit = {}): Promise<Response> {
+  async delete(url: string, options: RequestInit = {}): Promise<any> {
     return this.request(url, {
       method: "DELETE",
       ...options,
@@ -72,10 +64,7 @@ export class ApiClient {
   /**
    * Make an authenticated request with automatic token inclusion
    */
-  private async request(
-    url: string,
-    options: RequestInit = {}
-  ): Promise<Response> {
+  private async request(url: string, options: RequestInit = {}): Promise<any> {
     const headers = new Headers(options.headers);
 
     // Add JSON content type for requests with body
@@ -95,7 +84,14 @@ export class ApiClient {
       credentials: options.credentials || "include",
     };
 
-    return fetch(url, requestOptions);
+    const res = await fetch(url, requestOptions);
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      return res.json();
+    }
+
+    // Return text for non-JSON responses
+    return res.text();
   }
 }
 

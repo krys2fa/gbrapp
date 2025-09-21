@@ -1,7 +1,7 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
-// import { useApiClient } from "@/app/lib/api-client";
+import { useApiClient } from "@/app/lib/api-client";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
@@ -116,6 +116,7 @@ function NewLargeScaleAssayPage() {
     numberOfSamples: 1,
     numberOfBars: 1,
     sampleType: "capillary",
+    certificateNumber: "",
   });
 
   // rows for each piece: bar number, gross weight, gold assay, net gold weight, silver assay, net silver weight
@@ -573,6 +574,7 @@ function NewLargeScaleAssayPage() {
         numberOfSamples: Number(form.numberOfSamples),
         numberOfBars: Number(form.numberOfBars),
         sampleType: form.sampleType,
+        certificateNumber: form.certificateNumber || undefined,
         exchangeRate: Number(currentWeekExchangeEntry?.price) || null,
         commodityPrice:
           Number(
@@ -1205,6 +1207,23 @@ function NewLargeScaleAssayPage() {
                     onChange={handleFormChange}
                     rows={3}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label
+                    className="block text-sm font-medium text-gray-700"
+                    htmlFor="certificateNumber"
+                  >
+                    Assay Certificate Number
+                  </label>
+                  <input
+                    name="certificateNumber"
+                    id="certificateNumber"
+                    type="text"
+                    value={form.certificateNumber}
+                    onChange={handleFormChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                    placeholder="Enter certificate number"
                   />
                 </div>
                 <div>

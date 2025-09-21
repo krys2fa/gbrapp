@@ -30,6 +30,10 @@ function EditJobCardPage() {
       exporterType: { id: string; name: string };
     }[]
   >([]);
+  // Only show exporters relevant to small-scale editing
+  const smallExporters = exporters.filter((ex) =>
+    (ex.exporterType?.name || "").toLowerCase().includes("small")
+  );
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
   >([]);
@@ -240,7 +244,8 @@ function EditJobCardPage() {
     }
 
     // Prepare full submission payload from formData
-    const submissionData: any = { ...formData };
+    // certificateNumber now collected at assay/valuation step — exclude it here
+    const { certificateNumber, ...submissionData } = formData as any;
 
     // Convert numeric-like fields to actual numbers when provided
     const numericFields = [
@@ -402,7 +407,7 @@ function EditJobCardPage() {
                           className="mt-1 form-control"
                         >
                           <option value="">Select exporter</option>
-                          {exporters.map((ex) => (
+                          {smallExporters.map((ex) => (
                             <option key={ex.id} value={ex.id}>
                               {ex.name} ({ex.exporterCode})
                             </option>
@@ -489,18 +494,7 @@ function EditJobCardPage() {
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Certificate Number
-                        </label>
-                        <input
-                          name="certificateNumber"
-                          value={formData.certificateNumber}
-                          onChange={handleChange}
-                          className="mt-1 form-control"
-                          placeholder="Enter certificate number"
-                        />
-                      </div>
+                      {/* certificateNumber moved to assay/valuation step */}
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700">

@@ -443,9 +443,9 @@ export async function PUT(req: NextRequest) {
                 : new Date(),
               goldContent: avgFineness || 0,
               silverContent: 0,
-              certificateNumber: `ASSY-${Date.now()}-${Math.floor(
-                Math.random() * 1000
-              )}`,
+              // certificateNumber must be provided by client at assay/valuation time.
+              // Do not auto-generate certificate numbers on the server.
+              certificateNumber: assayItem.certificateNumber || undefined,
               humanReadableAssayNumber: await generateAssayNumber("SS"),
 
               // Store calculated valuation fields
@@ -508,6 +508,22 @@ export async function PUT(req: NextRequest) {
         } catch (assayErr) {
           console.error("Failed to create assay record:", assayErr);
         }
+      }
+
+      // If the request included an assay with a certificateNumber and the job card
+      // does not yet have a certificateNumber, copy it to the job card to preserve
+      // compatibility with views that read jobCard.certificateNumber.
+      try {
+        const firstProvidedCert = requestData.assays?.find((a: any) => a.certificateNumber);
+        if (firstProvidedCert && firstProvidedCert.certificateNumber && !existingJobCard.certificateNumber) {
+          await prisma.jobCard.update({
+            where: { id },
+            data: { certificateNumber: firstProvidedCert.certificateNumber },
+          });
+        }
+      } catch (copyErr) {
+        // Log but don't fail the whole update flow if copying fails due to uniqueness
+        console.error('Failed to copy certificateNumber to job card:', copyErr);
       }
 
       // mark job card as completed unless a different status is provided

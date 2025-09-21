@@ -1,0 +1,21 @@
+{
+  "endpoints": {
+    "/api/dashboard/stats": [
+      "SUPERADMIN",
+      "ADMIN",
+      "USER",
+      "TELLER",
+      "CEO",
+      "DEPUTY_CEO",
+      "FINANCE",
+      "EXECUTIVE",
+      "SMALL_SCALE_ASSAYER",
+      "LARGE_SCALE_ASSAYER"
+    ],
+    "/api/job-cards": ["SUPERADMIN", "SMALL_SCALE_ASSAYER", "LARGE_SCALE_ASSAYER"],
+    "/api/large-scale-job-cards": ["SUPERADMIN", "LARGE_SCALE_ASSAYER"],
+    "/setup/pending-approvals": ["SUPERADMIN", "CEO", "DEPUTY_CEO", "EXECUTIVE"],
+    "/reports": ["SUPERADMIN", "ADMIN", "FINANCE"],
+    "/payment-receipting": ["SUPERADMIN", "TELLER", "SMALL_SCALE_ASSAYER", "LARGE_SCALE_ASSAYER"]
+  }
+}
