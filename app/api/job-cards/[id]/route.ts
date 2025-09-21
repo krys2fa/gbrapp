@@ -102,6 +102,7 @@ export async function GET(req: NextRequest) {
     // Log full job card data to console for debugging
     console.log("=== JOB CARD DATA DEBUG ===");
     console.log("ID:", jobCard.id);
+    console.log("JOB:", jobCard);
     console.log("Reference Number:", jobCard.referenceNumber);
     console.log("Notes:", jobCard.notes);
     console.log(
