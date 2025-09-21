@@ -1072,11 +1072,26 @@ function NewLargeScaleJobCardPage() {
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     <option value="">Select an exporter</option>
-                    {exporters.map((exporter) => (
-                      <option key={exporter.id} value={exporter.id}>
-                        {exporter.name} ({exporter.exporterCode})
-                      </option>
-                    ))}
+                    {exporters
+                      .filter((exp) => {
+                        const anyExp = exp as any;
+                        const typeId =
+                          anyExp.exporterType?.id ?? anyExp.exporterType;
+                        const typeName = anyExp.exporterType?.name ?? "";
+                        // Accept explicit id '1' OR types whose name indicates large-scale operations
+                        if (String(typeId) === "1") return true;
+                        if (
+                          typeof typeName === "string" &&
+                          /large/i.test(typeName)
+                        )
+                          return true;
+                        return false;
+                      })
+                      .map((exporter) => (
+                        <option key={exporter.id} value={exporter.id}>
+                          {exporter.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
 

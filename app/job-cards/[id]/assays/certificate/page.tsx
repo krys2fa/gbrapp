@@ -346,6 +346,11 @@ export default function CertificateOfAssayPage() {
             border-top: 1pt solid #000 !important;
           }
 
+          /* Remove top border under the table when printing */
+          .no-print-border-top {
+            border-top: none !important;
+          }
+
           /* Text styles for print */
           .text-xs {
             font-size: 8pt !important;
@@ -483,7 +488,7 @@ export default function CertificateOfAssayPage() {
               <div className="px-4 sm:px-6 lg:px-8 pt-4">
                 <div className="bg-white overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
+                    <table className="min-w-full">
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-4 py-2 text-center text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
@@ -596,7 +601,7 @@ export default function CertificateOfAssayPage() {
                 </div>
 
                 {/* Summary Information - Net Weight in Ounces */}
-                <div className="px-4 sm:px-6 lg:px-8 py-6 border-t border-gray-200">
+                <div className="py-4 sm:py-6 lg:pxy-8 no-print-border-top">
                   <div className="flex justify-start">
                     <div className="flex text-center ">
                       <h4 className="text-sm font-medium text-gray-500 uppercase">
@@ -627,47 +632,45 @@ export default function CertificateOfAssayPage() {
                 </div>
 
                 <div className="flex justify-between">
-                  <div className="px-4 sm:px-6 lg:px-8 py-2">
-                  <div className="flex justify-start">
-                    <div className="flex text-center ">
-                      <h4 className="text-sm font-medium text-gray-500 uppercase">
-                        Customs Seal No.:
-                      </h4>
-                      <div className="ml-2 text-sm font-semibold text-gray-900">
-                        {jobCard.assays[0]?.customsSealNo || "N/A"}
+                  <div className="px-1 sm:px-2 lg:px-3 py-2">
+                    <div className="flex justify-start">
+                      <div className="flex text-center ">
+                        <h4 className="text-sm font-medium text-gray-500 uppercase">
+                          Customs Seal:
+                        </h4>
+                        <div className="ml-2 text-sm font-semibold text-gray-900">
+                          {jobCard.assays[0]?.customsSealNo || "N/A"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-1 sm:px-2 lg:px-3 py-2">
+                    <div className="flex justify-start">
+                      <div className="flex text-center ">
+                        <h4 className="text-sm font-medium text-gray-500 uppercase">
+                          GOLDBOD Seal:
+                        </h4>
+                        <div className="ml-2 text-sm font-semibold text-gray-900">
+                          {jobCard.assays[0]?.goldbodSealNo || "N/A"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-1 sm:px-2 lg:px-3 py-2">
+                    <div className="flex justify-start">
+                      <div className="flex">
+                        <h4 className="text-sm font-medium text-gray-500 uppercase">
+                          Security Seal:
+                        </h4>
+                        <div className="ml-2 text-sm font-semibold text-gray-900">
+                          {jobCard.assays[0]?.securitySealNo || "N/A"}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="px-4 sm:px-6 lg:px-8 py-2">
-                  <div className="flex justify-start">
-                    <div className="flex text-center ">
-                      <h4 className="text-sm font-medium text-gray-500 uppercase">
-                        GOLDBOD Seal No.:
-                      </h4>
-                      <div className="ml-2 text-sm font-semibold text-gray-900">
-                        {jobCard.assays[0]?.goldbodSealNo || "N/A"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="px-4 sm:px-6 lg:px-8 py-2">
-                  <div className="flex justify-start">
-                    <div className="flex text-center ">
-                      <h4 className="text-sm font-medium text-gray-500 uppercase">
-                        Security Seal No.:
-                      </h4>
-                      <div className="ml-2 text-sm font-semibold text-gray-900">
-                        {jobCard.assays[0]?.securitySealNo || "N/A"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                </div>
-
-
               </div>
             )}
 
@@ -683,12 +686,10 @@ export default function CertificateOfAssayPage() {
                 </div>
 
                 {/* Official Seal */}
-                <div className="justify-end">
-                  <img
-                    src="/seal.png"
-                    alt="Official Seal"
-                    className="w-32 h-24 mb-2 print:w-16 print:h-16"
-                  />
+
+
+                <div className="bg-white py-4 flex justify-end">
+                  <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
                 </div>
               </div>
             </div>

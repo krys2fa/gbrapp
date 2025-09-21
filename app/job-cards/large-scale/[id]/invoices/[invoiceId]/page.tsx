@@ -142,7 +142,7 @@ export default async function LargeScaleInvoicePage(props: any) {
 
   const exporterName =
     jobCardData?.exporter?.name && jobCardData?.exporter?.exporterCode
-      ? `${jobCardData.exporter.name} (${jobCardData.exporter.exporterCode})`
+      ? `${jobCardData.exporter.name}`
       : jobCardData?.exporter?.name || "-";
   const destinationCountry = jobCardData?.destinationCountry || "-";
   const referenceNumber =

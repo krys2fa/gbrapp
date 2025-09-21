@@ -27,6 +27,10 @@ function NewJobCardPage() {
       authorizedSignatory: string;
     }[]
   >([]);
+  // Only show exporters for small-scale contexts
+  const smallExporters = exporters.filter((ex) =>
+    (ex.exporterType?.name || "").toLowerCase().includes("small")
+  );
   const [commodities, setCommodities] = useState<
     { id: string; name: string }[]
   >([]);
@@ -146,7 +150,9 @@ function NewJobCardPage() {
 
     // If exporter is changed, also update the authorized signatory
     if (name === "exporterId") {
-      const selectedExporter = exporters.find((ex) => ex.id === value);
+      const selectedExporter =
+        smallExporters.find((ex) => ex.id === value) ||
+        exporters.find((ex) => ex.id === value);
       setFormData((prev) => ({
         ...prev,
         [name]: value,
@@ -187,7 +193,8 @@ function NewJobCardPage() {
     }
 
     // Prepare full submission payload from formData
-    const submissionData: any = { ...formData };
+    // Remove certificateNumber from job-card creation payload (now collected at assay step)
+    const { certificateNumber, ...submissionData } = formData as any;
 
     // Convert numeric-like fields to actual numbers when provided
     const numericFields = [
@@ -322,9 +329,9 @@ function NewJobCardPage() {
                         className="mt-1 form-control"
                       >
                         <option value="">Select exporter</option>
-                        {exporters.map((ex) => (
+                        {smallExporters.map((ex) => (
                           <option key={ex.id} value={ex.id}>
-                            {ex.name} ({ex.exporterCode})
+                            {ex.name}
                           </option>
                         ))}
                       </select>
@@ -410,18 +417,7 @@ function NewJobCardPage() {
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Certificate Number
-                      </label>
-                      <input
-                        name="certificateNumber"
-                        value={(formData as any).certificateNumber || ""}
-                        onChange={handleChange}
-                        className="mt-1 form-control"
-                        placeholder="Enter certificate number"
-                      />
-                    </div>
+                    {/* certificateNumber moved to assay/valuation step */}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">

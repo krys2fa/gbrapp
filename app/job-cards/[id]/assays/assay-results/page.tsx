@@ -469,12 +469,8 @@ export default function AssayResultsPage() {
             </div>
 
             {/* Official Seal */}
-            <div className="flex justify-end">
-              <img
-                src="/seal.png"
-                alt="Official Seal"
-                className="w-32 h-24 mb-2 print:w-16 print:h-16"
-              />
+            <div className="bg-white py-4 flex justify-end">
+              <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
             </div>
           </div>
         </div>

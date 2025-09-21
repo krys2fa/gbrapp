@@ -40,6 +40,7 @@ export default function NewAssayPage() {
     pieces: 1,
     signatory: user?.name || "",
     comments: "",
+    certificateNumber: "",
     shipmentTypeId: "",
     securitySealNo: "",
     goldbodSealNo: "",
@@ -562,6 +563,7 @@ export default function NewAssayPage() {
 
       const newAssay = {
         id: `local-${Date.now()}`,
+        certificateNumber: form.certificateNumber || undefined,
         method: form.method,
         pieces: Number(form.pieces),
         signatory: form.signatory,
@@ -615,6 +617,11 @@ export default function NewAssayPage() {
         displayUsdValue || jobCard.exporterValueUsd || 0;
       updated.exporterValueGhs =
         displayGhsValue || jobCard.exporterValueGhs || 0;
+
+      // If certificateNumber provided on assay, ensure it's passed as part of the update payload
+      if (form.certificateNumber && !updated.certificateNumber) {
+        updated.certificateNumber = form.certificateNumber;
+      }
 
       const put = await fetch(`/api/job-cards/${id}`, {
         method: "PUT",

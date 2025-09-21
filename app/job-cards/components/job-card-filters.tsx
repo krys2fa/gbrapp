@@ -30,6 +30,10 @@ export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
       exporterType: { id: string; name: string };
     }[]
   >([]);
+  // only include small-scale exporters in the small-scale filters
+  const smallExporters = exporters.filter((ex) =>
+    (ex.exporterType?.name || "").toLowerCase().includes("small")
+  );
   const statusOptions = [
     "all",
     "pending",
@@ -121,9 +125,9 @@ export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
                 className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
               >
                 <option value="">All Exporters</option>
-                {exporters.map((exporter) => (
+                {smallExporters.map((exporter) => (
                   <option key={exporter.id} value={exporter.id}>
-                    {exporter.name} ({exporter.exporterCode})
+                    {exporter.name}
                   </option>
                 ))}
               </select>

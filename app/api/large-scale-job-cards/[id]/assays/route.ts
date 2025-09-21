@@ -26,7 +26,7 @@ async function postAssay(
     }
 
     // Check if assay already exists for this job card
-    const existingAssay = await prisma.largeScaleAssay.findUnique({
+    const existingAssay = await prisma.largeScaleAssay.findFirst({
       where: { jobCardId },
     });
 
@@ -60,6 +60,7 @@ async function postAssay(
         numberOfSamples: body.numberOfSamples,
         numberOfBars: body.numberOfBars,
         sampleType: body.sampleType,
+        certificateNumber: body.certificateNumber || undefined,
         exchangeRate: body.exchangeRate,
         commodityPrice: body.commodityPrice,
         pricePerOz: body.pricePerOz,
@@ -83,12 +84,25 @@ async function postAssay(
             netSilverWeight: measurement.netSilverWeight,
           })),
         },
-      },
+      } as any,
       include: {
         measurements: true,
         shipmentType: true,
       },
     });
+
+    // If the job card does not yet have a certificateNumber, copy the assay-provided one
+    try {
+      if (body.certificateNumber && !jobCard.certificateNumber) {
+        await prisma.largeScaleJobCard.update({
+          where: { id: jobCardId },
+          data: { certificateNumber: body.certificateNumber },
+        });
+      }
+    } catch (err) {
+      // Log but don't fail the assay creation if job card update fails due to uniqueness conflict
+      console.error("Failed to copy certificateNumber to job card:", err);
+    }
 
     return NextResponse.json(assay);
   } catch (error) {
@@ -108,7 +122,7 @@ async function getAssay(
     const { id } = await params;
     const jobCardId = id;
 
-    const assay = await prisma.largeScaleAssay.findUnique({
+    const assay = await prisma.largeScaleAssay.findFirst({
       where: { jobCardId },
       include: {
         measurements: {
@@ -142,8 +156,15 @@ async function putAssay(
     const body = await request.json();
 
     // Update the assay
-    const assay = await prisma.largeScaleAssay.update({
+    const existing = await prisma.largeScaleAssay.findFirst({
       where: { jobCardId },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Assay not found" }, { status: 404 });
+    }
+
+    const assay = await prisma.largeScaleAssay.update({
+      where: { id: existing.id },
       data: {
         method: body.method,
         pieces: body.pieces,
