@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
-import * as jose from "jose";
 import {
   validateAPIPermission,
   createUnauthorizedResponse,
@@ -122,6 +121,7 @@ async function updateLargeScaleJobCard(
       customsOfficerId,
       assayOfficerId,
       technicalDirectorId,
+      certificateNumber,
       consigneeAddress,
       consigneeTelephone,
       consigneeMobile,
@@ -190,6 +190,8 @@ async function updateLargeScaleJobCard(
       updateData.assayOfficerId = assayOfficerId;
     if (technicalDirectorId !== undefined)
       updateData.technicalDirectorId = technicalDirectorId;
+    if (certificateNumber !== undefined)
+      updateData.certificateNumber = certificateNumber;
     if (consigneeAddress !== undefined)
       updateData.consigneeAddress = consigneeAddress;
     if (consigneeTelephone !== undefined)

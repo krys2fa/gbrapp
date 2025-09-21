@@ -3,7 +3,10 @@ import { prisma } from "@/app/lib/prisma";
 import { getWeekBounds } from "@/app/lib/week-utils";
 import { NotificationService } from "../../../lib/notification-service";
 import { NotificationScheduler } from "../../../lib/notification-scheduler";
-import * as jose from "jose";
+import {
+  extractTokenFromReq,
+  validateTokenAndLoadUser,
+} from "@/app/lib/auth-utils";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -79,85 +82,18 @@ export async function POST(req: Request) {
       );
     }
 
-    // Extract and verify JWT token to get user information
-    const authHeader = req.headers.get("authorization");
-    let token: string | undefined;
+    // Extract token (header or cookie) and validate + load user
+    const token = await extractTokenFromReq(req as any);
+    const validation = await validateTokenAndLoadUser(token);
 
-    // Check Authorization header first
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.substring(7);
-    } else {
-      // Fallback to cookie if no Authorization header
-      const cookieHeader = req.headers.get("cookie");
-      if (cookieHeader) {
-        const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
-          const [key, value] = cookie.trim().split("=");
-          acc[key] = value;
-          return acc;
-        }, {} as Record<string, string>);
-        token = cookies["auth-token"];
-      }
-    }
-
-    if (!token) {
+    if (!validation.success || !validation.user) {
       return NextResponse.json(
-        {
-          error: "Unauthorized. Authentication required. Please login first.",
-        },
-        { status: 401 }
+        { error: validation.error || "Unauthorized" },
+        { status: validation.statusCode || 401 }
       );
     }
 
-    const JWT_SECRET =
-      process.env.JWT_SECRET || "fallback-secret-for-development-only";
-    const secret = new TextEncoder().encode(JWT_SECRET);
-
-    let submittedBy: string;
-    try {
-      const { payload } = await jose.jwtVerify(token, secret);
-      submittedBy = payload.userId as string;
-
-      // Validate that the user exists in the database
-      const user = await prisma.user.findUnique({
-        where: { id: submittedBy },
-        select: { id: true, name: true, email: true },
-      });
-
-      if (!user) {
-        console.warn(
-          `User with ID ${submittedBy} not found in database. Using system user as fallback.`
-        );
-
-        // Fallback to system user
-        const systemUser = await prisma.user.findFirst({
-          where: {
-            OR: [{ email: "system@gbrapp.com" }, { role: "SUPERADMIN" }],
-          },
-          select: { id: true, name: true, email: true },
-        });
-
-        if (systemUser) {
-          submittedBy = systemUser.id;
-          console.log(
-            `Using system user ${systemUser.name} (${systemUser.id}) as submitter`
-          );
-        } else {
-          return NextResponse.json(
-            {
-              error: "User validation failed. Please contact administrator.",
-            },
-            { status: 500 }
-          );
-        }
-      }
-    } catch (error) {
-      return NextResponse.json(
-        {
-          error: "Unauthorized. Invalid token.",
-        },
-        { status: 401 }
-      );
-    }
+    const submittedBy = validation.user.id;
 
     // If weekStartDate is not provided, use current week
     let startDate: Date;

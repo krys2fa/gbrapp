@@ -1,11 +1,8 @@
 // Role-based permissions configuration
-export type UserRole =
-  | "EXECUTIVE"
-  | "FINANCE"
-  | "ADMIN"
-  | "SMALL_SCALE_ASSAYER"
-  | "LARGE_SCALE_ASSAYER"
-  | "SUPERADMIN";
+import { Role } from "@/app/generated/prisma";
+
+// Use Prisma Role enum as the canonical UserRole type
+export type UserRole = Role;
 
 export type PermissionModule =
   | "dashboard"
@@ -20,32 +17,79 @@ export type PermissionModule =
   | "valuations"
   | "setup";
 
-// Define role permissions mapping
-export const ROLE_PERMISSIONS: Record<UserRole, PermissionModule[]> = {
-  EXECUTIVE: ["dashboard", "pending-approvals"],
-  FINANCE: ["dashboard", "reports", "payment-receipting"],
-  ADMIN: ["dashboard", "reports", "settings", "setup"],
-  SMALL_SCALE_ASSAYER: ["dashboard", "job-cards"],
-  LARGE_SCALE_ASSAYER: ["dashboard", "job-cards/large-scale"],
-  SUPERADMIN: [
-    "dashboard",
-    "pending-approvals",
-    "reports",
-    "payment-receipting",
-    "settings",
-    "job-cards",
-    "job-cards/large-scale",
-    "sealing-certification",
-    "notifications",
-    "valuations",
-    "setup",
-  ],
+// Action-level permission primitives
+export type PermissionAction =
+  | "read"
+  | "create"
+  | "update"
+  | "delete"
+  | "approve"
+  | "print";
+
+// Map modules to allowed actions per role (action-level permissions)
+// Use string keys to avoid TS enum indexing issues with generated Prisma types
+export const ROLE_ACTIONS: Partial<
+  Record<string, Partial<Record<PermissionModule, PermissionAction[]>>>
+> = {
+  EXECUTIVE: { dashboard: ["read"], "pending-approvals": ["read", "approve"] },
+  FINANCE: {
+    dashboard: ["read"],
+    reports: ["read"],
+    "payment-receipting": ["read", "create"],
+  },
+  ADMIN: {
+    dashboard: ["read"],
+    reports: ["read"],
+    settings: ["read", "update"],
+    setup: ["read", "update"],
+  },
+  CEO: {
+    dashboard: ["read"],
+    "pending-approvals": ["read", "approve"],
+  },
+  DEPUTY_CEO: {
+    dashboard: ["read"],
+    "pending-approvals": ["read", "approve"],
+  },
+  SMALL_SCALE_ASSAYER: {
+    dashboard: ["read"],
+    "job-cards": ["read", "create", "update"],
+    "payment-receipting": ["read"],
+  },
+  LARGE_SCALE_ASSAYER: {
+    dashboard: ["read"],
+    "job-cards/large-scale": ["read", "create", "update"],
+    "payment-receipting": ["read", "create"],
+  },
+  SUPERADMIN: {
+    dashboard: ["read"],
+    "pending-approvals": ["read", "approve"],
+    reports: ["read"],
+    "payment-receipting": ["read", "create"],
+    settings: ["read", "update"],
+    "job-cards": ["read", "create", "update", "delete"],
+    "job-cards/large-scale": ["read", "create", "update", "delete"],
+    "sealing-certification": ["read", "create", "print"],
+    notifications: ["read", "create"],
+    valuations: ["read"],
+    setup: ["read", "update"],
+  },
 };
+
+// Define role permissions mapping
+// Maintain module-level permissions for navigation convenience by deriving from ROLE_ACTIONS
+export const ROLE_PERMISSIONS: Record<UserRole, PermissionModule[]> =
+  Object.fromEntries(
+    (Object.keys(ROLE_ACTIONS) as UserRole[]).map((r) => [
+      r,
+      Object.keys(ROLE_ACTIONS[r] || {}) as PermissionModule[],
+    ])
+  ) as Record<UserRole, PermissionModule[]>;
 
 // Route to module mapping
 export const ROUTE_MODULE_MAPPING: Record<string, PermissionModule> = {
   "/dashboard": "dashboard",
-  "/weekly-prices/pending": "pending-approvals",
+  "/setup/pending-approvals": "pending-approvals",
   "/reports": "reports",
   "/payment-receipting": "payment-receipting",
   "/settings": "settings",
@@ -71,6 +115,26 @@ export function hasPermission(
   if (userRole === "SUPERADMIN") return true;
 
   return permissions.includes(module);
+}
+
+/**
+ * Check if a user role has permission to perform a specific action on a module
+ */
+export function hasActionPermission(
+  userRole: UserRole,
+  module: PermissionModule,
+  action: PermissionAction
+): boolean {
+  // SUPERADMIN can do everything
+  if (userRole === "SUPERADMIN") return true;
+
+  const roleActions = ROLE_ACTIONS[userRole];
+  if (!roleActions) return false;
+
+  const actions = roleActions[module];
+  if (!actions) return false;
+
+  return actions.includes(action);
 }
 
 /**
@@ -130,7 +194,7 @@ export function getModuleFromRoute(route: string): PermissionModule | null {
     return "valuations";
   }
 
-  if (route.startsWith("/weekly-prices/pending")) {
+  if (route.startsWith("/setup/pending-approvals")) {
     return "pending-approvals";
   }
 

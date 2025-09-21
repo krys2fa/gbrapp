@@ -607,10 +607,10 @@ export default function AssayDetailPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex">
                 <dt className="text-sm font-medium text-gray-500">
-                  Reference:
+                  Job Id:
                 </dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
-                  {jobCard?.referenceNumber || "-"}
+                  {jobCard?.humanReadableId || "-"}
                 </dd>
               </div>
 
@@ -620,6 +620,26 @@ export default function AssayDetailPage() {
                 </dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
                   {assay?.shipmentType?.name || "-"}
+                </dd>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex">
+                <dt className="text-sm font-medium text-gray-500">
+                  Destination:
+                </dt>
+                <dd className="ml-1 text-sm font-semibold text-gray-900">
+                  {jobCard?.destinationCountry || "-"}
+                </dd>
+              </div>
+
+              <div className="flex">
+                <dt className="text-sm font-medium text-gray-500">
+                  Certificate Number:
+                </dt>
+                <dd className="ml-1 text-sm font-semibold text-gray-900">
+                  {jobCard?.certificateNumber || "-"}
                 </dd>
               </div>
             </div>

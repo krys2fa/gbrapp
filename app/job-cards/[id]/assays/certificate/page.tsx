@@ -443,16 +443,14 @@ export default function CertificateOfAssayPage() {
                     </span>
                   </div>
 
-                  {/* <div>
+                  <div>
                     <span className="text-sm text-gray-500 mr-2 font-medium">
-                      Job Id:
+                      Certificate Number:
                     </span>
                     <span className="text-sm font-semibold text-gray-900">
-                      {assays[0]?.certificateNumber ||
-                        assays[0]?.humanReadableAssayNumber ||
-                        "N/A"}
+                      {jobCard?.certificateNumber || "N/A"}
                     </span>
-                  </div> */}
+                  </div>
                 </div>
               )}
 
@@ -602,7 +600,7 @@ export default function CertificateOfAssayPage() {
                   <div className="flex justify-start">
                     <div className="flex text-center ">
                       <h4 className="text-sm font-medium text-gray-500 uppercase">
-                        Total Net Weight: 
+                        Total Net Weight:
                       </h4>
                       <div className="ml-2 text-sm font-semibold text-gray-900">
                         {(() => {
@@ -627,6 +625,49 @@ export default function CertificateOfAssayPage() {
                     </div>
                   </div>
                 </div>
+
+                <div className="flex justify-between">
+                  <div className="px-4 sm:px-6 lg:px-8 py-2">
+                  <div className="flex justify-start">
+                    <div className="flex text-center ">
+                      <h4 className="text-sm font-medium text-gray-500 uppercase">
+                        Customs Seal No.:
+                      </h4>
+                      <div className="ml-2 text-sm font-semibold text-gray-900">
+                        {jobCard.assays[0]?.customsSealNo || "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-4 sm:px-6 lg:px-8 py-2">
+                  <div className="flex justify-start">
+                    <div className="flex text-center ">
+                      <h4 className="text-sm font-medium text-gray-500 uppercase">
+                        GOLDBOD Seal No.:
+                      </h4>
+                      <div className="ml-2 text-sm font-semibold text-gray-900">
+                        {jobCard.assays[0]?.goldbodSealNo || "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-4 sm:px-6 lg:px-8 py-2">
+                  <div className="flex justify-start">
+                    <div className="flex text-center ">
+                      <h4 className="text-sm font-medium text-gray-500 uppercase">
+                        Security Seal No.:
+                      </h4>
+                      <div className="ml-2 text-sm font-semibold text-gray-900">
+                        {jobCard.assays[0]?.securitySealNo || "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                </div>
+
+
               </div>
             )}
 

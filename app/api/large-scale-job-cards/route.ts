@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
-import * as jose from "jose";
+import {
+  extractTokenFromReq,
+  validateTokenAndLoadUser,
+} from "@/app/lib/auth-utils";
 import { generateAssayNumber } from "@/lib/assay-number-generator";
 import { generateJobCardNumber } from "@/lib/job-card-number-generator";
 import {
@@ -211,51 +214,18 @@ async function createLargeScaleJobCard(req: NextRequest) {
       );
     }
 
-    // Extract and verify JWT token to get user information
-    const authHeader = req.headers.get("authorization");
-    let token: string | undefined;
+    // Extract token (header or cookie) and validate + load user
+    const token = await extractTokenFromReq(req as any);
+    const tokenValidation = await validateTokenAndLoadUser(token);
 
-    // Check Authorization header first
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.substring(7);
-    } else {
-      // Fallback to cookie if no Authorization header
-      const cookieHeader = req.headers.get("cookie");
-      if (cookieHeader) {
-        const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
-          const [key, value] = cookie.trim().split("=");
-          acc[key] = value;
-          return acc;
-        }, {} as Record<string, string>);
-        token = cookies["auth-token"];
-      }
-    }
-
-    if (!token) {
-      return NextResponse.json(
-        {
-          error: "Unauthorized. Authentication required.",
-        },
-        { status: 401 }
+    if (!tokenValidation.success || !tokenValidation.user) {
+      return createUnauthorizedResponse(
+        tokenValidation.error! || "Unauthorized",
+        tokenValidation.statusCode
       );
     }
 
-    const JWT_SECRET =
-      process.env.JWT_SECRET || "fallback-secret-for-development-only";
-    const secret = new TextEncoder().encode(JWT_SECRET);
-
-    let userId: string;
-    try {
-      const { payload } = await jose.jwtVerify(token, secret);
-      userId = payload.userId as string;
-    } catch (error) {
-      return NextResponse.json(
-        {
-          error: "Unauthorized. Invalid token.",
-        },
-        { status: 401 }
-      );
-    }
+    const userId = tokenValidation.user.id;
 
     // Check if reference number already exists
     const existingJobCard = await prisma.largeScaleJobCard.findUnique({
@@ -300,6 +270,7 @@ async function createLargeScaleJobCard(req: NextRequest) {
     const jobCardData: any = {
       referenceNumber: generatedReferenceNumber,
       humanReadableId,
+      certificateNumber: body.certificateNumber || undefined,
       receivedDate: new Date(receivedDate),
       exporterId,
       unitOfMeasure,

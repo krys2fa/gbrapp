@@ -162,6 +162,7 @@ function NewLargeScaleJobCardPage() {
     shipmentNumber: "",
     status: "pending",
     notes: "",
+    certificateNumber: "",
     commodities: [
       {
         id: "",
@@ -927,6 +928,7 @@ function NewLargeScaleJobCardPage() {
         numberOfSamples: form.numberOfSamples,
         sampleType: form.sampleType,
         shipmentNumber: form.shipmentNumber,
+        certificateNumber: form.certificateNumber || undefined,
         assayersData: assayersData.length > 0 ? assayersData : undefined,
         // Include valuation details
         ...valuationDetails,
@@ -1289,6 +1291,24 @@ function NewLargeScaleJobCardPage() {
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     placeholder="Enter shipment number"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="certificateNumber"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Certificate Number
+                  </label>
+                  <input
+                    type="text"
+                    name="certificateNumber"
+                    id="certificateNumber"
+                    value={form.certificateNumber}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter certificate number"
                   />
                 </div>
               </div>

@@ -178,13 +178,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       permission: "dashboard",
     },
     {
-      id: "pending-approvals",
-      label: "Pending Approvals",
-      href: "/weekly-prices/pending",
-      icon: <CheckCircle className="h-5 w-5" />,
-      permission: "pending-approvals",
-    },
-    {
       id: "job-cards",
       label: "Job Cards",
       href: "/job-cards",

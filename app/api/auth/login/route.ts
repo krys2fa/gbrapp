@@ -57,6 +57,7 @@ async function login(req: NextRequest) {
       email: user.email,
       role: user.role,
       name: user.name,
+      isActive: user.isActive,
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("8h")

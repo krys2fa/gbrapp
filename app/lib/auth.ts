@@ -1,5 +1,4 @@
-import { jwtVerify } from "jose";
-import { cookies } from "next/headers";
+import { extractTokenFromReq, validateTokenAndLoadUser } from "./auth-utils";
 
 export interface UserSession {
   userId: string;
@@ -19,17 +18,19 @@ const JWT_SECRET =
  * @returns The session data if token is valid, null otherwise
  */
 export async function getSession(): Promise<UserSession | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth-token")?.value;
-
-  if (!token) {
-    return null;
-  }
-
+  // Use centralized helper to extract and validate token
   try {
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
-
+    // Build a minimal NextRequest-like object to re-use extractTokenFromReq
+    const fakeReq: any = {
+      headers: new Map(),
+      cookies: {
+        get: (name: string) => ({ value: process.env["AUTH_TOKEN"] }),
+      },
+    };
+    const token = await extractTokenFromReq(fakeReq as any);
+    const validation = await validateTokenAndLoadUser(token);
+    if (!validation.success || !validation.user) return null;
+    const payload = validation.tokenPayload as any;
     return payload as unknown as UserSession;
   } catch (error) {
     console.error("Failed to verify token:", error);

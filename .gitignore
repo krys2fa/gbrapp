@@ -51,3 +51,5 @@ next-env.d.ts
 
 # Ignore local seed script (kept locally but not committed)
 prisma/seed.ts
+
+/scripts/

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/app/lib/prisma";
-import { validateJWTUser } from "@/lib/jwt-user-validation";
+import {
+  extractTokenFromReq,
+  validateTokenAndLoadUser,
+} from "@/app/lib/auth-utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,23 +28,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract JWT token from Authorization header
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Authorization header required" },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.substring(7);
-
-    // Validate JWT and get user
-    const userValidation = await validateJWTUser(token);
+    // Extract token (from header or cookie) and validate + load user
+    const token = await extractTokenFromReq(request as any);
+    const userValidation = await validateTokenAndLoadUser(token);
     if (!userValidation.success || !userValidation.user) {
       return NextResponse.json(
         { error: userValidation.error || "Authentication failed" },
-        { status: 401 }
+        { status: userValidation.statusCode || 401 }
       );
     }
 

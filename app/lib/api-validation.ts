@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateJWTUser } from "@/lib/jwt-user-validation";
+import { extractTokenFromReq, validateTokenAndLoadUser } from "./auth-utils";
 import {
   hasPermission,
   PermissionModule,
@@ -28,21 +28,9 @@ export async function validateAPIToken(
   req: NextRequest
 ): Promise<APIValidationResult> {
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.get("authorization");
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return {
-        success: false,
-        error: "Authorization header required",
-        statusCode: 401,
-      };
-    }
-
-    const token = authHeader.substring(7);
-
-    // Validate JWT and get user
-    const validation = await validateJWTUser(token);
+    // Extract token (from header or cookie) and validate + load user
+    const token = await extractTokenFromReq(req);
+    const validation = await validateTokenAndLoadUser(token);
 
     if (!validation.success) {
       return {

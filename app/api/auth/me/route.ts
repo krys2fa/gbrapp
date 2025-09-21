@@ -1,26 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateJWTUser } from "@/lib/jwt-user-validation";
 import { prisma } from "@/app/lib/prisma";
+import {
+  extractTokenFromReq,
+  validateTokenAndLoadUser,
+} from "@/app/lib/auth-utils";
 
 /**
  * GET handler for fetching current user's profile data
  */
 export async function GET(req: NextRequest) {
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.get("authorization");
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Authorization header required" },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.substring(7);
-
-    // Validate JWT and get user
-    const validation = await validateJWTUser(token);
+    // Extract token (header or cookie) and validate + load user
+    const token = await extractTokenFromReq(req);
+    const validation = await validateTokenAndLoadUser(token);
 
     if (!validation.success) {
       return NextResponse.json(

@@ -30,6 +30,7 @@ interface LargeScaleJobCard {
   destinationCountry: string;
   sourceOfGold: string;
   numberOfBoxes: number;
+  certificateNumber?: string;
   customsOfficer?: {
     id: string;
     name: string;
@@ -155,7 +156,7 @@ function LargeScaleJobCardDetailPage() {
         prev
           ? {
               ...prev,
-              invoices: [newInvoice],
+              invoices: [...(prev.invoices || []), newInvoice],
             }
           : null
       );
@@ -283,6 +284,22 @@ function LargeScaleJobCardDetailPage() {
                     {jobCard.unitOfMeasure}
                   </dd>
                 </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Status</dt>
+                  <dd className="mt-1 text-sm text-gray-900 capitalize">
+                    {jobCard.status}
+                  </dd>
+                </div>
+                {/* {jobCard.certificateNumber && ( */}
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Certificate Number
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {jobCard.certificateNumber}
+                    </dd>
+                  </div>
+                {/* // )} */}
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
                     Source of Gold

@@ -109,21 +109,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Log full job card data to console for debugging
-    console.log("=== JOB CARD DATA DEBUG ===");
-    console.log("ID:", jobCard.id);
-    console.log("Reference Number:", jobCard.referenceNumber);
-  
-    console.log(
-      "Assays:",
-      jobCard.assays?.map((a) => ({
-        id: a.id,
-        comments: a.comments,
-        assayOfficer: a.assayOfficer,
-      }))
-    );
-    console.log("=== END DEBUG ===");
-
     return NextResponse.json(jobCard);
   } catch (error) {
     console.error("Error fetching job card:", error);
@@ -256,6 +241,9 @@ export async function PUT(req: NextRequest) {
     }
     if (requestData.valueUsd !== undefined) {
       updateData.valueUsd = parseFloat(requestData.valueUsd);
+    }
+    if (requestData.certificateNumber !== undefined) {
+      updateData.certificateNumber = requestData.certificateNumber;
     }
     if (requestData.pricePerOunce !== undefined) {
       updateData.pricePerOunce = parseFloat(requestData.pricePerOunce);

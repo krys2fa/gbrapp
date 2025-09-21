@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auditTrailMiddleware } from "./app/middleware/audit-trail";
-import * as jose from "jose";
+import {
+  extractTokenFromReq,
+  // validateTokenAndLoadUser,
+  verifyTokenPayload,
+} from "./app/lib/auth-utils";
+import fs from "fs";
+import path from "path";
 import {
   canAccessRoute,
   getDefaultRouteForRole,
@@ -39,55 +45,78 @@ export async function middleware(request: NextRequest) {
     return auditTrailMiddleware(request);
   }
 
-  // For protected routes, check auth token
-  const token = request.cookies.get("auth-token")?.value;
+  // Extract token and validate user using centralized helper
+  const token = await extractTokenFromReq(request as any);
+  // Write debug info to file so we can inspect from scripts
+  try {
+    const debugPath = path.join(process.cwd(), "logs");
+    if (!fs.existsSync(debugPath)) fs.mkdirSync(debugPath);
+    const logFile = path.join(debugPath, "middleware-debug.log");
+    fs.appendFileSync(
+      logFile,
+      `[${new Date().toISOString()}] path=${pathname} token-present=${!!token}\n`
+    );
+  } catch (e) {
+    // ignore logging errors
+  }
 
-  // If no token found, redirect to login
-  if (!token) {
-    console.log("No token found in middleware for path:", pathname);
-    console.log("All cookies:", request.cookies.getAll());
+  // Use lightweight token verification in middleware (Edge) to avoid DB/Prisma calls
+  const validation = await verifyTokenPayload(token as any);
+
+  try {
+    const debugPath = path.join(process.cwd(), "logs");
+    const logFile = path.join(debugPath, "middleware-debug.log");
+    fs.appendFileSync(
+      logFile,
+      `[${new Date().toISOString()}] validation=${JSON.stringify({
+        success: validation.success,
+        statusCode: validation.statusCode,
+        error: validation.error,
+      })}\n`
+    );
+  } catch (e) {
+    // ignore
+  }
+
+  if (!validation.success || !(validation as any).payload) {
     const url = new URL("/login", request.url);
     url.searchParams.set("from", pathname);
     return NextResponse.redirect(url);
   }
 
-  // Verify token using jose and check role-based access
-  try {
-    const JWT_SECRET =
-      process.env.JWT_SECRET || "fallback-secret-for-development-only";
-    const secret = new TextEncoder().encode(JWT_SECRET);
+  // Extract role from token payload (middleware shouldn't query DB)
+  const userRole = (validation as any).payload?.role as string;
+  const isActive = (validation as any).payload?.isActive;
 
-    // Verify the token with jose
-    const { payload } = await jose.jwtVerify(token, secret);
-    const userRole = payload.role as string;
-
-    // Validate role
-    if (!isValidUserRole(userRole)) {
-      console.error("Invalid user role:", userRole);
-      const url = new URL("/unauthorized", request.url);
-      return NextResponse.redirect(url);
-    }
-
-    // Check if user has permission to access this route
-    if (!canAccessRoute(userRole as UserRole, pathname)) {
-      console.log(
-        `User with role ${userRole} attempted to access unauthorized route: ${pathname}`
-      );
-
-      // Redirect to appropriate default route for their role
-      const defaultRoute = getDefaultRouteForRole(userRole as UserRole);
-      const url = new URL(defaultRoute, request.url);
-      url.searchParams.set("unauthorized", "true");
-      return NextResponse.redirect(url);
-    }
-
-    return NextResponse.next();
-  } catch (error) {
-    // If token is invalid, redirect to login
-    console.error("Invalid token:", error);
+  // If token says user is inactive, treat as unauthorized
+  if (isActive === false) {
     const url = new URL("/login", request.url);
+    url.searchParams.set("from", pathname);
+    url.searchParams.set("inactive", "true");
     return NextResponse.redirect(url);
   }
+
+  // Validate role
+  if (!isValidUserRole(userRole)) {
+    console.error("Invalid user role:", userRole);
+    const url = new URL("/unauthorized", request.url);
+    return NextResponse.redirect(url);
+  }
+
+  // Check if user has permission to access this route
+  if (!canAccessRoute(userRole as UserRole, pathname)) {
+    console.log(
+      `User with role ${userRole} attempted to access unauthorized route: ${pathname}`
+    );
+
+    // Redirect to appropriate default route for their role
+    const defaultRoute = getDefaultRouteForRole(userRole as UserRole);
+    const url = new URL(defaultRoute, request.url);
+    url.searchParams.set("unauthorized", "true");
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {

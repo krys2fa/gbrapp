@@ -1,6 +1,7 @@
 "use client";
 
 import { withClientAuth } from "@/app/lib/with-client-auth";
+// import { useApiClient } from "@/app/lib/api-client";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
@@ -12,6 +13,7 @@ type AssayMethod = "X_RAY" | "WATER_DENSITY";
 interface LargeScaleJobCard {
   id: string;
   referenceNumber: string;
+  humanReadableId: string;
   receivedDate: string;
   exporter: {
     id: string;
@@ -80,6 +82,7 @@ function NewLargeScaleAssayPage() {
   const params = useParams();
   const id = (params?.id as string) || "";
   const router = useRouter();
+  const apiClient = useApiClient();
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -176,16 +179,15 @@ function NewLargeScaleAssayPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [shipmentRes] = await Promise.all([fetch("/api/shipment-types")]);
-        if (shipmentRes.ok) {
-          setShipmentTypes(await shipmentRes.json());
-        }
+        const data = await apiClient.get("/api/shipment-types");
+        setShipmentTypes(Array.isArray(data) ? data : []);
       } catch (e) {
         console.error(e);
+        setShipmentTypes([]);
       }
     };
     fetchData();
-  }, []);
+  }, [apiClient]);
 
   // fetch job card and today's daily price/exchange for quick meta display
   useEffect(() => {
@@ -197,12 +199,8 @@ function NewLargeScaleAssayPage() {
         const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
         // fetch job card first so we know the commodityId to query
-        const jobRes = await fetch(`/api/large-scale-job-cards/${id}`);
-        let jobBody: LargeScaleJobCard | null = null;
-        if (jobRes.ok) {
-          jobBody = await jobRes.json();
-          if (jobBody) setJobCard(jobBody);
-        }
+        const jobBody = await apiClient.get(`/api/large-scale-job-cards/${id}`);
+        if (jobBody) setJobCard(jobBody);
 
         // Fetch commodity prices - for large scale, we need to get prices for all commodities in the job card
         let commodityPrices: any[] = [];
@@ -212,10 +210,10 @@ function NewLargeScaleAssayPage() {
             (c: any) => c.commodity.id
           );
           const pricePromises = commodityIds.map((commodityId: string) =>
-            fetch(
-              `/api/weekly-prices?type=COMMODITY&itemId=${commodityId}&approvedOnly=true`
-            )
-              .then((res) => (res.ok ? res.json().catch(() => []) : []))
+            apiClient
+              .get(
+                `/api/weekly-prices?type=COMMODITY&itemId=${commodityId}&approvedOnly=true`
+              )
               .catch(() => [])
           );
 
@@ -223,23 +221,25 @@ function NewLargeScaleAssayPage() {
           commodityPrices = priceResults.flat(); // Flatten all results into one array
         } else {
           // fallback: fetch all commodity prices
-          const cpRes = await fetch(
-            `/api/weekly-prices?type=COMMODITY&approvedOnly=true`
-          );
-          if (cpRes && cpRes.ok)
-            commodityPrices = await cpRes.json().catch(() => []);
+          try {
+            commodityPrices = await apiClient.get(
+              `/api/weekly-prices?type=COMMODITY&approvedOnly=true`
+            );
+          } catch (e) {
+            commodityPrices = [];
+          }
         }
 
         // Fetch exchange prices (only approved ones for production)
         let exchangePrices: any[] = [];
-        const exRes = await fetch(
-          `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`
-        );
-        console.log("Exchange API response status:", exRes.status);
-        console.log("Exchange API response ok:", exRes.ok);
-        if (exRes && exRes.ok)
-          exchangePrices = await exRes.json().catch(() => []);
-        else console.log("Exchange API call failed or returned error");
+        try {
+          exchangePrices = await apiClient.get(
+            `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`
+          );
+        } catch (e) {
+          console.log("Exchange API call failed or returned error");
+          exchangePrices = [];
+        }
 
         console.log("Approved exchange prices from API:", exchangePrices);
         console.log("Number of exchange prices:", exchangePrices?.length || 0);
@@ -339,7 +339,7 @@ function NewLargeScaleAssayPage() {
 
         // Set missing flags - check if we have prices for all commodities in the job card
         const hasAllCommodityPrices =
-          jobBody?.commodities?.every((commodityItem) =>
+          jobBody?.commodities?.every((commodityItem: any) =>
             commodityPrices.some(
               (price) => price.commodityId === commodityItem.commodity.id
             )
@@ -606,20 +606,10 @@ function NewLargeScaleAssayPage() {
       };
 
       // Save assay data to database via API
-      const token = localStorage.getItem("auth-token");
-      const response = await fetch(`/api/large-scale-job-cards/${id}/assays`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(assayData),
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || "Failed to save assay");
-      }
+      await apiClient.post(
+        `/api/large-scale-job-cards/${id}/assays`,
+        assayData
+      );
 
       toast.dismiss("assay-save");
       toast.success("Assay saved successfully!");
@@ -1023,7 +1013,7 @@ function NewLargeScaleAssayPage() {
                   <div key={i} className="grid grid-cols-6 gap-3 items-end">
                     <div>
                       <label className="block text-xs text-gray-600">
-                        Bar Number (NGGL)
+                        Bar Number
                       </label>
                       <input
                         type="text"

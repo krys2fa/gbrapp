@@ -473,10 +473,10 @@ export default function AssayResultsPage() {
                 </div>
                 <div>
                   <span className="text-sm text-gray-500 mr-2 font-medium">
-                    Assay Number:
+                    Certificate Number:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assay?.humanReadableAssayNumber || "N/A"}
+                    {jobCard?.certificateNumber || "N/A"}
                   </span>
                 </div>
               </div>
@@ -493,7 +493,7 @@ export default function AssayResultsPage() {
                           SN
                         </th>
                         <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
-                          Bar No. NGGL
+                          Bar No.
                         </th>
                         <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Gross Weight ({jobCard?.unitOfMeasure})

@@ -48,6 +48,7 @@ interface JobCardData {
   pricePerOunce?: number;
   valueUsd?: number;
   valueGhs?: string | number;
+  certificateNumber?: string;
 
   // Related data
   exporter: {
@@ -363,6 +364,16 @@ function JobCardDetailPage() {
                   </span>
                 </dd>
               </div>
+              {jobCard!.certificateNumber && (
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">
+                    Certificate Number
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {jobCard!.certificateNumber}
+                  </dd>
+                </div>
+              )}
             </dl>
           </div>
 
@@ -634,7 +645,7 @@ function JobCardDetailPage() {
                 {/* View Valuation */}
                 Assay Report Analysis
               </Link>
-               <Link
+              <Link
                 href={`/job-cards/${id}/assays/certificate`}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
               >
@@ -653,7 +664,6 @@ function JobCardDetailPage() {
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-medium text-indigo-600 truncate">
                             Certificate #{assay.certificateNumber}
-                          </p>
                           </p>
                           <div className="ml-2 flex-shrink-0 flex">
                             <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

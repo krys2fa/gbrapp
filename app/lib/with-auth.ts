@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as jose from "jose";
 import { Role } from "@/app/generated/prisma";
+import { extractTokenFromReq, validateTokenAndLoadUser } from "./auth-utils";
 
 interface DecodedToken {
   userId: string;
@@ -26,76 +26,25 @@ export function withAuth<H extends AnyRouteHandler>(
 ) {
   return (async (...args: Parameters<H>): Promise<NextResponse> => {
     const req = args[0] as NextRequest;
-    const JWT_SECRET =
-      process.env.JWT_SECRET || "fallback-secret-for-development-only";
+    // Extract token (header or cookie) and validate + load user from DB
+    const token = await extractTokenFromReq(req);
+    const validation = await validateTokenAndLoadUser(token);
 
-    // Extract token from Authorization header
-    const authHeader = req.headers.get("authorization");
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Unauthorized - No valid token provided" },
-        { status: 401 }
-      );
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: validation.statusCode || 401 });
     }
 
-    try {
-      // Verify the token using jose
-      const token = authHeader.substring(7);
-      const secret = new TextEncoder().encode(JWT_SECRET);
-      const { payload } = await jose.jwtVerify(token, secret);
+    const user = validation.user as { id: string; role: string };
 
-      const decoded: DecodedToken = {
-        userId: payload.userId as string,
-        email: payload.email as string,
-        role: payload.role as Role,
-        name: payload.name as string,
-      };
-
-      // Check if token has required role (if roles are specified)
-      if (requiredRoles.length > 0 && !requiredRoles.includes(decoded.role)) {
-        return NextResponse.json(
-          {
-            error: "Forbidden - Insufficient permissions",
-            requiredRoles,
-            userRole: decoded.role,
-          },
-          { status: 403 }
-        );
+    // Check required roles if provided
+    if (requiredRoles.length > 0) {
+      // If user's role is not in allowed roles, reject
+      if (!requiredRoles.includes(user.role as Role)) {
+        return NextResponse.json({ error: "Forbidden - Insufficient permissions", requiredRoles, userRole: user.role }, { status: 403 });
       }
-
-      // Optional: enforce role checks without altering handler signature
-      if (requiredRoles.length > 0 && !requiredRoles.includes(decoded.role)) {
-        return NextResponse.json(
-          {
-            error: "Forbidden - Insufficient permissions",
-            requiredRoles,
-            userRole: decoded.role,
-          },
-          { status: 403 }
-        );
-      }
-
-      // Call the original handler with unmodified signature
-      return handler(...(args as Parameters<H>));
-    } catch (error: any) {
-      console.error("Authentication error:", error);
-
-      if (error.name === "TokenExpiredError") {
-        return NextResponse.json(
-          { error: "Unauthorized - Token expired" },
-          { status: 401 }
-        );
-      }
-
-      if (error.name === "JsonWebTokenError") {
-        return NextResponse.json(
-          { error: "Unauthorized - Invalid token" },
-          { status: 401 }
-        );
-      }
-
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Attach user to request via a symbol if needed in handler (not modifying signature here)
+    return handler(...(args as Parameters<H>));
   }) as unknown as H;
 }

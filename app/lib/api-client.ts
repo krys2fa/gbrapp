@@ -91,6 +91,8 @@ export class ApiClient {
     const requestOptions: RequestInit = {
       ...options,
       headers,
+      // Ensure cookies are sent by default so server-side cookie auth works
+      credentials: options.credentials || "include",
     };
 
     return fetch(url, requestOptions);

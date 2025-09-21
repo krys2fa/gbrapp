@@ -1,7 +1,7 @@
 import { ActionType } from "@/app/generated/prisma";
 import { AuditTrailService } from "@/app/lib/audit-trail";
 import { NextRequest, NextResponse } from "next/server";
-import * as jose from "jose";
+import { extractTokenFromReq, validateTokenAndLoadUser } from "./auth-utils";
 
 interface AuditableRouteOptions {
   entityType: string;
@@ -28,24 +28,16 @@ export function withAuditTrail<H extends AnyRouteHandler>(
       | { params?: any }
       | { params?: Promise<any> }
       | undefined;
-    // Extract user ID from auth context (replace with your actual auth logic)
-    const authHeader = req.headers.get("authorization");
+    // Extract user ID from token (header or cookie) using centralized helper
     let userId = "unknown";
-
-    if (authHeader?.startsWith("Bearer ")) {
-      try {
-        // Verify the JWT token and extract user ID
-        const token = authHeader.substring(7);
-        const JWT_SECRET =
-          process.env.JWT_SECRET || "fallback-secret-for-development-only";
-        const secret = new TextEncoder().encode(JWT_SECRET);
-        const { payload } = await jose.jwtVerify(token, secret);
-        userId = payload.userId as string;
-      } catch (error) {
-        // If token verification fails, use "unknown"
-        console.warn("Failed to verify JWT token for audit trail:", error);
-        userId = "unknown";
+    try {
+      const token = await extractTokenFromReq(req);
+      const validation = await validateTokenAndLoadUser(token);
+      if (validation.success && validation.user) {
+        userId = validation.user.id;
       }
+    } catch (e) {
+      console.warn("Failed to extract user for audit trail:", e);
     }
 
     // If we're handling a login request, we don't have a userId yet, so skip audit for now

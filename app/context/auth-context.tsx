@@ -34,43 +34,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
 
-  // Check for existing token on mount
+  // On mount, ask server for current user via /api/auth/me using cookie-based auth
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Check if we're on the client side
         if (typeof window === "undefined") return;
 
-        const storedToken = localStorage.getItem("auth-token");
-        const storedUser = localStorage.getItem("auth-user");
+        const response = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
 
-        if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
-
-          // Validate token with the backend
-          const response = await fetch("/api/auth/validate", {
-            headers: {
-              Authorization: `Bearer ${storedToken}`,
-            },
-            credentials: "include",
-          });
-
-          if (!response.ok) {
-            // If token is invalid, clear everything
-            localStorage.removeItem("auth-token");
-            localStorage.removeItem("auth-user");
-            setUser(null);
-            setToken(null);
-          }
+        if (!response.ok) {
+          // Not authenticated
+          setUser(null);
+          setToken(null);
+          // Clear localStorage fallback
+          localStorage.removeItem("auth-token");
+          localStorage.removeItem("auth-user");
+          return;
         }
-      } catch (error) {
-        console.error("Auth validation error:", error);
-        // Clear invalid state
-        if (typeof window !== "undefined") {
+
+        const data = await response.json();
+        if (data && data.success && data.user) {
+          setUser(data.user);
+          // Keep token in memory only if present in localStorage for legacy
+          const storedToken = localStorage.getItem("auth-token");
+          if (storedToken) setToken(storedToken);
+          // Sync localStorage user for compatibility
+          localStorage.setItem("auth-user", JSON.stringify(data.user));
+        } else {
+          setUser(null);
+          setToken(null);
           localStorage.removeItem("auth-token");
           localStorage.removeItem("auth-user");
         }
+      } catch (error) {
+        console.error("Auth validation error:", error);
         setUser(null);
         setToken(null);
       } finally {
@@ -102,19 +101,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
 
-      // Store in state
+      // Store user in state; server sets httpOnly cookie for auth
       setUser(data.user);
-      setToken(data.token);
 
-      // Store in localStorage for persistence
-      localStorage.setItem("auth-token", data.token);
+      // Keep token in memory only for legacy flows
+      if (data.token) {
+        setToken(data.token);
+        localStorage.setItem("auth-token", data.token);
+      }
+
+      // Sync localStorage user for compatibility
       localStorage.setItem("auth-user", JSON.stringify(data.user));
 
-      // The cookie is set on the server side in the login API response
-      console.log("Login successful, user set:", data.user);
-      console.log("Token stored:", data.token.substring(0, 20) + "...");
-
-      // Force a page reload to ensure the cookie is available to the middleware
+      // Navigate to dashboard
       window.location.href = "/dashboard";
     } catch (error) {
       console.error("Login error:", error);
