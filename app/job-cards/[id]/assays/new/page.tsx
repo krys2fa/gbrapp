@@ -952,6 +952,19 @@ export default function NewAssayPage() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Certificate Number
+                </label>
+                <input
+                  name="certificateNumber"
+                  type="text"
+                  value={form.certificateNumber || ""}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  placeholder="Enter certificate number"
+                />
+              </div>
             </div>
 
             <div>
