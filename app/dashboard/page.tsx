@@ -10,6 +10,7 @@ import {
   TopExportersChart,
   ExporterInvoiceChart,
 } from "@/app/components/ui/dashboard-charts";
+import DestinationCountriesChart from "@/app/components/analytics/DestinationCountriesChart";
 import {
   BarChart3,
   PieChart,
@@ -659,6 +660,11 @@ function DashboardPage() {
         {dashboardData?.exporterInvoiceChart && (
           <ExporterInvoiceChart data={dashboardData.exporterInvoiceChart} />
         )}
+
+        {/* Destination countries by job-card scale */}
+        <div className="mt-6">
+          <DestinationCountriesChart />
+        </div>
 
         {/* Quick Actions */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 w-full">
