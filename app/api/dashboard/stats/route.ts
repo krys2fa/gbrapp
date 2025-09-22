@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
       where: {
         type: "COMMODITY",
         commodity: {
-          symbol: "XAU", // Gold symbol
+          symbol: "Au", // Gold symbol
         },
       },
       include: {
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
       where: {
         type: "COMMODITY",
         commodity: {
-          symbol: "XAG", // Silver symbol
+          symbol: "Ag", // Silver symbol
         },
       },
       include: {
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Fallback: If no XAG silver price found, get any recent commodity price
-    const silverPrice =
+    const silverPriceRaw =
       latestSilverPrice?.price ||
       (
         await prisma.dailyPrice.findFirst({
@@ -107,6 +107,15 @@ export async function GET(req: NextRequest) {
           },
         })
       )?.price;
+
+    // Use the raw commodity price value as shown in the Daily Prices setup page.
+    // The setup page fetches the latest DailyPrice record and displays its `price`.
+    // So the dashboard should surface the exact same numeric price from the DB.
+    // Use explicit typeof checks to avoid treating 0 or falsy numbers as missing.
+    const goldPriceDisplayed =
+      typeof goldPrice === "number" ? goldPrice : undefined;
+    const silverPrice =
+      typeof silverPriceRaw === "number" ? silverPriceRaw : undefined;
 
     // Calculate total withholding tax from fees
     const withholdingTaxResult = await prisma.fee.aggregate({
@@ -528,8 +537,12 @@ export async function GET(req: NextRequest) {
       // Financial & export metrics requested for dashboard stat cards
       financials: {
         currentExchangeRateGhs: latestExchangeRate?.price,
-        currentGoldPriceGhsPerOz: goldPrice,
-        currentSilverPriceGhsPerOz: silverPrice,
+        // Expose commodity prices as USD per troy ounce (matching Daily Prices)
+        currentGoldPriceUsdPerOz: goldPriceDisplayed,
+        currentSilverPriceUsdPerOz: silverPrice,
+        // Keep legacy GHS fields undefined to avoid accidental display
+        currentGoldPriceGhsPerOz: undefined,
+        currentSilverPriceGhsPerOz: undefined,
         totalExportValueUsd: totalExportValueUsd,
         totalExportValueGhs: totalExportValueGhs,
         totalQuantityKg: totalQuantityKg,

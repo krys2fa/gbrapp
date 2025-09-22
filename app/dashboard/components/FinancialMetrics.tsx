@@ -44,8 +44,8 @@ interface DashboardData {
   }>;
   financials?: {
     currentExchangeRateGhs?: number;
-    currentGoldPriceGhsPerOz?: number;
-    currentSilverPriceGhsPerOz?: number;
+    currentGoldPriceUsdPerOz?: number;
+    currentSilverPriceUsdPerOz?: number;
     totalExportValueUsd?: number;
     totalExportValueGhs?: number;
     totalQuantityKg?: number;
@@ -78,13 +78,19 @@ export default function FinancialMetrics({ data }: { data: DashboardData }) {
             </span>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {data.financials?.currentExchangeRateGhs ? formatCurrency(data.financials.currentExchangeRateGhs, "GHS", false) : "N/A"}
+            {data.financials?.currentExchangeRateGhs
+              ? formatCurrency(
+                  data.financials.currentExchangeRateGhs,
+                  "GHS",
+                  false
+                )
+              : "N/A"}
           </p>
         </div>
 
         <div
-          title="Current gold price in GHS per troy ounce"
-          aria-label="Current gold price in GHS per troy ounce"
+          title="Current gold price in USD per troy ounce"
+          aria-label="Current gold price in USD per troy ounce"
           className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
         >
           <div className="flex items-center gap-3 mb-2">
@@ -92,17 +98,23 @@ export default function FinancialMetrics({ data }: { data: DashboardData }) {
               <span className="text-yellow-600 font-semibold">Au</span>
             </div>
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Gold (GHS/oz)
+              Gold (USD/oz)
             </span>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {data.financials?.currentGoldPriceGhsPerOz?.toLocaleString()}
+            {data.financials?.currentGoldPriceUsdPerOz
+              ? formatCurrency(
+                  data.financials.currentGoldPriceUsdPerOz,
+                  "USD",
+                  false
+                )
+              : "N/A"}
           </p>
         </div>
 
         <div
-          title="Current silver price in GHS per troy ounce"
-          aria-label="Current silver price in GHS per troy ounce"
+          title="Current silver price in USD per troy ounce"
+          aria-label="Current silver price in USD per troy ounce"
           className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700"
         >
           <div className="flex items-center gap-3 mb-2">
@@ -110,11 +122,17 @@ export default function FinancialMetrics({ data }: { data: DashboardData }) {
               <span className="text-slate-600 font-semibold">Ag</span>
             </div>
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Silver (GHS/oz)
+              Silver (USD/oz)
             </span>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {data.financials?.currentSilverPriceGhsPerOz ? formatCurrency(data.financials.currentSilverPriceGhsPerOz, "GHS", false) : "N/A"}
+            {data.financials?.currentSilverPriceUsdPerOz
+              ? formatCurrency(
+                  data.financials.currentSilverPriceUsdPerOz,
+                  "USD",
+                  false
+                )
+              : "N/A"}
           </p>
         </div>
 

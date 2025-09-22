@@ -101,6 +101,8 @@ export default function DestinationCountriesChart() {
             <BarChart
               data={data}
               margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+              barCategoryGap="30%"
+              barGap={6}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
@@ -113,8 +115,8 @@ export default function DestinationCountriesChart() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="largeCount" name="Large-scale" fill="#1f78b4" />
-              <Bar dataKey="smallCount" name="Small-scale" fill="#33a02c" />
+              <Bar dataKey="largeCount" name="Large-scale" fill="#1f78b4" barSize={10} />
+              <Bar dataKey="smallCount" name="Small-scale" fill="#33a02c" barSize={10} />
             </BarChart>
           </ResponsiveContainer>
         </div>
