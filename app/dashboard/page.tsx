@@ -666,67 +666,171 @@ function DashboardPage() {
             Quick Actions
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6 gap-4">
-            {[
-              {
-                label: "New Small Scale Job",
-                icon: <Plus className="h-6 w-6" />,
-                color: "bg-yellow-600",
-                href: "/job-cards/new",
-              },
-              {
-                label: "New Large Scale Job",
-                icon: <Plus className="h-6 w-6" />,
-                color: "bg-yellow-300",
-                href: "/job-cards/large-scale/new",
-              },
-              {
-                label: "Manage Daily Commodity Prices",
-                description: "Set up daily commodity prices.",
-                icon: <DollarSign className="h-6 w-6" />,
-                href: "/setup/daily-prices",
-                color: "bg-lime-600",
-              },
-              {
-                label: "Manage Weekly Exchange Rates",
-                description: "Set up weekly exchange rates.",
-                icon: <Repeat className="h-6 w-6" />,
-                href: "/setup/weekly-exchange",
-                color: "bg-purple-600",
-              },
-              {
-                label: "View Exporters",
-                icon: <Building className="h-6 w-6" />,
-                color: "bg-blue-800",
-                href: "/setup/exporters",
-              },
-              {
-                label: "User Management",
-                icon: <Users className="h-6 w-6" />,
-                color: "bg-yellow-700",
-                href: "/setup/users",
-              },
-              {
-                label: "System Settings",
-                icon: <Settings className="h-6 w-6" />,
-                color: "bg-gray-900",
-                href: "/setup",
-              },
-            ].map((action, index) => (
-              <a
-                key={index}
-                href={action.href}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
-              >
-                <div
-                  className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center text-white group-hover:scale-105 transition-transform`}
-                >
-                  {action.icon}
-                </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
-                  {action.label}
-                </span>
-              </a>
-            ))}
+            {(() => {
+              // Define all possible actions
+              const allActions = [
+                {
+                  id: "new-ss",
+                  label: "New Small Scale Job",
+                  icon: <Plus className="h-6 w-6" />,
+                  color: "bg-yellow-600",
+                  href: "/job-cards/new",
+                },
+                {
+                  id: "new-ls",
+                  label: "New Large Scale Job",
+                  icon: <Plus className="h-6 w-6" />,
+                  color: "bg-yellow-300",
+                  href: "/job-cards/large-scale/new",
+                },
+                {
+                  id: "daily-prices",
+                  label: "Manage Daily Commodity Prices",
+                  description: "Set up daily commodity prices.",
+                  icon: <DollarSign className="h-6 w-6" />,
+                  href: "/setup/daily-prices",
+                  color: "bg-lime-600",
+                },
+                {
+                  id: "weekly-exchange",
+                  label: "Manage Weekly Exchange Rates",
+                  description: "Set up weekly exchange rates.",
+                  icon: <Repeat className="h-6 w-6" />,
+                  href: "/setup/weekly-exchange",
+                  color: "bg-purple-600",
+                },
+                {
+                  id: "exporters",
+                  label: "View Exporters",
+                  icon: <Building className="h-6 w-6" />,
+                  color: "bg-blue-800",
+                  href: "/setup/exporters",
+                },
+                {
+                  id: "users",
+                  label: "User Management",
+                  icon: <Users className="h-6 w-6" />,
+                  color: "bg-yellow-700",
+                  href: "/setup/users",
+                },
+                {
+                  id: "settings",
+                  label: "System Settings",
+                  icon: <Settings className="h-6 w-6" />,
+                  color: "bg-gray-900",
+                  href: "/setup",
+                },
+              ];
+
+              // Compute allowed actions depending on user role
+              const role = user?.role || "";
+
+              // SMALL_SCALE_ASSAYER -> only small scale new job
+              if (role === "SMALL_SCALE_ASSAYER") {
+                return allActions
+                  .filter((a) => a.id === "new-ss")
+                  .map((action, index) => (
+                    <a
+                      key={action.id}
+                      href={action.href}
+                      className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+                    >
+                      <div
+                        className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center text-white group-hover:scale-105 transition-transform`}
+                      >
+                        {action.icon}
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                        {action.label}
+                      </span>
+                    </a>
+                  ));
+              }
+
+              // LARGE_SCALE_ASSAYER -> only large scale new job
+              if (role === "LARGE_SCALE_ASSAYER") {
+                return allActions
+                  .filter((a) => a.id === "new-ls")
+                  .map((action, index) => (
+                    <a
+                      key={action.id}
+                      href={action.href}
+                      className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+                    >
+                      <div
+                        className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center text-white group-hover:scale-105 transition-transform`}
+                      >
+                        {action.icon}
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                        {action.label}
+                      </span>
+                    </a>
+                  ));
+              }
+
+              // ADMIN -> only setup buttons (per requirement)
+              if (role === "ADMIN") {
+                return allActions
+                  .filter((a) => a.href.startsWith("/setup"))
+                  .map((action) => (
+                    <a
+                      key={action.id}
+                      href={action.href}
+                      className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+                    >
+                      <div
+                        className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center text-white group-hover:scale-105 transition-transform`}
+                      >
+                        {action.icon}
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                        {action.label}
+                      </span>
+                    </a>
+                  ));
+              }
+
+              // SUPERADMIN -> show everything
+              if (role === "SUPERADMIN") {
+                return allActions.map((action) => (
+                  <a
+                    key={action.id}
+                    href={action.href}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+                  >
+                    <div
+                      className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center text-white group-hover:scale-105 transition-transform`}
+                    >
+                      {action.icon}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                      {action.label}
+                    </span>
+                  </a>
+                ));
+              }
+
+              // Default: show job creation and view/exporter actions but hide setup
+              return allActions
+                .filter((a) => !a.href.startsWith("/setup"))
+                .map((action) => (
+                  <a
+                    key={action.id}
+                    href={action.href}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+                  >
+                    <div
+                      className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center text-white group-hover:scale-105 transition-transform`}
+                    >
+                      {action.icon}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                      {action.label}
+                    </span>
+                  </a>
+                ));
+            })()}
           </div>
         </div>
 

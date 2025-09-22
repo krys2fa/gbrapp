@@ -40,7 +40,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Apply audit trail middleware for API routes
+  // Apply audit trail middleware for API routes and return early so API
+  // handlers perform their own authentication/authorization. Returning early
+  // prevents middleware-side redirects for API fetches (which break client
+  // requests like the dashboard fetching /api routes).
   if (pathname.startsWith("/api/")) {
     return auditTrailMiddleware(request);
   }
@@ -123,9 +126,10 @@ export const config = {
   matcher: [
     // Apply middleware to all API routes and protected pages
     "/api/:path*",
-    "/(dashboard|users|exporters|job-cards|assays|invoices|settings|job-card|evaluation|sealing-certification|payment-receipting)/:path*",
+    "/(dashboard|users|exporters|job-cards|assays|invoices|settings|job-card|evaluation|sealing-certification|payment-receipting|setup)/:path*",
     "/dashboard",
     "/settings",
+    "/setup",
     "/job-card",
     "/evaluation",
     "/sealing-certification",
