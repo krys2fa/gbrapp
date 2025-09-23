@@ -81,104 +81,27 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Backwards-compatible convenience fields for Gold (Au) and Silver (Ag)
+    // Backwards-compatible convenience fields for Gold and Silver.
+    // Derive from commodities by name (case-insensitive) so the system uses
+    // whatever symbols are configured in the DB but still exposes Gold/Silver
+    // values to existing UI.
+    const findCommodityByName = (name: string) =>
+      commodities.find((c) => (c.name || "").toLowerCase() === name.toLowerCase());
+
+    const goldCommodity = findCommodityByName("Gold");
+    const silverCommodity = findCommodityByName("Silver");
+
     const goldPriceDisplayed =
-      typeof commodityPrices["Au"]?.price === "number"
-        ? commodityPrices["Au"]!.price
+      goldCommodity && typeof commodityPrices[goldCommodity.symbol]?.price === "number"
+        ? commodityPrices[goldCommodity.symbol]!.price
         : undefined;
+
     const silverPriceDisplayed =
-      typeof commodityPrices["Ag"]?.price === "number"
-        ? commodityPrices["Ag"]!.price
+      silverCommodity && typeof commodityPrices[silverCommodity.symbol]?.price === "number"
+        ? commodityPrices[silverCommodity.symbol]!.price
         : undefined;
 
-    // Calculate total withholding tax from fees
-    // const withholdingTaxResult = await prisma.fee.aggregate({
-    //   _sum: {
-    //     whtTotal: true,
-    //   },
-    // });
-    // const totalWithholdingTax = withholdingTaxResult._sum.whtTotal || 0;
-
-    // Calculate total VAT from levies
-    // const vatResult = await prisma.levy.aggregate({
-    //   _sum: {
-    //     calculatedAmount: true,
-    //   },
-    //   where: {
-    //     code: "VAT",
-    //   },
-    // });
-    // const totalVat = vatResult._sum.calculatedAmount || 0;
-
-    // Calculate total NHIL from levies
-    // const nhilResult = await prisma.levy.aggregate({
-    //   _sum: {
-    //     calculatedAmount: true,
-    //   },
-    //   where: {
-    //     code: "NHIL",
-    //   },
-    // });
-    // const totalNhil = nhilResult._sum.calculatedAmount || 0;
-
-    // Calculate total COVID levy from levies
-    // const covidLevyResult = await prisma.levy.aggregate({
-    //   _sum: {
-    //     calculatedAmount: true,
-    //   },
-    //   where: {
-    //     code: "COVID",
-    //   },
-    // });
-    // const totalCovidLevy = covidLevyResult._sum.calculatedAmount || 0;
-
-    // Calculate total GETFund from levies
-    // const getFundResult = await prisma.levy.aggregate({
-    //   _sum: {
-    //     calculatedAmount: true,
-    //   },
-    //   where: {
-    //     code: "GETFUND",
-    //   },
-    // });
-    // const totalGetFund = getFundResult._sum.calculatedAmount || 0;
-
-    // Calculate total export values and quantities from job cards (both regular and large scale)
-    // const regularJobCardStats = await prisma.jobCard.aggregate({
-    //   _sum: {
-    //     totalNetWeight: true,
-    //     valueUsd: true,
-    //     valueGhs: true,
-    //   },
-    // });
-
-    // const largeScaleJobCardStats =
-    //   await prisma.largeScaleJobCardCommodity.aggregate({
-    //     _sum: {
-    //       netWeight: true,
-    //       valueUsd: true,
-    //       valueGhs: true,
-    //     },
-    //   });
-
-    // const totalExportValueUsd =
-    //   (regularJobCardStats._sum.valueUsd || 0) +
-    //   (largeScaleJobCardStats._sum.valueUsd || 0);
-    // const totalExportValueGhs =
-    //   (regularJobCardStats._sum.valueGhs || 0) +
-    //   (largeScaleJobCardStats._sum.valueGhs || 0);
-    // const totalQuantityKg =
-    //   (regularJobCardStats._sum.totalNetWeight || 0) +
-    //   (largeScaleJobCardStats._sum.netWeight || 0);
-    // const totalQuantityLbs = totalQuantityKg * 2.20462; // Convert kg to lbs
-
-    // Calculate service fees from fees table
-    // const serviceFeesResult = await prisma.fee.aggregate({
-    //   _sum: {
-    //     amountPaid: true,
-    //   },
-    // });
-    // const serviceFeesInclusive = serviceFeesResult._sum.amountPaid || 0;
+  
 
     // Get monthly invoice amounts by exporter for the current year (showing PAID invoices by payment date)
     const currentYear = new Date().getFullYear();
