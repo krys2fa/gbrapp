@@ -61,19 +61,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // If no gold price found, try to get any recent commodity price as fallback
     let goldPrice = latestGoldPrice?.price;
-    if (!goldPrice) {
-      const anyRecentCommodityPrice = await prisma.dailyPrice.findFirst({
-        where: {
-          type: "COMMODITY",
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-      goldPrice = anyRecentCommodityPrice?.price;
-    }
 
     // Fetch current silver price (GHS per troy ounce) - most recent
     const latestSilverPrice = await prisma.dailyPrice.findFirst({
@@ -91,120 +79,106 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Fallback: If no XAG silver price found, get any recent commodity price
-    const silverPriceRaw =
-      latestSilverPrice?.price ||
-      (
-        await prisma.dailyPrice.findFirst({
-          where: {
-            type: "COMMODITY",
-          },
-          include: {
-            commodity: true,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-        })
-      )?.price;
-
+    let silverPrice =
+      latestSilverPrice?.price 
+      
     // Use the raw commodity price value as shown in the Daily Prices setup page.
     // The setup page fetches the latest DailyPrice record and displays its `price`.
     // So the dashboard should surface the exact same numeric price from the DB.
     // Use explicit typeof checks to avoid treating 0 or falsy numbers as missing.
     const goldPriceDisplayed =
       typeof goldPrice === "number" ? goldPrice : undefined;
-    const silverPrice =
-      typeof silverPriceRaw === "number" ? silverPriceRaw : undefined;
+    const silverPriceDisplayed =
+      typeof silverPrice === "number" ? silverPrice : undefined;
 
     // Calculate total withholding tax from fees
-    const withholdingTaxResult = await prisma.fee.aggregate({
-      _sum: {
-        whtTotal: true,
-      },
-    });
-    const totalWithholdingTax = withholdingTaxResult._sum.whtTotal || 0;
+    // const withholdingTaxResult = await prisma.fee.aggregate({
+    //   _sum: {
+    //     whtTotal: true,
+    //   },
+    // });
+    // const totalWithholdingTax = withholdingTaxResult._sum.whtTotal || 0;
 
     // Calculate total VAT from levies
-    const vatResult = await prisma.levy.aggregate({
-      _sum: {
-        calculatedAmount: true,
-      },
-      where: {
-        code: "VAT",
-      },
-    });
-    const totalVat = vatResult._sum.calculatedAmount || 0;
+    // const vatResult = await prisma.levy.aggregate({
+    //   _sum: {
+    //     calculatedAmount: true,
+    //   },
+    //   where: {
+    //     code: "VAT",
+    //   },
+    // });
+    // const totalVat = vatResult._sum.calculatedAmount || 0;
 
     // Calculate total NHIL from levies
-    const nhilResult = await prisma.levy.aggregate({
-      _sum: {
-        calculatedAmount: true,
-      },
-      where: {
-        code: "NHIL",
-      },
-    });
-    const totalNhil = nhilResult._sum.calculatedAmount || 0;
+    // const nhilResult = await prisma.levy.aggregate({
+    //   _sum: {
+    //     calculatedAmount: true,
+    //   },
+    //   where: {
+    //     code: "NHIL",
+    //   },
+    // });
+    // const totalNhil = nhilResult._sum.calculatedAmount || 0;
 
     // Calculate total COVID levy from levies
-    const covidLevyResult = await prisma.levy.aggregate({
-      _sum: {
-        calculatedAmount: true,
-      },
-      where: {
-        code: "COVID",
-      },
-    });
-    const totalCovidLevy = covidLevyResult._sum.calculatedAmount || 0;
+    // const covidLevyResult = await prisma.levy.aggregate({
+    //   _sum: {
+    //     calculatedAmount: true,
+    //   },
+    //   where: {
+    //     code: "COVID",
+    //   },
+    // });
+    // const totalCovidLevy = covidLevyResult._sum.calculatedAmount || 0;
 
     // Calculate total GETFund from levies
-    const getFundResult = await prisma.levy.aggregate({
-      _sum: {
-        calculatedAmount: true,
-      },
-      where: {
-        code: "GETFUND",
-      },
-    });
-    const totalGetFund = getFundResult._sum.calculatedAmount || 0;
+    // const getFundResult = await prisma.levy.aggregate({
+    //   _sum: {
+    //     calculatedAmount: true,
+    //   },
+    //   where: {
+    //     code: "GETFUND",
+    //   },
+    // });
+    // const totalGetFund = getFundResult._sum.calculatedAmount || 0;
 
     // Calculate total export values and quantities from job cards (both regular and large scale)
-    const regularJobCardStats = await prisma.jobCard.aggregate({
-      _sum: {
-        totalNetWeight: true,
-        valueUsd: true,
-        valueGhs: true,
-      },
-    });
+    // const regularJobCardStats = await prisma.jobCard.aggregate({
+    //   _sum: {
+    //     totalNetWeight: true,
+    //     valueUsd: true,
+    //     valueGhs: true,
+    //   },
+    // });
 
-    const largeScaleJobCardStats =
-      await prisma.largeScaleJobCardCommodity.aggregate({
-        _sum: {
-          netWeight: true,
-          valueUsd: true,
-          valueGhs: true,
-        },
-      });
+    // const largeScaleJobCardStats =
+    //   await prisma.largeScaleJobCardCommodity.aggregate({
+    //     _sum: {
+    //       netWeight: true,
+    //       valueUsd: true,
+    //       valueGhs: true,
+    //     },
+    //   });
 
-    const totalExportValueUsd =
-      (regularJobCardStats._sum.valueUsd || 0) +
-      (largeScaleJobCardStats._sum.valueUsd || 0);
-    const totalExportValueGhs =
-      (regularJobCardStats._sum.valueGhs || 0) +
-      (largeScaleJobCardStats._sum.valueGhs || 0);
-    const totalQuantityKg =
-      (regularJobCardStats._sum.totalNetWeight || 0) +
-      (largeScaleJobCardStats._sum.netWeight || 0);
-    const totalQuantityLbs = totalQuantityKg * 2.20462; // Convert kg to lbs
+    // const totalExportValueUsd =
+    //   (regularJobCardStats._sum.valueUsd || 0) +
+    //   (largeScaleJobCardStats._sum.valueUsd || 0);
+    // const totalExportValueGhs =
+    //   (regularJobCardStats._sum.valueGhs || 0) +
+    //   (largeScaleJobCardStats._sum.valueGhs || 0);
+    // const totalQuantityKg =
+    //   (regularJobCardStats._sum.totalNetWeight || 0) +
+    //   (largeScaleJobCardStats._sum.netWeight || 0);
+    // const totalQuantityLbs = totalQuantityKg * 2.20462; // Convert kg to lbs
 
     // Calculate service fees from fees table
-    const serviceFeesResult = await prisma.fee.aggregate({
-      _sum: {
-        amountPaid: true,
-      },
-    });
-    const serviceFeesInclusive = serviceFeesResult._sum.amountPaid || 0;
+    // const serviceFeesResult = await prisma.fee.aggregate({
+    //   _sum: {
+    //     amountPaid: true,
+    //   },
+    // });
+    // const serviceFeesInclusive = serviceFeesResult._sum.amountPaid || 0;
 
     // Get monthly invoice amounts by exporter for the current year (showing PAID invoices by payment date)
     const currentYear = new Date().getFullYear();
@@ -539,20 +513,20 @@ export async function GET(req: NextRequest) {
         currentExchangeRateGhs: latestExchangeRate?.price,
         // Expose commodity prices as USD per troy ounce (matching Daily Prices)
         currentGoldPriceUsdPerOz: goldPriceDisplayed,
-        currentSilverPriceUsdPerOz: silverPrice,
+        currentSilverPriceUsdPerOz: silverPriceDisplayed,
         // Keep legacy GHS fields undefined to avoid accidental display
         currentGoldPriceGhsPerOz: undefined,
         currentSilverPriceGhsPerOz: undefined,
-        totalExportValueUsd: totalExportValueUsd,
-        totalExportValueGhs: totalExportValueGhs,
-        totalQuantityKg: totalQuantityKg,
-        totalQuantityLbs: totalQuantityLbs,
-        serviceFeesInclusive: serviceFeesInclusive,
-        withholdingTax: totalWithholdingTax,
-        totalVat: totalVat,
-        totalNhil: totalNhil,
-        totalCovidLevy: totalCovidLevy,
-        totalGetFund: totalGetFund,
+        // totalExportValueUsd: totalExportValueUsd,
+        // totalExportValueGhs: totalExportValueGhs,
+        // totalQuantityKg: totalQuantityKg,
+        // totalQuantityLbs: totalQuantityLbs,
+        // serviceFeesInclusive: serviceFeesInclusive,
+        // withholdingTax: totalWithholdingTax,
+        // totalVat: totalVat,
+        // totalNhil: totalNhil,
+        // totalCovidLevy: totalCovidLevy,
+        // totalGetFund: totalGetFund,
       },
       overview: {
         totalJobCards: {
