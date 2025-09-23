@@ -588,7 +588,7 @@ export default function AssayDetailPage() {
                 <dt className="text-sm font-medium text-gray-500">Exporter:</dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
                   {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
-                    ? `${jobCard.exporter.name} (${jobCard.exporter.exporterCode})`
+                    ? `${jobCard.exporter.name}`
                     : jobCard?.exporter?.name || "N/A"}
                 </dd>
               </div>
@@ -661,23 +661,59 @@ export default function AssayDetailPage() {
                         <tr>
                           <td className="px-4 py-2 text-sm text-right text-gray-700 border border-gray-300">
                             {jobCard?.totalGrossWeight != null
-                              ? Number(jobCard.totalGrossWeight).toFixed(2)
+                              ? Number(jobCard.totalGrossWeight).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )
                               : assay.jbGrossWeight != null
-                              ? Number(assay.jbGrossWeight).toFixed(2)
+                              ? Number(assay.jbGrossWeight).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )
                               : "-"}
                           </td>
                           <td className="px-4 py-2 text-sm text-right text-gray-700 border border-gray-300">
                             {jobCard?.fineness != null
-                              ? Number(jobCard.fineness).toFixed(2)
+                              ? Number(jobCard.fineness).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )
                               : assay.jbFineness != null
-                              ? Number(assay.jbFineness).toFixed(2)
+                              ? Number(assay.jbFineness).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )
                               : "-"}
                           </td>
                           <td className="px-4 py-2 text-sm text-right text-gray-700 border border-gray-300">
                             {jobCard?.totalNetWeight != null
-                              ? Number(jobCard.totalNetWeight).toFixed(2)
+                              ? Number(jobCard.totalNetWeight).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )
                               : assay.jbNetWeight != null
-                              ? Number(assay.jbNetWeight).toFixed(2)
+                              ? Number(assay.jbNetWeight).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )
                               : "-"}
                           </td>
                         </tr>
@@ -737,7 +773,12 @@ export default function AssayDetailPage() {
                                   acc + (Number(m.grossWeight) || 0),
                                 0
                               );
-                              return total > 0 ? total.toFixed(2) : "-";
+                              return total > 0
+                                ? total.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                                : "-";
                             })()}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-right text-sm text-gray-900 border border-gray-300">
@@ -770,7 +811,12 @@ export default function AssayDetailPage() {
                                   acc + (Number(m.netWeight) || 0),
                                 0
                               );
-                              return total > 0 ? total.toFixed(2) : "-";
+                              return total > 0
+                                ? total.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                                : "-";
                             })()}
                           </td>
                         </tr>
