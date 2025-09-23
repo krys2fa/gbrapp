@@ -606,9 +606,7 @@ export default function AssayDetailPage() {
 
             <div className="flex items-center justify-between mb-4">
               <div className="flex">
-                <dt className="text-sm font-medium text-gray-500">
-                  Job Id:
-                </dt>
+                <dt className="text-sm font-medium text-gray-500">Job Id:</dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
                   {jobCard?.humanReadableId || "-"}
                 </dd>
@@ -633,8 +631,6 @@ export default function AssayDetailPage() {
                   {jobCard?.destinationCountry || "-"}
                 </dd>
               </div>
-
-              
             </div>
 
             <div className="mt-4">
@@ -796,9 +792,21 @@ export default function AssayDetailPage() {
                         </dt>
                         <dd className="text-sm font-semibold text-gray-900">
                           {jobCard?.numberOfOunces != null
-                            ? Number(jobCard.numberOfOunces).toFixed(3)
+                            ? Number(jobCard.numberOfOunces).toLocaleString(
+                                undefined,
+                                {
+                                  minimumFractionDigits: 3,
+                                  maximumFractionDigits: 3,
+                                }
+                              )
                             : assay.jbWeightInOz != null
-                            ? Number(assay.jbWeightInOz).toFixed(3)
+                            ? Number(assay.jbWeightInOz).toLocaleString(
+                                undefined,
+                                {
+                                  minimumFractionDigits: 3,
+                                  maximumFractionDigits: 3,
+                                }
+                              )
                             : "0.000"}{" "}
                           oz
                         </dd>
@@ -865,7 +873,13 @@ export default function AssayDetailPage() {
                         </dt>
                         <dd className="text-sm font-semibold text-gray-900">
                           {assay.weightInOz != null
-                            ? Number(assay.weightInOz).toFixed(3)
+                            ? Number(assay.weightInOz).toLocaleString(
+                                undefined,
+                                {
+                                  minimumFractionDigits: 3,
+                                  maximumFractionDigits: 3,
+                                }
+                              )
                             : (() => {
                                 const totalGrams = (
                                   assay.measurements || []
@@ -880,7 +894,12 @@ export default function AssayDetailPage() {
                                 );
                                 const GRAMS_PER_TROY_OUNCE = 31.1035;
                                 const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                                return totalGrams > 0 ? oz.toFixed(3) : "0.000";
+                                return totalGrams > 0
+                                  ? oz.toLocaleString(undefined, {
+                                      minimumFractionDigits: 3,
+                                      maximumFractionDigits: 3,
+                                    })
+                                  : "0.000";
                               })()}{" "}
                           oz
                         </dd>

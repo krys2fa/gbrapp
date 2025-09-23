@@ -547,7 +547,10 @@ export default function CertificateOfAssayPage() {
                                   ),
                                 0
                               );
-                              return total > 0 ? total.toFixed(2) : "-";
+                              return total > 0 ? total.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }) : "-";
                             })()}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
@@ -591,7 +594,10 @@ export default function CertificateOfAssayPage() {
                                   ),
                                 0
                               );
-                              return total > 0 ? total.toFixed(2) : "-";
+                              return total > 0 ? total.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }) : "-";
                             })()}
                           </td>
                         </tr>
@@ -622,7 +628,10 @@ export default function CertificateOfAssayPage() {
                           if (netWeightTotal > 0) {
                             // Convert grams to troy ounces (1 troy ounce = 31.1035 grams)
                             const ounces = netWeightTotal / 31.1035;
-                            return `${ounces.toFixed(4)} oz`;
+                            return `${ounces.toLocaleString(undefined, {
+                                minimumFractionDigits: 4,
+                                maximumFractionDigits: 4,
+                              })} oz`;
                           }
                           return "0.0000 oz";
                         })()}
@@ -632,7 +641,7 @@ export default function CertificateOfAssayPage() {
                 </div>
 
                 <div className="flex justify-between">
-                  <div className="px-1 sm:px-2 lg:px-3 py-2">
+                  <div className="pr-1 sm:pr-2 lg:pr-3 py-2">
                     <div className="flex justify-start">
                       <div className="flex text-center ">
                         <h4 className="text-sm font-medium text-gray-500 uppercase">
