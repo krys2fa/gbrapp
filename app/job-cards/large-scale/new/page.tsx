@@ -557,11 +557,26 @@ function NewLargeScaleJobCardPage() {
         : 0;
 
     return {
-      grossWeight: totals.grossWeight.toFixed(4),
-      goldNetWeight: totals.goldNetWeight.toFixed(4),
-      silverNetWeight: totals.silverNetWeight.toFixed(4),
-      goldFineness: goldFineness.toFixed(4),
-      silverFineness: silverFineness.toFixed(4),
+      grossWeight: totals.grossWeight.toLocaleString(undefined, {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      }),
+      goldNetWeight: totals.goldNetWeight.toLocaleString(undefined, {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      }),
+      silverNetWeight: totals.silverNetWeight.toLocaleString(undefined, {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      }),
+      goldFineness: goldFineness.toLocaleString(undefined, {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      }),
+      silverFineness: silverFineness.toLocaleString(undefined, {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      }),
     };
   };
 

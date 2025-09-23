@@ -217,7 +217,6 @@ export default function NewAssayPage() {
         setWeeklyExchange({
           value: exchangeEntry ? Number(exchangeEntry.price) : null, // null when no approved rate for current week
         });
-
       } catch (err) {
         console.error(err);
       } finally {
@@ -307,9 +306,9 @@ export default function NewAssayPage() {
         typeof manualFineness === "number" &&
         manualFineness > 0
       ) {
-        const calculatedNet =
-          Math.round((manualFineness / 100) * gross * 100) / 100;
-        next[index].netWeight = calculatedNet;
+        // calculate net weight from fineness and gross; round to 2 decimal places
+        const calculatedNet = (manualFineness / 100) * gross;
+        next[index].netWeight = Number(calculatedNet.toFixed(2));
 
         // Clear fineness warnings since we're using the entered fineness value
         setFinenessWarnings((prev) => {
@@ -410,17 +409,15 @@ export default function NewAssayPage() {
     (s, r) => s + (Number(r.waterWeight) || 0),
     0
   );
-  const averageFineness =
-    rows.length > 0
-      ? rows.reduce((s, r) => s + (Number(r.fineness) || 0), 0) /
-        rows.filter((r) => r.fineness).length
-      : 0;
+  const averageFineness = (totalInputNetWeight / totalGrossWeight) * 100 || 0;
 
   const unitOfMeasure = jobCard?.unitOfMeasure || "g"; // expect 'g' or 'kg' stored on jobCard
   const totalNetWeightOz = toOunces(totalInputNetWeight, unitOfMeasure);
   const totalNetWeightOzDisplay = Number.isFinite(totalNetWeightOz)
     ? totalNetWeightOz
     : 0;
+
+  console.log({ totalNetWeightOzDisplay, dailyPrice });
 
   // Use existing job card values for meta display instead of current form calculations
   const displayNetWeightOz = jobCard?.numberOfOunces || totalNetWeightOzDisplay;
@@ -1041,8 +1038,12 @@ export default function NewAssayPage() {
                       </label>
                       <input
                         type="number"
-                        step="any"
-                        value={r.netWeight ?? ""}
+                        step="0.01"
+                        value={
+                          typeof r.netWeight === "number"
+                            ? r.netWeight.toFixed(2)
+                            : ""
+                        }
                         onChange={(e) =>
                           handleRowChange(i, "netWeight", e.target.value)
                         }
@@ -1067,7 +1068,10 @@ export default function NewAssayPage() {
                         Total Gross Weight ({unitOfMeasure})
                       </label>
                       <div className="mt-1 text-sm font-semibold text-gray-900">
-                        {totalGrossWeight.toFixed(2)}
+                        {totalGrossWeight.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </div>
                     </div>
                     {form.method !== "X_RAY" && (
@@ -1076,7 +1080,10 @@ export default function NewAssayPage() {
                           Total Water Weight ({unitOfMeasure})
                         </label>
                         <div className="mt-1 text-sm font-semibold text-gray-900">
-                          {totalWaterWeight.toFixed(2)}
+                          {totalWaterWeight.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </div>
                       </div>
                     )}
@@ -1093,7 +1100,10 @@ export default function NewAssayPage() {
                         Total Net Weight ({unitOfMeasure})
                       </label>
                       <div className="mt-1 text-sm font-semibold text-gray-900">
-                        {totalInputNetWeight.toFixed(2)}
+                        {totalInputNetWeight.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </div>
                     </div>
                   </div>
@@ -1396,7 +1406,9 @@ export default function NewAssayPage() {
                               {dailyPrice?.value && totalNetWeightOzDisplay
                                 ? formatCurrency(
                                     Number(dailyPrice.value) *
-                                      totalNetWeightOzDisplay,
+                                      Number(
+                                        totalNetWeightOzDisplay.toFixed(3)
+                                      ),
                                     "USD",
                                     false
                                   )
@@ -1430,7 +1442,9 @@ export default function NewAssayPage() {
                               totalNetWeightOzDisplay
                                 ? formatCurrency(
                                     Number(dailyPrice.value) *
-                                      totalNetWeightOzDisplay *
+                                      Number(
+                                        totalNetWeightOzDisplay.toFixed(3)
+                                      ) *
                                       Number(weeklyExchange.value),
                                     "GHS",
                                     false

@@ -246,15 +246,6 @@ function NewLargeScaleAssayPage() {
           exchangePrices = [];
         }
 
-        // exchangePrices?.forEach((price, index) => {
-        //   console.log(`Exchange ${index}:`, {
-        //     id: price.id,
-        //     weekStartDate: price.weekStartDate,
-        //     status: price.status,
-        //     price: price.price,
-        //   });
-        // });
-
         const latestByDate = (items: any[]) =>
           items
             .slice()
@@ -290,16 +281,16 @@ function NewLargeScaleAssayPage() {
         );
 
         // Get commodity entry (can fall back to latest if current week's is missing)
-        const commodityEntry =
-          latestByDate(
-            currentWeekCommodityMatches.filter(
-              (p: any) => p.type === "COMMODITY"
-            )
-          ) ||
-          latestByDate(
-            (commodityPrices || []).filter((p: any) => p.type === "COMMODITY")
-          ) ||
-          null;
+        // const commodityEntry =
+        //   latestByDate(
+        //     currentWeekCommodityMatches.filter(
+        //       (p: any) => p.type === "COMMODITY"
+        //     )
+        //   ) ||
+        //   latestByDate(
+        //     (commodityPrices || []).filter((p: any) => p.type === "COMMODITY")
+        //   ) ||
+        //   null;
 
         // Only use exchange rates from the current week - don't fall back to old rates
         const exchangeEntry =
@@ -1119,10 +1110,16 @@ function NewLargeScaleAssayPage() {
                     Total Net Gold Weight
                   </div>
                   <div className="text-lg font-semibold text-gray-900">
-                    {totalNetGoldWeightOz.toFixed(3)} oz
+                    {totalNetGoldWeightOz.toLocaleString(undefined, {
+                                    minimumFractionDigits: 3,
+                                    maximumFractionDigits: 3,
+                                  })} oz
                   </div>
                   <div className="text-xs text-gray-500">
-                    ({totalNetGoldWeight.toFixed(2)} {unitOfMeasure})
+                    ({totalNetGoldWeight.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })} {unitOfMeasure})
                   </div>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-md">
@@ -1130,10 +1127,16 @@ function NewLargeScaleAssayPage() {
                     Total Net Silver Weight
                   </div>
                   <div className="text-lg font-semibold text-gray-900">
-                    {totalNetSilverWeightOz.toFixed(3)} oz
+                    {totalNetSilverWeightOz.toLocaleString(undefined, {
+                                    minimumFractionDigits: 3,
+                                    maximumFractionDigits: 3,
+                                  })} oz
                   </div>
                   <div className="text-xs text-gray-500">
-                    ({totalNetSilverWeight.toFixed(2)} {unitOfMeasure})
+                    ({totalNetSilverWeight.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })} {unitOfMeasure})
                   </div>
                 </div>
                 <div className="bg-blue-50 p-3 rounded-md">
