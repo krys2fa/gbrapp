@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { withAuth } from "@/app/lib/with-auth";
+import { logger, LogCategory } from "@/lib/logger";
 
 async function getAssay(
   request: NextRequest,
@@ -28,7 +29,9 @@ async function getAssay(
 
     return NextResponse.json(assay);
   } catch (error) {
-    console.error("Error fetching assay:", error);
+    void logger.error(LogCategory.ASSAY, "Error fetching assay detail", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to fetch assay" },
       { status: 500 }

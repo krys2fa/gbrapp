@@ -1,4 +1,5 @@
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 // Map common commodity symbols to names understood by the external API
 const SYMBOL_TO_NAME: Record<string, string> = {
@@ -81,7 +82,9 @@ export async function fetchAndSaveCommodityPriceIfMissing(commodityId: string) {
         }
       }
     } catch (e) {
-      console.warn("metals.live fetch failed", e);
+      await logger.warn(LogCategory.EXCHANGE_RATE, "metals.live fetch failed", {
+        error: String(e),
+      });
     }
 
     // Fallback provider: goldprice.org / data-asg endpoint returns nested data
@@ -119,14 +122,22 @@ export async function fetchAndSaveCommodityPriceIfMissing(commodityId: string) {
         }
       }
     } catch (e) {
-      console.warn("goldprice fallback fetch failed", e);
+      await logger.warn(
+        LogCategory.EXCHANGE_RATE,
+        "goldprice fallback fetch failed",
+        { error: String(e) }
+      );
     }
 
     // nothing found
 
     return null;
   } catch (err) {
-    console.error("external price fetch failed", err);
+    await logger.error(
+      LogCategory.EXCHANGE_RATE,
+      "external price fetch failed",
+      { error: String(err) }
+    );
     return null;
   }
 }

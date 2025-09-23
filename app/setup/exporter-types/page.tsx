@@ -5,7 +5,6 @@ import {
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
-  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
 import { Building2 } from "lucide-react";

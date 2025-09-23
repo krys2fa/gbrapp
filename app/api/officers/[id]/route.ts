@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching a specific officer by ID
@@ -52,7 +53,9 @@ async function getOfficerById(
 
     return NextResponse.json({ ...officer, officerType: type });
   } catch (error) {
-    console.error("Error fetching officer:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error fetching officer", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching officer" },
       { status: 500 }
@@ -170,7 +173,9 @@ async function updateOfficerById(
 
     return NextResponse.json({ ...officer, officerType: type });
   } catch (error) {
-    console.error("Error updating officer:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error updating officer", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     if (
       error instanceof Error &&
       error.message.includes("Record to update not found")
@@ -258,7 +263,9 @@ async function deleteOfficerById(
 
     return NextResponse.json({ message: "Officer deleted successfully" });
   } catch (error) {
-    console.error("Error deleting officer:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error deleting officer", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     if (
       error instanceof Error &&
       error.message.includes("Record to delete does not exist")

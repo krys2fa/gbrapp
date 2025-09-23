@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -47,7 +48,9 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json({ fees });
   } catch (err) {
-    console.error(err);
+    void logger.error(LogCategory.FEE, "Failed to fetch fees", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json(
       { error: "Failed to fetch fees" },
       { status: 500 }
@@ -72,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     const targetJobCardId = jobCardId || largeScaleJobCardId;
 
-    console.log("Creating fee:", {
+    void logger.info(LogCategory.FEE, "Creating fee", {
       jobCardId,
       largeScaleJobCardId,
       targetJobCardId,
@@ -108,7 +111,9 @@ export async function POST(req: NextRequest) {
       notes: combinedNotes,
     };
 
-    console.log("Fee data to create:", feeData);
+    void logger.debug(LogCategory.FEE, "Fee data to create", {
+      keys: Object.keys(feeData || {}),
+    });
 
     const fee = await prisma.fee.create({
       data: feeData,
@@ -150,14 +155,22 @@ export async function POST(req: NextRequest) {
             },
             data: { status: "paid" },
           });
-          console.log(
-            `Updated ${invoices.length} invoice(s) to paid status for job card ${targetJobCardId}`
+          void logger.info(
+            LogCategory.INVOICE,
+            `Updated ${invoices.length} invoice(s) to paid status`,
+            { jobCardId: targetJobCardId, count: invoices.length }
           );
         }
       }
     } catch (e) {
       // non-fatal: log and continue
-      console.error("Failed to update invoice status to paid:", e);
+      void logger.error(
+        LogCategory.INVOICE,
+        "Failed to update invoice status to paid",
+        {
+          error: e instanceof Error ? e.message : String(e),
+        }
+      );
     }
 
     // mark job card as paid so details page reflects paid status
@@ -175,7 +188,13 @@ export async function POST(req: NextRequest) {
       }
     } catch (e) {
       // non-fatal: log and continue
-      console.debug("Failed to update job card status to paid:", e);
+      void logger.debug(
+        LogCategory.JOB_CARD,
+        "Failed to update job card status to paid",
+        {
+          error: e instanceof Error ? e.message : String(e),
+        }
+      );
     }
 
     return NextResponse.json(
@@ -186,7 +205,9 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (err) {
-    console.error(err);
+    void logger.error(LogCategory.API, "Failed to create fee", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json(
       { error: "Failed to create fee" },
       { status: 500 }

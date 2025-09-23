@@ -6,7 +6,6 @@ import {
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
-  ArrowPathIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { Header } from "../../components/layout/header";

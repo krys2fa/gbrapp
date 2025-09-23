@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { withAuth } from "@/app/lib/with-auth";
+import { logger, LogCategory } from "@/lib/logger";
 
 async function createLargeScaleInvoice(req: NextRequest) {
   try {
     const body = await req.json();
-    const { jobCardId, amount, currencyCode = "USD" } = body;
+    const { jobCardId, amount: _amount, currencyCode = "USD" } = body;
 
     if (!jobCardId) {
       return NextResponse.json(
@@ -199,8 +200,14 @@ async function createLargeScaleInvoice(req: NextRequest) {
     });
 
     return NextResponse.json(invoice, { status: 201 });
-  } catch (err) {
-    console.error("Error creating large scale invoice:", err);
+  } catch (_err) {
+    void logger.error(
+      LogCategory.INVOICE,
+      "Error creating large scale invoice",
+      {
+        error: _err instanceof Error ? _err.message : String(_err),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to create invoice" },
       { status: 500 }

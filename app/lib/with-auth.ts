@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as jose from "jose";
 import { Role } from "@/app/generated/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 interface DecodedToken {
   userId: string;
@@ -79,7 +80,9 @@ export function withAuth<H extends AnyRouteHandler>(
       // Call the original handler with unmodified signature
       return handler(...(args as Parameters<H>));
     } catch (error: any) {
-      console.error("Authentication error:", error);
+      await logger.error(LogCategory.AUTH, "Authentication error", {
+        error: String(error),
+      });
 
       if (error.name === "TokenExpiredError") {
         return NextResponse.json(

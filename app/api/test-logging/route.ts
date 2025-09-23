@@ -4,7 +4,10 @@ import { logger, LogLevel, LogCategory } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("🧪 Testing logging system via API endpoint...");
+    void logger.info(
+      LogCategory.SYSTEM,
+      "Testing logging system via API endpoint"
+    );
 
     // Test different log levels
     await logger.debug(LogCategory.SYSTEM, "Debug log from API test endpoint");
@@ -51,8 +54,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Logging system test failed:", error);
-
     await logger.error(LogCategory.API, "Logging system test failed", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,

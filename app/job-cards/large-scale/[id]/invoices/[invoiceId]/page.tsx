@@ -96,7 +96,6 @@ export default async function LargeScaleInvoicePage(props: any) {
     });
   } catch (e) {
     // Log error server-side but don't expose to client
-    console.log("Failed to load large scale invoice for invoice page:", e);
     return (
       <div className="max-w-4xl mx-auto py-10 px-4">
         <p>Failed to load invoice data. Please try again later.</p>

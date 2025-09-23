@@ -2,6 +2,7 @@ import { ActionType } from "@/app/generated/prisma";
 import { AuditTrailService } from "@/app/lib/audit-trail";
 import { NextRequest, NextResponse } from "next/server";
 import * as jose from "jose";
+import { logger, LogCategory } from "@/lib/logger";
 
 interface AuditableRouteOptions {
   entityType: string;
@@ -43,7 +44,11 @@ export function withAuditTrail<H extends AnyRouteHandler>(
         userId = payload.userId as string;
       } catch (error) {
         // If token verification fails, use "unknown"
-        console.warn("Failed to verify JWT token for audit trail:", error);
+        await logger.warn(
+          LogCategory.AUTH,
+          "Failed to verify JWT token for audit trail",
+          { error: String(error) }
+        );
         userId = "unknown";
       }
     }
@@ -90,7 +95,11 @@ export function withAuditTrail<H extends AnyRouteHandler>(
         }
       }
     } catch (error) {
-      console.log(error);
+      await logger.error(
+        LogCategory.API,
+        "Error extracting entity id from params",
+        { error: String(error) }
+      );
       // Fallback to parsing from URL as a last resort
       const parts = req.nextUrl.pathname.split("/").filter(Boolean);
       entityId = parts[parts.length - 1] ?? entityId;
@@ -105,7 +114,11 @@ export function withAuditTrail<H extends AnyRouteHandler>(
         const body = await clonedRequest.json();
         details = body;
       } catch (error) {
-        console.error("Error reading request body for audit:", error);
+        await logger.warn(
+          LogCategory.API,
+          "Error reading request body for audit",
+          { error: String(error) }
+        );
       }
     }
 
@@ -149,6 +162,10 @@ export function withAuditTrail<H extends AnyRouteHandler>(
           status: 500,
           error: true,
         },
+      });
+
+      await logger.error(LogCategory.API, "Unhandled error in audited route", {
+        error: String(error),
       });
 
       // Re-throw the error for the API route to handle

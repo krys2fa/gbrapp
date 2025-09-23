@@ -92,9 +92,7 @@ function JobCardDetailPage() {
   }, [id]);
 
   const handleDelete = async () => {
-    console.log("Delete button clicked! Setting modal to open...");
     setDeleteModalOpen(true);
-    console.log("Modal should now be open");
   };
 
   const confirmDelete = async () => {
@@ -232,11 +230,6 @@ function JobCardDetailPage() {
   const canEdit = !hasAssays && !hasPaidInvoices;
   const canDelete = !hasAssays; // Can delete if no assays exist
 
-  console.log("Job Card Debug Info:");
-  console.log("- hasAssays:", hasAssays);
-  console.log("- canDelete:", canDelete);
-  console.log("- canEdit:", canEdit);
-  console.log("- jobCard.assays:", jobCard.assays);
   const badgeStatus =
     hasPaidInvoices || jobCard.status === "paid"
       ? "paid"

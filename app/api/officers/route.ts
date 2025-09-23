@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching all officers
@@ -21,60 +22,57 @@ async function getAllOfficers(req: NextRequest) {
     }
 
     // Fetch all officer types
-    const [
-      customsOfficers,
-      assayOfficers,
-      technicalDirectors,
-    ] = await Promise.all([
-      prisma.customsOfficer.findMany({
-        where:
-          type === "CUSTOMS_OFFICER"
-            ? where
-            : search
-            ? { name: { contains: search, mode: "insensitive" } }
-            : {},
-        select: {
-          id: true,
-          name: true,
-          badgeNumber: true,
-          email: true,
-          phone: true,
-          createdAt: true,
-        },
-      }),
-      prisma.assayOfficer.findMany({
-        where:
-          type === "ASSAY_OFFICER"
-            ? where
-            : search
-            ? { name: { contains: search, mode: "insensitive" } }
-            : {},
-        select: {
-          id: true,
-          name: true,
-          badgeNumber: true,
-          email: true,
-          phone: true,
-          createdAt: true,
-        },
-      }),
-      prisma.technicalDirector.findMany({
-        where:
-          type === "TECHNICAL_DIRECTOR"
-            ? where
-            : search
-            ? { name: { contains: search, mode: "insensitive" } }
-            : {},
-        select: {
-          id: true,
-          name: true,
-          badgeNumber: true,
-          email: true,
-          phone: true,
-          createdAt: true,
-        },
-      }),
-    ]);
+    const [customsOfficers, assayOfficers, technicalDirectors] =
+      await Promise.all([
+        prisma.customsOfficer.findMany({
+          where:
+            type === "CUSTOMS_OFFICER"
+              ? where
+              : search
+              ? { name: { contains: search, mode: "insensitive" } }
+              : {},
+          select: {
+            id: true,
+            name: true,
+            badgeNumber: true,
+            email: true,
+            phone: true,
+            createdAt: true,
+          },
+        }),
+        prisma.assayOfficer.findMany({
+          where:
+            type === "ASSAY_OFFICER"
+              ? where
+              : search
+              ? { name: { contains: search, mode: "insensitive" } }
+              : {},
+          select: {
+            id: true,
+            name: true,
+            badgeNumber: true,
+            email: true,
+            phone: true,
+            createdAt: true,
+          },
+        }),
+        prisma.technicalDirector.findMany({
+          where:
+            type === "TECHNICAL_DIRECTOR"
+              ? where
+              : search
+              ? { name: { contains: search, mode: "insensitive" } }
+              : {},
+          select: {
+            id: true,
+            name: true,
+            badgeNumber: true,
+            email: true,
+            phone: true,
+            createdAt: true,
+          },
+        }),
+      ]);
 
     // Combine and format results
     const officers = [
@@ -99,7 +97,9 @@ async function getAllOfficers(req: NextRequest) {
 
     return NextResponse.json(officers);
   } catch (error) {
-    console.error("Error fetching officers:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error fetching officers", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching officers" },
       { status: 500 }
@@ -194,7 +194,9 @@ async function createOfficer(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creating officer:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error creating officer", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error creating officer" },
       { status: 500 }

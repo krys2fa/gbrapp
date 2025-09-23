@@ -1,6 +1,6 @@
 // lib/notification-service.ts
 import { prisma } from "@/app/lib/prisma";
-import { logger, LogCategory, LogLevel } from "./logger";
+import { logger, LogCategory } from "@/lib/logger";
 
 export interface NotificationData {
   to: string;
@@ -43,11 +43,22 @@ export class NotificationService {
   ): Promise<boolean> {
     try {
       if (!this.emailServiceUrl || !this.emailApiKey) {
-        console.warn(
-          "Email service not configured, logging notification instead"
+        void logger.warn(
+          LogCategory.EMAIL,
+          "Email service not configured, logging notification instead",
+          {
+            to,
+            subject,
+          }
         );
-        console.log(
-          `EMAIL TO: ${to}, SUBJECT: ${subject}, MESSAGE: ${message}`
+        void logger.info(
+          LogCategory.EMAIL,
+          "EMAIL fallback logged (no service configured)",
+          {
+            to,
+            subject,
+            messagePreview: message ? message.substring(0, 200) : undefined,
+          }
         );
         return true;
       }
@@ -67,7 +78,9 @@ export class NotificationService {
 
       return response.ok;
     } catch (error) {
-      console.error("Email sending failed:", error);
+      void logger.error(LogCategory.EMAIL, "Email sending failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return false;
     }
   }
@@ -84,7 +97,6 @@ export class NotificationService {
             reason: "invalid_format",
           }
         );
-        console.warn(`📱 Invalid phone number format: ${to} - SMS not sent`);
         return false;
       }
 
@@ -96,10 +108,14 @@ export class NotificationService {
             phoneNumber: to,
           }
         );
-        console.warn(
-          "SMS service not configured, logging notification instead"
+        void logger.info(
+          LogCategory.SMS,
+          "SMS fallback logged (no service configured)",
+          {
+            phoneNumber: to,
+            messagePreview: message ? message.substring(0, 200) : undefined,
+          }
         );
-        console.log(`SMS TO: ${to}, MESSAGE: ${message}`);
         return true;
       }
 
@@ -131,7 +147,9 @@ export class NotificationService {
           cost: result.data?.cost,
           balance: result.data?.balance,
         });
-        console.log(`SMS sent successfully to ${to}`);
+        void logger.debug(LogCategory.SMS, "SMS sent (info)", {
+          phoneNumber: to,
+        });
         return true;
       } else {
         await logger.error(LogCategory.SMS, `SMS sending failed`, {
@@ -139,11 +157,12 @@ export class NotificationService {
           error: result,
           responseStatus: response.status,
         });
-        console.error(`SMS sending failed:`, result);
         return false;
       }
     } catch (error) {
-      console.error("SMS sending failed:", error);
+      void logger.error(LogCategory.SMS, "SMS sending failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return false;
     }
   }
@@ -163,7 +182,13 @@ export class NotificationService {
     notificationType: "email" | "sms" | "both" = "both"
   ): Promise<void> {
     try {
-      console.log(`🔍 Looking for users with roles: ${roles.join(", ")}`);
+      void logger.info(
+        LogCategory.NOTIFICATION,
+        "Looking for users with roles",
+        {
+          roles,
+        }
+      );
       const users = await prisma.user.findMany({
         where: {
           role: {
@@ -178,12 +203,24 @@ export class NotificationService {
           role: true,
         },
       });
-      console.log(`📱 Found ${users.length} users with required roles:`);
+      void logger.info(
+        LogCategory.NOTIFICATION,
+        `Found users with required roles`,
+        {
+          count: users.length,
+        }
+      );
       users.forEach((user) => {
-        console.log(
-          `  - ${user.name} (${user.role}): phone=${
-            user.phone || "NO PHONE"
-          }, email=${user.email}`
+        void logger.debug(
+          LogCategory.NOTIFICATION,
+          "Matched user for notification",
+          {
+            id: user.id,
+            name: user.name,
+            role: user.role,
+            phone: user.phone || null,
+            email: user.email || null,
+          }
         );
       });
 
@@ -194,25 +231,43 @@ export class NotificationService {
           if (user.email) {
             promises.push(this.sendEmail(user.email, subject, message));
           } else {
-            console.warn(
-              `📧 No email address for user ${user.name} (${user.role})`
+            void logger.warn(
+              LogCategory.NOTIFICATION,
+              `No email address for user`,
+              {
+                userId: user.id,
+                userName: user.name,
+                role: user.role,
+              }
             );
           }
         }
 
         if (notificationType === "sms" || notificationType === "both") {
           if (user.phone && this.isValidPhoneNumber(user.phone)) {
-            console.log(
-              `📱 Sending SMS to ${user.name} (${user.role}): ${user.phone}`
-            );
+            void logger.info(LogCategory.NOTIFICATION, "Sending SMS to user", {
+              userId: user.id,
+              userName: user.name,
+              role: user.role,
+              phone: user.phone,
+            });
             promises.push(this.sendSMS(user.phone, message));
           } else if (user.phone) {
-            console.warn(
-              `📱 Invalid phone number for user ${user.name} (${user.role}): ${user.phone} - SMS not sent`
+            void logger.warn(
+              LogCategory.NOTIFICATION,
+              "Invalid phone number for user - SMS not sent",
+              {
+                userId: user.id,
+                phone: user.phone,
+              }
             );
           } else {
-            console.warn(
-              `📱 No phone number for user ${user.name} (${user.role}) - SMS not sent`
+            void logger.warn(
+              LogCategory.NOTIFICATION,
+              "No phone number for user - SMS not sent",
+              {
+                userId: user.id,
+              }
             );
           }
         }
@@ -232,13 +287,20 @@ export class NotificationService {
       const noPhoneUsers = users.filter((user) => !user.phone);
 
       if (notificationType === "sms" || notificationType === "both") {
-        console.log(`📊 SMS Delivery Summary:`);
-        console.log(`  ✅ Valid phone numbers: ${smsEligibleUsers.length}`);
-        console.log(`  ❌ Invalid phone numbers: ${invalidPhoneUsers.length}`);
-        console.log(`  📵 No phone numbers: ${noPhoneUsers.length}`);
+        void logger.info(LogCategory.NOTIFICATION, "SMS Delivery Summary", {
+          validPhoneNumbers: smsEligibleUsers.length,
+          invalidPhoneNumbers: invalidPhoneUsers.length,
+          noPhoneNumbers: noPhoneUsers.length,
+        });
       }
     } catch (error) {
-      console.error("Failed to notify users with roles:", error);
+      void logger.error(
+        LogCategory.NOTIFICATION,
+        "Failed to notify users with roles",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
       throw error;
     }
   }
@@ -278,9 +340,21 @@ export class NotificationService {
       });
 
       await Promise.all(notifications);
-      console.log(`Notifications sent to ${superAdmins.length} super admins`);
+      void logger.info(
+        LogCategory.NOTIFICATION,
+        "Notifications sent to super admins",
+        {
+          count: superAdmins.length,
+        }
+      );
     } catch (error) {
-      console.error("Failed to notify super admins:", error);
+      void logger.error(
+        LogCategory.NOTIFICATION,
+        "Failed to notify super admins",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
     }
   }
 
@@ -288,28 +362,21 @@ export class NotificationService {
     exchangeRateId: string,
     exchangeName: string,
     rate: number,
-    weekStart: string,
-    submittedBy: string
+    weekStart?: string,
+    submittedBy?: string
   ): Promise<void> {
     const subject = `Exchange Rate Approval Required: ${exchangeName}`;
-//     const message = `
-// New exchange rate requires approval:
 
-// Exchange: ${exchangeName}
-// Rate: ${rate}
-// Week: ${weekStart}
-// Submitted By: ${submittedBy}
+    let message = `USD rate approval required:\n\nRate: ${rate}`;
 
-// Please review and approve/reject this week's exchange rate at https://gbrapp.vercel.app/setup/pending-approvals.
-//     `.trim();
+    if (weekStart) {
+      message += `\nWeek: ${weekStart}`;
+    }
+    if (submittedBy) {
+      message += `\nSubmitted By: ${submittedBy}`;
+    }
 
-const message = `
-USD rate approval required:
-
-Rate: ${rate}
-
-Please review this rate at https://gbrapp.vercel.app/setup/pending-approvals.
-    `.trim();
+    message += `\n\nPlease review this rate at https://gbrapp.vercel.app/setup/pending-approvals.`;
 
     // Send immediate SMS notification to SUPERADMIN, CEO, and DEPUTY_CEO
     await this.notifyUsersWithRoles(
@@ -328,18 +395,18 @@ Please review this rate at https://gbrapp.vercel.app/setup/pending-approvals.
     submittedBy: string
   ): Promise<void> {
     const subject = `URGENT: Exchange Rate Still Pending Approval: ${exchangeName}`;
-//     const message = `
-// URGENT: An exchange rate has been pending approval for 5 minutes:
+    //     const message = `
+    // URGENT: An exchange rate has been pending approval for 5 minutes:
 
-// Exchange: ${exchangeName}
-// Rate: ${rate}
-// Week: ${weekStart}
-// Submitted By: ${submittedBy}
+    // Exchange: ${exchangeName}
+    // Rate: ${rate}
+    // Week: ${weekStart}
+    // Submitted By: ${submittedBy}
 
-// This rate requires immediate attention. Please review and approve/reject via https://gbrapp.vercel.app/setup/pending-approvals.
-//     `.trim();
+    // This rate requires immediate attention. Please review and approve/reject via https://gbrapp.vercel.app/setup/pending-approvals.
+    //     `.trim();
 
-const message = `
+    const message = `
 URGENT: USD rate approval pending for 5 minutes:
 
 Rate: ${rate}
@@ -463,7 +530,9 @@ This is an automated notification from GBR Application.
         users: userDetails,
       };
     } catch (error) {
-      console.error("Failed to check SMS readiness:", error);
+      void logger.error(LogCategory.SMS, "Failed to check SMS readiness", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient, Role, SealType, FeeType } from "@/app/generated/prisma";
+import { PrismaClient, Role } from "@/app/generated/prisma";
 import * as bcrypt from "bcryptjs";
+import { logger, LogCategory } from "@/lib/logger";
 
 const prisma = new PrismaClient();
 
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("🌱 Starting database seeding via API...");
+    void logger.info(LogCategory.DATABASE, "Starting database seeding via API");
 
     // Check if database is already seeded
     const existingUsers = await prisma.user.count();
@@ -31,7 +32,9 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Seeding error:", error);
+    void logger.error(LogCategory.DATABASE, "Seeding error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       {
         error: "Seeding failed",
@@ -43,11 +46,10 @@ export async function POST(request: NextRequest) {
 }
 
 async function runSeedLogic() {
-  console.log("Seeding database via API...");
+  void logger.info(LogCategory.DATABASE, "Seeding database via API");
 
   // Create users with different roles
   const adminPassword = await bcrypt.hash("admin123", 10);
-  const userPassword = await bcrypt.hash("user123", 10);
 
   // Create system user for audit trails with a fixed ID
   const systemUserId = "00000000-0000-0000-0000-000000000000";
@@ -67,11 +69,14 @@ async function runSeedLogic() {
         isActive: true,
       },
     });
-    console.log("Created system user for audit trails");
+    void logger.info(
+      LogCategory.DATABASE,
+      "Created system user for audit trails"
+    );
   }
 
   // Create admin user
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: "admin@gbrapp.com" },
     update: {},
     create: {
@@ -83,7 +88,7 @@ async function runSeedLogic() {
     },
   });
 
-  console.log("Seeding completed via API");
+  void logger.info(LogCategory.DATABASE, "Seeding completed via API");
 }
 
 // Only allow POST requests

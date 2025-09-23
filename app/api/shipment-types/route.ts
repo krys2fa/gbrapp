@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { withProtectedRoute } from "@/app/lib/with-protected-route";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching all shipment types
@@ -20,7 +21,9 @@ async function getAllShipmentTypes(req: NextRequest) {
 
     return NextResponse.json(shipmentTypes);
   } catch (error) {
-    console.error("Error fetching shipment types:", error);
+    void logger.error(LogCategory.API, "Error fetching shipment types", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching shipment types" },
       { status: 500 }
@@ -64,7 +67,9 @@ async function createShipmentType(req: NextRequest) {
 
     return NextResponse.json(shipmentType, { status: 201 });
   } catch (error) {
-    console.error("Error creating shipment type:", error);
+    void logger.error(LogCategory.API, "Error creating shipment type", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error creating shipment type" },
       { status: 500 }

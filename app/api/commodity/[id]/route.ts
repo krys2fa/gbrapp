@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET(
   req: Request,
@@ -20,7 +21,9 @@ export async function GET(
 
     return NextResponse.json(commodity);
   } catch (error) {
-    console.error("Error fetching commodity:", error);
+    void logger.error(LogCategory.DATABASE, "Error fetching commodity", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to fetch commodity" },
       { status: 500 }
@@ -50,7 +53,9 @@ export async function PUT(
 
     return NextResponse.json(commodity);
   } catch (error) {
-    console.error("Error updating commodity:", error);
+    void logger.error(LogCategory.DATABASE, "Error updating commodity", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to update commodity" },
       { status: 500 }
@@ -70,7 +75,9 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting commodity:", error);
+    void logger.error(LogCategory.DATABASE, "Error deleting commodity", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to delete commodity" },
       { status: 500 }

@@ -196,7 +196,6 @@ export const ExporterInvoiceChart: React.FC<{
     [exporterName: string]: number | string;
   }>;
 }> = ({ data }) => {
-  // console.log("ExporterInvoiceChart received data:", data);
 
   if (!data || data.length === 0) {
     return (
@@ -216,8 +215,6 @@ export const ExporterInvoiceChart: React.FC<{
     (key) => key !== "month"
   );
 
-  // console.log("Exporter names found:", exporterNames);
-
   // Find months with non-zero values
   const monthsWithData = data.filter((monthData) => {
     return exporterNames.some((exporter) => {
@@ -226,7 +223,6 @@ export const ExporterInvoiceChart: React.FC<{
     });
   });
 
-  // console.log("Months with non-zero data:", monthsWithData);
 
   // Generate colors for each exporter
   const exporterColors = exporterNames.reduce((colors, name, index) => {

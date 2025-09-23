@@ -1,6 +1,7 @@
 import { Role } from "@/app/generated/prisma";
 import { prisma } from "@/app/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 import { generateAssayNumber } from "@/lib/assay-number-generator";
 
 // Helper to extract ID from the URL
@@ -13,7 +14,9 @@ function getIdFromUrl(req: NextRequest): string | null {
     const id = segments[segments.length - 1];
     return id || null;
   } catch (error) {
-    console.error("Error extracting ID from URL:", error);
+    void logger.error(LogCategory.API, "Error extracting ID from URL", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
@@ -24,7 +27,7 @@ function getIdFromUrl(req: NextRequest): string | null {
 export async function GET(req: NextRequest) {
   try {
     const id = await getIdFromUrl(req);
-    console.log("GET request for job card with ID:", id);
+    void logger.debug(LogCategory.JOB_CARD, "GET job card request", { id });
 
     // Ensure id exists
     if (!id) {
@@ -99,35 +102,18 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Log full job card data to console for debugging
-    console.log("=== JOB CARD DATA DEBUG ===");
-    console.log("ID:", jobCard.id);
-    console.log("JOB:", jobCard);
-    console.log("Reference Number:", jobCard.referenceNumber);
-    console.log("Notes:", jobCard.notes);
-    console.log(
-      "Customs Officer Name (dedicated field):",
-      jobCard.customsOfficerName
-    );
-    console.log(
-      "Technical Director Name (dedicated field):",
-      jobCard.technicalDirectorName
-    );
-    console.log("Customs Officer (relation):", jobCard.customsOfficer);
-    console.log("Technical Director (relation):", jobCard.technicalDirector);
-    console.log(
-      "Assays:",
-      jobCard.assays?.map((a) => ({
-        id: a.id,
-        comments: a.comments,
-        assayOfficer: a.assayOfficer,
-      }))
-    );
-    console.log("=== END DEBUG ===");
+    void logger.debug(LogCategory.JOB_CARD, "Job card fetched", {
+      id: jobCard.id,
+      referenceNumber: jobCard.referenceNumber,
+      noteLength: String(jobCard.notes || "").length,
+      assays: jobCard.assays?.map((a) => ({ id: a.id })),
+    });
 
     return NextResponse.json(jobCard);
   } catch (error) {
-    console.error("Error fetching job card:", error);
+    void logger.error(LogCategory.JOB_CARD, "Error fetching job card", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching job card" },
       { status: 500 }
@@ -141,7 +127,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const id = getIdFromUrl(req);
-    console.log("PUT request for job card with ID:", id);
+    void logger.debug(LogCategory.JOB_CARD, "PUT job card request", { id });
 
     if (!id) {
       return NextResponse.json(
@@ -164,7 +150,14 @@ export async function PUT(req: NextRequest) {
 
     // Get the data from the request
     const requestData = await req.json();
-    console.log("Received update data:", JSON.stringify(requestData, null, 2));
+    void logger.debug(
+      LogCategory.JOB_CARD,
+      "Received update data for job card",
+      {
+        id,
+        keys: Object.keys(requestData || {}),
+      }
+    );
 
     // Create update object with all the provided fields
     const updateData: any = {};
@@ -344,7 +337,10 @@ export async function PUT(req: NextRequest) {
       }
     }
 
-    console.log("Updating with data:", updateData);
+    void logger.debug(LogCategory.JOB_CARD, "Updating job card with data", {
+      id,
+      updateKeys: Object.keys(updateData || {}),
+    });
 
     // If assays array is provided, persist any new/local assays to the DB
     const createdAssayIds: string[] = [];
@@ -417,7 +413,8 @@ export async function PUT(req: NextRequest) {
             totalGhsValue = totalUsdValue * assayItem.exchangeRate;
           }
 
-          console.log("Assay calculation:", {
+          void logger.debug(LogCategory.JOB_CARD, "Assay calculation", {
+            jobCardId: id,
             totalNetWeight,
             weightInOz,
             commodityPrice,
@@ -513,7 +510,14 @@ export async function PUT(req: NextRequest) {
           // collect created assay id for invoice creation
           if (created && created.id) createdAssayIds.push(created.id);
         } catch (assayErr) {
-          console.error("Failed to create assay record:", assayErr);
+          void logger.error(
+            LogCategory.JOB_CARD,
+            "Failed to create assay record",
+            {
+              error:
+                assayErr instanceof Error ? assayErr.message : String(assayErr),
+            }
+          );
         }
       }
 
@@ -521,8 +525,14 @@ export async function PUT(req: NextRequest) {
       // does not yet have a certificateNumber, copy it to the job card to preserve
       // compatibility with views that read jobCard.certificateNumber.
       try {
-        const firstProvidedCert = requestData.assays?.find((a: any) => a.certificateNumber);
-        if (firstProvidedCert && firstProvidedCert.certificateNumber && !existingJobCard.certificateNumber) {
+        const firstProvidedCert = requestData.assays?.find(
+          (a: any) => a.certificateNumber
+        );
+        if (
+          firstProvidedCert &&
+          firstProvidedCert.certificateNumber &&
+          !existingJobCard.certificateNumber
+        ) {
           await prisma.jobCard.update({
             where: { id },
             data: { certificateNumber: firstProvidedCert.certificateNumber },
@@ -530,7 +540,13 @@ export async function PUT(req: NextRequest) {
         }
       } catch (copyErr) {
         // Log but don't fail the whole update flow if copying fails due to uniqueness
-        console.error('Failed to copy certificateNumber to job card:', copyErr);
+        void logger.warn(
+          LogCategory.JOB_CARD,
+          "Failed to copy certificateNumber to job card",
+          {
+            error: copyErr instanceof Error ? copyErr.message : String(copyErr),
+          }
+        );
       }
 
       // mark job card as completed unless a different status is provided
@@ -612,7 +628,16 @@ export async function PUT(req: NextRequest) {
           }
         }
       } catch (officerSealErr) {
-        console.error("Failed to persist officer seals:", officerSealErr);
+        void logger.error(
+          LogCategory.JOB_CARD,
+          "Failed to persist officer seals",
+          {
+            error:
+              officerSealErr instanceof Error
+                ? officerSealErr.message
+                : String(officerSealErr),
+          }
+        );
       }
 
       if (Array.isArray(requestData.seals) && requestData.seals.length > 0) {
@@ -649,7 +674,14 @@ export async function PUT(req: NextRequest) {
               });
             }
           } catch (sealErr) {
-            console.error("Failed to create seal record:", sealErr);
+            void logger.error(
+              LogCategory.JOB_CARD,
+              "Failed to create seal record",
+              {
+                error:
+                  sealErr instanceof Error ? sealErr.message : String(sealErr),
+              }
+            );
           }
         }
       }
@@ -723,7 +755,12 @@ export async function PUT(req: NextRequest) {
 
       return NextResponse.json(updatedJobCard);
     } catch (updateError) {
-      console.error("Error during update operation:", updateError);
+      void logger.error(LogCategory.JOB_CARD, "Error during update operation", {
+        error:
+          updateError instanceof Error
+            ? updateError.message
+            : String(updateError),
+      });
       return NextResponse.json(
         {
           error: "Error updating job card",
@@ -737,7 +774,9 @@ export async function PUT(req: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Error updating job card:", error);
+    void logger.error(LogCategory.JOB_CARD, "Error updating job card", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     // Return detailed error information for debugging
     return NextResponse.json(
       {
@@ -762,7 +801,7 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const id = getIdFromUrl(req);
-    console.log("DELETE request for job card with ID:", id);
+    void logger.debug(LogCategory.JOB_CARD, "DELETE job card request", { id });
 
     if (!id) {
       return NextResponse.json(
@@ -807,12 +846,24 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Start transaction for cascade deletion
-    console.log("Starting delete transaction for job card:", id);
+    void logger.info(
+      LogCategory.JOB_CARD,
+      "Starting delete transaction for job card",
+      { id }
+    );
     await prisma.$transaction(async (tx) => {
-      console.log("Inside transaction, deleting assay measurements...");
+      void logger.debug(
+        LogCategory.JOB_CARD,
+        "Deleting assay measurements in transaction",
+        { id }
+      );
       // Delete assay measurements (through assays, but assays should be empty due to business rule)
       for (const assay of existingJobCard.assays) {
-        console.log("Deleting measurements for assay:", assay.id);
+        void logger.debug(
+          LogCategory.JOB_CARD,
+          "Deleting measurements for assay",
+          { assayId: assay.id }
+        );
         await tx.assayMeasurement.deleteMany({
           where: { assayId: assay.id },
         });
@@ -861,7 +912,9 @@ export async function DELETE(req: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting job card:", error);
+    void logger.error(LogCategory.JOB_CARD, "Error deleting job card", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error deleting job card" },
       { status: 500 }

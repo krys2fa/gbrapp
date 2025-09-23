@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -78,8 +79,10 @@ export async function GET(req: NextRequest) {
     ]);
 
     return NextResponse.json({ invoices, total }, { status: 200 });
-  } catch (err) {
-    console.error(err);
+  } catch (_err) {
+    void logger.error(LogCategory.API, "Failed to fetch invoices", {
+      error: _err instanceof Error ? _err.message : String(_err),
+    });
     return NextResponse.json(
       { error: "Failed to fetch invoices" },
       { status: 500 }
@@ -93,7 +96,7 @@ export async function POST(req: NextRequest) {
     const {
       jobCardId,
       largeScaleJobCardId,
-      amount,
+      amount: _amount,
       currencyCode = "USD",
     } = body;
 
@@ -241,7 +244,7 @@ export async function POST(req: NextRequest) {
               if (meta.exchangeRate && exchangeRate === 0)
                 exchangeRate = Number(meta.exchangeRate);
             }
-          } catch (e) {
+          } catch (_e) {
             // ignore parsing errors
           }
         }
@@ -377,7 +380,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(invoice, { status: 201 });
   } catch (err) {
-    console.error("Error creating invoice:", err);
+    void logger.error(LogCategory.API, "Error creating invoice", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json(
       { error: "Failed to create invoice" },
       { status: 500 }

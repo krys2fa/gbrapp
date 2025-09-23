@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { withAuth } from "@/app/lib/with-auth";
+import { logger, LogCategory } from "@/lib/logger";
 
 async function getAssaySummaries(request: NextRequest) {
   try {
@@ -124,7 +125,9 @@ async function getAssaySummaries(request: NextRequest) {
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
-    console.error("Error fetching assay summaries:", error);
+    void logger.error(LogCategory.ASSAY, "Error fetching assay summaries", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to fetch assay summaries" },
       { status: 500 }

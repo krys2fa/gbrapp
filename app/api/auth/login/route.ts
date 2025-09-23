@@ -2,7 +2,8 @@ import { prisma } from "@/app/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import * as jose from "jose";
-import { cookies } from "next/headers";
+import { cookies as _cookies } from "next/headers";
+import { logger, LogCategory } from "@/lib/logger";
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "fallback-secret-for-development-only";
@@ -87,12 +88,23 @@ async function login(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
     });
 
-    console.log("Login successful, cookie set for user:", user.email);
-    console.log("Token generated:", token.substring(0, 20) + "...");
+    void logger.info(
+      LogCategory.AUTH,
+      "Login successful, cookie set for user",
+      {
+        userEmail: user.email,
+      }
+    );
+    // Do not log full tokens; log that a token was generated and its prefix only
+    void logger.debug(LogCategory.AUTH, "Token generated (prefix)", {
+      tokenPrefix: token.substring(0, 20) + "...",
+    });
 
     return response;
   } catch (error) {
-    console.error("Login error:", error);
+    void logger.error(LogCategory.AUTH, "Login error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Authentication failed" },
       { status: 500 }

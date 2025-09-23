@@ -11,9 +11,7 @@ import {
   getCurrentWeekStart,
 } from "@/app/lib/week-utils";
 import {
-  PencilSquareIcon,
   TrashIcon,
-  ArrowPathIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
 

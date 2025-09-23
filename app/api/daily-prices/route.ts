@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -15,7 +16,9 @@ export async function GET(req: Request) {
   try {
     // All prices (commodity and exchange) are now only manually entered - no external API fetching
   } catch (err) {
-    console.error("daily-prices helper failed", err);
+    void logger.error(LogCategory.EXCHANGE_RATE, "daily-prices helper failed", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   const prices = await prisma.dailyPrice.findMany({

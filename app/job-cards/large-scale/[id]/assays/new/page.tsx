@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import { useRouter, useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
 import { formatExchangeRate, formatCurrency } from "@/app/lib/utils";
+import { logger, type LogCategory } from "@/lib/logger";
 
 type AssayMethod = "X_RAY" | "WATER_DENSITY";
 
@@ -238,20 +239,21 @@ function NewLargeScaleAssayPage() {
             `/api/weekly-prices?type=EXCHANGE&approvedOnly=true`
           );
         } catch (e) {
-          console.log("Exchange API call failed or returned error");
+          // Pass a LogCategory as the first argument; cast a string to LogCategory if needed
+          await logger.error("EXCHANGE" as LogCategory, "Exchange API call failed", {
+            error: e,
+          });
           exchangePrices = [];
         }
 
-        console.log("Approved exchange prices from API:", exchangePrices);
-        console.log("Number of exchange prices:", exchangePrices?.length || 0);
-        exchangePrices?.forEach((price, index) => {
-          console.log(`Exchange ${index}:`, {
-            id: price.id,
-            weekStartDate: price.weekStartDate,
-            status: price.status,
-            price: price.price,
-          });
-        });
+        // exchangePrices?.forEach((price, index) => {
+        //   console.log(`Exchange ${index}:`, {
+        //     id: price.id,
+        //     weekStartDate: price.weekStartDate,
+        //     status: price.status,
+        //     price: price.price,
+        //   });
+        // });
 
         const latestByDate = (items: any[]) =>
           items
@@ -272,10 +274,6 @@ function NewLargeScaleAssayPage() {
         weekStart.setUTCDate(todayDate.getUTCDate() - diff);
         weekStart.setUTCHours(0, 0, 0, 0);
         const currentWeekStart = weekStart.toISOString().split("T")[0];
-        console.log("Current week start:", currentWeekStart);
-        console.log("Today date:", today);
-        console.log("Day of week:", todayDate.getUTCDay());
-        console.log("Diff calculated:", diff);
 
         const currentWeekCommodityMatches = (commodityPrices || []).filter(
           (p: any) => {
@@ -287,15 +285,9 @@ function NewLargeScaleAssayPage() {
           (p: any) => {
             const priceWeekStart = String(p?.weekStartDate || "").split("T")[0];
             const matches = priceWeekStart === currentWeekStart;
-            console.log(
-              `Exchange rate ${p?.id}: weekStart=${priceWeekStart}, currentWeek=${currentWeekStart}, matches=${matches}`
-            );
             return matches;
           }
         );
-
-        console.log("Today's exchange matches:", todaysExchangeMatches);
-        console.log("Number of matches:", todaysExchangeMatches?.length || 0);
 
         // Get commodity entry (can fall back to latest if current week's is missing)
         const commodityEntry =
@@ -327,12 +319,6 @@ function NewLargeScaleAssayPage() {
               (p: any) => p.type === "EXCHANGE" && p.status === "APPROVED"
             )
           );
-
-        console.log("Selected exchange entry:", exchangeEntry);
-        console.log("Exchange entry price:", exchangeEntry?.price);
-        console.log("Exchange entry status:", exchangeEntry?.status);
-        console.log("Fallback exchange entry:", fallbackExchangeEntry);
-        console.log("Current week start:", currentWeekStart);
 
         setCommodityPrices(commodityPrices);
         setWeeklyExchange(fallbackExchangeEntry);
@@ -544,7 +530,7 @@ function NewLargeScaleAssayPage() {
       // Block saving if weekly exchange rate for current week is not approved
       // For debugging: allow submission if there's any approved exchange rate
       if (!currentWeekExchangeEntry && weeklyExchange) {
-        console.log(
+        toast.error(
           "DEBUG: No current week exchange rate but found fallback rate:",
           weeklyExchange
         );

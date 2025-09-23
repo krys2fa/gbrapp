@@ -148,8 +148,6 @@ export default function NewAssayPage() {
         if (exRes && exRes.ok)
           exchangePrices = await exRes.json().catch(() => []);
 
-        console.log("Approved exchange prices from API:", exchangePrices);
-
         const latestByDate = (items: any[]) =>
           items
             .slice()
@@ -178,13 +176,6 @@ export default function NewAssayPage() {
         const jobCardWeekStartStr = jobCardWeekStart
           .toISOString()
           .split("T")[0];
-        console.log("Job card week start:", jobCardWeekStartStr);
-        console.log("Today date:", date);
-        console.log("Job card received date:", jobCardReceivedDate);
-        console.log(
-          "Week calculation for job card received date:",
-          jobCardReceivedDateObj.toISOString()
-        );
 
         const jobCardDateCommodityMatches = (commodityPrices || []).filter(
           (p: any) =>
@@ -194,18 +185,9 @@ export default function NewAssayPage() {
           (p: any) => {
             const priceWeekStart = String(p?.weekStartDate || "").split("T")[0];
             const matches = priceWeekStart === jobCardWeekStartStr;
-            console.log(
-              `Exchange rate ${p?.id}: weekStart=${priceWeekStart}, jobCardWeek=${jobCardWeekStartStr}, matches=${matches}`
-            );
             return matches;
           }
         );
-
-        console.log(
-          "Job card week exchange matches:",
-          jobCardWeekExchangeMatches
-        );
-
         // Get commodity entry only for the job card's received date (no fallback)
         const commodityEntry =
           latestByDate(
@@ -224,18 +206,6 @@ export default function NewAssayPage() {
               )
             : null; // No approved rate for job card's week
 
-        console.log("Selected exchange entry:", exchangeEntry);
-        console.log("Job card week start:", jobCardWeekStartStr);
-        console.log(
-          "Available exchange rates:",
-          exchangePrices?.map((p) => ({
-            id: p.id,
-            weekStartDate: p.weekStartDate,
-            price: p.price,
-            status: p.status,
-          }))
-        );
-
         setMissingJobCardDateCommodity(
           jobCardDateCommodityMatches.length === 0
         );
@@ -248,10 +218,6 @@ export default function NewAssayPage() {
           value: exchangeEntry ? Number(exchangeEntry.price) : null, // null when no approved rate for current week
         });
 
-        console.log(
-          "Setting weekly exchange value:",
-          exchangeEntry ? Number(exchangeEntry.price) : null
-        );
       } catch (err) {
         console.error(err);
       } finally {

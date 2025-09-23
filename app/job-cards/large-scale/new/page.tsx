@@ -29,12 +29,10 @@ function NewLargeScaleJobCardPage() {
 
   // Helper function to log both to console and file
   const logInfo = async (message: string, metadata?: Record<string, any>) => {
-    console.log(message, metadata || "");
     await logger.info(LogCategory.JOB_CARD, message, metadata);
   };
 
   const logError = async (message: string, metadata?: Record<string, any>) => {
-    console.error(message, metadata || "");
     await logger.error(LogCategory.JOB_CARD, message, metadata);
   };
 
@@ -1599,8 +1597,8 @@ function NewLargeScaleJobCardPage() {
               </h3>
               <p className="text-sm text-gray-600 mb-4">
                 Upload an Excel file (.xlsx, .xls, .csv) with exact column
-                headers "Ag" and "Au". The system will calculate averages for
-                every 3 rows of data.
+                headers &quot;Ag&quot; and &quot;Au&quot;. The system will
+                calculate averages for every 3 rows of data.
               </p>
 
               <div className="space-y-4">

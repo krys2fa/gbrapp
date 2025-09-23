@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { getWeekBounds } from "@/app/lib/week-utils";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET(
   req: Request,
@@ -26,7 +27,13 @@ export async function GET(
 
     return NextResponse.json(weeklyPrice);
   } catch (error) {
-    console.error("Error fetching weekly price:", error);
+    void logger.error(
+      LogCategory.EXCHANGE_RATE,
+      "Error fetching weekly price",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to fetch weekly price" },
       { status: 500 }
@@ -80,7 +87,13 @@ export async function PUT(
 
     return NextResponse.json(updatedPrice);
   } catch (error) {
-    console.error("Error updating weekly price:", error);
+    void logger.error(
+      LogCategory.EXCHANGE_RATE,
+      "Error updating weekly price",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to update weekly price" },
       { status: 500 }
@@ -113,7 +126,13 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting weekly price:", error);
+    void logger.error(
+      LogCategory.EXCHANGE_RATE,
+      "Error deleting weekly price",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to delete weekly price" },
       { status: 500 }

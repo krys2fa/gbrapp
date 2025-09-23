@@ -8,6 +8,7 @@ import React, {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface User {
   id: string;
@@ -111,13 +112,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("auth-user", JSON.stringify(data.user));
 
       // The cookie is set on the server side in the login API response
-      console.log("Login successful, user set:", data.user);
-      console.log("Token stored:", data.token.substring(0, 20) + "...");
+      // Client-safe logging: send a non-blocking request to the internal log endpoint
+      void fetch("/api/internal/log", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          level: "INFO",
+          category: "AUTH",
+          message: "Login successful, user set",
+          metadata: {
+            user: data.user,
+            tokenPreview: data.token.substring(0, 20) + "...",
+          },
+        }),
+      });
 
       // Force a page reload to ensure the cookie is available to the middleware
       window.location.href = "/dashboard";
     } catch (error) {
-      console.error("Login error:", error);
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Login error: ${message}`);
       throw error;
     } finally {
       setIsLoading(false);

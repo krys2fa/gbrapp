@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 async function getExporterType(
   req: NextRequest,
@@ -21,7 +22,9 @@ async function getExporterType(
 
     return NextResponse.json(exporterType);
   } catch (error) {
-    console.error("Error fetching exporter type:", error);
+    void logger.error(LogCategory.EXPORTER, "Error fetching exporter type", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching exporter type" },
       { status: 500 }
@@ -52,7 +55,9 @@ async function updateExporterType(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("Error updating exporter type:", error);
+    void logger.error(LogCategory.EXPORTER, "Error updating exporter type", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error updating exporter type" },
       { status: 500 }
@@ -79,7 +84,9 @@ async function deleteExporterType(
 
     return NextResponse.json({ message: "Exporter type deleted" });
   } catch (error) {
-    console.error("Error deleting exporter type:", error);
+    void logger.error(LogCategory.EXPORTER, "Error deleting exporter type", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error deleting exporter type" },
       { status: 500 }

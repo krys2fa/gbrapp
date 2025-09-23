@@ -1,16 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
-import { ChevronDown, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import {
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
-  ArrowPathIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { Header } from "../../components/layout/header";
-import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 
 const officerTypes = [

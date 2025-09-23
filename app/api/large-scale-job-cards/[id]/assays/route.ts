@@ -3,6 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { withAuth } from "@/app/lib/with-auth";
 import { Role } from "@/app/generated/prisma";
 import { generateAssayNumber } from "@/lib/assay-number-generator";
+import { logger, LogCategory } from "@/lib/logger";
 
 async function postAssay(
   request: NextRequest,
@@ -101,12 +102,20 @@ async function postAssay(
       }
     } catch (err) {
       // Log but don't fail the assay creation if job card update fails due to uniqueness conflict
-      console.error("Failed to copy certificateNumber to job card:", err);
+      void logger.error(
+        LogCategory.ASSAY,
+        "Failed to copy certificateNumber to job card",
+        {
+          error: err instanceof Error ? err.message : String(err),
+        }
+      );
     }
 
     return NextResponse.json(assay);
   } catch (error) {
-    console.error("Error creating assay:", error);
+    void logger.error(LogCategory.ASSAY, "Error creating assay", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to create assay" },
       { status: 500 }
@@ -138,7 +147,9 @@ async function getAssay(
 
     return NextResponse.json(assay);
   } catch (error) {
-    console.error("Error fetching assay:", error);
+    void logger.error(LogCategory.ASSAY, "Error fetching assay", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to fetch assay" },
       { status: 500 }
@@ -230,7 +241,9 @@ async function putAssay(
 
     return NextResponse.json(updatedAssay);
   } catch (error) {
-    console.error("Error updating assay:", error);
+    void logger.error(LogCategory.ASSAY, "Error updating assay", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to update assay" },
       { status: 500 }

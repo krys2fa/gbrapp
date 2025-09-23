@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as jose from "jose";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for validating user token
@@ -31,7 +32,9 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Token validation error:", error);
+    void logger.error(LogCategory.AUTH, "Token validation error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({ valid: false }, { status: 401 });
   }
 }

@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { withProtectedRoute } from "@/app/lib/with-protected-route";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching all exporter types
@@ -20,7 +21,9 @@ async function getAllExporterTypes(req: NextRequest) {
 
     return NextResponse.json(exporterTypes);
   } catch (error) {
-    console.error("Error fetching exporter types:", error);
+    void logger.error(LogCategory.EXPORTER, "Error fetching exporter types", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching exporter types" },
       { status: 500 }
@@ -64,7 +67,9 @@ async function createExporterType(req: NextRequest) {
 
     return NextResponse.json(exporterType, { status: 201 });
   } catch (error) {
-    console.error("Error creating exporter type:", error);
+    void logger.error(LogCategory.EXPORTER, "Error creating exporter type", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error creating exporter type" },
       { status: 500 }

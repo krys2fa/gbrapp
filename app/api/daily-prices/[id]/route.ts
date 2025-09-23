@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET(
   req: Request,
@@ -22,7 +23,14 @@ export async function GET(
 
     return NextResponse.json(dailyPrice);
   } catch (error) {
-    console.error("[DAILY_PRICE_GET]", error);
+    void logger.error(
+      LogCategory.DATABASE,
+      "[DAILY_PRICE_GET] Error fetching daily price",
+      {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+      }
+    );
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -41,10 +49,7 @@ export async function PUT(
     const { price, type, itemId, date } = body;
 
     if (price == null) {
-      return NextResponse.json(
-        { error: "Price is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Price is required" }, { status: 400 });
     }
 
     // Build update data
@@ -77,8 +82,15 @@ export async function PUT(
 
     return NextResponse.json(dailyPrice);
   } catch (error: any) {
-    console.error("[DAILY_PRICE_PUT]", error);
-    
+    void logger.error(
+      LogCategory.DATABASE,
+      "[DAILY_PRICE_PUT] Error updating daily price",
+      {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+      }
+    );
+
     if (error?.code === "P2025") {
       return NextResponse.json(
         { error: "Daily price not found" },
@@ -106,8 +118,15 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("[DAILY_PRICE_DELETE]", error);
-    
+    void logger.error(
+      LogCategory.DATABASE,
+      "[DAILY_PRICE_DELETE] Error deleting daily price",
+      {
+        error: error instanceof Error ? error.message : String(error),
+        id,
+      }
+    );
+
     if (error?.code === "P2025") {
       return NextResponse.json(
         { error: "Daily price not found" },

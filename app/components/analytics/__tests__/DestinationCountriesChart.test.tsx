@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import DestinationCountriesChart from "../DestinationCountriesChart";
@@ -24,14 +25,14 @@ const mockResponse = {
 
 describe("DestinationCountriesChart", () => {
   beforeEach(() => {
-    // @ts-ignore
+    // @ts-expect-error mock fetch for tests
     global.fetch = jest.fn(() =>
       Promise.resolve({ ok: true, json: () => Promise.resolve(mockResponse) })
     );
   });
 
   afterEach(() => {
-    // @ts-ignore
+    // @ts-expect-error restore mock if present
     global.fetch.mockRestore && global.fetch.mockRestore();
   });
 

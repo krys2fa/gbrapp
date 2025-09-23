@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 import bcrypt from "bcryptjs";
 
 /**
@@ -34,7 +35,9 @@ async function getUser(
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error("Error fetching user:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error fetching user", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({ error: "Error fetching user" }, { status: 500 });
   }
 }
@@ -133,7 +136,9 @@ async function updateUser(
       throw e;
     }
   } catch (error) {
-    console.error("Error updating user:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error updating user", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({ error: "Error updating user" }, { status: 500 });
   }
 }
@@ -166,7 +171,9 @@ async function deleteUser(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting user:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error deleting user", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({ error: "Error deleting user" }, { status: 500 });
   }
 }

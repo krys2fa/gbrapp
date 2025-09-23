@@ -1,4 +1,4 @@
-import { PrismaClient, Role, SealType, FeeType } from "../app/generated/prisma";
+import { PrismaClient, Role } from "../app/generated/prisma";
 import * as bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -102,7 +102,7 @@ async function main() {
   console.log("Created users");
 
   // Create currencies
-  const usd = await prisma.currency.upsert({
+  await prisma.currency.upsert({
     where: { code: "USD" },
     update: {},
     create: {
@@ -118,104 +118,62 @@ async function main() {
     create: {
       code: "GHS",
       name: "Ghana Cedi",
-      symbol: "₵",
+      symbol: "GHS",
     },
   });
 
   console.log("Created currencies");
 
-  // Create price types
-  const goldPriceType = await prisma.priceType.upsert({
-    where: { name: "Gold" },
-    update: {},
-    create: {
-      name: "Gold",
-      description: "Gold price per troy ounce",
-    },
-  });
-
-  const silverPriceType = await prisma.priceType.upsert({
-    where: { name: "Silver" },
-    update: {},
-    create: {
-      name: "Silver",
-      description: "Silver price per troy ounce",
-    },
-  });
-
-  console.log("Created price types");
-
-  // Create prices
-  await prisma.price.create({
-    data: {
-      value: 2250.5,
-      priceTypeId: goldPriceType.id,
-      currencyId: usd.id,
-      effectiveDate: new Date(),
-    },
-  });
-
-  await prisma.price.create({
-    data: {
-      value: 28.75,
-      priceTypeId: silverPriceType.id,
-      currencyId: usd.id,
-      effectiveDate: new Date(),
-    },
-  });
-
-  console.log("Created prices");
-
   // Create commodities
-  const goldCommodity = await prisma.commodity.upsert({
+  await prisma.commodity.upsert({
     where: { name: "Gold" },
     update: {},
     create: {
       name: "Gold",
-      symbol: "Au",
+      symbol: "AU",
     },
   });
 
-  const silverCommodity = await prisma.commodity.upsert({
+  await prisma.commodity.upsert({
     where: { name: "Silver" },
     update: {},
     create: {
       name: "Silver",
-      symbol: "Ag",
+      symbol: "AG",
     },
   });
 
   console.log("Created commodities");
 
   // Create levy types
-  const exportLevy = await prisma.levyType.create({
-    data: {
-      name: "Export Levy",
-      description: "Levy on export of precious minerals",
-    },
-  });
+  // const exportLevy = await prisma.levyType.create({
+  //   data: {
+  //     name: "Export Levy",
+  //     description: "Levy on export of precious minerals",
+  //   },
+  // });
 
-  const pmmc = await prisma.levyType.create({
-    data: {
-      name: "PMMC Levy",
-      description: "Levy for Precious Minerals Marketing Company",
-    },
-  });
+  // const pmmc = await prisma.levyType.create({
+  //   data: {
+  //     name: "PMMC Levy",
+  //     description: "Levy for Precious Minerals Marketing Company",
+  //   },
+  // });
 
-  console.log("Created levy types");
+  // console.log("Created levy types");
 
   // Create exporter types
-  const miningCompany = await prisma.exporterType.create({
+  const largeScaleOperations = await prisma.exporterType.create({
     data: {
-      name: "Mining Company",
-      description: "Large scale mining company",
+      name: "Large Scale Operations",
+      description: "Large scale operations",
     },
   });
 
-  const smallScale = await prisma.exporterType.create({
+  const smallScaleOperations = await prisma.exporterType.create({
     data: {
-      name: "Small Scale Miner",
-      description: "Small scale mining operation",
+      name: "Small Scale Operations",
+      description: "Small scale operations",
     },
   });
 
@@ -224,8 +182,9 @@ async function main() {
   // Create exporters
   const exporter1 = await prisma.exporter.create({
     data: {
+      exporterCode: "EXP-0001",
       name: "Gold Fields Ghana",
-      exporterTypeId: miningCompany.id,
+      exporterTypeId: largeScaleOperations.id,
       contactPerson: "John Smith",
       email: "jsmith@goldfields.com",
       phone: "+233201234567",
@@ -236,8 +195,9 @@ async function main() {
 
   const exporter2 = await prisma.exporter.create({
     data: {
+      exporterCode: "EXP-0002",
       name: "Small Scale Mining Cooperative",
-      exporterTypeId: smallScale.id,
+      exporterTypeId: smallScaleOperations.id,
       contactPerson: "Mary Johnson",
       email: "mjohnson@ssmcoop.com",
       phone: "+233207654321",
@@ -249,14 +209,14 @@ async function main() {
   console.log("Created exporters");
 
   // Create shipment types
-  const airfreight = await prisma.shipmentType.create({
+  await prisma.shipmentType.create({
     data: {
       name: "Airfreight",
       description: "Airfreight shipment of goods",
     },
   });
 
-  const handCarriage = await prisma.shipmentType.create({
+  await prisma.shipmentType.create({
     data: {
       name: "Hand Carriage",
       description: "Hand carriage of goods",
@@ -266,64 +226,46 @@ async function main() {
   console.log("Created shipment types");
 
   // Create officers
-  const customsOfficer = await prisma.customsOfficer.create({
-    data: {
-      name: "James Wilson",
-      badgeNumber: "CUS-001",
-      email: "jwilson@customs.gov.gh",
-      phone: "+233241234567",
-      userId: admin.id,
-    },
-  });
+  // const customsOfficer = await prisma.customsOfficer.create({
+  //   data: {
+  //     name: "James Wilson",
+  //     badgeNumber: "CUS-001",
+  //     email: "jwilson@customs.gov.gh",
+  //     phone: "+233241234567",
+  //     userId: admin.id,
+  //   },
+  // });
 
-  const nacobOfficer = await prisma.nACOBOfficer.create({
-    data: {
-      name: "Elizabeth Brown",
-      badgeNumber: "NAC-001",
-      email: "ebrown@nacob.gov.gh",
-      phone: "+233257654321",
-    },
-  });
+  // const assayOfficer = await prisma.assayOfficer.create({
+  //   data: {
+  //     name: "Patricia Miller",
+  //     badgeNumber: "ASY-001",
+  //     email: "pmiller@pmmc.gov.gh",
+  //     phone: "+233231234567",
+  //     userId: regularUser.id,
+  //   },
+  // });
 
-  const securityOfficer = await prisma.nationalSecurityOfficer.create({
-    data: {
-      name: "Robert Davis",
-      badgeNumber: "SEC-001",
-      email: "rdavis@security.gov.gh",
-      phone: "+233269876543",
-    },
-  });
+  // const technicalDirector = await prisma.technicalDirector.create({
+  //   data: {
+  //     name: "Daniel Johnson",
+  //     badgeNumber: "TEC-001",
+  //     email: "djohnson@pmmc.gov.gh",
+  //     phone: "+233267654321",
+  //   },
+  // });
 
-  const assayOfficer = await prisma.assayOfficer.create({
-    data: {
-      name: "Patricia Miller",
-      badgeNumber: "ASY-001",
-      email: "pmiller@pmmc.gov.gh",
-      phone: "+233231234567",
-      userId: regularUser.id,
-    },
-  });
-
-  const technicalDirector = await prisma.technicalDirector.create({
-    data: {
-      name: "Daniel Johnson",
-      badgeNumber: "TEC-001",
-      email: "djohnson@pmmc.gov.gh",
-      phone: "+233267654321",
-    },
-  });
-
-  console.log("Created officers");
+  // console.log("Created officers");
 
   // Create invoice types
-  const assayInvoice = await prisma.invoiceType.create({
+  await prisma.invoiceType.create({
     data: {
       name: "Assay Invoice",
       description: "Invoice for assay services",
     },
   });
 
-  const exportInvoice = await prisma.invoiceType.create({
+  await prisma.invoiceType.create({
     data: {
       name: "Export Invoice",
       description: "Invoice for export fees",
@@ -410,7 +352,7 @@ async function main() {
   //     },
   //   });
 
-  console.log("Created invoice");
+  // console.log("Created invoice");
 
   // Link assay to invoice
   //   await prisma.assay.update({

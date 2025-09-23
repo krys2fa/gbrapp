@@ -1,4 +1,5 @@
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * Fetch USD->GHS rate from Bank of Ghana page when possible, else fallback to exchangerate.host.
@@ -106,7 +107,9 @@ export async function fetchAndSaveExchangeRateIfMissing(exchangeId: string) {
         }
       }
     } catch (e) {
-      console.warn("BOG fetch/parse failed", e);
+      await logger.warn(LogCategory.EXCHANGE_RATE, "BOG fetch/parse failed", {
+        error: String(e),
+      });
     }
 
     // Fallback: use exchangerate.host to get USD -> target currency
@@ -135,7 +138,11 @@ export async function fetchAndSaveExchangeRateIfMissing(exchangeId: string) {
 
     return null;
   } catch (err) {
-    console.error("external exchange fetch failed", err);
+    await logger.error(
+      LogCategory.EXCHANGE_RATE,
+      "external exchange fetch failed",
+      { error: String(err) }
+    );
     return null;
   }
 }

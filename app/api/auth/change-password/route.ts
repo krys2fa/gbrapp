@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/app/lib/prisma";
 import { validateJWTUser } from "@/lib/jwt-user-validation";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,9 +69,11 @@ export async function POST(request: NextRequest) {
       userWithPassword.password
     );
     if (!isCurrentPasswordValid) {
-      // Log failed password change attempt
-      console.warn(
-        `Failed password change attempt for user ${user.email} (${user.id}) - incorrect current password`
+      // Log failed password change attempt (do not log passwords)
+      void logger.warn(
+        LogCategory.SECURITY,
+        `Failed password change attempt for user`,
+        { userEmail: user.email, userId: user.id }
       );
 
       return NextResponse.json(
@@ -104,10 +107,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Log successful password change
-    console.log(
-      `Password successfully changed for user ${user.email} (${user.id})`
-    );
+    // Log successful password change (no sensitive data)
+    void logger.info(LogCategory.SECURITY, "Password changed successfully", {
+      userEmail: user.email,
+      userId: user.id,
+    });
 
     // Create audit trail entry
     try {
@@ -134,9 +138,15 @@ export async function POST(request: NextRequest) {
       });
     } catch (auditError) {
       // Log audit error but don't fail the password change
-      console.error(
-        "Failed to create audit trail for password change:",
-        auditError
+      void logger.error(
+        LogCategory.AUDIT,
+        "Failed to create audit trail for password change",
+        {
+          error:
+            auditError instanceof Error
+              ? auditError.message
+              : String(auditError),
+        }
       );
     }
 
@@ -149,7 +159,9 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Password change error:", error);
+    void logger.error(LogCategory.SECURITY, "Password change error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
 
     return NextResponse.json(
       {

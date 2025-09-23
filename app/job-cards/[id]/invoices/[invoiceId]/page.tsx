@@ -91,7 +91,6 @@ export default async function InvoicePage(props: any) {
     });
   } catch (e) {
     // Log error server-side but don't expose to client
-    console.log("Failed to load invoice for invoice page:", e);
     return (
       <div className="max-w-4xl mx-auto py-2 px-4">
         <p>Failed to load invoice data. Please try again later.</p>

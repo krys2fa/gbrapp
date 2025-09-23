@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching a single exporter
@@ -38,7 +39,9 @@ async function getExporter(
 
     return NextResponse.json(exporter);
   } catch (error) {
-    console.error("Error fetching exporter:", error);
+    void logger.error(LogCategory.API, "Error fetching exporter", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching exporter" },
       { status: 500 }
@@ -94,7 +97,9 @@ async function updateExporter(
 
     return NextResponse.json(updatedExporter);
   } catch (error) {
-    console.error("Error updating exporter:", error);
+    void logger.error(LogCategory.API, "Error updating exporter", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error updating exporter" },
       { status: 500 }
@@ -147,7 +152,9 @@ async function deleteExporter(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting exporter:", error);
+    void logger.error(LogCategory.API, "Error deleting exporter", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error deleting exporter" },
       { status: 500 }

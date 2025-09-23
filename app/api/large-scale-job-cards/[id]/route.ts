@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
-import * as jose from "jose";
+import * as _jose from "jose";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching a single large scale job card by ID
@@ -62,7 +63,13 @@ async function getLargeScaleJobCard(
 
     return NextResponse.json(jobCard);
   } catch (error) {
-    console.error("Error fetching large scale job card:", error);
+    void logger.error(
+      LogCategory.JOB_CARD,
+      "Error fetching large scale job card",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to fetch large scale job card" },
       { status: 500 }
@@ -264,7 +271,13 @@ async function updateLargeScaleJobCard(
 
     return NextResponse.json(completeJobCard);
   } catch (error) {
-    console.error("Error updating large scale job card:", error);
+    void logger.error(
+      LogCategory.JOB_CARD,
+      "Error updating large scale job card",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to update large scale job card" },
       { status: 500 }
@@ -303,7 +316,13 @@ async function deleteLargeScaleJobCard(
       message: "Large scale job card deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting large scale job card:", error);
+    void logger.error(
+      LogCategory.JOB_CARD,
+      "Error deleting large scale job card",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to delete large scale job card" },
       { status: 500 }

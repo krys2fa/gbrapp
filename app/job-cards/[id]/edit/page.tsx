@@ -274,8 +274,6 @@ function EditJobCardPage() {
       if (submissionData[k] === "") delete submissionData[k];
     });
 
-    console.log("Submitting data:", submissionData);
-
     try {
       const response = await fetch(`/api/job-cards/${id}`, {
         method: "PUT",
@@ -286,7 +284,6 @@ function EditJobCardPage() {
       });
 
       const responseData = await response.json();
-      console.log("Server response:", response.status, responseData);
 
       if (response.ok) {
         router.push(`/job-cards/${id}`);

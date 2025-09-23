@@ -1,5 +1,6 @@
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { logger, LogCategory } from "@/lib/logger";
 
 export interface UserSession {
   userId: string;
@@ -32,7 +33,9 @@ export async function getSession(): Promise<UserSession | null> {
 
     return payload as unknown as UserSession;
   } catch (error) {
-    console.error("Failed to verify token:", error);
+    await logger.error(LogCategory.AUTH, "Failed to verify token", {
+      error: String(error),
+    });
     return null;
   }
 }

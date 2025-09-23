@@ -10,8 +10,6 @@ import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
   TrashIcon,
-  ArrowPathIcon,
-  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 
 // allItems is derived from fetched commodities and exchanges later

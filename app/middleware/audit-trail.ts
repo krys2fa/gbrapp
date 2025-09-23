@@ -2,6 +2,7 @@ import { ActionType } from "@/app/generated/prisma";
 import { AuditTrailService } from "@/app/lib/audit-trail";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * Routes that should be audited
@@ -93,7 +94,11 @@ export async function auditTrailMiddleware(request: NextRequest) {
       userId = token; // In a real app, you'd extract the user ID from the token
     }
   } catch (error) {
-    console.error("Error extracting user from auth token:", error);
+    await logger.error(
+      LogCategory.SECURITY,
+      "Error extracting user from auth token",
+      { error: String(error) }
+    );
   }
 
   // Determine action type from HTTP method
@@ -113,7 +118,11 @@ export async function auditTrailMiddleware(request: NextRequest) {
       const body = await clonedRequest.json();
       details = body;
     } catch (error) {
-      console.error("Error reading request body for audit:", error);
+      await logger.warn(
+        LogCategory.API,
+        "Error reading request body for audit",
+        { error: String(error) }
+      );
     }
   }
 
@@ -133,7 +142,9 @@ export async function auditTrailMiddleware(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error creating audit trail:", error);
+    await logger.error(LogCategory.API, "Error creating audit trail", {
+      error: String(error),
+    });
   }
 
   return NextResponse.next();

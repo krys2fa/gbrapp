@@ -1,8 +1,34 @@
-import { Role } from "@/app/generated/prisma";
+import { Role as _Role } from "@/app/generated/prisma";
 import { prisma } from "@/app/lib/prisma";
-import { withProtectedRoute } from "@/app/lib/with-protected-route";
+import { withProtectedRoute as _withProtectedRoute } from "@/app/lib/with-protected-route";
 import { NextRequest, NextResponse } from "next/server";
 import { generateJobCardNumber } from "@/lib/job-card-number-generator";
+import { logger, LogCategory } from "@/lib/logger";
+
+// Helper to create a safe-to-log representation of objects.
+// Redacts likely sensitive keys like token, password, secret, cookies.
+function createSafeLog(input: any) {
+  try {
+    return JSON.parse(
+      JSON.stringify(input, (key, value) => {
+        if (!key) return value;
+        const lk = key.toLowerCase();
+        if (
+          lk.includes("token") ||
+          lk.includes("password") ||
+          lk.includes("secret") ||
+          lk.includes("cookie") ||
+          lk.includes("authorization")
+        ) {
+          return "[REDACTED]";
+        }
+        return value;
+      })
+    );
+  } catch {
+    return typeof input === "object" ? "[OBJECT]" : String(input);
+  }
+}
 
 /**
  * GET handler for fetching all job cards with optional filtering
@@ -269,15 +295,15 @@ async function getAllJobCards(req: NextRequest) {
       }
     }
 
-    console.log(
-      `Returning ${jobCards.length} job cards with hasAssays=${hasAssays}`
-    );
+    void logger.debug(LogCategory.JOB_CARD, `Returning job cards`, {
+      count: jobCards.length,
+      hasAssays,
+    });
     if (jobCards.length > 0) {
-      console.log(
-        `First job card: ${jobCards[0].referenceNumber}, assays: ${
-          jobCards[0].assays?.length || 0
-        }`
-      );
+      void logger.debug(LogCategory.JOB_CARD, `First job card summary`, {
+        referenceNumber: jobCards[0].referenceNumber,
+        assays: jobCards[0].assays?.length || 0,
+      });
     }
 
     // If client requested hasAssays=true, sort the returned jobCards by latest assay date (server-side sorting by related array not directly supported across DBs in Prisma), so do a client-side sort here before returning to keep behavior deterministic.
@@ -302,7 +328,9 @@ async function getAllJobCards(req: NextRequest) {
       limit,
     });
   } catch (error) {
-    console.error("Error fetching job cards:", error);
+    void logger.error(LogCategory.JOB_CARD, "Error fetching job cards", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching job cards" },
       { status: 500 }
@@ -316,7 +344,16 @@ async function getAllJobCards(req: NextRequest) {
 async function createJobCard(req: NextRequest) {
   try {
     const requestData = await req.json();
-    console.log("Received data:", JSON.stringify(requestData, null, 2));
+    void logger.debug(
+      LogCategory.JOB_CARD,
+      "Received job card create payload",
+      {
+        payload:
+          requestData && typeof requestData === "object"
+            ? "object"
+            : String(requestData),
+      }
+    );
     // Build a safe, explicit data object from a whitelist of allowed scalar fields.
     // This prevents any nested relation objects (e.g. exporter:{...}) from being
     // forwarded to Prisma where they would trigger validation errors.
@@ -338,7 +375,9 @@ async function createJobCard(req: NextRequest) {
       }
     }
 
-    console.log("Sanitized payload:", JSON.stringify(payload, null, 2));
+    void logger.debug(LogCategory.JOB_CARD, "Sanitized payload", {
+      payload: payload,
+    });
 
     const allowedKeys = [
       "referenceNumber",
@@ -435,10 +474,14 @@ async function createJobCard(req: NextRequest) {
 
     // Validate required fields (must match Prisma schema non-nullable fields)
     if (!data.exporterId || !data.commodityId) {
-      console.log("Missing required fields", {
-        exporterId: data.exporterId,
-        commodityId: data.commodityId,
-      });
+      void logger.warn(
+        LogCategory.JOB_CARD,
+        "Missing required fields for job card creation",
+        {
+          exporterId: data.exporterId,
+          commodityId: data.commodityId,
+        }
+      );
       return NextResponse.json(
         {
           error:
@@ -448,7 +491,9 @@ async function createJobCard(req: NextRequest) {
       );
     }
 
-    console.log("Creating job card with data:", JSON.stringify(data, null, 2));
+    void logger.info(LogCategory.JOB_CARD, "Creating job card", {
+      data: createSafeLog(data),
+    });
 
     // Extract buyer information to save to exporter
     const buyerInfo = {
@@ -468,11 +513,23 @@ async function createJobCard(req: NextRequest) {
           where: { id: data.exporterId },
           data: updateData,
         });
-        console.log("Updated exporter with buyer information");
+        void logger.info(
+          LogCategory.JOB_CARD,
+          "Updated exporter with buyer information",
+          {
+            exporterId: data.exporterId,
+          }
+        );
       } catch (exporterError) {
-        console.error(
-          "Failed to update exporter with buyer info:",
-          exporterError
+        void logger.error(
+          LogCategory.JOB_CARD,
+          "Failed to update exporter with buyer info",
+          {
+            error:
+              exporterError instanceof Error
+                ? exporterError.message
+                : String(exporterError),
+          }
         );
         // Continue with job card creation even if exporter update fails
       }
@@ -532,11 +589,16 @@ async function createJobCard(req: NextRequest) {
 
     // Log the exact create arguments to help debug Prisma validation errors
     try {
-      console.log("Prisma create args:", JSON.stringify(createArgs, null, 2));
+      void logger.debug(LogCategory.JOB_CARD, "Prisma create args", {
+        createArgs: createSafeLog(createArgs),
+      });
       // Extra log for the raw create data we will pass to Prisma
-      console.log(
-        "createData object sent to Prisma:",
-        JSON.stringify(createData, null, 2)
+      void logger.debug(
+        LogCategory.JOB_CARD,
+        "createData object sent to Prisma",
+        {
+          createData: createSafeLog(createData),
+        }
       );
 
       // Fail-fast guard: if any property in createData is still an object,
@@ -547,9 +609,12 @@ async function createJobCard(req: NextRequest) {
         ([, v]) => v !== null && typeof v === "object" && !(v instanceof Date)
       );
       if (objectProps.length > 0) {
-        console.error(
-          "createData contains object-valued properties:",
-          objectProps.map(([k]) => k)
+        void logger.error(
+          LogCategory.JOB_CARD,
+          "createData contains object-valued properties",
+          {
+            keys: objectProps.map(([k]) => k),
+          }
         );
         return NextResponse.json(
           {
@@ -563,10 +628,17 @@ async function createJobCard(req: NextRequest) {
 
       // Try the full create first
       const jobCard = await prisma.jobCard.create(createArgs as any);
-      console.log("Job card created successfully:", jobCard.id);
+      void logger.info(LogCategory.JOB_CARD, "Job card created successfully", {
+        jobCardId: jobCard.id,
+      });
       return NextResponse.json(jobCard, { status: 201 });
     } catch (createError) {
-      console.error("prisma.jobCard.create failed:", createError);
+      void logger.error(LogCategory.JOB_CARD, "prisma.jobCard.create failed", {
+        error:
+          createError instanceof Error
+            ? createError.message
+            : String(createError),
+      });
 
       // As a fallback, attempt a minimal create with only the required scalar fields
       try {
@@ -576,25 +648,33 @@ async function createJobCard(req: NextRequest) {
           exporterId: data.exporterId,
           status: data.status || "pending",
         };
-        console.log(
-          "Attempting minimal create with data:",
-          JSON.stringify(minimalData, null, 2)
-        );
+        void logger.debug(LogCategory.JOB_CARD, "Attempting minimal create", {
+          minimalData: createSafeLog(minimalData),
+        });
         const fallbackJobCard = await prisma.jobCard.create({
           data: minimalData,
         });
-        console.log(
-          "Fallback job card created successfully:",
-          fallbackJobCard.id
+        void logger.info(
+          LogCategory.JOB_CARD,
+          "Fallback job card created successfully",
+          { jobCardId: fallbackJobCard.id }
         );
         return NextResponse.json(fallbackJobCard, { status: 201 });
       } catch (fallbackError) {
-        console.error("Fallback create also failed:", fallbackError);
+        void logger.error(LogCategory.JOB_CARD, "Fallback create also failed", {
+          error:
+            fallbackError instanceof Error
+              ? fallbackError.message
+              : String(fallbackError),
+        });
         throw fallbackError; // let outer catch handle the response
       }
     }
   } catch (error) {
-    console.error("Error creating job card:", error);
+    void logger.error(LogCategory.JOB_CARD, "Error creating job card", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     // Return more detailed error information for debugging
     return NextResponse.json(
       {

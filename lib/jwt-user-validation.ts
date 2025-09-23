@@ -1,6 +1,7 @@
 // lib/jwt-user-validation.ts
 import { prisma } from "@/app/lib/prisma";
 import * as jose from "jose";
+import { logger, LogCategory } from "./logger";
 
 export interface ValidatedUser {
   id: string;
@@ -55,7 +56,8 @@ export async function validateJWTUser(
         });
 
         if (systemUser) {
-          console.log(
+          await logger.info(
+            LogCategory.AUTH,
             `Using system user ${systemUser.name} (${systemUser.id}) as fallback`
           );
           return {

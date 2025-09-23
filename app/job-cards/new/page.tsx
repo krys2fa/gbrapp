@@ -223,8 +223,6 @@ function NewJobCardPage() {
       if (submissionData[k] === "") delete submissionData[k];
     });
 
-    console.log("Submitting data:", submissionData);
-
     try {
       const response = await fetch("/api/job-cards", {
         method: "POST",
@@ -235,7 +233,6 @@ function NewJobCardPage() {
       });
 
       const responseData = await response.json();
-      console.log("Server response:", response.status, responseData);
 
       if (response.ok) {
         toast.success("Job card created successfully!");

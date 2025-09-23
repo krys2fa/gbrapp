@@ -13,7 +13,7 @@ export default function AssayResultsPage() {
   const [jobCard, setJobCard] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  //   console.log("Job Card Data:", jobCard); // Debug log
+
   // helper: normalize common units to grams
   function convertToGrams(v: any, unit?: string) {
     const value = Number(v) || 0;
@@ -196,15 +196,6 @@ export default function AssayResultsPage() {
                   {assays[0]?.shipmentType.name || "N/A"}
                 </span>
               </div>
-
-               {/* <div className="justify-end flex">
-                <span className="text-sm font-medium text-gray-500 mr-2">
-                  Certificate Number:
-                </span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {jobCard?.certificateNumber || "N/A"}
-                </span>
-              </div> */}
             </div>
 
             {/* Assay Measurements Table */}
@@ -270,7 +261,12 @@ export default function AssayResultsPage() {
                                 ),
                               0
                             );
-                            return total > 0 ? total.toFixed(2) : "-";
+                            return total > 0
+                              ? total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })
+                              : "-";
                           })()}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
@@ -314,7 +310,12 @@ export default function AssayResultsPage() {
                                 ),
                               0
                             );
-                            return total > 0 ? total.toFixed(2) : "-";
+                            return total > 0
+                              ? total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })
+                              : "-";
                           })()}
                         </td>
                       </tr>
@@ -341,7 +342,12 @@ export default function AssayResultsPage() {
                             ),
                           0
                         );
-                        return total > 0 ? total.toFixed(2) : "0.00";
+                        return total > 0
+                          ? total.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
+                          : "0.00";
                       })()}
                       {jobCard?.unitOfMeasure}:
                     </dt>
@@ -363,7 +369,12 @@ export default function AssayResultsPage() {
                         );
                         const GRAMS_PER_TROY_OUNCE = 31.1035;
                         const oz = totalGrams / GRAMS_PER_TROY_OUNCE;
-                        return totalGrams > 0 ? oz.toFixed(3) : "0.000";
+                        return totalGrams > 0
+                          ? oz.toLocaleString(undefined, {
+                              minimumFractionDigits: 3,
+                              maximumFractionDigits: 3,
+                            })
+                          : "0.000";
                       })()}{" "}
                       oz
                     </dd>
@@ -419,7 +430,8 @@ export default function AssayResultsPage() {
                           jobCard?.pricePerOunce ||
                           0;
 
-                        const totalValue = totalOz * pricePerOz;
+                        const totalValue =
+                          Number(totalOz.toFixed(3)) * Number(pricePerOz || 0);
                         return formatCurrency(totalValue, "USD");
                       })()}
                     </dd>
@@ -456,8 +468,10 @@ export default function AssayResultsPage() {
                           jobCard?.pricePerOunce ||
                           0;
 
-                        const exchangeRate = assays[0]?.exchangeRate || 1;
-                        const totalValueUSD = totalOz * pricePerOz;
+                        const exchangeRate = assays[0]?.exchangeRate;
+                        const totalValueUSD =
+                          Number(totalOz.toFixed(3)) * Number(pricePerOz || 0);
+
                         const totalValueGHS = totalValueUSD * exchangeRate;
 
                         return formatCurrency(totalValueGHS, "GHS");

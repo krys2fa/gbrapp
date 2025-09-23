@@ -1,4 +1,5 @@
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 const GRAMS_PER_TROY_OUNCE = 31.1035;
 
@@ -245,7 +246,13 @@ export async function GET(req: Request) {
       },
     });
   } catch (e) {
-    console.error("Failed to load job cards for CSV report:", e);
+    void logger.error(
+      LogCategory.API,
+      "Failed to load job cards for CSV report",
+      {
+        error: e instanceof Error ? e.message : String(e),
+      }
+    );
     jobCards = [];
   }
 

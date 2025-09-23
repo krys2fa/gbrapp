@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { withProtectedRoute } from "@/app/lib/with-protected-route";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching a single shipment type by ID
@@ -30,7 +31,9 @@ async function getShipmentType(
 
     return NextResponse.json(shipmentType);
   } catch (error) {
-    console.error("Error fetching shipment type:", error);
+    void logger.error(LogCategory.API, "Error fetching shipment type", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching shipment type" },
       { status: 500 }
@@ -94,7 +97,9 @@ async function updateShipmentType(
 
     return NextResponse.json(updatedShipmentType);
   } catch (error) {
-    console.error("Error updating shipment type:", error);
+    void logger.error(LogCategory.API, "Error updating shipment type", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error updating shipment type" },
       { status: 500 }
@@ -157,7 +162,9 @@ async function deleteShipmentType(
       message: "Shipment type deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting shipment type:", error);
+    void logger.error(LogCategory.API, "Error deleting shipment type", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error deleting shipment type" },
       { status: 500 }

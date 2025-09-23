@@ -1,5 +1,6 @@
 ﻿import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -8,7 +9,9 @@ export async function GET() {
     });
     return NextResponse.json(exchanges);
   } catch (error) {
-    console.error("Error fetching exchanges:", error);
+    void logger.error(LogCategory.EXCHANGE_RATE, "Error fetching exchanges", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to fetch exchanges" },
       { status: 500 }
@@ -33,7 +36,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json(exchange);
   } catch (error) {
-    console.error("Error creating exchange:", error);
+    void logger.error(LogCategory.EXCHANGE_RATE, "Error creating exchange", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to create exchange" },
       { status: 500 }

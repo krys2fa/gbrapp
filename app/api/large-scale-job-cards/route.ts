@@ -3,6 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import * as jose from "jose";
 import { generateAssayNumber } from "@/lib/assay-number-generator";
 import { generateJobCardNumber } from "@/lib/job-card-number-generator";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching all large scale job cards with optional filtering
@@ -119,7 +120,13 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching large scale job cards:", error);
+    void logger.error(
+      LogCategory.JOB_CARD,
+      "Error fetching large scale job cards",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to fetch large scale job cards" },
       { status: 500 }
@@ -404,7 +411,13 @@ async function createLargeScaleJobCard(req: NextRequest) {
 
     return NextResponse.json(completeJobCard, { status: 201 });
   } catch (error) {
-    console.error("Error creating large scale job card:", error);
+    void logger.error(
+      LogCategory.JOB_CARD,
+      "Error creating large scale job card",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to create large scale job card" },
       { status: 500 }

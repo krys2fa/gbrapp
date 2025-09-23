@@ -1,5 +1,6 @@
 import { prisma } from "@/app/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching all exporters - simplified version without audit trail
@@ -44,7 +45,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(exporters);
   } catch (error) {
-    console.error("Error fetching exporters:", error);
+    void logger.error(LogCategory.API, "Error fetching exporters (simple)", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       {
         error: "Error fetching exporters",
@@ -91,7 +94,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(exporter, { status: 201 });
   } catch (error) {
-    console.error("Error creating exporter:", error);
+    void logger.error(LogCategory.API, "Error creating exporter (simple)", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       {
         error: "Error creating exporter",

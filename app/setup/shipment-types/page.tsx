@@ -7,7 +7,6 @@ import {
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
-  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
 import { useAuth } from "@/app/context/auth-context";
@@ -58,7 +57,7 @@ function ShipmentTypesPage() {
       }
     }
     load();
-  }, [success, filterTrigger]);
+  }, [success, filterTrigger, nameFilter]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

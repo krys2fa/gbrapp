@@ -4,6 +4,7 @@ import { getWeekBounds } from "@/app/lib/week-utils";
 import { NotificationService } from "../../../lib/notification-service";
 import { NotificationScheduler } from "../../../lib/notification-scheduler";
 import * as jose from "jose";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -59,7 +60,13 @@ export async function GET(req: Request) {
     });
     return NextResponse.json(prices);
   } catch (error) {
-    console.error("Error fetching weekly prices:", error);
+    void logger.error(
+      LogCategory.EXCHANGE_RATE,
+      "Error fetching weekly prices",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to fetch weekly prices" },
       { status: 500 }
@@ -124,8 +131,9 @@ export async function POST(req: Request) {
       });
 
       if (!user) {
-        console.warn(
-          `User with ID ${submittedBy} not found in database. Using system user as fallback.`
+        void logger.warn(
+          LogCategory.AUTH,
+          `User with ID ${submittedBy} not found; using system fallback`
         );
 
         // Fallback to system user
@@ -138,9 +146,10 @@ export async function POST(req: Request) {
 
         if (systemUser) {
           submittedBy = systemUser.id;
-          console.log(
-            `Using system user ${systemUser.name} (${systemUser.id}) as submitter`
-          );
+          void logger.info(LogCategory.AUTH, "Using system user as submitter", {
+            name: systemUser.name,
+            id: systemUser.id,
+          });
         } else {
           return NextResponse.json(
             {
@@ -212,16 +221,22 @@ export async function POST(req: Request) {
 
     // Send immediate SMS notification to SUPERADMIN and CEO for exchange rates
     if (type === "EXCHANGE" && weeklyPrice.exchange) {
-      console.log("🔔 Exchange rate created, sending SMS notifications...");
-      console.log("Exchange:", weeklyPrice.exchange.name);
-      console.log("Rate:", weeklyPrice.price);
+      void logger.info(
+        LogCategory.NOTIFICATION,
+        "Exchange weekly price created, triggering notifications",
+        {
+          exchange: weeklyPrice.exchange?.name,
+          price: weeklyPrice.price,
+          weeklyPriceId: weeklyPrice.id,
+        }
+      );
 
       // Check SMS readiness for immediate notifications
       const immediateReadiness = await NotificationService.checkSMSReadiness([
         "SUPERADMIN",
         "CEO",
       ]);
-      console.log("📊 Immediate SMS Readiness:", {
+      void logger.debug(LogCategory.NOTIFICATION, "Immediate SMS readiness", {
         total: immediateReadiness.totalUsers,
         valid: immediateReadiness.validPhoneUsers,
         invalid: immediateReadiness.invalidPhoneUsers,
@@ -236,7 +251,11 @@ export async function POST(req: Request) {
           weeklyPrice.weekStartDate.toISOString().split("T")[0],
           weeklyPrice.submittedByUser?.name || "Unknown User"
         );
-        console.log("✅ SMS notification service called successfully");
+        void logger.info(
+          LogCategory.NOTIFICATION,
+          "SMS notification service called successfully",
+          { weeklyPriceId: weeklyPrice.id }
+        );
 
         // Schedule delayed notification to DEPUTY_CEO and SUPERADMIN after 5 minutes
         NotificationScheduler.scheduleDelayedNotification(
@@ -254,9 +273,15 @@ export async function POST(req: Request) {
           data: { notificationSent: true },
         });
       } catch (notificationError) {
-        console.error(
-          "Failed to send approval notification:",
-          notificationError
+        void logger.error(
+          LogCategory.NOTIFICATION,
+          "Failed to send approval notification",
+          {
+            error:
+              notificationError instanceof Error
+                ? notificationError.message
+                : String(notificationError),
+          }
         );
         // Don't fail the request if notification fails
       }
@@ -264,7 +289,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json(weeklyPrice);
   } catch (error) {
-    console.error("Error creating weekly price:", error);
+    void logger.error(LogCategory.API, "Error creating weekly price", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to create weekly price" },
       { status: 500 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Fetch actual counts from database
     const totalJobCardsCount = await prisma.jobCard.count();
@@ -76,7 +77,13 @@ export async function GET(req: NextRequest) {
         }
       } catch (err) {
         // non-fatal for dashboard; continue with other commodities
-        console.warn(`Failed to fetch price for commodity ${c.symbol}`, err);
+        void logger.warn(
+          LogCategory.DATABASE,
+          `Failed to fetch price for commodity ${c.symbol}`,
+          {
+            error: err instanceof Error ? err.message : String(err),
+          }
+        );
         commodityPrices[c.symbol] = { name: c.name };
       }
     }
@@ -86,29 +93,31 @@ export async function GET(req: NextRequest) {
     // whatever symbols are configured in the DB but still exposes Gold/Silver
     // values to existing UI.
     const findCommodityByName = (name: string) =>
-      commodities.find((c) => (c.name || "").toLowerCase() === name.toLowerCase());
+      commodities.find(
+        (c) => (c.name || "").toLowerCase() === name.toLowerCase()
+      );
 
     const goldCommodity = findCommodityByName("Gold");
     const silverCommodity = findCommodityByName("Silver");
 
     const goldPriceDisplayed =
-      goldCommodity && typeof commodityPrices[goldCommodity.symbol]?.price === "number"
+      goldCommodity &&
+      typeof commodityPrices[goldCommodity.symbol]?.price === "number"
         ? commodityPrices[goldCommodity.symbol]!.price
         : undefined;
 
     const silverPriceDisplayed =
-      silverCommodity && typeof commodityPrices[silverCommodity.symbol]?.price === "number"
+      silverCommodity &&
+      typeof commodityPrices[silverCommodity.symbol]?.price === "number"
         ? commodityPrices[silverCommodity.symbol]!.price
         : undefined;
-
-  
 
     // Get monthly invoice amounts by exporter for the current year (showing PAID invoices by payment date)
     const currentYear = new Date().getFullYear();
     const startOfYear = new Date(currentYear, 0, 1);
     const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
 
-    console.log("Debug - Query date range:", {
+    void logger.debug(LogCategory.API, "Dashboard stats - Query date range", {
       currentYear,
       startOfYear: startOfYear.toISOString(),
       endOfYear: endOfYear.toISOString(),
@@ -203,18 +212,21 @@ export async function GET(req: NextRequest) {
       },
       take: 10, // Just first 10 for debugging
     });
-    console.log(
-      "Debug - All invoices (first 10):",
-      allInvoicesDebug.map((inv) => ({
-        id: inv.id,
-        amount: inv.amount,
-        status: inv.status,
-        issueDate: inv.issueDate,
-        exporter:
-          inv.jobCard?.exporter?.name ??
-          inv.largeScaleJobCard?.exporter?.name ??
-          "-",
-      }))
+    void logger.debug(
+      LogCategory.API,
+      "Dashboard stats - All invoices (first 10)",
+      {
+        invoices: allInvoicesDebug.map((inv) => ({
+          id: inv.id,
+          amount: inv.amount,
+          status: inv.status,
+          issueDate: inv.issueDate,
+          exporter:
+            inv.jobCard?.exporter?.name ??
+            inv.largeScaleJobCard?.exporter?.name ??
+            "-",
+        })),
+      }
     );
 
     // Debug: Let's check what fees exist
@@ -233,28 +245,30 @@ export async function GET(req: NextRequest) {
       },
       take: 10, // Just first 10 for debugging
     });
-    console.log(
-      "Debug - All fees (first 10):",
-      allFeesDebug.map((fee) => ({
-        id: fee.id,
-        amountPaid: fee.amountPaid,
-        status: fee.status,
-        paymentDate: fee.paymentDate,
-        exporter:
-          fee.jobCard?.exporter?.name ||
-          fee.largeScaleJobCard?.exporter?.name ||
-          "Unknown",
-        feeType: fee.feeType,
-      }))
+    void logger.debug(
+      LogCategory.API,
+      "Dashboard stats - All fees (first 10)",
+      {
+        fees: allFeesDebug.map((fee) => ({
+          id: fee.id,
+          amountPaid: fee.amountPaid,
+          status: fee.status,
+          paymentDate: fee.paymentDate,
+          exporter:
+            fee.jobCard?.exporter?.name ||
+            fee.largeScaleJobCard?.exporter?.name ||
+            "Unknown",
+          feeType: fee.feeType,
+        })),
+      }
     );
 
-    console.log(
-      "Debug - Exporter invoice data for chart:",
-      exporterInvoiceData
-    );
-    console.log(
-      "Debug - Raw exporterInvoiceData length:",
-      exporterInvoiceData.length
+    void logger.debug(
+      LogCategory.API,
+      "Dashboard stats - Exporter invoice data for chart",
+      {
+        length: exporterInvoiceData.length,
+      }
     );
 
     // Let's also try a simpler query to see if data exists
@@ -278,21 +292,20 @@ export async function GET(req: NextRequest) {
         },
       },
     });
-    console.log(
-      "Debug - Simple invoice check found:",
-      simpleInvoiceCheck.length,
-      "invoices"
-    );
+    void logger.debug(LogCategory.API, "Simple invoice check summary", {
+      count: simpleInvoiceCheck.length,
+    });
     simpleInvoiceCheck.forEach((inv) => {
       const exporterName =
         inv.jobCard?.exporter?.name ??
         inv.largeScaleJobCard?.exporter?.name ??
         "-";
-      console.log(
-        `  - ${exporterName}: GHS ${inv.amount} (${
-          inv.status
-        }) - ${inv.issueDate.toLocaleDateString()}`
-      );
+      void logger.debug(LogCategory.API, "Simple invoice entry", {
+        exporter: exporterName,
+        amount: inv.amount,
+        status: inv.status,
+        issueDate: inv.issueDate,
+      });
     });
 
     // Transform the data for the chart - simplified approach
@@ -321,10 +334,10 @@ export async function GET(req: NextRequest) {
         (item) => Number(item.month) === monthNumber
       );
 
-      console.log(
-        `Debug - Records for ${monthName} (month ${monthNumber}):`,
-        monthRecords
-      );
+      void logger.debug(LogCategory.API, `Records for ${monthName}`, {
+        monthNumber,
+        recordsCount: monthRecords.length,
+      });
 
       // Group by exporter and sum the amounts
       const exporterTotals: { [key: string]: number } = {};
@@ -342,9 +355,11 @@ export async function GET(req: NextRequest) {
       // Add aggregated amounts to month data
       Object.entries(exporterTotals).forEach(([exporterName, totalAmount]) => {
         monthData[exporterName] = totalAmount;
-        console.log(
-          `Debug - Adding ${exporterName}: ${totalAmount} to ${monthName}`
-        );
+        void logger.debug(LogCategory.API, `Adding exporter amount to month`, {
+          monthName,
+          exporterName,
+          totalAmount,
+        });
       });
 
       // Get all unique exporters and fill zeros for months without data
@@ -529,14 +544,15 @@ export async function GET(req: NextRequest) {
       },
     };
 
-    console.log(
-      "Debug - Final exporterInvoiceChart being returned:",
-      JSON.stringify(exporterInvoiceChart, null, 2)
-    );
+    void logger.debug(LogCategory.API, "Final exporterInvoiceChart", {
+      length: exporterInvoiceChart.length,
+    });
 
     return NextResponse.json(stats);
   } catch (error) {
-    console.error("Dashboard stats error:", error);
+    void logger.error(LogCategory.API, "Dashboard stats error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to fetch dashboard stats" },
       { status: 500 }

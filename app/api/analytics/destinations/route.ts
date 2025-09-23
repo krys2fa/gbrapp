@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 function parseDate(q: string | null | undefined) {
   if (!q) return undefined;
@@ -97,7 +98,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, countries: topArr });
   } catch (err) {
-    console.error("analytics destinations error", err);
+    void logger.error(LogCategory.API, "analytics destinations error", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json(
       { success: false, error: String(err) },
       { status: 500 }

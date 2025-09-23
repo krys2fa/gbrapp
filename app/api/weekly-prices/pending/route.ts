@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import * as jose from "jose";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -67,7 +68,13 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(pendingPrices);
   } catch (error) {
-    console.error("Error fetching pending approvals:", error);
+    void logger.error(
+      LogCategory.EXCHANGE_RATE,
+      "Error fetching pending approvals",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to fetch pending approvals" },
       { status: 500 }

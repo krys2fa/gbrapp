@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching audit trails with optional filtering
@@ -94,7 +95,9 @@ async function getAuditTrails(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching audit trails:", error);
+    void logger.error(LogCategory.AUDIT, "Error fetching audit trails", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching audit trails" },
       { status: 500 }

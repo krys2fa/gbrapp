@@ -1,7 +1,13 @@
 // lib/logger.ts
-import fs from "fs/promises";
-import path from "path";
-import { prisma } from "@/app/lib/prisma";
+// Note: avoid importing Node-only modules at top-level so this file
+// can be imported from edge runtime code (middleware). We'll lazily
+// import `fs/promises`, `path`, and the Prisma client only when running
+// in a Node (non-edge) runtime.
+
+const isEdgeRuntime =
+  typeof process !== "undefined" &&
+  process.env &&
+  process.env.NEXT_RUNTIME === "edge";
 
 export enum LogLevel {
   DEBUG = "DEBUG",
@@ -13,6 +19,7 @@ export enum LogLevel {
 
 export enum LogCategory {
   SYSTEM = "SYSTEM",
+  AUDIT = "AUDIT",
   AUTH = "AUTH",
   SMS = "SMS",
   EMAIL = "EMAIL",
@@ -24,6 +31,9 @@ export enum LogCategory {
   NOTIFICATION = "NOTIFICATION",
   DATABASE = "DATABASE",
   API = "API",
+  FEE = "FEE",
+  INVOICE = "INVOICE",
+  EXPORTER = "EXPORTER",
   SECURITY = "SECURITY",
 }
 
@@ -50,12 +60,20 @@ export class Logger {
   private maxFileSize: number = 10 * 1024 * 1024; // 10MB
   private maxFiles: number = 30; // Keep 30 log files
   private enableConsole: boolean = true;
-  private enableFile: boolean = true;
-  private enableDatabase: boolean = true;
+  // Disable file & database logging in edge runtime (no fs/prisma)
+  private enableFile: boolean = !isEdgeRuntime;
+  private enableDatabase: boolean = !isEdgeRuntime;
+
+  // Lazily-loaded node modules (only available in Node runtimes)
+  private fs: any | undefined;
+  private path: any | undefined;
+  private prisma: any | undefined;
 
   private constructor() {
-    this.logDirectory = path.join(process.cwd(), "logs");
-    this.ensureLogDirectory();
+    // Avoid calling node-specific APIs in the constructor so the module
+    // can be imported in edge runtimes. Use a safe default path string
+    // and perform real setup lazily when file logging is used.
+    this.logDirectory = "logs";
   }
 
   static getInstance(): Logger {
@@ -66,10 +84,43 @@ export class Logger {
   }
 
   private async ensureLogDirectory(): Promise<void> {
+    if (!this.enableFile) return;
+    await this.ensureNodeModules();
+    if (!this.fs) return; // couldn't load fs, give up silently
+
+    // If we're in a Node runtime and have path available, lazily resolve
+    // a proper log directory relative to process.cwd(). Avoid referencing
+    // process.cwd() at module import time to keep this file edge-safe.
     try {
-      await fs.access(this.logDirectory);
+      if (this.path && typeof process !== "undefined" && (process as any).cwd) {
+        try {
+          const cwd = (process as any).cwd();
+          // Use path.join to be safe on Windows/Posix
+          this.logDirectory = this.path.join(cwd, "logs");
+        } catch (_e) {
+          // ignore failures resolving cwd
+        }
+      }
+    } catch (_e) {
+      // swallow any unexpected errors here to remain edge-safe
+    }
+
+    try {
+      await this.fs.access(this.logDirectory);
     } catch {
-      await fs.mkdir(this.logDirectory, { recursive: true });
+      await this.fs.mkdir(this.logDirectory, { recursive: true });
+    }
+  }
+
+  private async ensureNodeModules(): Promise<void> {
+    if (this.fs && this.path) return;
+    try {
+      this.fs = await import("fs/promises");
+      this.path = await import("path");
+    } catch (error) {
+      // If dynamic import fails (e.g., running in edge), leave modules undefined
+      this.fs = undefined;
+      this.path = undefined;
     }
   }
 
@@ -94,15 +145,18 @@ export class Logger {
     if (!this.enableFile) return;
 
     try {
+      await this.ensureNodeModules();
+      if (!this.fs || !this.path) return;
+
       const date = entry.timestamp.toISOString().split("T")[0];
       const filename = `app-${date}.log`;
-      const filepath = path.join(this.logDirectory, filename);
+      const filepath = this.path.join(this.logDirectory, filename);
 
       const logMessage = this.formatLogMessage(entry) + "\n";
 
       // Check file size and rotate if necessary
       try {
-        const stats = await fs.stat(filepath);
+        const stats = await this.fs.stat(filepath);
         if (stats.size > this.maxFileSize) {
           await this.rotateLogFile(filepath);
         }
@@ -110,17 +164,22 @@ export class Logger {
         // File doesn't exist, which is fine
       }
 
-      await fs.appendFile(filepath, logMessage);
+      await this.fs.appendFile(filepath, logMessage);
     } catch (error) {
+      // Avoid throwing from logger; fallback to console
       console.error("Failed to write to log file:", error);
     }
   }
 
   private async rotateLogFile(filepath: string): Promise<void> {
+    if (!this.enableFile) return;
     try {
+      await this.ensureNodeModules();
+      if (!this.fs) return;
+
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const rotatedPath = filepath.replace(".log", `-${timestamp}.log`);
-      await fs.rename(filepath, rotatedPath);
+      await this.fs.rename(filepath, rotatedPath);
 
       // Clean up old log files
       await this.cleanupOldLogs();
@@ -130,33 +189,40 @@ export class Logger {
   }
 
   private async cleanupOldLogs(): Promise<void> {
+    if (!this.enableFile) return;
     try {
-      const files = await fs.readdir(this.logDirectory);
+      await this.ensureNodeModules();
+      if (!this.fs || !this.path) return;
+
+      const files = await this.fs.readdir(this.logDirectory);
       const logFiles = files
-        .filter((file) => file.endsWith(".log"))
-        .map((file) => ({
+        .filter((file: string) => file.endsWith(".log"))
+        .map((file: string) => ({
           name: file,
-          path: path.join(this.logDirectory, file),
+          path: this.path.join(this.logDirectory, file),
         }));
 
       if (logFiles.length > this.maxFiles) {
         // Sort by modification time and delete oldest files
         const filesWithStats = await Promise.all(
-          logFiles.map(async (file) => ({
+          logFiles.map(async (file: any) => ({
             ...file,
-            stats: await fs.stat(file.path),
+            stats: await this.fs.stat(file.path),
           }))
         );
 
         filesWithStats
-          .sort((a, b) => a.stats.mtime.getTime() - b.stats.mtime.getTime())
+          .sort(
+            (a: any, b: any) =>
+              a.stats.mtime.getTime() - b.stats.mtime.getTime()
+          )
           .slice(0, filesWithStats.length - this.maxFiles)
-          .forEach(async (file) => {
-            await fs.unlink(file.path);
+          .forEach(async (file: any) => {
+            await this.fs.unlink(file.path);
           });
       }
-    } catch (error) {
-      console.error("Failed to cleanup old logs:", error);
+    } catch (_error) {
+      console.error("Failed to cleanup old logs:", _error);
     }
   }
 
@@ -164,7 +230,20 @@ export class Logger {
     if (!this.enableDatabase) return;
 
     try {
-      await prisma.systemLog.create({
+      // Lazily import Prisma client only when database logging is enabled
+      if (!this.prisma) {
+        try {
+          const mod = await import("@/app/lib/prisma");
+          this.prisma = mod.prisma;
+        } catch (_err) {
+          // Could not import prisma (likely in edge or constrained runtime)
+          this.prisma = undefined;
+        }
+      }
+
+      if (!this.prisma) return;
+
+      await this.prisma.systemLog.create({
         data: {
           timestamp: entry.timestamp,
           level: entry.level,
@@ -182,8 +261,8 @@ export class Logger {
           requestId: entry.requestId || null,
         },
       });
-    } catch (error) {
-      console.error("Failed to write to database log:", error);
+    } catch (_error) {
+      console.error("Failed to write to database log:", _error);
     }
   }
 
@@ -332,7 +411,18 @@ export class Logger {
       if (endDate) where.timestamp.lte = endDate;
     }
 
-    return await prisma.systemLog.findMany({
+    // Lazily import prisma if needed (avoid bundling into edge runtime)
+    if (!this.prisma) {
+      try {
+        const mod = await import("@/app/lib/prisma");
+        this.prisma = mod.prisma;
+      } catch (err) {
+        // Prisma not available (likely edge/runtime), return empty array as fallback
+        return [];
+      }
+    }
+
+    return await this.prisma.systemLog.findMany({
       where,
       orderBy: { timestamp: "desc" },
       take: limit,

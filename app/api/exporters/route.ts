@@ -1,13 +1,19 @@
 import { prisma } from "@/app/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching all exporters - simplified version without audit trail
  */
 export async function GET(req: NextRequest) {
   try {
-    console.log("GET /api/exporters - Starting request");
-    console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+    void logger.debug(
+      LogCategory.EXPORTER,
+      "GET /api/exporters - Starting request",
+      {
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+      }
+    );
 
     const { searchParams } = new URL(req.url);
     const exporterTypeId = searchParams.get("exporterTypeId");
@@ -36,7 +42,9 @@ export async function GET(req: NextRequest) {
       where.exporterCode = { contains: code, mode: "insensitive" };
     }
 
-    console.log("About to query database with where:", where);
+    void logger.debug(LogCategory.EXPORTER, "Querying exporters", {
+      filterKeys: Object.keys(where || {}),
+    });
 
     // Build dynamic orderBy based on parameters
     const orderByClause: any = {};
@@ -60,18 +68,14 @@ export async function GET(req: NextRequest) {
       orderBy: orderByClause,
     });
 
-    console.log("Query successful, found", exporters.length, "exporters");
+    void logger.info(LogCategory.EXPORTER, "Exporters query successful", {
+      count: exporters.length,
+    });
     return NextResponse.json(exporters);
   } catch (error) {
-    console.error("Error fetching exporters:", error);
-    console.error(
-      "Error details:",
-      error instanceof Error ? error.message : "Unknown error"
-    );
-    console.error(
-      "Error stack:",
-      error instanceof Error ? error.stack : "No stack"
-    );
+    void logger.error(LogCategory.EXPORTER, "Error fetching exporters", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       {
         error: "Error fetching exporters",
@@ -87,11 +91,20 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    console.log("POST /api/exporters - Starting request");
-    console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+    void logger.debug(
+      LogCategory.EXPORTER,
+      "POST /api/exporters - Starting request",
+      {
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+      }
+    );
 
     const data = await req.json();
-    console.log("Request data received:", Object.keys(data));
+    void logger.debug(
+      LogCategory.EXPORTER,
+      "Request data received for exporter create",
+      { keys: Object.keys(data || {}) }
+    );
 
     // Validate required fields
     if (!data.name) {
@@ -101,7 +114,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("Checking for existing exporter with name:", data.name);
+    void logger.debug(LogCategory.EXPORTER, "Checking for existing exporter", {
+      name: data?.name,
+    });
     // Check if exporter with same name already exists
     const existingExporter = await prisma.exporter.findFirst({
       where: {
@@ -110,14 +125,16 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingExporter) {
-      console.log("Exporter already exists");
+      void logger.info(LogCategory.EXPORTER, "Exporter already exists", {
+        name: data?.name,
+      });
       return NextResponse.json(
         { error: "An exporter with this name already exists" },
         { status: 409 }
       );
     }
 
-    console.log("Generating exporterCode");
+    void logger.debug(LogCategory.EXPORTER, "Generating exporter code");
     // Generate the next exporterCode by finding the highest existing one
     const lastExporter = await prisma.exporter.findFirst({
       where: {
@@ -139,9 +156,11 @@ export async function POST(req: NextRequest) {
     }
 
     const exporterCode = `EXP-${nextNumber.toString().padStart(3, "0")}`;
-    console.log("Generated exporterCode:", exporterCode);
+    void logger.debug(LogCategory.EXPORTER, "Generated exporter code", {
+      exporterCode,
+    });
 
-    console.log("Creating new exporter");
+    void logger.debug(LogCategory.EXPORTER, "Creating new exporter");
     // Create the exporter with the generated code
     const exporter = await prisma.exporter.create({
       data: {
@@ -150,17 +169,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log("Exporter created successfully with ID:", exporter.id);
+    void logger.info(LogCategory.EXPORTER, "Exporter created", {
+      id: exporter.id,
+    });
     return NextResponse.json(exporter, { status: 201 });
   } catch (error) {
-    console.error("Error creating exporter:", error);
-    console.error(
-      "Error details:",
-      error instanceof Error ? error.message : "Unknown error"
-    );
-    console.error(
-      "Error stack:",
-      error instanceof Error ? error.stack : "No stack"
+    void logger.error(LogCategory.EXPORTER, "Error creating exporter", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    void logger.error(
+      LogCategory.EXPORTER,
+      "Error creating exporter (details)",
+      {
+        detail:
+          error instanceof Error ? error.stack ?? error.message : String(error),
+      }
     );
     return NextResponse.json(
       {

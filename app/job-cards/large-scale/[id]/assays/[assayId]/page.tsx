@@ -234,7 +234,6 @@ export default function AssayResultsPage() {
         const data = await res.json();
         if (mounted) {
           setJobCard(data);
-          console.log("Job Card Details:", data);
         }
       } catch (e: any) {
         if (mounted) setError(e?.message || "Failed to load data");
@@ -293,10 +292,6 @@ export default function AssayResultsPage() {
   const assay = jobCard?.assays?.find(
     (a: any) => String(a.id) === String(assayId)
   );
-
-  console.log("Assay Details:", assay);
-  console.log("Assay ID from URL:", assayId);
-  console.log("Available assays:", jobCard?.assays);
 
   if (!assay) {
     return (

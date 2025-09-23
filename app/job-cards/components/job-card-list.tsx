@@ -114,34 +114,22 @@ export function JobCardList({ filters }: JobCardListProps) {
   };
 
   const handleDelete = async (jobCardId: string) => {
-    console.log("Delete button clicked for job card:", jobCardId);
     setJobCardToDelete(jobCardId);
     setDeleteModalOpen(true);
-    console.log("Modal state set to open");
-    console.log("deleteModalOpen:", true);
-    console.log("jobCardToDelete:", jobCardId);
   };
 
   const confirmDelete = async () => {
-    console.log("confirmDelete called, jobCardToDelete:", jobCardToDelete);
     if (!jobCardToDelete) return;
 
     // Show loading toast
     toast.loading("Deleting job card...", { id: "delete-job-card" });
 
     try {
-      console.log(
-        "Making DELETE request to:",
-        `/api/job-cards/${jobCardToDelete}`
-      );
       const response = await fetch(`/api/job-cards/${jobCardToDelete}`, {
         method: "DELETE",
       });
 
-      console.log("Delete response:", response.status, response.statusText);
-
       if (response.ok) {
-        console.log("Delete successful, refreshing job cards list");
         toast.dismiss("delete-job-card");
         toast.success("Job card deleted successfully!");
         // Refresh the job cards list
@@ -150,14 +138,12 @@ export function JobCardList({ filters }: JobCardListProps) {
         setJobCardToDelete(null);
       } else {
         const errorData = await response.json();
-        console.error("Delete failed with error data:", errorData);
         toast.dismiss("delete-job-card");
         toast.error(
           `Failed to delete job card: ${errorData.error || "Unknown error"}`
         );
       }
     } catch (error) {
-      console.error("Error deleting job card:", error);
       toast.dismiss("delete-job-card");
       toast.error("An error occurred while deleting the job card.");
     }
@@ -167,13 +153,6 @@ export function JobCardList({ filters }: JobCardListProps) {
     setDeleteModalOpen(false);
     setJobCardToDelete(null);
   };
-
-  console.log(
-    "Rendering component - deleteModalOpen:",
-    deleteModalOpen,
-    "jobCardToDelete:",
-    jobCardToDelete
-  );
 
   const jobCardsList = (
     <div className="bg-white shadow overflow-hidden sm:rounded-md">
@@ -252,9 +231,6 @@ export function JobCardList({ filters }: JobCardListProps) {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          console.log(
-                            `Delete button clicked for: ${jobCard.id}`
-                          );
                           handleDelete(jobCard.id);
                         }}
                         className="text-red-600 hover:text-red-900"

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 export async function GET(
   req: Request,
@@ -84,7 +85,13 @@ export async function GET(
       currency: "USD",
     });
   } catch (error) {
-    console.error("Error fetching commodity price:", error);
+    void logger.error(
+      LogCategory.EXCHANGE_RATE,
+      "Error fetching commodity price",
+      {
+        error: error instanceof Error ? error.message : String(error),
+      }
+    );
     return NextResponse.json(
       { error: "Failed to fetch commodity price" },
       { status: 500 }

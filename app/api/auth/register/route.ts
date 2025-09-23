@@ -3,6 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * POST handler for user registration
@@ -69,7 +70,9 @@ async function register(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    void logger.error(LogCategory.AUTH, "Registration error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }

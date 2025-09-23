@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/app/lib/prisma";
 import { withAuditTrail } from "@/app/lib/with-audit-trail";
 import { NextRequest, NextResponse } from "next/server";
+import { logger, LogCategory } from "@/lib/logger";
 import bcrypt from "bcryptjs";
 
 /**
@@ -56,7 +57,9 @@ async function getUsers(req: NextRequest) {
 
     return NextResponse.json(users);
   } catch (error) {
-    console.error("Error fetching users:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error fetching users", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Error fetching users" },
       { status: 500 }
@@ -142,7 +145,9 @@ async function createUser(req: NextRequest) {
 
     return NextResponse.json(userResponse, { status: 201 });
   } catch (error) {
-    console.error("Error creating user:", error);
+    void logger.error(LogCategory.USER_MANAGEMENT, "Error creating user", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({ error: "Error creating user" }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateJWTUser } from "@/lib/jwt-user-validation";
 import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 /**
  * GET handler for fetching current user's profile data
@@ -72,7 +73,9 @@ export async function GET(req: NextRequest) {
       user: profile,
     });
   } catch (error) {
-    console.error("Error fetching user profile:", error);
+    void logger.error(LogCategory.AUTH, "Error fetching user profile", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

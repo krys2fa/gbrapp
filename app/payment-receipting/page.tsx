@@ -241,14 +241,7 @@ function PaymentList() {
     setPayType(type);
     // find invoice total for this job card and type from items
     const row = items.find((it: any) => it.id === jobCardId);
-    console.log(
-      "Opening pay modal for jobCardId:",
-      jobCardId,
-      "row:",
-      row,
-      "isLargeScale:",
-      row?.isLargeScale
-    );
+
     let total = 0;
     if (row) {
       // prefer assayInvoice amount
@@ -263,7 +256,6 @@ function PaymentList() {
   }
 
   async function submitPayment(payload: any) {
-    console.log("Submitting payment with payload:", payload);
     try {
       const res = await fetch(`/api/fees`, {
         method: "POST",
@@ -277,7 +269,6 @@ function PaymentList() {
       setRefreshKey((k) => k + 1);
       toast.success("Payment recorded");
     } catch (e: any) {
-      console.error(e);
       toast.error(e?.message || "Failed to save payment");
     }
   }
@@ -578,7 +569,6 @@ function PayModal({
         notes,
         paymentType,
       };
-      console.log("PayModal payload:", payload, "isLargeScale:", isLargeScale);
       await onSubmit(payload);
     } finally {
       setIsSubmitting(false);

@@ -1,5 +1,5 @@
 import { ActionType } from "@/app/generated/prisma";
-import { prisma } from "@/app/lib/prisma";
+import { logger, LogCategory } from "@/lib/logger";
 
 interface AuditTrailParams {
   userId: string;
@@ -48,21 +48,38 @@ export class AuditTrailService {
       : null;
 
     try {
-      // First check if the user exists
-      const userExists = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { id: true },
-      });
+      // Lazily import prisma to avoid pulling Node-only modules into edge runtime
+      let prismaClient: any;
+      try {
+        const mod = await import("@/app/lib/prisma");
+        prismaClient = mod.prisma;
+      } catch (err) {
+        prismaClient = undefined;
+      }
+
+      // First check if the user exists (if prisma is available)
+      const userExists = prismaClient
+        ? await prismaClient.user.findUnique({
+            where: { id: userId },
+            select: { id: true },
+          })
+        : null;
 
       // If user doesn't exist or userId is "unknown", use a special system user ID or skip audit
       if (!userExists && userId !== "unknown") {
-        console.warn(`Audit trail skipped: User ID ${userId} not found`);
+        await logger.warn(
+          LogCategory.AUDIT,
+          `Audit trail skipped: User ID ${userId} not found`,
+          { userId }
+        );
         return null;
       }
 
       // Only create the audit trail if user exists or if we're using a special system user
       if (userExists || userId === "unknown") {
-        return await prisma.auditTrail.create({
+        if (!prismaClient) return null;
+
+        return await prismaClient.auditTrail.create({
           data: {
             userId: userExists
               ? userId
@@ -80,7 +97,9 @@ export class AuditTrailService {
 
       return null;
     } catch (error) {
-      console.error("Error creating audit trail:", error);
+      await logger.error(LogCategory.AUDIT, "Error creating audit trail", {
+        error: String(error),
+      });
       return null; // Don't let audit trail errors break the application
     }
   }
@@ -93,59 +112,15 @@ export class AuditTrailService {
    * @returns The audit trail entries for the entity
    */
   static async getAuditTrailForEntity(entityType: string, entityId: string) {
-    return prisma.auditTrail.findMany({
-      where: {
-        entityType,
-        entityId,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          },
+    try {
+      const mod = await import("@/app/lib/prisma");
+      const prismaClient = mod.prisma;
+
+      return await prismaClient.auditTrail.findMany({
+        where: {
+          entityType,
+          entityId,
         },
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-    });
-  }
-
-  /**
-   * Gets audit trail entries for a specific user
-   *
-   * @param userId The ID of the user
-   * @returns The audit trail entries for the user
-   */
-  static async getAuditTrailForUser(userId: string) {
-    return prisma.auditTrail.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        timestamp: "desc",
-      },
-    });
-  }
-
-  /**
-   * Gets all audit trail entries with pagination
-   *
-   * @param page The page number
-   * @param pageSize The page size
-   * @returns The audit trail entries for the page
-   */
-  static async getAllAuditTrail(page = 1, pageSize = 10) {
-    const skip = (page - 1) * pageSize;
-
-    const [total, records] = await Promise.all([
-      prisma.auditTrail.count(),
-      prisma.auditTrail.findMany({
-        skip,
-        take: pageSize,
         include: {
           user: {
             select: {
@@ -159,17 +134,85 @@ export class AuditTrailService {
         orderBy: {
           timestamp: "desc",
         },
-      }),
-    ]);
+      });
+    } catch (err) {
+      return [];
+    }
+  }
 
-    return {
-      records,
-      pagination: {
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize),
-      },
-    };
+  /**
+   * Gets audit trail entries for a specific user
+   *
+   * @param userId The ID of the user
+   * @returns The audit trail entries for the user
+   */
+  static async getAuditTrailForUser(userId: string) {
+    try {
+      const mod = await import("@/app/lib/prisma");
+      const prismaClient = mod.prisma;
+
+      return await prismaClient.auditTrail.findMany({
+        where: {
+          userId,
+        },
+        orderBy: {
+          timestamp: "desc",
+        },
+      });
+    } catch (err) {
+      return [];
+    }
+  }
+
+  /**
+   * Gets all audit trail entries with pagination
+   *
+   * @param page The page number
+   * @param pageSize The page size
+   * @returns The audit trail entries for the page
+   */
+  static async getAllAuditTrail(page = 1, pageSize = 10) {
+    const skip = (page - 1) * pageSize;
+
+    try {
+      const mod = await import("@/app/lib/prisma");
+      const prismaClient = mod.prisma;
+
+      const [total, records] = await Promise.all([
+        prismaClient.auditTrail.count(),
+        prismaClient.auditTrail.findMany({
+          skip,
+          take: pageSize,
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+              },
+            },
+          },
+          orderBy: {
+            timestamp: "desc",
+          },
+        }),
+      ]);
+
+      return {
+        records,
+        pagination: {
+          total,
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      };
+    } catch (err) {
+      return {
+        records: [],
+        pagination: { total: 0, page, pageSize, totalPages: 0 },
+      };
+    }
   }
 }

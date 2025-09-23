@@ -1,6 +1,7 @@
 // lib/notification-scheduler.ts
 import { prisma } from "@/app/lib/prisma";
 import { NotificationService } from "./notification-service";
+import { logger, LogCategory } from "@/lib/logger";
 
 interface ScheduledNotification {
   id: string;
@@ -13,7 +14,10 @@ interface ScheduledNotification {
 }
 
 export class NotificationScheduler {
-  private static scheduledNotifications = new Map<string, ScheduledNotification>();
+  private static scheduledNotifications = new Map<
+    string,
+    ScheduledNotification
+  >();
 
   /**
    * Schedule a delayed notification for an exchange rate that hasn't been approved
@@ -34,12 +38,16 @@ export class NotificationScheduler {
         // Check if the exchange rate is still pending approval
         const weeklyPrice = await prisma.weeklyPrice.findUnique({
           where: { id: exchangeRateId },
-          select: { status: true }
+          select: { status: true },
         });
 
         // Only send notification if still pending
         if (weeklyPrice && weeklyPrice.status === "PENDING") {
-          console.log(`Sending delayed notification for exchange rate ${exchangeRateId}`);
+          void logger.info(
+            LogCategory.NOTIFICATION,
+            "Sending delayed exchange-rate approval notification",
+            { exchangeRateId, exchangeName, weekStart, submittedBy }
+          );
           await NotificationService.notifyExchangeRateApprovalDelayed(
             exchangeRateId,
             exchangeName,
@@ -48,10 +56,21 @@ export class NotificationScheduler {
             submittedBy
           );
         } else {
-          console.log(`Exchange rate ${exchangeRateId} no longer pending, skipping delayed notification`);
+          void logger.debug(
+            LogCategory.NOTIFICATION,
+            "Skipping delayed notification; weekly price not pending",
+            { exchangeRateId, status: weeklyPrice?.status }
+          );
         }
       } catch (error) {
-        console.error(`Failed to send delayed notification for exchange rate ${exchangeRateId}:`, error);
+        void logger.error(
+          LogCategory.NOTIFICATION,
+          "Failed to send delayed notification for exchange rate",
+          {
+            exchangeRateId,
+            error: error instanceof Error ? error.message : String(error),
+          }
+        );
       } finally {
         // Remove from scheduled notifications
         this.scheduledNotifications.delete(exchangeRateId);
@@ -70,20 +89,29 @@ export class NotificationScheduler {
     };
 
     this.scheduledNotifications.set(exchangeRateId, scheduledNotification);
-    
-    console.log(`Scheduled delayed notification for exchange rate ${exchangeRateId} in ${delayMinutes} minutes`);
+
+    void logger.info(
+      LogCategory.NOTIFICATION,
+      "Scheduled delayed notification for exchange rate",
+      { exchangeRateId, delayMinutes }
+    );
   }
 
   /**
    * Cancel a scheduled notification (e.g., when exchange rate is approved/rejected)
    */
   static cancelScheduledNotification(exchangeRateId: string): void {
-    const scheduledNotification = this.scheduledNotifications.get(exchangeRateId);
-    
+    const scheduledNotification =
+      this.scheduledNotifications.get(exchangeRateId);
+
     if (scheduledNotification) {
       clearTimeout(scheduledNotification.timeoutId);
       this.scheduledNotifications.delete(exchangeRateId);
-      console.log(`Cancelled scheduled notification for exchange rate ${exchangeRateId}`);
+      void logger.info(
+        LogCategory.NOTIFICATION,
+        "Cancelled scheduled notification for exchange rate",
+        { exchangeRateId }
+      );
     }
   }
 
@@ -102,6 +130,9 @@ export class NotificationScheduler {
       clearTimeout(notification.timeoutId);
     });
     this.scheduledNotifications.clear();
-    console.log("Cleared all scheduled notifications");
+    void logger.info(
+      LogCategory.NOTIFICATION,
+      "Cleared all scheduled notifications"
+    );
   }
 }
