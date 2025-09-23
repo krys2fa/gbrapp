@@ -9,9 +9,9 @@ async function updateSilverSymbol() {
     if (silverCommodity) {
       await prisma.commodity.update({
         where: { id: silverCommodity.id },
-        data: { symbol: "XAG" }
+        data: { symbol: "Ag" }
       });
-      console.log("Updated Silver commodity symbol to XAG");
+      console.log("Updated Silver commodity symbol to Ag");
     }
 
     const commodities = await prisma.commodity.findMany();

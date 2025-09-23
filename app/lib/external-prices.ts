@@ -2,8 +2,8 @@ import { prisma } from "@/app/lib/prisma";
 
 // Map common commodity symbols to names understood by the external API
 const SYMBOL_TO_NAME: Record<string, string> = {
-  XAU: "gold",
-  XAG: "silver",
+  Au: "gold",
+  Ag: "silver",
   XPT: "platinum",
   XPD: "palladium",
 };

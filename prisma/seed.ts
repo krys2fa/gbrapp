@@ -172,7 +172,7 @@ async function main() {
     update: {},
     create: {
       name: "Gold",
-      symbol: "XAU",
+      symbol: "Au",
     },
   });
 
@@ -181,7 +181,7 @@ async function main() {
     update: {},
     create: {
       name: "Silver",
-      symbol: "XAG",
+      symbol: "Ag",
     },
   });
 

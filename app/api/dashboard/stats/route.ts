@@ -45,51 +45,51 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    // Fetch current gold price (GHS per troy ounce) - most recent
-    const latestGoldPrice = await prisma.dailyPrice.findFirst({
-      where: {
-        type: "COMMODITY",
-        commodity: {
-          symbol: "Au", // Gold symbol
-        },
-      },
-      include: {
-        commodity: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    // Fetch all commodities configured in the system and attach their latest prices
+    // into a commodityPrices map keyed by the commodity symbol.
+    const commodities = await prisma.commodity.findMany();
 
-    let goldPrice = latestGoldPrice?.price;
+    const commodityPrices: Record<
+      string,
+      { price?: number; date?: Date; name?: string }
+    > = {};
 
-    // Fetch current silver price (GHS per troy ounce) - most recent
-    const latestSilverPrice = await prisma.dailyPrice.findFirst({
-      where: {
-        type: "COMMODITY",
-        commodity: {
-          symbol: "Ag", // Silver symbol
-        },
-      },
-      include: {
-        commodity: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    for (const c of commodities) {
+      try {
+        const latest = await prisma.dailyPrice.findFirst({
+          where: {
+            type: "COMMODITY",
+            commodityId: c.id,
+          },
+          orderBy: { createdAt: "desc" },
+        });
 
-    let silverPrice =
-      latestSilverPrice?.price 
-      
-    // Use the raw commodity price value as shown in the Daily Prices setup page.
-    // The setup page fetches the latest DailyPrice record and displays its `price`.
-    // So the dashboard should surface the exact same numeric price from the DB.
-    // Use explicit typeof checks to avoid treating 0 or falsy numbers as missing.
+        const p = latest?.price;
+        if (typeof p === "number") {
+          commodityPrices[c.symbol] = {
+            price: p,
+            date: latest!.date,
+            name: c.name,
+          };
+        } else {
+          commodityPrices[c.symbol] = { name: c.name };
+        }
+      } catch (err) {
+        // non-fatal for dashboard; continue with other commodities
+        console.warn(`Failed to fetch price for commodity ${c.symbol}`, err);
+        commodityPrices[c.symbol] = { name: c.name };
+      }
+    }
+
+    // Backwards-compatible convenience fields for Gold (Au) and Silver (Ag)
     const goldPriceDisplayed =
-      typeof goldPrice === "number" ? goldPrice : undefined;
+      typeof commodityPrices["Au"]?.price === "number"
+        ? commodityPrices["Au"]!.price
+        : undefined;
     const silverPriceDisplayed =
-      typeof silverPrice === "number" ? silverPrice : undefined;
+      typeof commodityPrices["Ag"]?.price === "number"
+        ? commodityPrices["Ag"]!.price
+        : undefined;
 
     // Calculate total withholding tax from fees
     // const withholdingTaxResult = await prisma.fee.aggregate({
