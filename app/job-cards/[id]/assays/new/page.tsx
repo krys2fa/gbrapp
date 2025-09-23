@@ -417,8 +417,6 @@ export default function NewAssayPage() {
     ? totalNetWeightOz
     : 0;
 
-  console.log({ totalNetWeightOzDisplay, dailyPrice });
-
   // Use existing job card values for meta display instead of current form calculations
   const displayNetWeightOz = jobCard?.numberOfOunces || totalNetWeightOzDisplay;
   const displayUsdValue =
