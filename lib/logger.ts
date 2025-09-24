@@ -293,11 +293,25 @@ export class Logger {
       }
     }
 
-    // Parallel file and database logging
-    await Promise.allSettled([
-      this.writeToFile(fullEntry),
-      this.writeToDatabase(fullEntry),
-    ]);
+    // Write to file always when file logging is enabled. For database logging,
+    // skip SYSTEM and AUDIT categories — we no longer persist those to the DB.
+    const tasks: Promise<void>[] = [];
+
+    if (this.enableFile) {
+      tasks.push(this.writeToFile(fullEntry));
+    }
+
+    // Only push to database for non-system/audit categories and when DB logging
+    // is enabled. This avoids importing Prisma for system/audit logs.
+    if (
+      this.enableDatabase &&
+      fullEntry.category !== LogCategory.SYSTEM &&
+      fullEntry.category !== LogCategory.AUDIT
+    ) {
+      tasks.push(this.writeToDatabase(fullEntry));
+    }
+
+    await Promise.allSettled(tasks);
   }
 
   // Convenience methods
@@ -439,6 +453,9 @@ export class Logger {
   }
 
   setDatabaseLogging(enabled: boolean): void {
+    // Allow toggling DB logging generally, but note SYSTEM and AUDIT logs are
+    // never written to the database by policy. The flag controls DB logging
+    // for other categories only.
     this.enableDatabase = enabled;
   }
 

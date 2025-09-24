@@ -633,8 +633,8 @@ export default function CertificateOfAssayPage() {
                             // Convert grams to troy ounces (1 troy ounce = 31.1035 grams)
                             const ounces = netWeightTotal / 31.1035;
                             return `${ounces.toLocaleString(undefined, {
-                              minimumFractionDigits: 4,
-                              maximumFractionDigits: 4,
+                              minimumFractionDigits: 3,
+                              maximumFractionDigits: 3,
                             })} oz`;
                           }
                           return "0.0000 oz";
