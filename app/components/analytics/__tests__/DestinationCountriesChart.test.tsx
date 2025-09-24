@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import DestinationCountriesChart from "../DestinationCountriesChart";

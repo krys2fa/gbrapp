@@ -8,6 +8,7 @@ interface LargeScaleJobCardFiltersProps {
     startDate: string;
     endDate: string;
     status: string;
+    miningSite: string;
     humanReadableId: string;
   };
   setFilters: React.Dispatch<
@@ -16,6 +17,7 @@ interface LargeScaleJobCardFiltersProps {
       startDate: string;
       endDate: string;
       status: string;
+      miningSite: string;
       humanReadableId: string;
     }>
   >;
@@ -34,10 +36,8 @@ export function LargeScaleJobCardFilters({
     }[]
   >([]);
   // only include exporters relevant to large-scale filters
-  const largeExporters = exporters.filter(
-    (ex) =>
-
-      (ex.exporterType?.name || "").toLowerCase().includes("large")
+  const largeExporters = exporters.filter((ex) =>
+    (ex.exporterType?.name || "").toLowerCase().includes("large")
   );
 
   const statusOptions = [
@@ -78,6 +78,7 @@ export function LargeScaleJobCardFilters({
       startDate: "",
       endDate: "",
       status: "",
+      miningSite: "",
       humanReadableId: "",
     });
   };
