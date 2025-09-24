@@ -338,14 +338,20 @@ async function createLargeScaleJobCard(req: NextRequest) {
         sampleType: sampleType || "capillary",
         shipmentNumber: shipmentNumber,
         // Valuation fields
-        totalCombinedValue: totalCombinedValue || 0,
-        totalGoldValue: totalGoldValue || 0,
-        totalNetGoldWeight: totalNetGoldWeight || 0,
-        totalNetGoldWeightOz: totalNetGoldWeightOz || 0,
-        totalNetSilverWeight: totalNetSilverWeight || 0,
-        totalNetSilverWeightOz: totalNetSilverWeightOz || 0,
-        totalSilverValue: totalSilverValue || 0,
-        totalValueGhs: totalValueGhs || 0,
+        totalCombinedValue: totalCombinedValue ? Number(totalCombinedValue) : 0,
+        totalGoldValue: totalGoldValue ? Number(totalGoldValue) : 0,
+        totalNetGoldWeight: totalNetGoldWeight ? Number(totalNetGoldWeight) : 0,
+        totalNetGoldWeightOz: totalNetGoldWeightOz
+          ? Number(totalNetGoldWeightOz)
+          : 0,
+        totalNetSilverWeight: totalNetSilverWeight
+          ? Number(totalNetSilverWeight)
+          : 0,
+        totalNetSilverWeightOz: totalNetSilverWeightOz
+          ? Number(totalNetSilverWeightOz)
+          : 0,
+        totalSilverValue: totalSilverValue ? Number(totalSilverValue) : 0,
+        totalValueGhs: totalValueGhs ? Number(totalValueGhs) : 0,
         // Pricing information used in calculations
         exchangeRate: exchangeRate ? Number(exchangeRate.toFixed(4)) : 1,
         commodityPrice: commodityPrice || 0,
