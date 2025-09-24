@@ -193,7 +193,6 @@ function NewJobCardPage() {
     }
 
     // Prepare full submission payload from formData
-    // Remove certificateNumber from job-card creation payload (now collected at assay step)
     const { certificateNumber, ...submissionData } = formData as any;
 
     // Convert numeric-like fields to actual numbers when provided
@@ -413,8 +412,6 @@ function NewJobCardPage() {
                         ))}
                       </select>
                     </div>
-
-                    {/* certificateNumber moved to assay/valuation step */}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">

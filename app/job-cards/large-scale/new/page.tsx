@@ -161,6 +161,9 @@ function NewLargeScaleJobCardPage() {
     status: "pending",
     notes: "",
     certificateNumber: "",
+    goldbodSealNo: "",
+    customsSealNo: "",
+    securitySealNo: "",
     commodities: [
       {
         id: "",
@@ -942,6 +945,9 @@ function NewLargeScaleJobCardPage() {
         sampleType: form.sampleType,
         shipmentNumber: form.shipmentNumber,
         certificateNumber: form.certificateNumber || undefined,
+        goldbodSealNo: form.goldbodSealNo || undefined,
+        customsSealNo: form.customsSealNo || undefined,
+        securitySealNo: form.securitySealNo || undefined,
         assayersData: assayersData.length > 0 ? assayersData : undefined,
         // Include valuation details
         ...valuationDetails,
@@ -1020,7 +1026,6 @@ function NewLargeScaleJobCardPage() {
               <div className="text-sm text-red-700">{error}</div>
             </div>
           )}
-
           {/* Basic Information */}
           <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
@@ -1339,10 +1344,63 @@ function NewLargeScaleJobCardPage() {
                     placeholder="Enter certificate number"
                   />
                 </div>
+
+                <div>
+                  <label
+                    htmlFor="goldbodSealNo"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Goldbod Seal Number
+                  </label>
+                  <input
+                    type="text"
+                    name="goldbodSealNo"
+                    id="goldbodSealNo"
+                    value={form.goldbodSealNo}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter goldbod seal number"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="customsSealNo"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Customs Seal Number
+                  </label>
+                  <input
+                    type="text"
+                    name="customsSealNo"
+                    id="customsSealNo"
+                    value={form.customsSealNo}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter customs seal number"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="securitySealNo"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Security Seal Number
+                  </label>
+                  <input
+                    type="text"
+                    name="securitySealNo"
+                    id="securitySealNo"
+                    value={form.securitySealNo}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter security seal number"
+                  />
+                </div>
               </div>
             </div>
           </div>
-
           {/* Meta Bar - Show when exporter is selected or data sheet date is set */}
           {(form.exporterId || form.dataSheetDates) && (
             <div
@@ -1603,7 +1661,6 @@ function NewLargeScaleJobCardPage() {
               </div>
             </div>
           )}
-
           {/* Excel Upload Section */}
           <div className="mt-8 bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
@@ -1840,7 +1897,6 @@ function NewLargeScaleJobCardPage() {
               </div>
             </div>
           </div>
-
           {/* Form Actions */}
           <div className="flex justify-end gap-4">
             <Link

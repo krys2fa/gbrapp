@@ -514,7 +514,7 @@ export default function CertificateOfAssayPage() {
                           SN
                         </th>
                         <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
-                          Bar No. 
+                          Bar No.
                         </th>
                         <th className="px-4 py-2 text-right text-xs font-bold uppercase bg-[#d4af37] border border-gray-300">
                           Gross Weight ({jobCard?.unitOfMeasure})
@@ -832,6 +832,47 @@ export default function CertificateOfAssayPage() {
                 </div>
               </div>
 
+              <div className="flex justify-between">
+                <div className="pr-1 sm:pr-2 lg:pr-3 py-2">
+                  <div className="flex justify-start">
+                    <div className="flex text-center ">
+                      <h4 className="text-sm font-medium text-gray-500 uppercase">
+                        Customs Seal:
+                      </h4>
+                      <div className="ml-2 text-sm font-semibold text-gray-900">
+                        {jobCard.assays[0]?.customsSealNo || "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-1 sm:px-2 lg:px-3 py-2">
+                  <div className="flex justify-start">
+                    <div className="flex text-center ">
+                      <h4 className="text-sm font-medium text-gray-500 uppercase">
+                        GOLDBOD Seal:
+                      </h4>
+                      <div className="ml-2 text-sm font-semibold text-gray-900">
+                        {jobCard.assays[0]?.goldbodSealNo || "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-1 sm:px-2 lg:px-3 py-2">
+                  <div className="flex justify-start">
+                    <div className="flex">
+                      <h4 className="text-sm font-medium text-gray-500 uppercase">
+                        Security Seal:
+                      </h4>
+                      <div className="ml-2 text-sm font-semibold text-gray-900">
+                        {jobCard.assays[0]?.securitySealNo || "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Technical Director Signature Section */}
               <div className="px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex justify-between items-center">
@@ -848,8 +889,8 @@ export default function CertificateOfAssayPage() {
 
                   {/* Official Seal */}
                   <div className="bg-white py-4 flex justify-end">
-              <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
-            </div>
+                    <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
+                  </div>
                 </div>
               </div>
             </div>
