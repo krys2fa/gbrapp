@@ -405,12 +405,12 @@ export async function PUT(req: NextRequest) {
           const pricePerOz = commodityPrice;
 
           // Calculate USD value
-          const totalUsdValue = weightInOz * pricePerOz;
+          const totalUsdValue = Number(weightInOz.toFixed(3)) * Number(pricePerOz);
 
           // Get exchange rate for GHS conversion
           let totalGhsValue = null;
           if (assayItem.exchangeRate && totalUsdValue > 0) {
-            totalGhsValue = totalUsdValue * assayItem.exchangeRate;
+            totalGhsValue = Number(totalUsdValue) * Number(assayItem.exchangeRate);
           }
 
           void logger.debug(LogCategory.JOB_CARD, "Assay calculation", {
