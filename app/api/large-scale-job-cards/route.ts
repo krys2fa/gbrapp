@@ -168,6 +168,9 @@ async function createLargeScaleJobCard(req: NextRequest) {
       numberOfSamples,
       sampleType,
       shipmentNumber,
+      goldbodSealNo,
+      customsSealNo,
+      securitySealNo,
       assayersData,
       // Valuation fields
       totalCombinedValue,
@@ -347,6 +350,9 @@ async function createLargeScaleJobCard(req: NextRequest) {
         exchangeRate: exchangeRate ? Number(exchangeRate.toFixed(4)) : 1,
         commodityPrice: commodityPrice || 0,
         pricePerOz: pricePerOz || 0,
+        goldbodSealNo: goldbodSealNo || null,
+        customsSealNo: customsSealNo || null,
+        securitySealNo: securitySealNo || null,
         humanReadableAssayNumber: await generateAssayNumber("LS"),
       };
 
