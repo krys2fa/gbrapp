@@ -303,8 +303,6 @@ export default function CertificateOfAssayPage() {
     );
   }
 
-  console.log("Job Card Data:", jobCard);
-
   if (!jobCard) {
     return (
       <div className="px-4 sm:px-6 lg:px-8 py-8">

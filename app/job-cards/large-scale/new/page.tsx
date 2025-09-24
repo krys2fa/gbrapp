@@ -620,13 +620,16 @@ function NewLargeScaleJobCardPage() {
     );
 
     // Convert to ounces
-    const totalNetGoldWeightOz = totalNetGoldWeightGrams / GRAMS_PER_TROY_OUNCE;
-    const totalNetSilverWeightOz =
-      totalNetSilverWeightGrams / GRAMS_PER_TROY_OUNCE;
+    const totalNetGoldWeightOz = Number(
+      (totalNetGoldWeightGrams / GRAMS_PER_TROY_OUNCE).toFixed(3)
+    );
+    const totalNetSilverWeightOz = Number(
+      (totalNetSilverWeightGrams / GRAMS_PER_TROY_OUNCE).toFixed(3)
+    );
 
     // Calculate values
-    const totalGoldValue = totalNetGoldWeightOz * commodityPrice;
-    const totalSilverValue = totalNetSilverWeightOz * pricePerOz;
+    const totalGoldValue = Number(totalNetGoldWeightOz) * commodityPrice;
+    const totalSilverValue = Number(totalNetSilverWeightOz) * pricePerOz;
     const totalCombinedValue = totalGoldValue + totalSilverValue;
     const totalValueGhs = totalCombinedValue * exchangeRate;
 
