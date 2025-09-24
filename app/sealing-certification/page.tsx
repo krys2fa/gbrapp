@@ -60,33 +60,21 @@ function SealingList({
         ? await largeScaleRes.json()
         : { jobCards: [], total: 0 };
 
-      // Combine both regular and large-scale job cards, and derive their type
-      // from the humanReadableId prefix (LS- or SS-). We add both a
-      // `jobCardPrefix` (LS|SS) and a compatible `jobCardType` string so the
-      // rest of the UI can use either.
-      const merged = [
-        ...(regularData.jobCards || []),
-        ...(largeScaleData.jobCards || []),
-      ].map((jc: any) => {
-        const idSource = String(
-          jc.humanReadableId || jc.referenceNumber || jc.id || ""
-        );
-        const prefix = idSource.startsWith("LS-")
-          ? "LS"
-          : idSource.startsWith("SS-")
-          ? "SS"
-          : jc.jobCardType === "large-scale"
-          ? "LS"
-          : "SS";
-        return {
-          ...jc,
-          jobCardPrefix: prefix,
-          jobCardType: prefix === "LS" ? "large-scale" : "small-scale",
-        };
-      });
+      // Combine both regular and large-scale job cards, tagging them by source API
+      const regularJobCards = (regularData.jobCards || []).map((jc: any) => ({
+        ...jc,
+        jobCardType: "small-scale",
+      }));
 
-      // Sort by creation date (most recent first)
-      const allJobCards = merged.sort(
+      const largeScaleJobCards = (largeScaleData.jobCards || []).map(
+        (jc: any) => ({
+          ...jc,
+          jobCardType: "large-scale",
+        })
+      );
+
+      // Combine and sort by creation date (most recent first)
+      const allJobCards = [...regularJobCards, ...largeScaleJobCards].sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );

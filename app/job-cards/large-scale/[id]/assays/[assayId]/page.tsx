@@ -808,6 +808,9 @@ export default function AssayResultsPage() {
                     <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
                       Technical Director
                     </p>
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      {jobCard?.technicalDirector || "-"}
+                    </p>
                   </div>
                 </div>
 
