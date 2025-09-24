@@ -284,7 +284,7 @@ function LargeScaleJobCardDetailPage() {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
-                    Job Card ID
+                    Job ID
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.humanReadableId || jobCard.referenceNumber}

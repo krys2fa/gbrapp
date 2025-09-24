@@ -97,7 +97,7 @@ export function JobCardFilters({ filters, setFilters }: JobCardFiltersProps) {
                 htmlFor="humanReadableId"
                 className="block text-sm font-medium text-gray-700"
               >
-                Job Card ID
+                Job ID
               </label>
               <input
                 type="text"

@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
 
     if (!targetJobCardId) {
       return NextResponse.json(
-        { error: "Job card ID is required" },
+        { error: "Job ID is required" },
         { status: 400 }
       );
     }

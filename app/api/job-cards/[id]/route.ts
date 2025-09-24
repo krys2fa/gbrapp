@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     // Ensure id exists
     if (!id) {
       return NextResponse.json(
-        { error: "Job card ID is required" },
+        { error: "Job ID is required" },
         { status: 400 }
       );
     }
@@ -131,7 +131,7 @@ export async function PUT(req: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { error: "Missing job card ID" },
+        { error: "Missing job ID" },
         { status: 400 }
       );
     }
@@ -805,7 +805,7 @@ export async function DELETE(req: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { error: "Missing job card ID" },
+        { error: "Missing job ID" },
         { status: 400 }
       );
     }

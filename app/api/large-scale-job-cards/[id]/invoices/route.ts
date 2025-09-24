@@ -10,7 +10,7 @@ async function createLargeScaleInvoice(req: NextRequest) {
 
     if (!jobCardId) {
       return NextResponse.json(
-        { error: "Job card ID is required" },
+        { error: "Job ID is required" },
         { status: 400 }
       );
     }
