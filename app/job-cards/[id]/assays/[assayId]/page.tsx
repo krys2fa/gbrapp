@@ -1094,7 +1094,7 @@ export default function AssayDetailPage() {
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Exporter Authorized Signatory
                     </dt>
-                    <dd className="text-xs text-gray-900 text-center">
+                    <dd className="text-xs text-gray-900 text-center uppercase">
                       {jobCard?.exporter?.authorizedSignatory ||
                         jobCard?.exporter?.contactPerson ||
                         "-"}
@@ -1108,7 +1108,7 @@ export default function AssayDetailPage() {
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Customs Officer
                     </dt>
-                    <dd className="text-xs text-gray-900 text-center">
+                    <dd className="text-xs text-gray-900 text-center uppercase">
                       {(() => {
                         // First priority: Check dedicated customs officer name field
                         if (jobCard?.customsOfficerName) {
@@ -1153,7 +1153,7 @@ export default function AssayDetailPage() {
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Technical Director
                     </dt>
-                    <dd className="text-xs text-gray-900 text-center">
+                    <dd className="text-xs text-gray-900 text-center uppercase">
                       {(() => {
                         // First priority: Check dedicated technical director name field
                         if (jobCard?.technicalDirectorName) {
@@ -1198,7 +1198,7 @@ export default function AssayDetailPage() {
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Assay Officer
                     </dt>
-                    <dd className="text-xs text-gray-900 text-center">
+                    <dd className="text-xs text-gray-900 text-center uppercase">
                       {(() => {
                         // First priority: Check assay comments for the actual user who performed the assay
                         if (assay?.comments) {
