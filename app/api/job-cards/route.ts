@@ -109,6 +109,7 @@ async function getAllJobCards(req: NextRequest) {
     // Use an explicit select to avoid referencing columns that may not exist in older DBs
     const selectObj: any = {
       id: true,
+      humanReadableId: true,
       referenceNumber: true,
       receivedDate: true,
       status: true,
@@ -183,6 +184,7 @@ async function getAllJobCards(req: NextRequest) {
             createdAt: where.createdAt,
           },
           select: {
+            humanReadableId: true,
             id: true,
             referenceNumber: true,
             receivedDate: true,

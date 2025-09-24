@@ -303,7 +303,7 @@ function LargeScaleJobCardDetailPage() {
                     Exporter
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900">
-                    {jobCard.exporter.name} ({jobCard.exporter.exporterCode})
+                    {jobCard.exporter.name}
                   </dd>
                 </div>
                 <div>

@@ -55,7 +55,6 @@ interface LargeScaleJobCardListProps {
     startDate: string;
     endDate: string;
     status: string;
-    miningSite: string;
     humanReadableId: string;
   };
 }
@@ -196,16 +195,14 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                         <span className="text-sm font-medium text-gray-600">
-                          {(
-                            jobCard.humanReadableId || jobCard.referenceNumber
-                          ).charAt(0)}
+                          {jobCard.humanReadableId.charAt(0)}
                         </span>
                       </div>
                     </div>
                     <div className="ml-4">
                       <div className="flex items-center gap-4">
                         <p className="text-sm font-medium text-gray-900">
-                          {jobCard.humanReadableId || jobCard.referenceNumber}
+                          {jobCard.humanReadableId}
                         </p>
                         {(() => {
                           const hasAssays = !!(
@@ -396,6 +393,8 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                   className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="sr-only">Previous</span>‹
+                                        <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
+
                 </button>
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   const page = Math.max(1, currentPage - 2) + i;
@@ -422,6 +421,8 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                   className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="sr-only">Next</span>›
+                                        <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
+
                 </button>
               </nav>
             </div>

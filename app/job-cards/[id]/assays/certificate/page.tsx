@@ -547,10 +547,12 @@ export default function CertificateOfAssayPage() {
                                   ),
                                 0
                               );
-                              return total > 0 ? total.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }) : "-";
+                              return total > 0
+                                ? total.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                                : "-";
                             })()}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right border border-gray-300">
@@ -594,10 +596,12 @@ export default function CertificateOfAssayPage() {
                                   ),
                                 0
                               );
-                              return total > 0 ? total.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }) : "-";
+                              return total > 0
+                                ? total.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                                : "-";
                             })()}
                           </td>
                         </tr>
@@ -629,9 +633,9 @@ export default function CertificateOfAssayPage() {
                             // Convert grams to troy ounces (1 troy ounce = 31.1035 grams)
                             const ounces = netWeightTotal / 31.1035;
                             return `${ounces.toLocaleString(undefined, {
-                                minimumFractionDigits: 4,
-                                maximumFractionDigits: 4,
-                              })} oz`;
+                              minimumFractionDigits: 4,
+                              maximumFractionDigits: 4,
+                            })} oz`;
                           }
                           return "0.0000 oz";
                         })()}
@@ -695,7 +699,6 @@ export default function CertificateOfAssayPage() {
                 </div>
 
                 {/* Official Seal */}
-
 
                 <div className="bg-white py-4 flex justify-end">
                   <img src="/seal.png" alt="Seal" className="h-20 w-auto" />

@@ -104,6 +104,7 @@ async function getAssaySummaries(request: NextRequest) {
 
       return {
         id: jobCard.id,
+        humanReadableId: jobCard.humanReadableId,
         referenceNumber: jobCard.referenceNumber,
         receivedDate: jobCard.receivedDate,
         status: jobCard.status,

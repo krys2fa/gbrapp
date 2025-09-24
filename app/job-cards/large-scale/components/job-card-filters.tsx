@@ -8,7 +8,6 @@ interface LargeScaleJobCardFiltersProps {
     startDate: string;
     endDate: string;
     status: string;
-    miningSite: string;
     humanReadableId: string;
   };
   setFilters: React.Dispatch<
@@ -17,7 +16,6 @@ interface LargeScaleJobCardFiltersProps {
       startDate: string;
       endDate: string;
       status: string;
-      miningSite: string;
       humanReadableId: string;
     }>
   >;
@@ -38,10 +36,10 @@ export function LargeScaleJobCardFilters({
   // only include exporters relevant to large-scale filters
   const largeExporters = exporters.filter(
     (ex) =>
-      (ex.exporterType?.name || "").toLowerCase().includes("mining") ||
+
       (ex.exporterType?.name || "").toLowerCase().includes("large")
   );
-  const [miningSites, setMiningSites] = useState<string[]>([]);
+
   const statusOptions = [
     "all",
     "pending",
@@ -58,15 +56,6 @@ export function LargeScaleJobCardFilters({
         if (exportersResponse.ok) {
           const exportersData = await exportersResponse.json();
           setExporters(exportersData);
-        }
-
-        // Fetch unique mining sites from existing large scale job cards
-        const miningSitesResponse = await fetch(
-          "/api/job-cards/mining-sites?type=large_scale"
-        );
-        if (miningSitesResponse.ok) {
-          const miningSitesData = await miningSitesResponse.json();
-          setMiningSites(miningSitesData);
         }
       } catch (error) {
         console.error("Error fetching filter data:", error);
@@ -89,7 +78,6 @@ export function LargeScaleJobCardFilters({
       startDate: "",
       endDate: "",
       status: "",
-      miningSite: "",
       humanReadableId: "",
     });
   };

@@ -48,43 +48,49 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
       };
     }
 
-    if (startDate && endDate) {
-      where.createdAt = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
-      };
-    } else if (startDate) {
-      where.createdAt = {
-        gte: new Date(startDate),
-      };
-    } else if (endDate) {
-      where.createdAt = {
-        lte: new Date(endDate),
-      };
-    }
-
-    if (status) {
-      where.status = status;
-    }
-
     const jobCards = await prisma.largeScaleJobCard.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        humanReadableId: true,
+        referenceNumber: true,
+        receivedDate: true,
+        status: true,
+        exporterId: true,
+        createdAt: true,
+        updatedAt: true,
         exporter: {
-          include: {
-            exporterType: true,
+          select: {
+            id: true,
+            name: true,
+            exporterType: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         customsOfficer: true,
         assayOfficer: true,
         technicalDirector: true,
         commodities: {
-          include: {
-            commodity: true,
+          select: {
+            commodity: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         assays: {
-          include: {
+          select: {
+            id: true,
+            method: true,
+            dateOfAnalysis: true,
+            dataSheetDates: true,
+            comments: true,
             measurements: true,
             shipmentType: true,
           },

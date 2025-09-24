@@ -95,6 +95,7 @@ export function JobCardList({ filters }: JobCardListProps) {
   useEffect(() => {
     fetchJobCards();
   }, [fetchJobCards]);
+  console.log({ jobCards });
 
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
@@ -177,14 +178,14 @@ export function JobCardList({ filters }: JobCardListProps) {
                     <div className="flex-shrink-0 h-10 w-10">
                       <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                         <span className="text-sm font-medium text-gray-700">
-                          {jobCard.humanReadableId}
+                          {jobCard.humanReadableId.charAt(0).toUpperCase()}
                         </span>
                       </div>
                     </div>
                     <div className="ml-4">
                       <div className="flex items-center">
                         <p className="text-sm font-medium text-gray-900">
-                          {jobCard.referenceNumber}
+                          {jobCard.humanReadableId}
                         </p>
                         <span
                           className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
