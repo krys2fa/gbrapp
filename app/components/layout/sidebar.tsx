@@ -198,12 +198,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       href: "/payment-receipting",
       icon: <CreditCard className="h-5 w-5" />,
     },
-    {
-      id: "sealing-certification",
-      label: "Sealing & Certification",
-      href: "/sealing-certification",
-      icon: <Award className="h-5 w-5" />,
-    },
+    // {
+    //   id: "sealing-certification",
+    //   label: "Sealing & Certification",
+    //   href: "/sealing-certification",
+    //   icon: <Award className="h-5 w-5" />,
+    // },
     {
       id: "reports",
       label: "Reports",
