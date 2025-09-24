@@ -11,19 +11,24 @@ export async function GET(req: NextRequest) {
     limit = Math.min(limit, 1000);
     const skip = (page - 1) * limit;
 
-    const reference = searchParams.get("reference");
-    const invoice = searchParams.get("invoice");
+    const jobId = searchParams.get("jobId");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
     const where: any = {};
-    if (reference) {
-      where.jobCard = {
-        referenceNumber: { contains: reference, mode: "insensitive" },
-      };
-    }
-    if (invoice) {
-      where.invoiceNumber = { contains: invoice, mode: "insensitive" };
+    if (jobId) {
+      where.OR = [
+        {
+          jobCard: {
+            humanReadableId: { contains: jobId, mode: "insensitive" },
+          },
+        },
+        {
+          largeScaleJobCard: {
+            humanReadableId: { contains: jobId, mode: "insensitive" },
+          },
+        },
+      ];
     }
     if (startDate || endDate) {
       where.createdAt = {};
@@ -60,14 +65,14 @@ export async function GET(req: NextRequest) {
           jobCard: {
             select: {
               id: true,
-              referenceNumber: true,
+              humanReadableId: true,
               exporter: { select: { id: true, name: true } },
             },
           },
           largeScaleJobCard: {
             select: {
               id: true,
-              referenceNumber: true,
+              humanReadableId: true,
               exporter: { select: { id: true, name: true } },
             },
           },

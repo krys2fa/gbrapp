@@ -4,15 +4,14 @@ import { withClientAuth } from "@/app/lib/with-client-auth";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
-import { Receipt, CreditCard, FileText } from "lucide-react";
+import { CreditCard, FileText } from "lucide-react";
 import { TableLoadingSpinner } from "@/app/components/ui/loading-spinner";
 import { toast } from "react-hot-toast";
 
 function PaymentList() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [referenceFilter, setReferenceFilter] = useState("");
-  const [invoiceFilter, setInvoiceFilter] = useState("");
+  const [jobIdFilter, setJobIdFilter] = useState("");
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,8 +19,6 @@ function PaymentList() {
   const [totalCount, setTotalCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
   const itemsPerPage = 10;
-
-    console.log({items})
 
   useEffect(() => {
     // load invoices from server
@@ -31,8 +28,7 @@ function PaymentList() {
         const params = new URLSearchParams();
         params.append("page", String(currentPage));
         params.append("limit", String(itemsPerPage));
-        if (referenceFilter) params.append("reference", referenceFilter);
-        if (invoiceFilter) params.append("invoice", invoiceFilter);
+        if (jobIdFilter) params.append("jobId", jobIdFilter);
         if (startDateFilter) params.append("startDate", startDateFilter);
         if (endDateFilter) params.append("endDate", endDateFilter);
         const res = await fetch(`/api/invoices?${params.toString()}`);
@@ -55,6 +51,7 @@ function PaymentList() {
             map.set(jcId, {
               id: jcId,
               reference: jobCard?.referenceNumber || jcId,
+              humanReadableId: jobCard?.humanReadableId || jcId,
               exporter: jobCard?.exporter?.name || "-",
               assayInvoiceId: null,
               assayInvoiceNumber: null,
@@ -95,7 +92,6 @@ function PaymentList() {
         });
 
         const rows = Array.from(map.values());
-        console.log({rows})
         setItems(rows);
         // fetch fees for these job cards to display receipt numbers
         try {
@@ -191,8 +187,7 @@ function PaymentList() {
     })();
   }, [
     currentPage,
-    referenceFilter,
-    invoiceFilter,
+    jobIdFilter,
     startDateFilter,
     endDateFilter,
     refreshKey,
@@ -210,8 +205,6 @@ function PaymentList() {
   const [payJobCardId, setPayJobCardId] = useState<string | null>(null);
   const [payInvoiceTotal, setPayInvoiceTotal] = useState<number | null>(null);
   const [payIsLargeScale, setPayIsLargeScale] = useState(false);
-
-  console.log({items})
 
   function openPayModal(jobCardId: string, type: "assay" | "wht") {
     setPayJobCardId(jobCardId);
@@ -256,18 +249,10 @@ function PaymentList() {
         <div className="px-4 py-3 bg-white border-b">
           <div className="flex flex-wrap gap-3 items-end">
             <div className="flex flex-col">
-              <label className="text-xs text-gray-600">Reference</label>
+              <label className="text-xs text-gray-600">Job ID</label>
               <input
-                value={referenceFilter}
-                onChange={(e) => setReferenceFilter(e.target.value)}
-                className="mt-1 border rounded px-2 py-1"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="text-xs text-gray-600">Invoice #</label>
-              <input
-                value={invoiceFilter}
-                onChange={(e) => setInvoiceFilter(e.target.value)}
+                value={jobIdFilter}
+                onChange={(e) => setJobIdFilter(e.target.value)}
                 className="mt-1 border rounded px-2 py-1"
               />
             </div>
@@ -304,7 +289,7 @@ function PaymentList() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Reference
+                Job Id
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Exporter
@@ -354,7 +339,7 @@ function PaymentList() {
                       }
                       className="hover:underline"
                     >
-                      {d.reference}
+                      {d.humanReadableId}
                     </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -390,7 +375,7 @@ function PaymentList() {
                       >
                         <FileText className="h-4 w-4 mr-1" /> Assay Invoice
                       </Link>
-                
+
                       {d.assayInvoice?.status !== "paid" && (
                         <button
                           onClick={() => openPayModal(d.id, "assay")}
@@ -399,7 +384,6 @@ function PaymentList() {
                           <CreditCard className="h-4 w-4 mr-1" /> Pay Assay
                         </button>
                       )}
-                
                     </div>
                   </td>
                 </tr>
