@@ -695,6 +695,9 @@ export default function CertificateOfAssayPage() {
                     <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
                       Technical Director
                     </p>
+                    <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
+                      {jobCard?.technicalDirector || "-"}
+                    </p>
                   </div>
                 </div>
 
