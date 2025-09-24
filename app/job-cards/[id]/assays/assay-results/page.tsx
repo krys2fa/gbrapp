@@ -14,6 +14,8 @@ export default function AssayResultsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  console.log(jobCard)
+
   // helper: normalize common units to grams
   function convertToGrams(v: any, unit?: string) {
     const value = Number(v) || 0;

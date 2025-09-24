@@ -47,6 +47,8 @@ export default function AssayDetailPage() {
         const data = await res.json();
         if (mounted) setJobCard(data);
 
+        console.log(data);
+
         // fetch commodity price for this job card's commodity if present
         if (data?.commodityId) {
           // Use stored commodity price from assay if available
@@ -1095,7 +1097,7 @@ export default function AssayDetailPage() {
                       Exporter Authorized Signatory
                     </dt>
                     <dd className="text-xs text-gray-900 text-center uppercase">
-                      {jobCard?.exporter?.authorizedSignatory ||
+                      {jobCard?.teamLeader || jobCard?.assays[0].exporterSignatory || jobCard?.exporter?.authorizedSignatory ||
                         jobCard?.exporter?.contactPerson ||
                         "-"}
                     </dd>
