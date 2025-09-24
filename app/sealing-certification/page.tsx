@@ -55,25 +55,38 @@ function SealingList({
       const regularData = regularRes.ok
         ? await regularRes.json()
         : { jobCards: [], total: 0 };
+      console.log({ regularData });
       const largeScaleData = largeScaleRes.ok
         ? await largeScaleRes.json()
         : { jobCards: [], total: 0 };
 
-      // Add type identifier to each job card
-      const regularJobCards = (regularData.jobCards || []).map((jc: any) => ({
-        ...jc,
-        jobCardType: "regular",
-      }));
-
-      const largeScaleJobCards = (largeScaleData.jobCards || []).map(
-        (jc: any) => ({
+      // Combine both regular and large-scale job cards, and derive their type
+      // from the humanReadableId prefix (LS- or SS-). We add both a
+      // `jobCardPrefix` (LS|SS) and a compatible `jobCardType` string so the
+      // rest of the UI can use either.
+      const merged = [
+        ...(regularData.jobCards || []),
+        ...(largeScaleData.jobCards || []),
+      ].map((jc: any) => {
+        const idSource = String(
+          jc.humanReadableId || jc.referenceNumber || jc.id || ""
+        );
+        const prefix = idSource.startsWith("LS-")
+          ? "LS"
+          : idSource.startsWith("SS-")
+          ? "SS"
+          : jc.jobCardType === "large-scale"
+          ? "LS"
+          : "SS";
+        return {
           ...jc,
-          jobCardType: "large-scale",
-        })
-      );
+          jobCardPrefix: prefix,
+          jobCardType: prefix === "LS" ? "large-scale" : "small-scale",
+        };
+      });
 
-      // Combine and sort by creation date (most recent first)
-      const allJobCards = [...regularJobCards, ...largeScaleJobCards].sort(
+      // Sort by creation date (most recent first)
+      const allJobCards = merged.sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
@@ -205,7 +218,7 @@ function SealingList({
                             }
                             className="hover:underline"
                           >
-                            {jc.humanReadableId || jc.referenceNumber}
+                            {jc.humanReadableId}
                           </Link>
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
@@ -216,18 +229,18 @@ function SealingList({
                           >
                             {jc.jobCardType === "large-scale"
                               ? "Large Scale"
-                              : "Regular"}
+                              : "Small Scale"}
                           </span>
                         </div>
                       </td>
-                    
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {jc.notes
                           ? (jc.notes.match(/Customs Officer: ([^;\n]+)/) ||
                               [])[1] || ""
                           : ""}
-                      </td>
-                     
+                      </td> */}
+
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {findSeal("CUSTOMS_SEAL")}
                       </td>
@@ -243,10 +256,7 @@ function SealingList({
                           {(() => {
                             const hasSealInfo =
                               (jc.seals && jc.seals.length) ||
-                              (jc.notes &&
-                                /Customs Officer/.test(
-                                  jc.notes
-                                ));
+                              (jc.notes && /Customs Officer/.test(jc.notes));
                             return (
                               <button
                                 onClick={() => {
@@ -424,7 +434,7 @@ function AddSealModal({
 }) {
   console.debug("AddSealModal render", { open, jobCardId });
   const [customsOfficerId, setCustomsOfficerId] = useState<string | null>(null);
-   const [customsSeal, setCustomsSeal] = useState("");
+  const [customsSeal, setCustomsSeal] = useState("");
   const [pmmcSeal, setPmmcSeal] = useState("");
   const [otherSeal, setOtherSeal] = useState("");
   const [customsSealId, setCustomsSealId] = useState<string | null>(null);

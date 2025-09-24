@@ -8,34 +8,6 @@ import { Receipt, CreditCard, FileText } from "lucide-react";
 import { TableLoadingSpinner } from "@/app/components/ui/loading-spinner";
 import { toast } from "react-hot-toast";
 
-// temporary dummy data until backend wiring is available
-// const DUMMY = [
-//   {
-//     id: "JC001",
-//     reference: "REF-001",
-//     exporter: "Acme Corp",
-//     invoice: "INV-1001",
-//     receipt: "RCPT-1001",
-//     paymentDate: "2025-08-01",
-//   },
-//   {
-//     id: "JC002",
-//     reference: "REF-002",
-//     exporter: "Beta Ltd",
-//     invoice: "INV-1002",
-//     receipt: "RCPT-1002",
-//     paymentDate: "2025-08-05",
-//   },
-//   {
-//     id: "JC003",
-//     reference: "REF-003",
-//     exporter: "Gamma Inc",
-//     invoice: "INV-1003",
-//     receipt: "RCPT-1003",
-//     paymentDate: "2025-08-10",
-//   },
-// ];
-
 function PaymentList() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +20,8 @@ function PaymentList() {
   const [totalCount, setTotalCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
   const itemsPerPage = 10;
+
+    console.log({items})
 
   useEffect(() => {
     // load invoices from server
@@ -121,6 +95,7 @@ function PaymentList() {
         });
 
         const rows = Array.from(map.values());
+        console.log({rows})
         setItems(rows);
         // fetch fees for these job cards to display receipt numbers
         try {
@@ -235,6 +210,8 @@ function PaymentList() {
   const [payJobCardId, setPayJobCardId] = useState<string | null>(null);
   const [payInvoiceTotal, setPayInvoiceTotal] = useState<number | null>(null);
   const [payIsLargeScale, setPayIsLargeScale] = useState(false);
+
+  console.log({items})
 
   function openPayModal(jobCardId: string, type: "assay" | "wht") {
     setPayJobCardId(jobCardId);
@@ -413,24 +390,7 @@ function PaymentList() {
                       >
                         <FileText className="h-4 w-4 mr-1" /> Assay Invoice
                       </Link>
-                      {/* <Link
-                      href={
-                        d.whtInvoiceId
-                          ? d.isLargeScale
-                            ? `/job-cards/large-scale/${d.id}/invoices/${d.whtInvoiceId}`
-                            : `/job-cards/${d.id}/invoices/${d.whtInvoiceId}`
-                          : d.isLargeScale
-                          ? `/job-cards/large-scale/${d.id}`
-                          : `/job-cards/${d.id}`
-                      }
-                      className={`inline-flex items-center px-3 py-1 text-xs rounded ${
-                        d.whtInvoiceId
-                          ? "bg-green-600 text-white hover:bg-green-700"
-                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      }`}
-                    >
-                      <FileText className="h-4 w-4 mr-1" /> WHT Invoice
-                    </Link> */}
+                
                       {d.assayInvoice?.status !== "paid" && (
                         <button
                           onClick={() => openPayModal(d.id, "assay")}
@@ -439,12 +399,7 @@ function PaymentList() {
                           <CreditCard className="h-4 w-4 mr-1" /> Pay Assay
                         </button>
                       )}
-                      {/* <button
-                      onClick={() => openPayModal(d.id, "wht")}
-                      className="inline-flex items-center px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700"
-                    >
-                      <Receipt className="h-4 w-4 mr-1" /> Pay WHT
-                    </button> */}
+                
                     </div>
                   </td>
                 </tr>
