@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Loader2 } from "lucide-react";
 import { formatDate, formatCurrency } from "@/app/lib/utils";
+import toast from "react-hot-toast";
 
 interface LargeScaleJobCard {
   id: string;
@@ -138,10 +139,24 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
         setTotalPages(data.totalPages);
         setTotalItems(data.total);
       } else {
-        console.error("Failed to fetch large scale job cards");
+        let errorMsg = `Failed to fetch large scale job cards (Status: ${response.status})`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error) {
+            errorMsg += `: ${errorData.error}`;
+          }
+        } catch (parseError) {
+          console.warn("Could not parse error response as JSON:", parseError);
+        }
+        console.error(`API Error ${response.status}:`, errorMsg);
+        toast.error(errorMsg);
       }
     } catch (error) {
-      console.error("Error fetching large scale job cards:", error);
+      const errorMsg = error instanceof Error
+        ? `Network error: ${error.message}`
+        : "An unexpected error occurred while loading job cards";
+      console.error("Fetch error:", error);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -170,19 +185,49 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/job-cards/${id}`, {
+      toast.loading("Deleting job card...", { id: "delete-job-card" });
+
+      const token = localStorage.getItem("auth-token");
+      if (!token) {
+        toast.dismiss("delete-job-card");
+        toast.error("No authentication token found. Please log in again.");
+        return;
+      }
+
+      const response = await fetch(`/api/large-scale-job-cards/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
         setJobCards(jobCards.filter((card) => card.id !== id));
         setDeleteModalOpen(false);
         setJobCardToDelete(null);
+        toast.dismiss("delete-job-card");
+        toast.success("Job card deleted successfully!");
       } else {
-        console.error("Failed to delete job card");
+        let errorMsg = `Failed to delete job card (Status: ${response.status})`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error) {
+            errorMsg += `: ${errorData.error}`;
+          }
+        } catch (parseError) {
+          console.warn("Could not parse error response as JSON:", parseError);
+        }
+        console.error(`Delete API Error ${response.status}:`, errorMsg);
+        toast.dismiss("delete-job-card");
+        toast.error(errorMsg);
       }
     } catch (error) {
-      console.error("Error deleting job card:", error);
+      const errorMsg = error instanceof Error
+        ? `Network error: ${error.message}`
+        : "An unexpected error occurred while deleting the job card";
+      console.error("Delete error:", error);
+      toast.dismiss("delete-job-card");
+      toast.error(errorMsg);
     }
   };
 

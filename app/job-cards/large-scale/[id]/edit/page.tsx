@@ -173,14 +173,32 @@ function EditLargeScaleJobCardPage() {
     // Fetch job card data and reference data
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem("auth-token");
+        if (!token) {
+          const errorMsg = "No authentication token found. Please log in again.";
+          console.error(errorMsg);
+          toast.error(errorMsg);
+          setError(errorMsg);
+          setLoading(false);
+          return;
+        }
+
         const [jobCardRes, exportersRes, commoditiesRes] = await Promise.all([
-          fetch(`/api/large-scale-job-cards/${id}`),
-          fetch("/api/exporters"),
-          fetch("/api/commodity"),
+          fetch(`/api/large-scale-job-cards/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("/api/exporters", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("/api/commodity", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
 
+        // Handle job card response
         if (jobCardRes.ok) {
           const jobCardData: LargeScaleJobCard = await jobCardRes.json();
+          toast.success("Job card data loaded successfully");
 
           // Check if editing should be restricted
           const hasAssays = jobCardData.assays && jobCardData.assays.length > 0;
@@ -234,21 +252,46 @@ function EditLargeScaleJobCardPage() {
             certificateNumber: jobCardData.certificateNumber || "",
           });
         } else {
-          throw new Error("Failed to fetch job card");
+          let errorMsg = `Failed to load job card (Status: ${jobCardRes.status})`;
+          try {
+            const errorData = await jobCardRes.json();
+            if (errorData.error) {
+              errorMsg += `: ${errorData.error}`;
+            }
+          } catch (parseError) {
+            console.warn("Could not parse job card error response:", parseError);
+          }
+          console.error(`Job card API Error ${jobCardRes.status}:`, errorMsg);
+          toast.error(errorMsg);
+          setError(errorMsg);
         }
 
+        // Handle exporters response
         if (exportersRes.ok) {
           const exportersData = await exportersRes.json();
           setExporters(exportersData);
+        } else {
+          const errorMsg = `Failed to load exporters (Status: ${exportersRes.status})`;
+          console.error(`Exporters API Error ${exportersRes.status}:`, errorMsg);
+          toast.error(errorMsg);
         }
 
+        // Handle commodities response
         if (commoditiesRes.ok) {
           const commoditiesData = await commoditiesRes.json();
           setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
+        } else {
+          const errorMsg = `Failed to load commodities (Status: ${commoditiesRes.status})`;
+          console.error(`Commodities API Error ${commoditiesRes.status}:`, errorMsg);
+          toast.error(errorMsg);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
-        setError("Failed to load job card data. Please try again.");
+        const errorMsg = error instanceof Error
+          ? `Network error loading data: ${error.message}`
+          : "An unexpected error occurred while loading data";
+        console.error("Fetch error:", error);
+        toast.error(errorMsg);
+        setError(errorMsg);
       } finally {
         setLoading(false);
       }

@@ -113,22 +113,72 @@ function LargeScaleJobCardDetailPage() {
 
   useEffect(() => {
     const fetchJobCard = async () => {
-      if (!params?.id) return;
+      if (!params?.id) {
+        const errorMsg = "No job card ID provided in URL parameters";
+        console.error(errorMsg);
+        toast.error(errorMsg);
+        setError(errorMsg);
+        setLoading(false);
+        return;
+      }
 
       try {
-        const response = await fetch(`/api/large-scale-job-cards/${params.id}`);
+        const token = localStorage.getItem("auth-token");
+        if (!token) {
+          const errorMsg = "No authentication token found. Please log in again.";
+          console.error(errorMsg);
+          toast.error(errorMsg);
+          setError(errorMsg);
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`/api/large-scale-job-cards/${params.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (response.ok) {
           const data = await response.json();
           setJobCard(data);
+          toast.success("Job card loaded successfully");
+        } else if (response.status === 401) {
+          const errorMsg = "Authentication failed. Please log in again.";
+          console.error(`API Error ${response.status}:`, errorMsg);
+          toast.error(errorMsg);
+          setError(errorMsg);
+        } else if (response.status === 403) {
+          const errorMsg = "You don't have permission to view this job card.";
+          console.error(`API Error ${response.status}:`, errorMsg);
+          toast.error(errorMsg);
+          setError(errorMsg);
         } else if (response.status === 404) {
-          setError("Large scale job card not found");
+          const errorMsg = `Large scale job card with ID ${params.id} not found`;
+          console.error(`API Error ${response.status}:`, errorMsg);
+          toast.error(errorMsg);
+          setError(errorMsg);
         } else {
-          setError("Failed to load job card details");
+          let errorMsg = `Failed to load job card details (Status: ${response.status})`;
+          try {
+            const errorData = await response.json();
+            if (errorData.error) {
+              errorMsg += `: ${errorData.error}`;
+            }
+          } catch (parseError) {
+            console.warn("Could not parse error response as JSON:", parseError);
+          }
+          console.error(`API Error ${response.status}:`, errorMsg);
+          toast.error(errorMsg);
+          setError(errorMsg);
         }
       } catch (error) {
-        console.error("Error fetching job card:", error);
-        setError("An unexpected error occurred");
+        const errorMsg = error instanceof Error
+          ? `Network error: ${error.message}`
+          : "An unexpected error occurred while loading the job card";
+        console.error("Fetch error:", error);
+        toast.error(errorMsg);
+        setError(errorMsg);
       } finally {
         setLoading(false);
       }

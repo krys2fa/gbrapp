@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { PrinterIcon } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
 import { formatDate, formatCurrency } from "@/app/lib/utils";
+import toast from "react-hot-toast";
 
 export default function AssayResultsPage() {
   const params = useParams();
@@ -223,20 +224,67 @@ export default function AssayResultsPage() {
 
   useEffect(() => {
     if (!id) {
+      const errorMsg = "No job card ID provided in URL parameters";
+      console.error(errorMsg);
+      toast.error(errorMsg);
+      setError(errorMsg);
       setLoading(false);
       return;
     }
+
+    if (!assayId) {
+      const errorMsg = "No assay ID provided in URL parameters";
+      console.error(errorMsg);
+      toast.error(errorMsg);
+      setError(errorMsg);
+      setLoading(false);
+      return;
+    }
+
     let mounted = true;
     (async () => {
       try {
-        const res = await fetch(`/api/large-scale-job-cards/${id}`);
-        if (!res.ok) throw new Error("Failed to fetch job card");
-        const data = await res.json();
-        if (mounted) {
-          setJobCard(data);
+        const token = localStorage.getItem("auth-token");
+        if (!token) {
+          const errorMsg = "No authentication token found. Please log in again.";
+          console.error(errorMsg);
+          toast.error(errorMsg);
+          if (mounted) setError(errorMsg);
+          if (mounted) setLoading(false);
+          return;
+        }
+
+        const res = await fetch(`/api/large-scale-job-cards/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          let errorMsg = `Failed to fetch job card (Status: ${res.status})`;
+          try {
+            const errorData = await res.json();
+            if (errorData.error) {
+              errorMsg += `: ${errorData.error}`;
+            }
+          } catch (parseError) {
+            console.warn("Could not parse error response as JSON:", parseError);
+          }
+          console.error(`API Error ${res.status}:`, errorMsg);
+          toast.error(errorMsg);
+          if (mounted) setError(errorMsg);
+        } else {
+          const data = await res.json();
+          if (mounted) {
+            setJobCard(data);
+            toast.success("Assay data loaded successfully");
+          }
         }
       } catch (e: any) {
-        if (mounted) setError(e?.message || "Failed to load data");
+        const errorMsg = e instanceof Error
+          ? `Network error: ${e.message}`
+          : "An unexpected error occurred while loading assay data";
+        console.error("Fetch error:", e);
+        toast.error(errorMsg);
+        if (mounted) setError(errorMsg);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -244,7 +292,7 @@ export default function AssayResultsPage() {
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, [id, assayId]);
 
   if (loading) {
     return (
