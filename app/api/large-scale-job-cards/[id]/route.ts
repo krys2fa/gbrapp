@@ -296,6 +296,11 @@ async function deleteLargeScaleJobCard(
     // Check if job card exists
     const existingJobCard = await prisma.largeScaleJobCard.findUnique({
       where: { id },
+      include: {
+        assays: true,
+        invoices: true,
+        fees: true,
+      },
     });
 
     if (!existingJobCard) {
@@ -305,13 +310,46 @@ async function deleteLargeScaleJobCard(
       );
     }
 
-    // Delete the job card (commodities will be deleted automatically due to cascade)
+    // Delete associated records manually (since cascade delete is not set up for all relations)
+    const deletedRecords = {
+      assays: 0,
+      invoices: 0,
+      fees: 0,
+    };
+
+    // Delete assay measurements first (cascade will handle this, but let's be explicit)
+    for (const assay of existingJobCard.assays) {
+      const measurementCount = await prisma.largeScaleAssayMeasurement.count({
+        where: { assayId: assay.id },
+      });
+      deletedRecords.assays += measurementCount;
+    }
+
+    // Delete invoices associated with this job card
+    const invoiceDeleteResult = await prisma.invoice.deleteMany({
+      where: { largeScaleJobCardId: id },
+    });
+    deletedRecords.invoices = invoiceDeleteResult.count;
+
+    // Delete fees associated with this job card
+    const feeDeleteResult = await prisma.fee.deleteMany({
+      where: { largeScaleJobCardId: id },
+    });
+    deletedRecords.fees = feeDeleteResult.count;
+
+    // Delete the job card (this will cascade delete assays, measurements, and commodities)
     await prisma.largeScaleJobCard.delete({
       where: { id },
     });
 
+    void logger.info(LogCategory.JOB_CARD, "Large scale job card deleted with associated records", {
+      jobCardId: id,
+      deletedRecords,
+    });
+
     return NextResponse.json({
-      message: "Large scale job card deleted successfully",
+      message: "Large scale job card and all associated records deleted successfully",
+      deletedRecords,
     });
   } catch (error) {
     void logger.error(
@@ -331,4 +369,4 @@ async function deleteLargeScaleJobCard(
 // Export the handlers
 export const GET = withAuth(getLargeScaleJobCard, []);
 export const PUT = updateLargeScaleJobCard;
-export const DELETE = deleteLargeScaleJobCard;
+export const DELETE = withAuth(deleteLargeScaleJobCard, []);
