@@ -1059,7 +1059,7 @@ export default function AssayDetailPage() {
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Security Seal No.:
                     </dt>
-                    <dd className="text-xs text-gray-900 text-center">
+                    <dd className="text-xs text-gray-900 text-center font-bold">
                       {assay.securitySealNo || "-"}
                     </dd>
                   </div>
@@ -1070,7 +1070,7 @@ export default function AssayDetailPage() {
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       GOLDBOD Seal No.:
                     </dt>
-                    <dd className="text-xs text-gray-900 text-center">
+                    <dd className="text-xs text-gray-900 text-center font-bold">
                       {assay.goldbodSealNo || "-"}
                     </dd>
                   </div>
@@ -1081,7 +1081,7 @@ export default function AssayDetailPage() {
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Customs Seal No.:
                     </dt>
-                    <dd className="text-xs text-gray-900 text-center">
+                    <dd className="text-xs text-gray-900 text-center font-bold">
                       {assay.customsSealNo || "-"}
                     </dd>
                   </div>
