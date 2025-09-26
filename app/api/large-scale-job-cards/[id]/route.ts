@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { withAuth } from "@/app/lib/with-auth";
 import * as _jose from "jose";
 import { logger, LogCategory } from "@/lib/logger";
 
@@ -21,9 +22,6 @@ async function getLargeScaleJobCard(
             exporterType: true,
           },
         },
-        customsOfficer: true,
-        assayOfficer: true,
-        technicalDirector: true,
         commodities: {
           include: {
             commodity: true,
@@ -331,6 +329,6 @@ async function deleteLargeScaleJobCard(
 }
 
 // Export the handlers
-export const GET = getLargeScaleJobCard;
+export const GET = withAuth(getLargeScaleJobCard, []);
 export const PUT = updateLargeScaleJobCard;
 export const DELETE = deleteLargeScaleJobCard;

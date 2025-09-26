@@ -105,7 +105,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
 
       const token = localStorage.getItem("auth-token");
       const response = await fetch(
-        `/api/large-scale-job-cards?${queryParams.toString()}`,
+        `/api/large-scale-job-cards/assays/summaries?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -116,59 +116,27 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
       if (response.ok) {
         const data = await response.json();
 
-        // Transform the data to match the expected format
-        const transformedJobCards = data.jobCards.map((jobCard: any) => {
-          // Get the most recent assay if available
-          const assay =
-            jobCard.assays && jobCard.assays.length > 0
-              ? jobCard.assays[0]
-              : null;
-          let assaySummary = null;
-
-          if (assay) {
-            assaySummary = {
-              id: assay.id,
-              method: assay.method,
-              pieces: assay.pieces || 0,
-              totalNetGoldWeight: assay.totalNetGoldWeight || 0,
-              totalNetSilverWeight: assay.totalNetSilverWeight || 0,
-              totalNetGoldWeightOz: assay.totalNetGoldWeightOz || 0,
-              totalNetSilverWeightOz: assay.totalNetSilverWeightOz || 0,
-              totalGoldValue: assay.totalGoldValue || 0,
-              totalSilverValue: assay.totalSilverValue || 0,
-              totalCombinedValue: assay.totalCombinedValue || 0,
-              totalValueGhs: assay.totalValueGhs || 0,
-              dateOfAnalysis: assay.dateOfAnalysis,
-              signatory: assay.signatory || "",
-              measurementCount: assay.measurements
-                ? assay.measurements.length
-                : 0,
-            };
-          }
-
-          return {
-            id: jobCard.id,
-            humanReadableId: jobCard.humanReadableId,
-            referenceNumber: jobCard.referenceNumber,
-            receivedDate: jobCard.receivedDate,
-            status: jobCard.status,
-            exporter: {
-              name: jobCard.exporter.name,
-              id: jobCard.exporter.id,
+        // The assays/summaries endpoint already returns data in the expected format
+        const transformedJobCards = data.assaySummaries.map((summary: any) => ({
+          id: summary.id,
+          humanReadableId: summary.humanReadableId,
+          referenceNumber: summary.referenceNumber,
+          receivedDate: summary.receivedDate,
+          status: summary.status,
+          exporter: {
+            name: summary.exporter.name,
+            exporterType: {
+              name: summary.exporter.exporterType,
             },
-            commodities: jobCard.commodities
-              ? jobCard.commodities.map((c: any) => c.commodity.name)
-              : [],
-            unitOfMeasure: jobCard.unitOfMeasure,
-            assaySummary,
-            _count: jobCard._count,
-            invoices: jobCard.invoices,
-          };
-        });
+          },
+          commodities: summary.commodities,
+          unitOfMeasure: summary.unitOfMeasure,
+          assaySummary: summary.assaySummary,
+        }));
 
         setJobCards(transformedJobCards);
-        setTotalPages(data.pagination?.pages || 1);
-        setTotalItems(data.pagination?.total || 0);
+        setTotalPages(data.totalPages);
+        setTotalItems(data.total);
       } else {
         console.error("Failed to fetch large scale job cards");
       }
@@ -373,20 +341,24 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Link
-                      href={`/job-cards/large-scale/${jobCard.id}`}
-                      className="text-indigo-600 hover:text-indigo-900 p-1"
-                      title="View"
-                    >
-                      <EyeIcon className="h-5 w-5" />
-                    </Link>
-                    <Link
-                      href={`/job-cards/large-scale/${jobCard.id}/edit`}
-                      className="text-blue-600 hover:text-blue-900 p-1"
-                      title="Edit"
-                    >
-                      <PencilSquareIcon className="h-5 w-5" />
-                    </Link>
+                    {jobCard.assaySummary && (
+                      <>
+                        <Link
+                          href={`/job-cards/large-scale/${jobCard.id}`}
+                          className="text-indigo-600 hover:text-indigo-900 p-1"
+                          title="View"
+                        >
+                          <EyeIcon className="h-5 w-5" />
+                        </Link>
+                        <Link
+                          href={`/job-cards/large-scale/${jobCard.id}/edit`}
+                          className="text-blue-600 hover:text-blue-900 p-1"
+                          title="Edit"
+                        >
+                          <PencilSquareIcon className="h-5 w-5" />
+                        </Link>
+                      </>
+                    )}
                     <button
                       onClick={() => {
                         setJobCardToDelete(jobCard.id);
