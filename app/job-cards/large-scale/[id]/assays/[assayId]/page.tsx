@@ -828,7 +828,7 @@ export default function AssayResultsPage() {
                       TOTAL VALUE OF SHIPMENT (GOLD & SILVER):
                     </dt>
                     <dd className="text-sm font-semibold text-gray-900 ml-1">
-                      {formatCurrency(assay?.totalValueGhs, "USD")}
+                      {formatCurrency(assay?.totalCombinedValue, "USD")}
                     </dd>
                   </div>
                 </div>
@@ -839,7 +839,7 @@ export default function AssayResultsPage() {
                       TOTAL VALUE OF SHIPMENT (GOLD & SILVER):
                     </dt>
                     <dd className="text-sm font-semibold text-gray-900 ml-1">
-                      {formatCurrency(assay?.totalCombinedValue, "GHS")}
+                      {formatCurrency(assay?.totalValueGhs, "GHS")}
                     </dd>
                   </div>
                 </div>

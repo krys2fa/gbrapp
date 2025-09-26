@@ -388,9 +388,13 @@ async function createLargeScaleJobCard(req: NextRequest) {
           if (!sampleBottleDates) return null;
           const parsed = new Date(sampleBottleDates);
           if (isNaN(parsed.getTime())) {
-            void logger.warn(LogCategory.JOB_CARD, "Invalid sampleBottleDates format, using null", {
-              sampleBottleDates,
-            });
+            void logger.warn(
+              LogCategory.JOB_CARD,
+              "Invalid sampleBottleDates format, using null",
+              {
+                sampleBottleDates,
+              }
+            );
             return null;
           }
           return parsed;

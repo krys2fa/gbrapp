@@ -342,13 +342,18 @@ async function deleteLargeScaleJobCard(
       where: { id },
     });
 
-    void logger.info(LogCategory.JOB_CARD, "Large scale job card deleted with associated records", {
-      jobCardId: id,
-      deletedRecords,
-    });
+    void logger.info(
+      LogCategory.JOB_CARD,
+      "Large scale job card deleted with associated records",
+      {
+        jobCardId: id,
+        deletedRecords,
+      }
+    );
 
     return NextResponse.json({
-      message: "Large scale job card and all associated records deleted successfully",
+      message:
+        "Large scale job card and all associated records deleted successfully",
       deletedRecords,
     });
   } catch (error) {

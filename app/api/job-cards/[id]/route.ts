@@ -3,6 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { logger, LogCategory } from "@/lib/logger";
 import { generateAssayNumber } from "@/lib/assay-number-generator";
+import { withAuth } from "@/app/lib/with-auth";
 
 // Helper to extract ID from the URL
 function getIdFromUrl(req: NextRequest): string | null {
@@ -798,17 +799,12 @@ export async function PUT(req: NextRequest) {
 /**
  * DELETE handler for deleting a job card
  */
-export async function DELETE(req: NextRequest) {
+async function deleteJobCard(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const id = getIdFromUrl(req);
-    void logger.debug(LogCategory.JOB_CARD, "DELETE job card request", { id });
-
-    if (!id) {
-      return NextResponse.json(
-        { error: "Missing job ID" },
-        { status: 400 }
-      );
-    }
+    const { id } = await params;
 
     // Check if job card exists
     const existingJobCard = await prisma.jobCard.findUnique({
@@ -837,87 +833,85 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Check if job card has assays (business rule: cannot delete if assays exist)
-    if (existingJobCard.assays && existingJobCard.assays.length > 0) {
-      return NextResponse.json(
-        { error: "Cannot delete job card with existing assays" },
-        { status: 400 }
-      );
+    // Delete associated records manually (since cascade delete is not set up for all relations)
+    const deletedRecords = {
+      assays: 0,
+      measurements: 0,
+      invoices: 0,
+      fees: 0,
+      levies: 0,
+      seals: 0,
+    };
+
+    // Delete assay measurements first
+    for (const assay of existingJobCard.assays) {
+      const measurementDeleteResult = await prisma.assayMeasurement.deleteMany({
+        where: { assayId: assay.id },
+      });
+      deletedRecords.measurements += measurementDeleteResult.count;
+    }
+    deletedRecords.assays = existingJobCard.assays.length;
+
+    // Delete levies related to invoices
+    for (const invoice of existingJobCard.invoices) {
+      const levyDeleteResult = await prisma.levy.deleteMany({
+        where: { invoiceId: invoice.id },
+      });
+      deletedRecords.levies += levyDeleteResult.count;
     }
 
-    // Start transaction for cascade deletion
-    void logger.info(
-      LogCategory.JOB_CARD,
-      "Starting delete transaction for job card",
-      { id }
-    );
-    await prisma.$transaction(async (tx) => {
-      void logger.debug(
-        LogCategory.JOB_CARD,
-        "Deleting assay measurements in transaction",
-        { id }
-      );
-      // Delete assay measurements (through assays, but assays should be empty due to business rule)
-      for (const assay of existingJobCard.assays) {
-        void logger.debug(
-          LogCategory.JOB_CARD,
-          "Deleting measurements for assay",
-          { assayId: assay.id }
-        );
-        await tx.assayMeasurement.deleteMany({
-          where: { assayId: assay.id },
-        });
-      }
+    // Delete invoices
+    const invoiceDeleteResult = await prisma.invoice.deleteMany({
+      where: { jobCardId: id },
+    });
+    deletedRecords.invoices = invoiceDeleteResult.count;
 
-      // Delete assays (should be empty due to business rule, but delete anyway)
-      await tx.assay.deleteMany({
-        where: { jobCardId: id },
-      });
+    // Delete fees
+    const feeDeleteResult = await prisma.fee.deleteMany({
+      where: { jobCardId: id },
+    });
+    deletedRecords.fees = feeDeleteResult.count;
 
-      // Delete levies related to invoices
-      for (const invoice of existingJobCard.invoices) {
-        await tx.levy.deleteMany({
-          where: { invoiceId: invoice.id },
-        });
-      }
+    // Delete levies directly related to job card
+    const levyDeleteResult = await prisma.levy.deleteMany({
+      where: { jobCardId: id },
+    });
+    deletedRecords.levies += levyDeleteResult.count;
 
-      // Delete invoices
-      await tx.invoice.deleteMany({
-        where: { jobCardId: id },
-      });
+    // Delete seals
+    const sealDeleteResult = await prisma.seal.deleteMany({
+      where: { jobCardId: id },
+    });
+    deletedRecords.seals = sealDeleteResult.count;
 
-      // Delete fees
-      await tx.fee.deleteMany({
-        where: { jobCardId: id },
-      });
-
-      // Delete levies directly related to job card
-      await tx.levy.deleteMany({
-        where: { jobCardId: id },
-      });
-
-      // Delete seals
-      await tx.seal.deleteMany({
-        where: { jobCardId: id },
-      });
-
-      // Finally, delete the job card
-      await tx.jobCard.delete({
-        where: { id },
-      });
+    // Finally, delete the job card (this will cascade delete assays)
+    await prisma.jobCard.delete({
+      where: { id },
     });
 
-    return NextResponse.json(
-      { message: "Job card deleted successfully" },
-      { status: 200 }
+    void logger.info(
+      LogCategory.JOB_CARD,
+      "Job card deleted with all associated records",
+      {
+        jobCardId: id,
+        deletedRecords,
+      }
     );
+
+    return NextResponse.json({
+      message: "Job card and all associated records deleted successfully",
+      deletedRecords,
+    });
   } catch (error) {
     void logger.error(LogCategory.JOB_CARD, "Error deleting job card", {
       error: error instanceof Error ? error.message : String(error),
     });
     return NextResponse.json(
-      { error: "Error deleting job card" },
+      { error: "Failed to delete job card" },
       { status: 500 }
     );
   }
 }
+
+// Export the handlers
+export const DELETE = withAuth(deleteJobCard, []);
