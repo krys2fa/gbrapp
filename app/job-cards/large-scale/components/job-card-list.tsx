@@ -20,6 +20,10 @@ interface LargeScaleJobCard {
   exporter: {
     name: string;
     id: string;
+    exporterType?: {
+      id: string;
+      name: string;
+    };
   };
   commodities?: string[];
   unitOfMeasure?: string;
@@ -101,7 +105,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
 
       const token = localStorage.getItem("auth-token");
       const response = await fetch(
-        `/api/large-scale-job-cards/assays/summaries?${queryParams.toString()}`,
+        `/api/large-scale-job-cards?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -111,9 +115,53 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
 
       if (response.ok) {
         const data = await response.json();
-        setJobCards(data.assaySummaries || []);
-        setTotalPages(data.totalPages || 1);
-        setTotalItems(data.total || 0);
+        
+        // Transform the data to match the expected format
+        const transformedJobCards = data.jobCards.map((jobCard: any) => {
+          // Get the most recent assay if available
+          const assay = jobCard.assays && jobCard.assays.length > 0 ? jobCard.assays[0] : null;
+          let assaySummary = null;
+
+          if (assay) {
+            assaySummary = {
+              id: assay.id,
+              method: assay.method,
+              pieces: assay.pieces || 0,
+              totalNetGoldWeight: assay.totalNetGoldWeight || 0,
+              totalNetSilverWeight: assay.totalNetSilverWeight || 0,
+              totalNetGoldWeightOz: assay.totalNetGoldWeightOz || 0,
+              totalNetSilverWeightOz: assay.totalNetSilverWeightOz || 0,
+              totalGoldValue: assay.totalGoldValue || 0,
+              totalSilverValue: assay.totalSilverValue || 0,
+              totalCombinedValue: assay.totalCombinedValue || 0,
+              totalValueGhs: assay.totalValueGhs || 0,
+              dateOfAnalysis: assay.dateOfAnalysis,
+              signatory: assay.signatory || "",
+              measurementCount: assay.measurements ? assay.measurements.length : 0,
+            };
+          }
+
+          return {
+            id: jobCard.id,
+            humanReadableId: jobCard.humanReadableId,
+            referenceNumber: jobCard.referenceNumber,
+            receivedDate: jobCard.receivedDate,
+            status: jobCard.status,
+            exporter: {
+              name: jobCard.exporter.name,
+              id: jobCard.exporter.id,
+            },
+            commodities: jobCard.commodities ? jobCard.commodities.map((c: any) => c.commodity.name) : [],
+            unitOfMeasure: jobCard.unitOfMeasure,
+            assaySummary,
+            _count: jobCard._count,
+            invoices: jobCard.invoices,
+          };
+        });
+        
+        setJobCards(transformedJobCards);
+        setTotalPages(data.pagination?.pages || 1);
+        setTotalItems(data.pagination?.total || 0);
       } else {
         console.error("Failed to fetch large scale job cards");
       }
