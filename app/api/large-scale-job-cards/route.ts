@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { withAuth } from "@/app/lib/with-auth";
 import * as jose from "jose";
 import { generateAssayNumber } from "@/lib/assay-number-generator";
 import { generateJobCardNumber } from "@/lib/job-card-number-generator";
@@ -9,18 +10,28 @@ import { logger, LogCategory } from "@/lib/logger";
  * GET handler for fetching all large scale job cards with optional filtering
  */
 async function getAllLargeScaleJobCards(req: NextRequest) {
+  let exporterId: string | null = null;
+  let exporterTypeId: string | null = null;
+  let reference: string | null = null;
+  let humanReadableId: string | null = null;
+  let startDate: string | null = null;
+  let endDate: string | null = null;
+  let status: string | null = null;
+  let page = 1;
+  let limit = 10;
+
   try {
     // Extract query parameters for filtering
     const { searchParams } = new URL(req.url);
-    const exporterId = searchParams.get("exporterId");
-    const exporterTypeId = searchParams.get("exporterTypeId");
-    const reference = searchParams.get("reference");
-    const humanReadableId = searchParams.get("humanReadableId");
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
-    const status = searchParams.get("status");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
+    exporterId = searchParams.get("exporterId");
+    exporterTypeId = searchParams.get("exporterTypeId");
+    reference = searchParams.get("reference");
+    humanReadableId = searchParams.get("humanReadableId");
+    startDate = searchParams.get("startDate");
+    endDate = searchParams.get("endDate");
+    status = searchParams.get("status");
+    page = parseInt(searchParams.get("page") || "1");
+    limit = parseInt(searchParams.get("limit") || "10");
     const skip = (page - 1) * limit;
 
     // Build where clause based on filters
@@ -63,17 +74,8 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
           select: {
             id: true,
             name: true,
-            exporterType: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
           },
         },
-        customsOfficer: true,
-        assayOfficer: true,
-        technicalDirector: true,
         commodities: {
           select: {
             commodity: {
@@ -89,12 +91,23 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
             id: true,
             method: true,
             dateOfAnalysis: true,
-            dataSheetDates: true,
-            comments: true,
-            measurements: true,
-            shipmentType: true,
+            totalNetGoldWeight: true,
+            totalNetSilverWeight: true,
+            totalNetGoldWeightOz: true,
+            totalNetSilverWeightOz: true,
+            totalGoldValue: true,
+            totalSilverValue: true,
+            totalCombinedValue: true,
+            totalValueGhs: true,
+            signatory: true,
+            _count: {
+              select: {
+                measurements: true,
+              },
+            },
           },
           orderBy: { dateOfAnalysis: "desc" },
+          take: 1,
         },
         invoices: {
           select: {
@@ -131,6 +144,18 @@ async function getAllLargeScaleJobCards(req: NextRequest) {
       "Error fetching large scale job cards",
       {
         error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        filters: {
+          exporterId,
+          exporterTypeId,
+          reference,
+          humanReadableId,
+          startDate,
+          endDate,
+          status,
+          page,
+          limit,
+        },
       }
     );
     return NextResponse.json(
@@ -442,5 +467,5 @@ async function createLargeScaleJobCard(req: NextRequest) {
 }
 
 // Export the handlers
-export const GET = getAllLargeScaleJobCards;
+export const GET = withAuth(getAllLargeScaleJobCards, []);
 export const POST = createLargeScaleJobCard;

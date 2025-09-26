@@ -115,11 +115,14 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Transform the data to match the expected format
         const transformedJobCards = data.jobCards.map((jobCard: any) => {
           // Get the most recent assay if available
-          const assay = jobCard.assays && jobCard.assays.length > 0 ? jobCard.assays[0] : null;
+          const assay =
+            jobCard.assays && jobCard.assays.length > 0
+              ? jobCard.assays[0]
+              : null;
           let assaySummary = null;
 
           if (assay) {
@@ -137,7 +140,9 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
               totalValueGhs: assay.totalValueGhs || 0,
               dateOfAnalysis: assay.dateOfAnalysis,
               signatory: assay.signatory || "",
-              measurementCount: assay.measurements ? assay.measurements.length : 0,
+              measurementCount: assay.measurements
+                ? assay.measurements.length
+                : 0,
             };
           }
 
@@ -151,14 +156,16 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
               name: jobCard.exporter.name,
               id: jobCard.exporter.id,
             },
-            commodities: jobCard.commodities ? jobCard.commodities.map((c: any) => c.commodity.name) : [],
+            commodities: jobCard.commodities
+              ? jobCard.commodities.map((c: any) => c.commodity.name)
+              : [],
             unitOfMeasure: jobCard.unitOfMeasure,
             assaySummary,
             _count: jobCard._count,
             invoices: jobCard.invoices,
           };
         });
-        
+
         setJobCards(transformedJobCards);
         setTotalPages(data.pagination?.pages || 1);
         setTotalItems(data.pagination?.total || 0);
@@ -441,8 +448,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                   className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="sr-only">Previous</span>‹
-                                        <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
-
+                  <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   const page = Math.max(1, currentPage - 2) + i;
@@ -469,8 +475,7 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                   className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="sr-only">Next</span>›
-                                        <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
-
+                  <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
               </nav>
             </div>
