@@ -345,12 +345,18 @@ async function createLargeScaleJobCard(req: NextRequest) {
     let assay = null;
     if (assayMethod || dateOfAnalysis || assayersData) {
       // Debug logging for dateOfAnalysis
-      void logger.info(LogCategory.JOB_CARD, "Creating assay with dateOfAnalysis", {
-        dateOfAnalysis,
-        dateOfAnalysisType: typeof dateOfAnalysis,
-        parsedDate: dateOfAnalysis ? new Date(dateOfAnalysis) : null,
-        parsedDateValid: dateOfAnalysis ? !isNaN(new Date(dateOfAnalysis).getTime()) : false,
-      });
+      void logger.info(
+        LogCategory.JOB_CARD,
+        "Creating assay with dateOfAnalysis",
+        {
+          dateOfAnalysis,
+          dateOfAnalysisType: typeof dateOfAnalysis,
+          parsedDate: dateOfAnalysis ? new Date(dateOfAnalysis) : null,
+          parsedDateValid: dateOfAnalysis
+            ? !isNaN(new Date(dateOfAnalysis).getTime())
+            : false,
+        }
+      );
 
       const assayData: any = {
         jobCardId: jobCard.id,
@@ -366,16 +372,30 @@ async function createLargeScaleJobCard(req: NextRequest) {
           if (!dateOfAnalysis) return new Date();
           const parsed = new Date(dateOfAnalysis);
           if (isNaN(parsed.getTime())) {
-            void logger.warn(LogCategory.JOB_CARD, "Invalid dateOfAnalysis format, using current date", {
-              dateOfAnalysis,
-              parsedDate: parsed,
-            });
+            void logger.warn(
+              LogCategory.JOB_CARD,
+              "Invalid dateOfAnalysis format, using current date",
+              {
+                dateOfAnalysis,
+                parsedDate: parsed,
+              }
+            );
             return new Date();
           }
           return parsed;
         })(),
         sampleBottleDates: sampleBottleDates || null,
-        dataSheetDates: dataSheetDates || null,
+        dataSheetDates: (() => {
+          if (!dataSheetDates) return null;
+          const parsed = new Date(dataSheetDates);
+          if (isNaN(parsed.getTime())) {
+            void logger.warn(LogCategory.JOB_CARD, "Invalid dataSheetDates format, using null", {
+              dataSheetDates,
+            });
+            return null;
+          }
+          return parsed;
+        })(),
         numberOfSamples: numberOfSamples ? parseInt(numberOfSamples) : 1,
         sampleType: sampleType || "capillary",
         shipmentNumber: shipmentNumber,

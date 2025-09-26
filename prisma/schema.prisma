@@ -490,7 +490,7 @@ model LargeScaleAssay {
   customsSealNo          String?
   shipmentNumber         String?
   dateOfAnalysis         DateTime
-  dataSheetDates         String?
+  dataSheetDates         DateTime?
   sampleBottleDates      String?
   numberOfSamples        Int                          @default(1)
   numberOfBars           Int                          @default(1)

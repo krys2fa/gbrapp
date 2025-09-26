@@ -123,7 +123,6 @@ async function getAssaySummaries(request: NextRequest) {
               totalValueGhs: true,
               dateOfAnalysis: true,
               signatory: true,
-              // Excluding dataSheetDates due to type mismatch in production
             },
           },
           exporter: {
