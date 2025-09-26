@@ -630,8 +630,8 @@ function NewLargeScaleJobCardPage() {
     // Calculate values
     const totalGoldValue = Number(totalNetGoldWeightOz) * commodityPrice;
     const totalSilverValue = Number(totalNetSilverWeightOz) * pricePerOz;
-    const totalCombinedValue = totalGoldValue + totalSilverValue;
-    const totalValueGhs = Number(totalCombinedValue) * exchangeRate;
+    const totalCombinedValue = Number(totalGoldValue.toFixed(2)) + Number(totalSilverValue.toFixed(2));
+    const totalValueGhs = totalCombinedValue * exchangeRate;
 
     return {
       totalNetGoldWeight: totalNetGoldWeightGrams,
