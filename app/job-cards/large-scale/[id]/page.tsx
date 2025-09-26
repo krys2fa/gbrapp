@@ -125,7 +125,8 @@ function LargeScaleJobCardDetailPage() {
       try {
         const token = localStorage.getItem("auth-token");
         if (!token) {
-          const errorMsg = "No authentication token found. Please log in again.";
+          const errorMsg =
+            "No authentication token found. Please log in again.";
           console.error(errorMsg);
           toast.error(errorMsg);
           setError(errorMsg);
@@ -133,11 +134,14 @@ function LargeScaleJobCardDetailPage() {
           return;
         }
 
-        const response = await fetch(`/api/large-scale-job-cards/${params.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `/api/large-scale-job-cards/${params.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -173,9 +177,10 @@ function LargeScaleJobCardDetailPage() {
           setError(errorMsg);
         }
       } catch (error) {
-        const errorMsg = error instanceof Error
-          ? `Network error: ${error.message}`
-          : "An unexpected error occurred while loading the job card";
+        const errorMsg =
+          error instanceof Error
+            ? `Network error: ${error.message}`
+            : "An unexpected error occurred while loading the job card";
         console.error("Fetch error:", error);
         toast.error(errorMsg);
         setError(errorMsg);
@@ -333,9 +338,7 @@ function LargeScaleJobCardDetailPage() {
               </h3>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    Job ID
-                  </dt>
+                  <dt className="text-sm font-medium text-gray-500">Job ID</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {jobCard.humanReadableId || jobCard.referenceNumber}
                   </dd>
@@ -371,14 +374,14 @@ function LargeScaleJobCardDetailPage() {
                   </dd>
                 </div>
                 {/* {jobCard.certificateNumber && ( */}
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">
-                      Certificate Number
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900">
-                      {jobCard.certificateNumber}
-                    </dd>
-                  </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Certificate Number
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {jobCard.certificateNumber}
+                  </dd>
+                </div>
                 {/* // )} */}
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
@@ -460,7 +463,7 @@ function LargeScaleJobCardDetailPage() {
                               <p className="text-sm font-medium text-indigo-600 truncate">
                                 {/* {assay.humanReadableAssayNumber ||
                                   `Assay #${assay.id.slice(-8)}`} */}
-                                  Certificate #{jobCard.certificateNumber}
+                                Certificate #{jobCard.certificateNumber}
                               </p>
                               <div className="ml-2 flex-shrink-0 flex">
                                 <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

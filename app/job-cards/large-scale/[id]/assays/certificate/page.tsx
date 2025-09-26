@@ -270,7 +270,8 @@ export default function CertificateOfAssayPage() {
       try {
         const token = localStorage.getItem("auth-token");
         if (!token) {
-          const errorMsg = "No authentication token found. Please log in again.";
+          const errorMsg =
+            "No authentication token found. Please log in again.";
           console.error(errorMsg);
           toast.error(errorMsg);
           if (mounted) setError(errorMsg);
@@ -303,9 +304,10 @@ export default function CertificateOfAssayPage() {
           }
         }
       } catch (e: any) {
-        const errorMsg = e instanceof Error
-          ? `Network error: ${e.message}`
-          : "An unexpected error occurred while loading certificate data";
+        const errorMsg =
+          e instanceof Error
+            ? `Network error: ${e.message}`
+            : "An unexpected error occurred while loading certificate data";
         console.error("Fetch error:", e);
         toast.error(errorMsg);
         if (mounted) setError(errorMsg);

@@ -246,7 +246,8 @@ export default function AssayResultsPage() {
       try {
         const token = localStorage.getItem("auth-token");
         if (!token) {
-          const errorMsg = "No authentication token found. Please log in again.";
+          const errorMsg =
+            "No authentication token found. Please log in again.";
           console.error(errorMsg);
           toast.error(errorMsg);
           if (mounted) setError(errorMsg);
@@ -279,9 +280,10 @@ export default function AssayResultsPage() {
           }
         }
       } catch (e: any) {
-        const errorMsg = e instanceof Error
-          ? `Network error: ${e.message}`
-          : "An unexpected error occurred while loading assay data";
+        const errorMsg =
+          e instanceof Error
+            ? `Network error: ${e.message}`
+            : "An unexpected error occurred while loading assay data";
         console.error("Fetch error:", e);
         toast.error(errorMsg);
         if (mounted) setError(errorMsg);

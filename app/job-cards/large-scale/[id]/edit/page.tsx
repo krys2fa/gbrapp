@@ -175,7 +175,8 @@ function EditLargeScaleJobCardPage() {
       try {
         const token = localStorage.getItem("auth-token");
         if (!token) {
-          const errorMsg = "No authentication token found. Please log in again.";
+          const errorMsg =
+            "No authentication token found. Please log in again.";
           console.error(errorMsg);
           toast.error(errorMsg);
           setError(errorMsg);
@@ -259,7 +260,10 @@ function EditLargeScaleJobCardPage() {
               errorMsg += `: ${errorData.error}`;
             }
           } catch (parseError) {
-            console.warn("Could not parse job card error response:", parseError);
+            console.warn(
+              "Could not parse job card error response:",
+              parseError
+            );
           }
           console.error(`Job card API Error ${jobCardRes.status}:`, errorMsg);
           toast.error(errorMsg);
@@ -272,7 +276,10 @@ function EditLargeScaleJobCardPage() {
           setExporters(exportersData);
         } else {
           const errorMsg = `Failed to load exporters (Status: ${exportersRes.status})`;
-          console.error(`Exporters API Error ${exportersRes.status}:`, errorMsg);
+          console.error(
+            `Exporters API Error ${exportersRes.status}:`,
+            errorMsg
+          );
           toast.error(errorMsg);
         }
 
@@ -282,13 +289,17 @@ function EditLargeScaleJobCardPage() {
           setCommodities(Array.isArray(commoditiesData) ? commoditiesData : []);
         } else {
           const errorMsg = `Failed to load commodities (Status: ${commoditiesRes.status})`;
-          console.error(`Commodities API Error ${commoditiesRes.status}:`, errorMsg);
+          console.error(
+            `Commodities API Error ${commoditiesRes.status}:`,
+            errorMsg
+          );
           toast.error(errorMsg);
         }
       } catch (error) {
-        const errorMsg = error instanceof Error
-          ? `Network error loading data: ${error.message}`
-          : "An unexpected error occurred while loading data";
+        const errorMsg =
+          error instanceof Error
+            ? `Network error loading data: ${error.message}`
+            : "An unexpected error occurred while loading data";
         console.error("Fetch error:", error);
         toast.error(errorMsg);
         setError(errorMsg);

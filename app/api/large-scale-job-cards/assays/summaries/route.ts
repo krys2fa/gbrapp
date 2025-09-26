@@ -50,10 +50,6 @@ async function getAssaySummaries(request: NextRequest) {
       where,
       include: {
         assays: {
-          include: {
-            measurements: true,
-            shipmentType: true,
-          },
           orderBy: {
             createdAt: "desc",
           },
@@ -98,7 +94,7 @@ async function getAssaySummaries(request: NextRequest) {
           totalValueGhs: assay.totalValueGhs,
           dateOfAnalysis: assay.dateOfAnalysis,
           signatory: assay.signatory,
-          measurementCount: assay.measurements.length,
+          measurementCount: 0, // Removed measurements relation, so we can't count them
         };
       }
 

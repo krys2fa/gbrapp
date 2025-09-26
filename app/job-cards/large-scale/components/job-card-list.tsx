@@ -152,9 +152,10 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
         toast.error(errorMsg);
       }
     } catch (error) {
-      const errorMsg = error instanceof Error
-        ? `Network error: ${error.message}`
-        : "An unexpected error occurred while loading job cards";
+      const errorMsg =
+        error instanceof Error
+          ? `Network error: ${error.message}`
+          : "An unexpected error occurred while loading job cards";
       console.error("Fetch error:", error);
       toast.error(errorMsg);
     } finally {
@@ -222,9 +223,10 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
         toast.error(errorMsg);
       }
     } catch (error) {
-      const errorMsg = error instanceof Error
-        ? `Network error: ${error.message}`
-        : "An unexpected error occurred while deleting the job card";
+      const errorMsg =
+        error instanceof Error
+          ? `Network error: ${error.message}`
+          : "An unexpected error occurred while deleting the job card";
       console.error("Delete error:", error);
       toast.dismiss("delete-job-card");
       toast.error(errorMsg);
