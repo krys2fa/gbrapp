@@ -344,6 +344,14 @@ async function createLargeScaleJobCard(req: NextRequest) {
     // Create assay if assay-related data is provided
     let assay = null;
     if (assayMethod || dateOfAnalysis || assayersData) {
+      // Debug logging for dateOfAnalysis
+      void logger.info(LogCategory.JOB_CARD, "Creating assay with dateOfAnalysis", {
+        dateOfAnalysis,
+        dateOfAnalysisType: typeof dateOfAnalysis,
+        parsedDate: dateOfAnalysis ? new Date(dateOfAnalysis) : null,
+        parsedDateValid: dateOfAnalysis ? !isNaN(new Date(dateOfAnalysis).getTime()) : false,
+      });
+
       const assayData: any = {
         jobCardId: jobCard.id,
         method: assayMethod || "X_RAY",
@@ -354,7 +362,18 @@ async function createLargeScaleJobCard(req: NextRequest) {
             ? parseInt(numberOfSamples)
             : 1,
         signatory: authorizedSignatory,
-        dateOfAnalysis: dateOfAnalysis ? new Date(dateOfAnalysis) : new Date(),
+        dateOfAnalysis: (() => {
+          if (!dateOfAnalysis) return new Date();
+          const parsed = new Date(dateOfAnalysis);
+          if (isNaN(parsed.getTime())) {
+            void logger.warn(LogCategory.JOB_CARD, "Invalid dateOfAnalysis format, using current date", {
+              dateOfAnalysis,
+              parsedDate: parsed,
+            });
+            return new Date();
+          }
+          return parsed;
+        })(),
         sampleBottleDates: sampleBottleDates || null,
         dataSheetDates: dataSheetDates || null,
         numberOfSamples: numberOfSamples ? parseInt(numberOfSamples) : 1,
@@ -389,6 +408,13 @@ async function createLargeScaleJobCard(req: NextRequest) {
       if (typeOfShipment) {
         assayData.shipmentTypeId = typeOfShipment;
       }
+
+      void logger.info(LogCategory.JOB_CARD, "Creating assay with data", {
+        assayData: {
+          ...assayData,
+          dateOfAnalysis: assayData.dateOfAnalysis?.toISOString(),
+        },
+      });
 
       assay = await prisma.largeScaleAssay.create({
         data: assayData,
