@@ -237,9 +237,9 @@ function NewLargeScaleJobCardPage() {
     fetchData();
   }, []);
 
-  // Fetch meta bar data when exporter or data sheet date changes
+  // Fetch meta bar data when exporter or date of analysis changes
   // This ensures that market data (exchange rates and commodity prices) update
-  // whenever the data sheet date changes, providing real-time pricing information
+  // whenever the date of analysis changes, providing real-time pricing information
   useEffect(() => {
     const fetchMetaData = async () => {
       try {
@@ -295,17 +295,17 @@ function NewLargeScaleJobCardPage() {
         }
         setIsLoadingExchangeRate(false);
 
-        // Fetch commodity prices based on data sheet date (if available)
-        if (form.dataSheetDates) {
+        // Fetch commodity prices based on date of analysis (if available)
+        if (form.dateOfAnalysis) {
           setIsLoadingCommodityPrices(true);
-          await logInfo("Fetching commodity prices for data sheet date", {
-            pricingDate: form.dataSheetDates,
+          await logInfo("Fetching commodity prices for date of analysis", {
+            pricingDate: form.dateOfAnalysis,
           });
 
           try {
-            // Fetch gold price for the data sheet date
+            // Fetch gold price for the date of analysis
             const goldResponse = await fetch(
-              `/api/commodities/Au/price?date=${form.dataSheetDates}`
+              `/api/commodities/Au/price?date=${form.dateOfAnalysis}`
             );
             if (goldResponse.ok) {
               const goldData = await goldResponse.json();
@@ -313,12 +313,12 @@ function NewLargeScaleJobCardPage() {
                 setGoldPrice(goldData.price?.toString() || "");
                 await logInfo("Gold price set successfully", {
                   price: goldData.price,
-                  date: form.dataSheetDates,
+                  date: form.dateOfAnalysis,
                 });
               } else {
                 setGoldPrice("Not Available");
-                await logWarn("Gold price not available for data sheet date", {
-                  date: form.dataSheetDates,
+                await logWarn("Gold price not available for date of analysis", {
+                  date: form.dateOfAnalysis,
                   error: goldData.error,
                 });
               }
@@ -326,13 +326,13 @@ function NewLargeScaleJobCardPage() {
               setGoldPrice("Not Available");
               await logError("Failed to fetch gold price", {
                 status: goldResponse.status,
-                date: form.dataSheetDates,
+                date: form.dateOfAnalysis,
               });
             }
 
-            // Fetch silver price for the data sheet date
+            // Fetch silver price for the date of analysis
             const silverResponse = await fetch(
-              `/api/commodities/Ag/price?date=${form.dataSheetDates}`
+              `/api/commodities/Ag/price?date=${form.dateOfAnalysis}`
             );
             if (silverResponse.ok) {
               const silverData = await silverResponse.json();
@@ -340,14 +340,14 @@ function NewLargeScaleJobCardPage() {
                 setSilverPrice(silverData.price?.toString() || "");
                 await logInfo("Silver price set successfully", {
                   price: silverData.price,
-                  date: form.dataSheetDates,
+                  date: form.dateOfAnalysis,
                 });
               } else {
                 setSilverPrice("Not Available");
                 await logWarn(
-                  "Silver price not available for data sheet date",
+                  "Silver price not available for date of analysis",
                   {
-                    date: form.dataSheetDates,
+                    date: form.dateOfAnalysis,
                     error: silverData.error,
                   }
                 );
@@ -356,15 +356,15 @@ function NewLargeScaleJobCardPage() {
               setSilverPrice("Not Available");
               await logError("Failed to fetch silver price", {
                 status: silverResponse.status,
-                date: form.dataSheetDates,
+                date: form.dateOfAnalysis,
               });
             }
           } catch (error) {
             await logError(
-              "Error fetching commodity prices for data sheet date",
+              "Error fetching commodity prices for date of analysis",
               {
                 error: error instanceof Error ? error.message : String(error),
-                date: form.dataSheetDates,
+                date: form.dateOfAnalysis,
               }
             );
             setGoldPrice("Not Available");
@@ -372,12 +372,12 @@ function NewLargeScaleJobCardPage() {
           }
           setIsLoadingCommodityPrices(false);
         } else {
-          // No data sheet date selected, show placeholder values
-          setGoldPrice("Select data sheet date");
-          setSilverPrice("Select data sheet date");
+          // No date of analysis selected, show placeholder values
+          setGoldPrice("Select date of analysis");
+          setSilverPrice("Select date of analysis");
           setIsLoadingCommodityPrices(false);
           await logInfo(
-            "No data sheet date selected, showing placeholder values"
+            "No date of analysis selected, showing placeholder values"
           );
         }
       } catch (error) {
@@ -393,7 +393,7 @@ function NewLargeScaleJobCardPage() {
     };
 
     fetchMetaData();
-  }, [form.exporterId, form.dataSheetDates]);
+  }, [form.exporterId, form.dateOfAnalysis]);
 
   // Excel processing functions
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -631,7 +631,7 @@ function NewLargeScaleJobCardPage() {
     const totalGoldValue = Number(totalNetGoldWeightOz) * commodityPrice;
     const totalSilverValue = Number(totalNetSilverWeightOz) * pricePerOz;
     const totalCombinedValue = totalGoldValue + totalSilverValue;
-    const totalValueGhs = totalCombinedValue * exchangeRate;
+    const totalValueGhs = Number(totalCombinedValue) * exchangeRate;
 
     return {
       totalNetGoldWeight: totalNetGoldWeightGrams,
@@ -663,16 +663,11 @@ function NewLargeScaleJobCardPage() {
 
       // Validate new required fields
       const requiredFields = [
-        { field: form.destinationCountry, name: "Destination Country" },
-        { field: form.sourceOfGold, name: "Source of Gold" },
-        { field: form.numberOfBars, name: "Number of Bars" },
-        { field: form.typeOfShipment, name: "Type of Shipment" },
         { field: form.dateOfAnalysis, name: "Date of Analysis" },
-        { field: form.sampleBottleDates, name: "Sample Bottle Dates" },
-        { field: form.dataSheetDates, name: "Data Sheet Dates" },
-        { field: form.numberOfSamples, name: "Number of Samples" },
-        { field: form.sampleType, name: "Sample Type" },
-        { field: form.shipmentNumber, name: "Shipment Number" },
+        { field: form.typeOfShipment, name: "Shipment Type" },
+        { field: form.destinationCountry, name: "Destination Country" },
+        { field: form.exporterId, name: "Exporter" },
+        { field: form.unitOfMeasure, name: "Unit of Measure" },
       ];
 
       const missingFields = requiredFields
@@ -738,10 +733,10 @@ function NewLargeScaleJobCardPage() {
     setError("");
 
     try {
-      // Validate that data sheet date is provided (required for pricing lookups)
-      if (!form.dataSheetDates) {
+      // Validate that date of analysis is provided (required for pricing lookups)
+      if (!form.dateOfAnalysis) {
         const errorMessage =
-          "Data Sheet Date is required for commodity price and exchange rate calculations. Please select a date.";
+          "Date of Analysis is required for commodity price and exchange rate calculations. Please select a date.";
         setError(errorMessage);
         toast.error(errorMessage);
         setLoading(false);
@@ -751,18 +746,18 @@ function NewLargeScaleJobCardPage() {
       // Calculate valuation details if assay data exists
       let valuationDetails = null;
       if (assayersData.length > 0) {
-        // Fetch pricing information based on data sheet date
+        // Fetch pricing information based on date of analysis
         // IMPORTANT: All pricing (commodity prices and exchange rates) are fetched
-        // based on the data sheet date, not the received date or current date.
+        // based on the date of analysis, not the received date or current date.
         // This ensures accurate pricing for the specific assaying date.
         let commodityPrice = 0;
         let pricePerOz = 0;
         let exchangeRate = 1;
 
         try {
-          // Use data sheet date for all pricing calculations (commodity prices and exchange rates)
-          // This ensures pricing is based on the date the data sheet was prepared, not the received date
-          const pricingDate = form.dataSheetDates;
+          // Use date of analysis for all pricing calculations (commodity prices and exchange rates)
+          // This ensures pricing is based on the date the assay was performed
+          const pricingDate = form.dateOfAnalysis;
           const goldResponse = await fetch(
             `/api/commodities/Au/price?date=${pricingDate}`
           );
@@ -779,7 +774,7 @@ function NewLargeScaleJobCardPage() {
             throw new Error("Failed to fetch gold price");
           }
 
-          // Fetch silver price for the data sheet date
+          // Fetch silver price for the date of analysis
           const silverResponse = await fetch(
             `/api/commodities/Ag/price?date=${pricingDate}`
           );
@@ -1225,7 +1220,11 @@ function NewLargeScaleJobCardPage() {
                     htmlFor="dateOfAnalysis"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Date of Analysis
+                    Date of Analysis *
+                    <span className="text-xs text-gray-500 block">
+                      (Used for commodity pricing and exchange rate
+                      calculations)
+                    </span>
                   </label>
                   <input
                     type="date"
@@ -1245,12 +1244,13 @@ function NewLargeScaleJobCardPage() {
                     Sample Bottle Dates
                   </label>
                   <input
-                    type="date"
+                    type="text"
                     name="sampleBottleDates"
                     id="sampleBottleDates"
                     value={form.sampleBottleDates}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter sample bottle dates"
                   />
                 </div>
 
@@ -1259,19 +1259,20 @@ function NewLargeScaleJobCardPage() {
                     htmlFor="dataSheetDates"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Data Sheet Dates *
-                    <span className="text-xs text-gray-500 block">
+                    Data Sheet Dates
+                    {/* <span className="text-xs text-gray-500 block">
                       (Used for commodity pricing and exchange rate
                       calculations)
-                    </span>
+                    </span> */}
                   </label>
                   <input
-                    type="date"
+                    type="text"
                     name="dataSheetDates"
                     id="dataSheetDates"
                     value={form.dataSheetDates}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter data sheet dates"
                   />
                 </div>
 
@@ -1404,7 +1405,7 @@ function NewLargeScaleJobCardPage() {
               </div>
             </div>
           </div>
-          {/* Meta Bar - Show when exporter is selected or data sheet date is set */}
+          {/* Meta Bar - Show when exporter is selected or date of analysis is set */}
           {(form.exporterId || form.dataSheetDates) && (
             <div
               className={`bg-blue-50 border border-blue-200 rounded-lg p-4 transition-all duration-300 ${

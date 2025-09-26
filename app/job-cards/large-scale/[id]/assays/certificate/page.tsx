@@ -495,9 +495,7 @@ export default function CertificateOfAssayPage() {
                     Data Sheet Dates:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assays[0]?.dataSheetDates
-                      ? formatDate(assays[0].dataSheetDates)
-                      : "N/A"}
+                    {assays[0]?.dataSheetDates || "N/A"}
                   </span>
                 </div>
               </div>

@@ -52,12 +52,8 @@ async function postAssay(
         customsSealNo: body.customsSealNo,
         shipmentNumber: body.shipmentNumber,
         dateOfAnalysis: new Date(body.dateOfAnalysis),
-        dataSheetDates: body.dataSheetDates
-          ? new Date(body.dataSheetDates)
-          : null,
-        sampleBottleDates: body.sampleBottleDates
-          ? new Date(body.sampleBottleDates)
-          : null,
+        dataSheetDates: body.dataSheetDates || null,
+        sampleBottleDates: body.sampleBottleDates || null,
         numberOfSamples: body.numberOfSamples,
         numberOfBars: body.numberOfBars,
         sampleType: body.sampleType,
@@ -187,12 +183,8 @@ async function putAssay(
         customsSealNo: body.customsSealNo,
         shipmentNumber: body.shipmentNumber,
         dateOfAnalysis: new Date(body.dateOfAnalysis),
-        dataSheetDates: body.dataSheetDates
-          ? new Date(body.dataSheetDates)
-          : null,
-        sampleBottleDates: body.sampleBottleDates
-          ? new Date(body.sampleBottleDates)
-          : null,
+        dataSheetDates: body.dataSheetDates || null,
+        sampleBottleDates: body.sampleBottleDates || null,
         numberOfSamples: body.numberOfSamples,
         numberOfBars: body.numberOfBars,
         sampleType: body.sampleType,

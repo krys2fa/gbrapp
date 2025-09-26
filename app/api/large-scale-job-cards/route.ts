@@ -330,10 +330,8 @@ async function createLargeScaleJobCard(req: NextRequest) {
             : 1,
         signatory: authorizedSignatory,
         dateOfAnalysis: dateOfAnalysis ? new Date(dateOfAnalysis) : new Date(),
-        sampleBottleDates: sampleBottleDates
-          ? new Date(sampleBottleDates)
-          : null,
-        dataSheetDates: dataSheetDates ? new Date(dataSheetDates) : null,
+        sampleBottleDates: sampleBottleDates || null,
+        dataSheetDates: dataSheetDates || null,
         numberOfSamples: numberOfSamples ? parseInt(numberOfSamples) : 1,
         sampleType: sampleType || "capillary",
         shipmentNumber: shipmentNumber,
