@@ -388,24 +388,20 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {jobCard.assaySummary && (
-                      <>
-                        <Link
-                          href={`/job-cards/large-scale/${jobCard.id}`}
-                          className="text-indigo-600 hover:text-indigo-900 p-1"
-                          title="View"
-                        >
-                          <EyeIcon className="h-5 w-5" />
-                        </Link>
-                        <Link
-                          href={`/job-cards/large-scale/${jobCard.id}/edit`}
-                          className="text-blue-600 hover:text-blue-900 p-1"
-                          title="Edit"
-                        >
-                          <PencilSquareIcon className="h-5 w-5" />
-                        </Link>
-                      </>
-                    )}
+                    <Link
+                      href={`/job-cards/large-scale/${jobCard.id}`}
+                      className="text-indigo-600 hover:text-indigo-900 p-1"
+                      title="View"
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                    </Link>
+                    <Link
+                      href={`/job-cards/large-scale/${jobCard.id}/edit`}
+                      className="text-blue-600 hover:text-blue-900 p-1"
+                      title="Edit"
+                    >
+                      <PencilSquareIcon className="h-5 w-5" />
+                    </Link>
                     <button
                       onClick={() => {
                         setJobCardToDelete(jobCard.id);
