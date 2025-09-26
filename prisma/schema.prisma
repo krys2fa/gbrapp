@@ -491,7 +491,7 @@ model LargeScaleAssay {
   shipmentNumber         String?
   dateOfAnalysis         DateTime
   dataSheetDates         DateTime?
-  sampleBottleDates      String?
+  sampleBottleDates      DateTime?
   numberOfSamples        Int                          @default(1)
   numberOfBars           Int                          @default(1)
   sampleType             String                       @default("capillary")
