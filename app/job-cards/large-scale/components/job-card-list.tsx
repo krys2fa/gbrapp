@@ -10,6 +10,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { formatDate, formatCurrency } from "@/app/lib/utils";
 import toast from "react-hot-toast";
+import { useAuth } from "@/app/context/auth-context";
 
 interface LargeScaleJobCard {
   id: string;
@@ -64,6 +65,7 @@ interface LargeScaleJobCardListProps {
 }
 
 export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
+  const { hasRole } = useAuth();
   const [jobCards, setJobCards] = useState<LargeScaleJobCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -394,13 +396,15 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                     >
                       <EyeIcon className="h-5 w-5" />
                     </Link>
-                    <Link
-                      href={`/job-cards/large-scale/${jobCard.id}/edit`}
-                      className="text-blue-600 hover:text-blue-900 p-1"
-                      title="Edit"
-                    >
-                      <PencilSquareIcon className="h-5 w-5" />
-                    </Link>
+                    {hasRole(["SUPERADMIN", "ADMIN"]) && (
+                      <Link
+                        href={`/job-cards/large-scale/${jobCard.id}/edit`}
+                        className="text-blue-600 hover:text-blue-900 p-1"
+                        title="Edit"
+                      >
+                        <PencilSquareIcon className="h-5 w-5" />
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         setJobCardToDelete(jobCard.id);

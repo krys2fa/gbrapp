@@ -10,6 +10,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { formatDate } from "@/app/lib/utils";
 import toast from "react-hot-toast";
+import { useAuth } from "@/app/context/auth-context";
 
 interface JobCard {
   id: string;
@@ -42,6 +43,7 @@ interface JobCardListProps {
 }
 
 export function JobCardList({ filters }: JobCardListProps) {
+  const { hasRole } = useAuth();
   const [jobCards, setJobCards] = useState<JobCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -219,12 +221,14 @@ export function JobCardList({ filters }: JobCardListProps) {
                     >
                       <EyeIcon className="h-5 w-5" />
                     </Link>
-                    <Link
-                      href={`/job-cards/${jobCard.id}/edit`}
-                      className="text-green-600 hover:text-green-900"
-                    >
-                      <PencilSquareIcon className="h-5 w-5" />
-                    </Link>
+                    {hasRole(["SUPERADMIN", "ADMIN"]) && (
+                      <Link
+                        href={`/job-cards/${jobCard.id}/edit`}
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        <PencilSquareIcon className="h-5 w-5" />
+                      </Link>
+                    )}
                     {(!jobCard._count?.assays ||
                       jobCard._count.assays === 0) && (
                       <button
