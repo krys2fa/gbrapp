@@ -213,7 +213,6 @@ export default function AssayDetailPage() {
           /* Page setup */
           @page {
             margin: 0.5in;
-            size: A4;
           }
 
           /* Hide screen-only elements */
@@ -607,7 +606,7 @@ export default function AssayDetailPage() {
             </div>
 
             <div className="flex items-center justify-between mb-4">
-               <div className="flex">
+              <div className="flex">
                 <dt className="text-sm font-medium text-gray-500">
                   Destination:
                 </dt>
@@ -1073,7 +1072,9 @@ export default function AssayDetailPage() {
                       Exporter Authorized Signatory
                     </dt>
                     <dd className="text-xs text-gray-900 text-center uppercase font-bold">
-                      {jobCard?.teamLeader || jobCard?.assays[0].exporterSignatory || jobCard?.exporter?.authorizedSignatory ||
+                      {jobCard?.teamLeader ||
+                        jobCard?.assays[0].exporterSignatory ||
+                        jobCard?.exporter?.authorizedSignatory ||
                         jobCard?.exporter?.contactPerson ||
                         "-"}
                     </dd>

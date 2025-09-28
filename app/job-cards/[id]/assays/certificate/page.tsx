@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import BackLink from "@/app/components/ui/BackLink";
+import CertificateActions from "./CertificateActions";
 import { formatDate } from "@/app/lib/utils";
 
 export default function CertificateOfAssayPage() {
@@ -12,233 +13,6 @@ export default function CertificateOfAssayPage() {
   const [jobCard, setJobCard] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  function printCertificate() {
-    try {
-      const content = document.getElementById("assay-content");
-      if (!content) {
-        alert("Certificate content not found to print.");
-        return;
-      }
-
-      // Clone the content to preserve all styles
-      const clonedContent = content.cloneNode(true) as HTMLElement;
-
-      // Collect all stylesheet links and inline styles from the document
-      const stylesheets = Array.from(
-        document.querySelectorAll('link[rel="stylesheet"], style')
-      )
-        .map((style) => style.outerHTML)
-        .join("\n");
-
-      // Enhanced CSS for proper print styling - exact match to web page
-      const enhancedStyles = `
-        @page { size: A4; margin: 15mm; }
-        html, body {
-          height: 100%;
-          margin: 0;
-          padding: 0;
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-          color: #000;
-          line-height: 1.5;
-          font-size: 12pt;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-        * { box-sizing: border-box; }
-        
-        /* Layout and positioning - exact web page matching */
-        .flex { display: flex; }
-        .inline-flex { display: inline-flex; }
-        .grid { display: grid; }
-        .hidden { display: none; }
-        .block { display: block; }
-        .items-start { align-items: flex-start; }
-        .items-center { align-items: center; }
-        .items-end { align-items: flex-end; }
-        .justify-start { justify-content: flex-start; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .justify-end { justify-content: flex-end; }
-        .flex-1 { flex: 1 1 0%; }
-        .whitespace-nowrap { white-space: nowrap; }
-        .bg-white { background-color: #ffffff; }
-        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .text-left { text-align: left; }
-        .uppercase { text-transform: uppercase; }
-
-        /* Spacing - exact web page matching */
-        .p-4 { padding: 1rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .px-8 { padding-left: 2rem; padding-right: 2rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .pt-4 { padding-top: 1rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mr-2 { margin-right: 0.5rem; }
-        .gap-4 { gap: 1rem; }
-        .mt-8 { margin-top: 2rem; }
-
-        /* Grid system - exact web page matching */
-        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        
-        /* Spacing utilities */
-        .space-x-12 > * + * { margin-left: 3rem; }
-        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .pt-4 { padding-top: 1rem; }
-        .w-64 { width: 16rem; }
-
-        /* Typography - exact web page matching */
-        .text-xs { font-size: 0.75rem; line-height: 1rem; }
-        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
-        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
-        .font-medium { font-weight: 500; }
-        .font-semibold { font-weight: 600; }
-        .font-bold { font-weight: 700; }
-
-        /* Colors - exact web page matching */
-        .text-gray-500 { color: #6b7280; }
-        .text-gray-700 { color: #374151; }
-        .text-gray-900 { color: #111827; }
-        .bg-gray-50 { background-color: #f9fafb; }
-        .bg-gray-200 { background-color: #e5e7eb; }
-        .border-gray-200 { border-color: #e5e7eb; }
-        .border-gray-300 { border-color: #d1d5db; }
-        .border-gray-400 { border-color: #9ca3af; }
-        .divide-gray-200 > * + * { border-top: 1px solid #e5e7eb; }
-
-        /* Borders - exact web page matching */
-        .border { border-width: 1px; }
-        .border-b { border-bottom-width: 1px; }
-        .border-t { border-top-width: 1px; }
-
-        /* Table styling - exact web page matching */
-        .min-w-full { min-width: 100%; }
-        .overflow-x-auto { overflow-x: auto; }
-        .overflow-hidden { overflow: hidden; }
-        .divide-y { border-collapse: separate; }
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          margin-bottom: 1rem;
-        }
-        th, td {
-          border: 1px solid #d1d5db;
-          padding: 0.5rem 1rem;
-          text-align: center;
-          font-size: 0.75rem;
-        }
-        th {
-          background-color: #d4af37;
-          font-weight: bold;
-          text-transform: uppercase;
-          color: #000;
-        }
-        .bg-\\[\\#d4af37\\] { background-color: #d4af37; }
-        tbody tr:nth-child(even) td {
-          background-color: #f9fafb;
-        }
-        tbody tr.bg-gray-50 td {
-          background-color: #f9fafb;
-          font-weight: 600;
-        }
-
-        /* Image styling */
-        img {
-          max-width: 100%;
-          height: auto;
-        }
-        .h-12 { height: 3rem; }
-        .h-24 { height: 6rem; }
-        .w-24 { width: 6rem; }
-        .w-auto { width: auto; }
-        .w-32 { width: 8rem; }
-        
-        /* QR Code specific styling - same size as web view */
-        img[alt*="QR Code"] {
-          width: 6rem !important;
-          height: 6rem !important;
-          object-fit: contain !important;
-        }
-        
-        /* Seal specific styling - maintain aspect ratio */
-        img[alt*="Official Seal"] {
-          width: auto !important;
-          height: 4rem !important;
-          max-width: 8rem !important;
-          object-fit: contain !important;
-        }
-
-        /* Title section styling */
-        .title-section {
-          margin: 0 auto;
-          text-align: center;
-        }
-
-        /* Financial section styling */
-        .space-y-3 > * + * { margin-top: 0.75rem; }
-
-        /* Signature section */
-        .justify-center { justify-content: center; }
-
-        /* Hide elements not needed for print */
-        .print\\:hidden { display: none !important; }
-        
-        /* Remove any potential watermarks */
-        body { background: none !important; }
-        body::before { display: none !important; }
-        #assay-content::before { display: none !important; }
-        
-        /* Ensure clean background */
-        #assay-content {
-          background: white !important;
-          background-image: none !important;
-        }
-      `;
-
-      const html = `<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Certificate of Assay</title>
-  ${stylesheets}
-  <style>${enhancedStyles}</style>
-</head>
-<body>
-  ${clonedContent.innerHTML}
-</body>
-</html>`;
-
-      const w = window.open("", "_blank");
-      if (!w) {
-        alert("Please allow popups to print the certificate.");
-        return;
-      }
-      w.document.open();
-      w.document.write(html);
-      w.document.close();
-      w.focus();
-      setTimeout(() => {
-        try {
-          w.print();
-        } catch (e) {
-          console.error(e);
-        }
-      }, 500);
-    } catch (e) {
-      console.error(e);
-      alert("Failed to generate certificate for printing.");
-    }
-  }
 
   useEffect(() => {
     if (!id) {
@@ -375,25 +149,7 @@ export default function CertificateOfAssayPage() {
             <div className="print:hidden">
               <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
             </div>
-            <button
-              onClick={printCertificate}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <svg
-                className="-ml-1 mr-2 h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                />
-              </svg>
-              Print Certificate
-            </button>
+            <CertificateActions jobCardId={id} />
           </div>
         </div>
       </div>
@@ -409,7 +165,7 @@ export default function CertificateOfAssayPage() {
               backgroundImage: "none !important",
             }}
           >
-            <div className="flex justify-between items-center p-4">
+            <div className="grid grid-cols-3 p-4">
               <div className="flex items-center">
                 <img
                   src="/goldbod-logo-black.png"
@@ -421,7 +177,7 @@ export default function CertificateOfAssayPage() {
                 <p className="font-bold text-2xl">CERTIFICATE OF ASSAY</p>
                 <p className="text-sm">SMALL SCALE OPERATIONS</p>
               </div>
-              <div className="flex items-center">
+              <div className="flex justify-end">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
                     "https://goldbod.gov.gh/"
@@ -695,7 +451,7 @@ export default function CertificateOfAssayPage() {
                     <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
                       Technical Director
                     </p>
-                    <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
+                    <p className="text-sm font-bold text-gray-700 mb-2 uppercase">
                       {jobCard?.technicalDirectorName || "-"}
                     </p>
                   </div>

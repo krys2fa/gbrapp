@@ -3,22 +3,16 @@
 import React, { useState } from "react";
 import { PrinterIcon } from "@heroicons/react/24/outline";
 
-export default function AssayDetailActions({
+export default function CertificateActions({
   jobCardId,
-  assayId,
-  signatoryName,
-  signatoryPosition,
 }: {
   jobCardId: string;
-  assayId: string;
-  signatoryName?: string;
-  signatoryPosition?: string;
 }) {
   const [orientation, setOrientation] = useState<"portrait" | "landscape">(
     "portrait"
   );
 
-  function downloadAssayDetail(
+  function printCertificate(
     printOrientation: "portrait" | "landscape" = "portrait"
   ) {
     try {
@@ -27,14 +21,14 @@ export default function AssayDetailActions({
       const pageSize = printOrientation === "landscape" ? "A4 landscape" : "A4";
       printStyles.innerHTML = `
         @media print {
-          @page { size: ${pageSize}; margin: 0mm 20mm 20mm; }
+          @page { size: ${pageSize}; margin: 20mm; }
           body {
             margin: 0;
             padding: 0;
           }
           body * { visibility: hidden; }
-          #assay-detail-content, #assay-detail-content * { visibility: visible; }
-          #assay-detail-content {
+          #assay-content, #assay-content * { visibility: visible; }
+          #assay-content {
             position: static;
             margin: 0;
             padding: 0;
@@ -49,29 +43,29 @@ export default function AssayDetailActions({
           }
 
           /* Remove borders from printed content but keep table borders */
-          #assay-detail-content {
+          #assay-content {
             border: none !important;
             box-shadow: none !important;
           }
-          #assay-detail-content > div:not(table):not(thead):not(tbody):not(tr):not(th):not(td) {
+          #assay-content > div:not(table):not(thead):not(tbody):not(tr):not(th):not(td) {
             border: none !important;
             box-shadow: none !important;
           }
           /* Keep table borders and header styling - high specificity */
-          #assay-detail-content table th,
-          #assay-detail-content th {
+          #assay-content table th,
+          #assay-content th {
             background-color: #d4af37 !important;
             color: #111827 !important;
             border: 1px solid #d1d5db !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          #assay-detail-content table td,
-          #assay-detail-content td {
+          #assay-content table td,
+          #assay-content td {
             border: 1px solid #d1d5db !important;
           }
           /* Override any Tailwind background utilities that might interfere */
-          #assay-detail-content th[class*="bg-"] {
+          #assay-content th[class*="bg-"] {
             background-color: #d4af37 !important;
           }
         }
@@ -87,7 +81,7 @@ export default function AssayDetailActions({
       }, 1000);
     } catch (e) {
       console.error(e);
-      alert("Failed to prepare assay detail for printing.");
+      alert("Failed to prepare certificate for printing.");
     }
   }
 
@@ -95,13 +89,13 @@ export default function AssayDetailActions({
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-2">
         <label
-          htmlFor="orientation-select-detail"
+          htmlFor="orientation-select-certificate"
           className="text-sm font-medium text-gray-700"
         >
           Orientation:
         </label>
         <select
-          id="orientation-select-detail"
+          id="orientation-select-certificate"
           value={orientation}
           onChange={(e) =>
             setOrientation(e.target.value as "portrait" | "landscape")
@@ -115,16 +109,16 @@ export default function AssayDetailActions({
       <button
         onClick={() => {
           try {
-            downloadAssayDetail(orientation);
+            printCertificate(orientation);
           } catch (e) {
             console.error(e);
-            alert("Failed to download assay report.");
+            alert("Failed to prepare certificate for printing.");
           }
         }}
-        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
       >
         <PrinterIcon className="w-4 h-4 mr-2" />
-        Print Report
+        Print Certificate
       </button>
     </div>
   );
