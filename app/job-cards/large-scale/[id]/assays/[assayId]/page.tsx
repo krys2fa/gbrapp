@@ -15,196 +15,37 @@ export default function AssayResultsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  function printAssayResults() {
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">(
+    "portrait"
+  );
+
+  function printAssayResults(
+    printOrientation: "portrait" | "landscape" = "portrait"
+  ) {
     try {
-      const content = document.getElementById("assay-content");
-      if (!content) {
-        alert("Assay content not found to print.");
-        return;
-      }
-
-      // Clone the content to preserve all styles
-      const clonedContent = content.cloneNode(true) as HTMLElement;
-
-      // Collect all stylesheet links and inline styles from the document
-      const stylesheets = Array.from(
-        document.querySelectorAll('link[rel="stylesheet"], style')
-      )
-        .map((style) => style.outerHTML)
-        .join("\n");
-
-      // Enhanced CSS for proper print styling - matching web page exactly
-      const enhancedStyles = `
-        @page { size: A4; margin: 15mm; }
-        html, body {
-          height: 100%;
-          margin: 0;
-          padding: 0;
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-          color: #000;
-          line-height: 1.5;
-          font-size: 12pt;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
+      // Apply print styles to current page for full print dialog
+      const printStyles = document.createElement("style");
+      const pageSize = printOrientation === "landscape" ? "A4 landscape" : "A4";
+      printStyles.innerHTML = `
+        @media print {
+          @page { size: ${pageSize}; margin: 15mm; }
+          body * { visibility: hidden; }
+          #assay-content, #assay-content * { visibility: visible; }
+          #assay-content { position: absolute; left: 0; top: 0; }
         }
-        * { box-sizing: border-box; }
-        
-        /* Layout and positioning - exact web page matching */
-        .flex { display: flex; }
-        .inline-flex { display: inline-flex; }
-        .grid { display: grid; }
-        .hidden { display: none; }
-        .block { display: block; }
-        .items-start { align-items: flex-start; }
-        .items-center { align-items: center; }
-        .items-end { align-items: flex-end; }
-        .justify-start { justify-content: flex-start; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .justify-end { justify-content: flex-end; }
-        .flex-1 { flex: 1 1 0%; }
-        .whitespace-nowrap { white-space: nowrap; }
-        .bg-white { background-color: #ffffff; }
-        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-
-        /* Spacing - exact web page matching */
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .pt-4 { padding-top: 1rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .ml-1 { margin-left: 0.25rem; }
-        .ml-2 { margin-left: 0.5rem; }
-        .mr-2 { margin-right: 0.5rem; }
-        .gap-4 { gap: 1rem; }
-
-        /* Grid system - exact web page matching */
-        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-        /* Typography - exact web page matching */
-        .text-xs { font-size: 0.75rem; line-height: 1rem; }
-        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
-        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
-        .font-medium { font-weight: 500; }
-        .font-semibold { font-weight: 600; }
-        .font-bold { font-weight: 700; }
-        .uppercase { text-transform: uppercase; }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-
-        /* Colors - exact web page matching */
-        .text-gray-500 { color: #6b7280; }
-        .text-gray-700 { color: #374151; }
-        .text-gray-900 { color: #111827; }
-        .bg-gray-50 { background-color: #f9fafb; }
-        .bg-gray-200 { background-color: #e5e7eb; }
-        .border-gray-200 { border-color: #e5e7eb; }
-        .border-gray-300 { border-color: #d1d5db; }
-        .divide-gray-200 > * + * { border-top: 1px solid #e5e7eb; }
-
-        /* Borders - exact web page matching */
-        .border { border-width: 1px; }
-        .border-b { border-bottom-width: 1px; }
-        .border-t { border-top-width: 1px; }
-
-        /* Header section styling */
-        .header-section {
-          border-bottom: 2px solid #000;
-          padding-bottom: 1rem;
-          margin-bottom: 1.5rem;
-        }
-        .title-section {
-          text-align: center;
-          margin: 1rem 0;
-        }
-
-        /* Table styling - exact web page matching */
-        .min-w-full { min-width: 100%; }
-        .overflow-x-auto { overflow-x: auto; }
-        .overflow-hidden { overflow: hidden; }
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          margin-bottom: 1rem;
-        }
-        th, td {
-          border: 1px solid #d1d5db;
-          padding: 0.5rem;
-          text-align: center;
-          font-size: 0.75rem;
-        }
-        th {
-          background-color: #d4af37;
-          font-weight: bold;
-          text-transform: uppercase;
-          color: #000;
-        }
-        .text-right { text-align: right; }
-        tbody tr:nth-child(even) td {
-          background-color: #f9fafb;
-        }
-        tbody tr.bg-gray-50 td {
-          background-color: #f9fafb;
-          font-weight: 600;
-        }
-
-        /* Image styling */
-        img {
-          max-width: 100%;
-          height: auto;
-        }
-        .h-16 { height: 4rem; }
-        .w-16 { width: 4rem; }
-        .w-auto { width: auto; }
-
-        /* Financial section styling */
-        .space-y-3 > * + * { margin-top: 0.75rem; }
-
-        /* Hide elements not needed for print */
-        .print\\:hidden { display: none !important; }
-        
-        /* Remove any potential watermarks */
-        body { background: none !important; }
-        body::before { display: none !important; }
-        #assay-content::before { display: none !important; }
       `;
+      document.head.appendChild(printStyles);
 
-      const html = `<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Large Scale Assay Results</title>
-  ${stylesheets}
-  <style>${enhancedStyles}</style>
-</head>
-<body>
-  ${clonedContent.innerHTML}
-</body>
-</html>`;
+      // Trigger print dialog on current page
+      window.print();
 
-      const w = window.open("", "_blank");
-      if (!w) {
-        alert("Please allow popups to print the assay results.");
-        return;
-      }
-      w.document.open();
-      w.document.write(html);
-      w.document.close();
-      w.focus();
+      // Clean up styles after printing
       setTimeout(() => {
-        try {
-          w.print();
-        } catch (e) {
-          console.error(e);
-        }
-      }, 500);
+        document.head.removeChild(printStyles);
+      }, 1000);
     } catch (e) {
       console.error(e);
-      alert("Failed to generate assay results for printing.");
+      alert("Failed to prepare document for printing.");
     }
   }
 
@@ -372,8 +213,27 @@ export default function AssayResultsPage() {
               />
             </div>
             <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="orientation-select"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Orientation:
+                </label>
+                <select
+                  id="orientation-select"
+                  value={orientation}
+                  onChange={(e) =>
+                    setOrientation(e.target.value as "portrait" | "landscape")
+                  }
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                >
+                  <option value="portrait">Portrait</option>
+                  <option value="landscape">Landscape</option>
+                </select>
+              </div>
               <button
-                onClick={() => printAssayResults()}
+                onClick={() => printAssayResults(orientation)}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
               >
                 <PrinterIcon className="h-4 w-4 mr-2" />
@@ -390,7 +250,7 @@ export default function AssayResultsPage() {
           <div id="assay-content" className="bg-white shadow-sm">
             {/* Professional Header Section */}
             <div className="header-section">
-              <div className="flex items-center justify-between px-6 py-4">
+              <div className="grid grid-cols-3 gap-4 px-6 py-4">
                 <div className="flex items-center">
                   <img
                     src="/goldbod-logo-black.png"
@@ -404,7 +264,7 @@ export default function AssayResultsPage() {
                   <p className="text-sm">LARGE SCALE OPERATIONS</p>
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex justify-end">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
                       "https://goldbod.gov.gh/"
@@ -418,8 +278,8 @@ export default function AssayResultsPage() {
 
             {/* Professional Assay Information */}
             <div className="px-4 sm:px-6 lg:px-8 pt-4">
-              {/* Row 1: Exporter - Number of samples */}
-              <div className="flex justify-between items-center mb-2">
+              {/* Row 1: Exporter (left) - Date of Analysis (right) */}
+              <div className="flex justify-between items-center mb-4">
                 <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Exporter:
@@ -428,26 +288,6 @@ export default function AssayResultsPage() {
                     {jobCard?.exporter?.name && jobCard?.exporter?.exporterCode
                       ? `${jobCard.exporter.name}`
                       : jobCard?.exporter?.name || "N/A"}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-500 mr-2 font-medium">
-                    Number of Samples:
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {assay?.measurements?.length || 0}
-                  </span>
-                </div>
-              </div>
-
-              {/* Row 2: Sample Type - Date of Analysis */}
-              <div className="flex justify-between items-center mb-2">
-                <div>
-                  <span className="text-sm font-medium text-gray-500 mr-2">
-                    Sample Type:
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {assay?.sampleType || "N/A"}
                   </span>
                 </div>
                 <div>
@@ -462,9 +302,25 @@ export default function AssayResultsPage() {
                 </div>
               </div>
 
-              {/* Row 3: Shipment Number - Data Sheet Dates */}
-              <div className="flex justify-between items-center mb-2">
+              {/* Row 2: Number of Samples - Sample Type - Shipment Number */}
+              <div className="grid grid-cols-3 gap-4 mb-2">
                 <div>
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Number of Samples:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {assay?.measurements?.length || 0}
+                  </span>
+                </div>
+                <div className="text-center">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Sample Type:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {assay?.sampleType || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-end">
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Shipment Number:
                   </span>
@@ -472,19 +328,19 @@ export default function AssayResultsPage() {
                     {assay?.shipmentNumber || "N/A"}
                   </span>
                 </div>
+              </div>
+
+              {/* Row 3: Data Sheet Dates - Sample Bottle Dates - Number of Bars */}
+              <div className="grid grid-cols-3 gap-4 mb-2">
                 <div>
-                  <span className="text-sm text-gray-500 mr-2 font-medium">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
                     Data Sheet Dates:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {assay?.dataSheetDates || "N/A"}
                   </span>
                 </div>
-              </div>
-
-              {/* Row 4: Sample Bottle Dates - Number of Bars */}
-              <div className="flex justify-between items-center mb-2">
-                <div>
+                <div className="text-center">
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Sample Bottle Dates:
                   </span>
@@ -492,8 +348,8 @@ export default function AssayResultsPage() {
                     {assay?.sampleBottleDates || "N/A"}
                   </span>
                 </div>
-                <div>
-                  <span className="text-sm text-gray-500 mr-2 font-medium">
+                <div className="flex justify-end">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
                     Number of Bars:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
@@ -502,24 +358,18 @@ export default function AssayResultsPage() {
                 </div>
               </div>
 
-              {/* Row 5: Job Card ID - Assay Number */}
-              <div className="flex justify-between items-center mb-2">
-                <div>
+              {/* Row 4: Job ID */}
+              <div className="grid grid-cols-3 gap-4 mb-2">
+                {/* <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Job ID:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {jobCard?.humanReadableId || "N/A"}
                   </span>
-                </div>
-                {/* <div>
-                  <span className="text-sm text-gray-500 mr-2 font-medium">
-                    Certificate Number:
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {jobCard?.certificateNumber || "N/A"}
-                  </span>
                 </div> */}
+                <div></div>
+                <div></div>
               </div>
             </div>
 
@@ -854,7 +704,7 @@ export default function AssayResultsPage() {
                     <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
                       Technical Director
                     </p>
-                    <p className="text-sm font-medium text-gray-700 mb-2">
+                    <p className="text-sm text-gray-700 mb-2 font-bold">
                       {jobCard?.technicalDirector || "-"}
                     </p>
                   </div>
@@ -865,7 +715,7 @@ export default function AssayResultsPage() {
                   <img
                     src="/seal.png"
                     alt="Official Seal"
-                    className="w-32 h-24 mb-2 print:w-16 print:h-16"
+                    className="h-20 w-auto"
                   />
                 </div>
               </div>

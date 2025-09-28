@@ -131,10 +131,7 @@ export async function PUT(req: NextRequest) {
     void logger.debug(LogCategory.JOB_CARD, "PUT job card request", { id });
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Missing job ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing job ID" }, { status: 400 });
     }
 
     // Check if job card exists first
@@ -406,12 +403,14 @@ export async function PUT(req: NextRequest) {
           const pricePerOz = commodityPrice;
 
           // Calculate USD value
-          const totalUsdValue = Number(weightInOz.toFixed(3)) * Number(pricePerOz);
+          const totalUsdValue =
+            Number(weightInOz.toFixed(3)) * Number(pricePerOz);
 
           // Get exchange rate for GHS conversion
           let totalGhsValue = null;
           if (assayItem.exchangeRate && totalUsdValue > 0) {
-            totalGhsValue = Number(totalUsdValue) * Number(assayItem.exchangeRate);
+            totalGhsValue =
+              Number(totalUsdValue) * Number(assayItem.exchangeRate);
           }
 
           void logger.debug(LogCategory.JOB_CARD, "Assay calculation", {

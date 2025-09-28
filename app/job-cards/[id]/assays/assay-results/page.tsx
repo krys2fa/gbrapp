@@ -14,7 +14,7 @@ export default function AssayResultsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  console.log(jobCard)
+  console.log(jobCard);
 
   // helper: normalize common units to grams
   function convertToGrams(v: any, unit?: string) {
@@ -99,8 +99,8 @@ export default function AssayResultsPage() {
         @media print {
           /* QR Code print styles */
           img[alt*="QR Code"] {
-            width: 16pt !important;
-            height: 16pt !important;
+            width: 48pt !important;
+            height: 48pt !important;
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
           }
@@ -127,7 +127,7 @@ export default function AssayResultsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Content */}
           <div id="assay-content" className="bg-white shadow-sm">
-            <div className="flex justify-between items-center p-4">
+            <div className="grid grid-cols-3 gap-4 items-center p-4">
               <div className="flex items-center">
                 <img
                   src="/goldbod-logo-black.png"
@@ -139,8 +139,9 @@ export default function AssayResultsPage() {
                 <p className="font-bold text-2xl">ASSAY REPORT</p>
                 <p className="text-sm">SMALL SCALE OPERATIONS</p>
               </div>
+
               {/* QR Code */}
-              <div className="text-center flex-shrink-0 mr-4">
+              <div className="flex justify-end mr-4">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
                     "https://goldbod.gov.gh/"
@@ -174,15 +175,6 @@ export default function AssayResultsPage() {
 
               <div>
                 <span className="text-sm font-medium text-gray-500 mr-2">
-                  Job ID:
-                </span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {jobCard?.humanReadableId || "N/A"}
-                </span>
-              </div>
-
-              <div className="justify-end flex">
-                <span className="text-sm font-medium text-gray-500 mr-2">
                   Destination:
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
@@ -190,9 +182,9 @@ export default function AssayResultsPage() {
                 </span>
               </div>
 
-              <div>
+              <div className="justify-end flex">
                 <span className="text-sm font-medium text-gray-500 mr-2">
-                  Type of Shipment:
+                  Shipment Type:
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {assays[0]?.shipmentType.name || "N/A"}

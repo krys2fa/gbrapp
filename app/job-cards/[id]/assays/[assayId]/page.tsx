@@ -607,10 +607,12 @@ export default function AssayDetailPage() {
             </div>
 
             <div className="flex items-center justify-between mb-4">
-              <div className="flex">
-                <dt className="text-sm font-medium text-gray-500">Job Id:</dt>
+               <div className="flex">
+                <dt className="text-sm font-medium text-gray-500">
+                  Destination:
+                </dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
-                  {jobCard?.humanReadableId || "-"}
+                  {jobCard?.destinationCountry || "-"}
                 </dd>
               </div>
 
@@ -620,17 +622,6 @@ export default function AssayDetailPage() {
                 </dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
                   {assay?.shipmentType?.name || "-"}
-                </dd>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex">
-                <dt className="text-sm font-medium text-gray-500">
-                  Destination:
-                </dt>
-                <dd className="ml-1 text-sm font-semibold text-gray-900">
-                  {jobCard?.destinationCountry || "-"}
                 </dd>
               </div>
             </div>

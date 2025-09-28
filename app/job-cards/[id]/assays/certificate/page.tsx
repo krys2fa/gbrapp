@@ -470,7 +470,7 @@ export default function CertificateOfAssayPage() {
                   </span>
                 </div>
 
-                <div>
+                {/* <div>
                   <span className="text-sm text-gray-500 font-medium mr-2">
                     Job Id:
                   </span>
@@ -479,7 +479,7 @@ export default function CertificateOfAssayPage() {
                       jobCard?.referenceNumber ||
                       "N/A"}
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
 
