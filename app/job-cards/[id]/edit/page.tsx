@@ -7,6 +7,7 @@ import Link from "next/link";
 import BackLink from "@/app/components/ui/BackLink";
 import Select from "react-select";
 import countryList from "react-select-country-list";
+import { useAuth } from "@/app/context/auth-context";
 
 enum UnitOfMeasure {
   GRAMS = "g",
@@ -14,6 +15,7 @@ enum UnitOfMeasure {
 }
 
 function EditJobCardPage() {
+  const { hasRole } = useAuth();
   const params = useParams();
   const id = (params?.id as string) || "";
   const router = useRouter();
@@ -143,7 +145,10 @@ function EditJobCardPage() {
             jobCardData.invoices &&
             jobCardData.invoices.some((inv: any) => inv.status === "paid");
 
-          if (hasAssays || hasPaidInvoices) {
+          // Allow SUPERADMIN and ADMIN to edit even with assays
+          const isAdminUser = hasRole(["SUPERADMIN", "ADMIN"]);
+
+          if ((hasAssays || hasPaidInvoices) && !isAdminUser) {
             setCanEdit(false);
             if (hasAssays && hasPaidInvoices) {
               setEditRestrictionReason(

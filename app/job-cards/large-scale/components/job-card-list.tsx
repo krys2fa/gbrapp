@@ -405,16 +405,18 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                         <PencilSquareIcon className="h-5 w-5" />
                       </Link>
                     )}
-                    <button
-                      onClick={() => {
-                        setJobCardToDelete(jobCard.id);
-                        setDeleteModalOpen(true);
-                      }}
-                      className="text-red-600 hover:text-red-900 p-1"
-                      title="Delete"
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
+                    {hasRole(["SUPERADMIN", "ADMIN"]) && (
+                      <button
+                        onClick={() => {
+                          setJobCardToDelete(jobCard.id);
+                          setDeleteModalOpen(true);
+                        }}
+                        className="text-red-600 hover:text-red-900 p-1"
+                        title="Delete"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

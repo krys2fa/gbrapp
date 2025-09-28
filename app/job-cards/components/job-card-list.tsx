@@ -229,8 +229,7 @@ export function JobCardList({ filters }: JobCardListProps) {
                         <PencilSquareIcon className="h-5 w-5" />
                       </Link>
                     )}
-                    {(!jobCard._count?.assays ||
-                      jobCard._count.assays === 0) && (
+                    {hasRole(["SUPERADMIN", "ADMIN"]) && (
                       <button
                         onClick={(e) => {
                           e.preventDefault();
@@ -238,7 +237,7 @@ export function JobCardList({ filters }: JobCardListProps) {
                           handleDelete(jobCard.id);
                         }}
                         className="text-red-600 hover:text-red-900"
-                        title="Delete job card"
+                        title="Delete job card and all associated assays and invoices"
                       >
                         <TrashIcon className="h-5 w-5" />
                       </button>

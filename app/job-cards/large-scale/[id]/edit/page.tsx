@@ -8,6 +8,7 @@ import BackLink from "@/app/components/ui/BackLink";
 import Select from "react-select";
 import countryList from "react-select-country-list";
 import toast from "react-hot-toast";
+import { useAuth } from "@/app/context/auth-context";
 
 enum UnitOfMeasure {
   GRAMS = "g",
@@ -69,6 +70,7 @@ interface LargeScaleJobCard {
 }
 
 function EditLargeScaleJobCardPage() {
+  const { hasRole } = useAuth();
   const params = useParams();
   const id = (params?.id as string) || "";
   const router = useRouter();
@@ -199,7 +201,7 @@ function EditLargeScaleJobCardPage() {
         // Handle job card response
         if (jobCardRes.ok) {
           const jobCardData: LargeScaleJobCard = await jobCardRes.json();
-          toast.success("Job card data loaded successfully");
+          toast.success("Job card loaded successfully");
 
           // Check if editing should be restricted
           const hasAssays = jobCardData.assays && jobCardData.assays.length > 0;
@@ -207,7 +209,10 @@ function EditLargeScaleJobCardPage() {
             jobCardData.invoices &&
             jobCardData.invoices.some((inv: any) => inv.status === "paid");
 
-          if (hasAssays || hasPaidInvoices) {
+          // Allow SUPERADMIN and ADMIN to edit even with assays
+          const isAdminUser = hasRole(['SUPERADMIN', 'ADMIN']);
+
+          if ((hasAssays || hasPaidInvoices) && !isAdminUser) {
             setCanEdit(false);
             if (hasAssays && hasPaidInvoices) {
               setEditRestrictionReason(
