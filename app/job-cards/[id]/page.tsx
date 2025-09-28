@@ -172,16 +172,8 @@ function JobCardDetailPage() {
 
   if (loading) {
     return (
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="animate-pulse flex space-x-4">
-          <div className="flex-1 space-y-4 py-1">
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded" />
-              <div className="h-4 bg-gray-200 rounded w-5/6" />
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
@@ -347,11 +339,9 @@ function JobCardDetailPage() {
           <div className="px-4 py-5 sm:p-0">
             <dl className="sm:divide-y sm:divide-gray-200">
               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">
-                  Job ID
-                </dt>
+                <dt className="text-sm font-medium text-gray-500">Job ID</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 font-semibold">
-                  {jobCard!.humanReadableId }
+                  {jobCard!.humanReadableId}
                 </dd>
               </div>
               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
