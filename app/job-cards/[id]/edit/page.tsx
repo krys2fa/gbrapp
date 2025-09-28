@@ -329,7 +329,7 @@ function EditJobCardPage() {
         <BackLink href={`/job-cards/${id}`} label="Back to Job Card" />
       </div>
 
-      <div className="max-w-3xl w-full">
+      <div className="w-full">
         <div className="bg-white shadow sm:rounded-lg p-4 mb-6">
           <div className="px-4 sm:px-0">
             <h3 className="text-lg font-medium leading-6 text-gray-900">

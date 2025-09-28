@@ -224,7 +224,7 @@ export function JobCardList({ filters }: JobCardListProps) {
                     {hasRole(["SUPERADMIN", "ADMIN"]) && (
                       <Link
                         href={`/job-cards/${jobCard.id}/edit`}
-                        className="text-green-600 hover:text-green-900"
+                        className="text-blue-600 hover:text-blue-900"
                       >
                         <PencilSquareIcon className="h-5 w-5" />
                       </Link>
@@ -342,47 +342,37 @@ export function JobCardList({ filters }: JobCardListProps) {
     <>
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
-            <button
-              className="absolute top-2 right-2 flex items-center justify-center w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-red-400"
-              onClick={cancelDelete}
-              aria-label="Close"
-            >
-              <span className="text-xl">&times;</span>
-            </button>
-            <div className="flex items-center mb-4">
-              <div className="flex-shrink-0">
-                <TrashIcon className="h-6 w-6 text-red-600" />
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg font-medium text-gray-900">
+                Delete Job Card
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to delete this job card? This action
+                  cannot be undone.
+                </p>
               </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Delete Job Card
-                </h3>
+              <div className="flex items-center px-4 py-3">
+                <button
+                  onClick={() => {
+                    setDeleteModalOpen(false);
+                    setJobCardToDelete(null);
+                  }}
+                  className="px-4 py-2 bg-gray-300 text-gray-900 text-base font-medium rounded-md w-full mr-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() =>
+                    jobCardToDelete && confirmDelete()
+                  }
+                  className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full ml-2"
+                >
+                  Delete
+                </button>
               </div>
-            </div>
-            <div className="mt-2">
-              <p className="text-sm text-gray-500">
-                Are you sure you want to delete job card: {jobCardToDelete}?
-                This action cannot be undone and will permanently remove the job
-                card and all associated data.
-              </p>
-            </div>
-            <div className="mt-6 flex justify-end space-x-3">
-              <button
-                type="button"
-                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                onClick={cancelDelete}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                onClick={confirmDelete}
-              >
-                Delete
-              </button>
             </div>
           </div>
         </div>
