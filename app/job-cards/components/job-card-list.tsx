@@ -365,9 +365,7 @@ export function JobCardList({ filters }: JobCardListProps) {
                   Cancel
                 </button>
                 <button
-                  onClick={() =>
-                    jobCardToDelete && confirmDelete()
-                  }
+                  onClick={() => jobCardToDelete && confirmDelete()}
                   className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full ml-2"
                 >
                   Delete
