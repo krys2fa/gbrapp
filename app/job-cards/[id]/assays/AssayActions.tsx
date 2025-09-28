@@ -45,6 +45,33 @@ export default function AssayActions({
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
           }
+
+          /* Remove borders from printed content but keep table borders */
+          #assay-content {
+            border: none !important;
+            box-shadow: none !important;
+          }
+          #assay-content > div:not(table):not(thead):not(tbody):not(tr):not(th):not(td) {
+            border: none !important;
+            box-shadow: none !important;
+          }
+          /* Keep table borders and header styling - high specificity */
+          #assay-content table th,
+          #assay-content th {
+            background-color: #d4af37 !important;
+            color: #111827 !important;
+            border: 1px solid #d1d5db !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #assay-content table td,
+          #assay-content td {
+            border: 1px solid #d1d5db !important;
+          }
+          /* Override any Tailwind background utilities that might interfere */
+          #assay-content th[class*="bg-"] {
+            background-color: #d4af37 !important;
+          }
         }
       `;
       document.head.appendChild(printStyles);
