@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
-  ArrowPathIcon,
   EyeIcon,
   PencilSquareIcon,
   TrashIcon,
@@ -463,7 +462,6 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                   className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="sr-only">Previous</span>‹
-                  <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   const page = Math.max(1, currentPage - 2) + i;
@@ -490,7 +488,6 @@ export function LargeScaleJobCardList({ filters }: LargeScaleJobCardListProps) {
                   className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="sr-only">Next</span>›
-                  <ArrowPathIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
               </nav>
             </div>
