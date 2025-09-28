@@ -25,7 +25,7 @@ export default function AssayActions({
       const pageSize = printOrientation === "landscape" ? "A4 landscape" : "A4";
       printStyles.innerHTML = `
         @media print {
-          @page { size: ${pageSize}; margin: 20mm; }
+          @page { size: ${pageSize}; margin: 10mm 20mm 20mm 20mm; }
           body {
             margin: 0;
             padding: 0;

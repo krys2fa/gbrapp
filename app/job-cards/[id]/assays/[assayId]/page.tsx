@@ -342,7 +342,7 @@ export default function AssayDetailPage() {
 
           /* Table headers */
           thead {
-            background-color: #f9fafb !important;
+            background-color: #d4af37 !important;
           }
 
           th {
@@ -639,13 +639,13 @@ export default function AssayDetailPage() {
                     <table className="w-full divide-y divide-gray-200 border border-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
                             Gross Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
                             Fineness (%)
                           </th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
                             Net Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
                         </tr>
@@ -726,13 +726,13 @@ export default function AssayDetailPage() {
                     <table className="w-full divide-y divide-gray-200 border border-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
                             Gross Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
                             Fineness (%)
                           </th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
                             Net Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
                         </tr>
@@ -819,11 +819,11 @@ export default function AssayDetailPage() {
                 </div>
 
                 {/* Exporter Summary (bottom left) */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h5 className="text-sm font-medium text-gray-900 mb-3">
+                <div className="bg-gray-50 rounded-lg px-4">
+                  <h5 className="text-sm font-bold text-gray-900">
                     Exporter Valuation Summary
                   </h5>
-                  <div className="space-y-3">
+                  <div>
                     <div>
                       <div className="flex items-center gap-2">
                         <dt className="text-sm font-medium text-gray-500">
@@ -881,30 +881,15 @@ export default function AssayDetailPage() {
                         </dd>
                       </div>
                     </div>
-
-                    {/* <div>
-                    <div className="flex items-center gap-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Total GHS Value:
-                      </dt>
-                      <dd className="text-sm font-semibold text-gray-900">
-                        {jobCard?.valueGhs != null
-                          ? formatCurrency(jobCard.valueGhs, "GHS")
-                          : assay.jbTotalGhsValue != null
-                          ? formatCurrency(assay.jbTotalGhsValue, "GHS")
-                          : formatCurrency(0, "GHS")}
-                      </dd>
-                    </div>
-                  </div> */}
                   </div>
                 </div>
 
                 {/* GoldBod Valuation Summary (bottom right) */}
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h5 className="text-sm font-medium text-gray-900 mb-3">
+                <div className="bg-blue-50 rounded-lg px-4">
+                  <h5 className="text-sm font-bold text-gray-900">
                     GOLDBOD Valuation Summary
                   </h5>
-                  <div className="space-y-3">
+                  <div>
                     <div>
                       <div className="flex items-center gap-2">
                         <dt className="text-sm font-medium text-gray-500">
@@ -1043,7 +1028,7 @@ export default function AssayDetailPage() {
             </div>
 
             {/* Assay details moved to bottom with labels */}
-            <div className="mt-4 border-t pt-4">
+            <div className="mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                   <div className="flex items-center gap-2">
@@ -1080,7 +1065,7 @@ export default function AssayDetailPage() {
               </div>
 
               {/* Signatories */}
-              <div className="mt-24 grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="mt-16 grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                   <div className="border-b border-gray-400 mb-2 pt-4"></div>
                   <div className="flex flex-col gap-1">
