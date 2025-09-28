@@ -28,10 +28,53 @@ export default function AssayResultsPage() {
       const pageSize = printOrientation === "landscape" ? "A4 landscape" : "A4";
       printStyles.innerHTML = `
         @media print {
-          @page { size: ${pageSize}; margin: 15mm; }
+          @page { size: ${pageSize}; margin: 20mm; }
+          body {
+            margin: 0;
+            padding: 0;
+          }
           body * { visibility: hidden; }
           #assay-content, #assay-content * { visibility: visible; }
-          #assay-content { position: absolute; left: 0; top: 0; }
+          #assay-content {
+            position: static;
+            margin: 0;
+            padding: 0;
+          }
+
+          /* QR Code print styles */
+          img[alt*="QR Code"] {
+            width: 48pt !important;
+            height: 48pt !important;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+
+          /* Remove borders from printed content but keep table borders */
+          #assay-content {
+            border: none !important;
+            box-shadow: none !important;
+          }
+          #assay-content > div:not(table):not(thead):not(tbody):not(tr):not(th):not(td) {
+            border: none !important;
+            box-shadow: none !important;
+          }
+          /* Keep table borders and header styling - high specificity */
+          #assay-content table th,
+          #assay-content th {
+            background-color: #d4af37 !important;
+            color: #111827 !important;
+            border: 1px solid #d1d5db !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #assay-content table td,
+          #assay-content td {
+            border: 1px solid #d1d5db !important;
+          }
+          /* Override any Tailwind background utilities that might interfere */
+          #assay-content th[class*="bg-"] {
+            background-color: #d4af37 !important;
+          }
         }
       `;
       document.head.appendChild(printStyles);
@@ -45,7 +88,7 @@ export default function AssayResultsPage() {
       }, 1000);
     } catch (e) {
       console.error(e);
-      alert("Failed to prepare document for printing.");
+      alert("Failed to prepare assay results for printing.");
     }
   }
 
