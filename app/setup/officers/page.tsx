@@ -27,7 +27,6 @@ const OfficersPage = () => {
   const [nameFilter, setNameFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [page, setPage] = useState(1);
-  const pageSize = 10;
   const [form, setForm] = useState({
     name: "",
     badgeNumber: "",
@@ -276,7 +275,7 @@ const OfficersPage = () => {
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
+                  <div className="sm:col-span-1">
                     <label
                       htmlFor="officerType"
                       className="block text-sm font-medium text-gray-700"

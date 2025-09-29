@@ -179,37 +179,32 @@ function ShipmentTypesPage() {
         icon={<Truck className="h-5 w-5" />}
         subtitle="Add and manage shipment types for the application."
       />
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="my-6 px-4" style={{ width: "100%" }}>
         <BackLink href="/setup" label="Back to Setup" />
+      </div>
 
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form Section */}
-          <div className="lg:col-span-1">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingShipmentType
-                  ? "Edit Shipment Type"
-                  : "Add New Shipment Type"}
-              </h3>
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div>
+          <form
+            onSubmit={
+              editingShipmentType ? handleUpdateShipmentType : handleSubmit
+            }
+          >
+            <div className="shadow sm:rounded-md sm:overflow-hidden">
+              <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
+                {success && (
+                  <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                    {success}
+                  </div>
+                )}
 
-              {success && (
-                <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                  {success}
-                </div>
-              )}
+                {error && (
+                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {error}
+                  </div>
+                )}
 
-              {error && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                  {error}
-                </div>
-              )}
-
-              <form
-                onSubmit={
-                  editingShipmentType ? handleUpdateShipmentType : handleSubmit
-                }
-              >
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Name *
@@ -236,12 +231,14 @@ function ShipmentTypesPage() {
                       placeholder="Enter description (optional)"
                     />
                   </div>
+                </div>
 
+                <div className="mt-6 flex justify-end">
                   <div className="flex space-x-2">
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                      className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                     >
                       {loading
                         ? "Saving..."
@@ -261,198 +258,194 @@ function ShipmentTypesPage() {
                     )}
                   </div>
                 </div>
-              </form>
+              </div>
             </div>
-          </div>
+          </form>
+        </div>
 
-          {/* Table Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Shipment Types
-                  </h3>
-                  <button
-                    onClick={() => setFilterTrigger((prev) => prev + 1)}
-                    className="p-2 text-gray-400 hover:text-gray-600"
-                    title="Refresh"
-                  >
-                    <ArrowPathIcon className="h-5 w-5" />
-                  </button>
-                </div>
-
-                {/* Filters */}
-                <div className="mt-4 flex space-x-4">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      placeholder="Filter by name..."
-                      value={nameFilter}
-                      onChange={(e) => setNameFilter(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
+        <div className="mt-10">
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Shipment Types
+                </h3>
+                <button
+                  onClick={() => setFilterTrigger((prev) => prev + 1)}
+                  className="p-2 text-gray-400 hover:text-gray-600"
+                  title="Refresh"
+                >
+                  <ArrowPathIcon className="h-5 w-5" />
+                </button>
               </div>
 
-              <div className="overflow-x-auto">
-                {fetching ? (
-                  <div className="p-8 text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                    <p className="mt-2 text-gray-600">
-                      Loading shipment types...
-                    </p>
-                  </div>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+              {/* Filters */}
+              <div className="mt-4 flex space-x-4">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="Filter by name..."
+                    value={nameFilter}
+                    onChange={(e) => setNameFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              {fetching ? (
+                <div className="p-8 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                  <p className="mt-2 text-gray-600">
+                    Loading shipment types...
+                  </p>
+                </div>
+              ) : (
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedShipmentTypes.length === 0 ? (
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Description
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
+                        <td
+                          colSpan={3}
+                          className="px-6 py-4 text-center text-gray-500"
+                        >
+                          No shipment types found
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {paginatedShipmentTypes.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={3}
-                            className="px-6 py-4 text-center text-gray-500"
-                          >
-                            No shipment types found
+                    ) : (
+                      paginatedShipmentTypes.map((shipmentType) => (
+                        <tr key={shipmentType.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {shipmentType.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {shipmentType.description || "-"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={() =>
+                                  handleViewShipmentType(shipmentType)
+                                }
+                                className="text-blue-600 hover:text-blue-900"
+                                title="View"
+                              >
+                                <EyeIcon className="h-5 w-5" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleEditShipmentType(shipmentType)
+                                }
+                                className="text-indigo-600 hover:text-indigo-900"
+                                title="Edit"
+                              >
+                                <PencilSquareIcon className="h-5 w-5" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteShipmentType(shipmentType.id)
+                                }
+                                className="text-red-600 hover:text-red-900"
+                                title="Delete"
+                              >
+                                <TrashIcon className="h-5 w-5" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
-                      ) : (
-                        paginatedShipmentTypes.map((shipmentType) => (
-                          <tr
-                            key={shipmentType.id}
-                            className="hover:bg-gray-50"
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {shipmentType.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {shipmentType.description || "-"}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex justify-end space-x-2">
-                                <button
-                                  onClick={() =>
-                                    handleViewShipmentType(shipmentType)
-                                  }
-                                  className="text-blue-600 hover:text-blue-900"
-                                  title="View"
-                                >
-                                  <EyeIcon className="h-5 w-5" />
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleEditShipmentType(shipmentType)
-                                  }
-                                  className="text-indigo-600 hover:text-indigo-900"
-                                  title="Edit"
-                                >
-                                  <PencilSquareIcon className="h-5 w-5" />
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleDeleteShipmentType(shipmentType.id)
-                                  }
-                                  className="text-red-600 hover:text-red-900"
-                                  title="Delete"
-                                >
-                                  <TrashIcon className="h-5 w-5" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="px-6 py-3 border-t border-gray-200 flex justify-between items-center">
-                  <div className="text-sm text-gray-700">
-                    Showing{" "}
-                    {Math.min(
-                      (page - 1) * pageSize + 1,
-                      filteredShipmentTypes.length
-                    )}{" "}
-                    to {Math.min(page * pageSize, filteredShipmentTypes.length)}{" "}
-                    of {filteredShipmentTypes.length} results
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => setPage(Math.max(1, page - 1))}
-                      disabled={page === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => setPage(Math.min(totalPages, page + 1))}
-                      disabled={page === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               )}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-3 border-t border-gray-200 flex justify-between items-center">
+                <div className="text-sm text-gray-700">
+                  Showing{" "}
+                  {Math.min(
+                    (page - 1) * pageSize + 1,
+                    filteredShipmentTypes.length
+                  )}{" "}
+                  to {Math.min(page * pageSize, filteredShipmentTypes.length)}{" "}
+                  of {filteredShipmentTypes.length} results
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page === totalPages}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* View Modal */}
+      {viewModalOpen && viewingShipmentType && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Shipment Type Details
+                </h3>
+                <button
+                  onClick={() => setViewModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Name
+                  </label>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {viewingShipmentType.name}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Description
+                  </label>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {viewingShipmentType.description || "No description"}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* View Modal */}
-        {viewModalOpen && viewingShipmentType && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Shipment Type Details
-                  </h3>
-                  <button
-                    onClick={() => setViewModalOpen(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Name
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {viewingShipmentType.name}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Description
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {viewingShipmentType.description || "No description"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </>
   );
 }

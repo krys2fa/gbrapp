@@ -334,22 +334,22 @@ function SettingsPage() {
                         {userProfile?.role || "N/A"}
                       </div>
                     </div>
-                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                    {/* <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                       <div className="text-sm text-gray-600 dark:text-gray-300">
                         Profile Completion
                       </div>
                       <div className="font-semibold text-gray-900 dark:text-white">
                         {userProfile?.profileCompletion || 0}%
                       </div>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                    </div> */}
+                    {/* <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                       <div className="text-sm text-gray-600 dark:text-gray-300">
                         Account Age
                       </div>
                       <div className="font-semibold text-gray-900 dark:text-white">
                         {userProfile?.accountAge || 0} days
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

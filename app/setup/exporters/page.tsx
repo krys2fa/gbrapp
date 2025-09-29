@@ -50,7 +50,6 @@ const ExportersPage = () => {
   const [exportersLoading, setExportersLoading] = useState(true);
   const [page, setPage] = useState(1);
   const pageSize = 10;
-  const [codeFilter, setCodeFilter] = useState("");
   const [nameFilter, setNameFilter] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
   const [phoneFilter, setPhoneFilter] = useState("");
@@ -66,7 +65,6 @@ const ExportersPage = () => {
     try {
       let url = "/api/exporters";
       const params = [];
-      if (codeFilter) params.push(`code=${encodeURIComponent(codeFilter)}`);
       if (nameFilter) params.push(`search=${encodeURIComponent(nameFilter)}`);
       if (emailFilter) params.push(`email=${encodeURIComponent(emailFilter)}`);
       if (phoneFilter) params.push(`phone=${encodeURIComponent(phoneFilter)}`);
@@ -123,27 +121,6 @@ const ExportersPage = () => {
           address: form.address,
           authorizedSignatory: form.authorizedSignatory,
           exporterTypeId: form.exporterTypeId || undefined,
-          // Consignee Information
-          // consigneeAddress: form.consigneeAddress,
-          // consigneeTelephone: form.consigneeTelephone,
-          // consigneeMobile: form.consigneeMobile,
-          // consigneeEmail: form.consigneeEmail,
-          // // Buyer Information
-          // buyerName: form.buyerName,
-          // buyerAddress: form.buyerAddress,
-          // Exporter Details
-          // deliveryLocation: form.deliveryLocation,
-          // exporterTelephone: form.exporterTelephone,
-          // exporterEmail: form.exporterEmail,
-          // exporterWebsite: form.exporterWebsite,
-          // exporterLicenseNumber: form.exporterLicenseNumber,
-          // Notified Party Information
-          // notifiedPartyName: form.notifiedPartyName,
-          // notifiedPartyAddress: form.notifiedPartyAddress,
-          // notifiedPartyEmail: form.notifiedPartyEmail,
-          // notifiedPartyContactPerson: form.notifiedPartyContactPerson,
-          // notifiedPartyTelephone: form.notifiedPartyTelephone,
-          // notifiedPartyMobile: form.notifiedPartyMobile,
         }),
       });
       if (!res.ok) {
@@ -363,13 +340,13 @@ const ExportersPage = () => {
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-4xl">
+        <div>
           <form
             onSubmit={editingExporter ? handleUpdateExporter : handleSubmit}
           >
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
                     <label
                       htmlFor="name"
@@ -913,55 +890,6 @@ const ExportersPage = () => {
         </div>
         <div className="mt-10">
           <h3 className="text-lg font-semibold mb-4">All Exporters</h3>
-          <div className="flex items-center gap-4 mb-4">
-            <input
-              type="text"
-              value={codeFilter}
-              onChange={(e) => {
-                setCodeFilter(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Filter by code (EXP-001)"
-              className="!w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
-            />
-            <input
-              type="text"
-              value={nameFilter}
-              onChange={(e) => {
-                setNameFilter(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Filter by name"
-              className="!w-64 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
-            />
-            <input
-              type="text"
-              value={emailFilter}
-              onChange={(e) => {
-                setEmailFilter(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Filter by email"
-              className="!w-64 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
-            />
-            <input
-              type="text"
-              value={phoneFilter}
-              onChange={(e) => {
-                setPhoneFilter(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Filter by phone"
-              className="!w-64 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
-            />
-            <button
-              className="bg-blue-500 text-white px-4 py-1 rounded flex items-center gap-2"
-              onClick={() => setFilterTrigger(filterTrigger + 1)}
-            >
-              <MagnifyingGlassIcon className="h-4 w-4" />
-              Search
-            </button>
-          </div>
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             {exportersLoading ? (
               <div className="flex justify-center items-center py-10">
@@ -974,9 +902,6 @@ const ExportersPage = () => {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Code
-                        </th>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Name
                         </th>
@@ -1008,9 +933,6 @@ const ExportersPage = () => {
                         .slice((page - 1) * pageSize, page * pageSize)
                         .map((exporter: any) => (
                           <tr key={exporter.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-2 text-blue-600 font-semibold">
-                              {exporter.exporterCode}
-                            </td>
                             <td className="px-4 py-2 text-gray-900">
                               {exporter.name}
                             </td>

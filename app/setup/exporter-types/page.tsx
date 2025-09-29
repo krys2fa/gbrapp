@@ -147,7 +147,7 @@ export default function ExporterTypesPage() {
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-3xl mt-2">
+        <div className="mt-2">
           <form onSubmit={editingType ? handleUpdate : handleCreate}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
@@ -181,7 +181,7 @@ export default function ExporterTypesPage() {
                   </div>
                 )}
                 {success && <div className="text-green-600">{success}</div>}
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Name

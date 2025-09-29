@@ -144,18 +144,18 @@ export default function ExchangesPage() {
         icon={<Globe className="h-5 w-5" />}
         subtitle="Add and manage exchange rate sources."
       />
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6" style={{ width: "100%" }}>
-          <BackLink href="/setup" label="Back to Settings" />
-        </div>
+      <div className="my-6 px-4" style={{ width: "100%" }}>
+        <BackLink href="/setup" label="Back to Settings" />
+      </div>
 
-        <div className="max-w-xl">
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div>
           <form
             onSubmit={editingExchange ? handleUpdateExchange : handleSubmit}
           >
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Exchange Name

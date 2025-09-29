@@ -10,10 +10,7 @@ import {
   formatWeekDisplay,
   getCurrentWeekStart,
 } from "@/app/lib/week-utils";
-import {
-  TrashIcon,
-  EyeIcon,
-} from "@heroicons/react/24/outline";
+import { TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
 
 function capitalizeFirst(str: string) {
   if (!str) return "";
@@ -281,8 +278,9 @@ export default function WeeklyExchangePage() {
       <div className="my-6 px-4" style={{ width: "100%" }}>
         <BackLink href="/setup" label="Back to Settings" />
       </div>
+
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-5xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
           <form
             onSubmit={handleSubmit}
             className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6"
@@ -406,482 +404,496 @@ export default function WeeklyExchangePage() {
           </div>
         </div>
 
-        <div className="mt-10">
-          <h3 className="text-lg font-semibold mb-4">Weekly Exchange Rates</h3>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative w-48">
-              <select
-                value={filterItem}
-                onChange={(e) => {
-                  setFilterItem(e.target.value);
-                  setFilterTrigger((prev: number) => prev + 1);
-                  if (e.target.value) {
-                    toast("Filter applied", { icon: "🔍" });
-                  }
-                }}
-                className="block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
-              >
-                <option value="">All Exchanges</option>
-                {exchanges.map((ex) => (
-                  <option key={ex.id} value={ex.id}>
-                    {capitalizeFirst(ex.name)}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-            </div>
-            <div className="relative w-48">
-              <input
-                type="date"
-                value={filterWeek}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    const selectedDate = new Date(e.target.value);
-                    const weekStart = getWeekStart(selectedDate);
-                    setFilterWeek(weekStart.toISOString().split("T")[0]);
-                    setFilterTrigger((prev: number) => prev + 1);
-                    toast("Week filter applied", { icon: "📅" });
-                  } else {
+        <div className="mt-12">
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold mb-4">
+                Weekly Exchange Rates
+              </h3>
+              <div className="flex items-center gap-4">
+                <div className="relative w-48">
+                  <select
+                    value={filterItem}
+                    onChange={(e) => {
+                      setFilterItem(e.target.value);
+                      setFilterTrigger((prev: number) => prev + 1);
+                      if (e.target.value) {
+                        toast("Filter applied", { icon: "🔍" });
+                      }
+                    }}
+                    className="block w-full appearance-none rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                  >
+                    <option value="">All Exchanges</option>
+                    {exchanges.map((ex) => (
+                      <option key={ex.id} value={ex.id}>
+                        {capitalizeFirst(ex.name)}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                  </span>
+                </div>
+                <div className="relative w-48">
+                  <input
+                    type="date"
+                    value={filterWeek}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const selectedDate = new Date(e.target.value);
+                        const weekStart = getWeekStart(selectedDate);
+                        setFilterWeek(weekStart.toISOString().split("T")[0]);
+                        setFilterTrigger((prev: number) => prev + 1);
+                        toast("Week filter applied", { icon: "📅" });
+                      } else {
+                        setFilterWeek("");
+                        setFilterTrigger((prev: number) => prev + 1);
+                      }
+                    }}
+                    placeholder="Filter by week"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    setFilterItem("");
                     setFilterWeek("");
                     setFilterTrigger((prev: number) => prev + 1);
-                  }
-                }}
-                placeholder="Filter by week"
-                className="block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              />
+                    toast("Filters cleared", { icon: "🧹" });
+                  }}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-2 rounded hover:bg-blue-50 transition-colors"
+                >
+                  Clear Filters
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => {
-                setFilterItem("");
-                setFilterWeek("");
-                setFilterTrigger((prev: number) => prev + 1);
-                toast("Filters cleared", { icon: "🧹" });
-              }}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-              Clear Filters
-            </button>
-          </div>
 
-          {pricesLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-              <p className="mt-2 text-sm text-gray-500">Loading rates...</p>
-            </div>
-          ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <div className="overflow-x-auto">
-                <table className="min-w-full table-auto border-collapse border border-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
-                        Exchange
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
-                        Week Period
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
-                        Rate
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
-                        Status
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
-                        Created
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(prices || [])
-                      .slice((page - 1) * pageSize, page * pageSize)
-                      .map((rate: any) => (
-                        <tr key={rate.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-2 text-gray-900 border border-gray-200">
-                            {rate.exchange?.name}{" "}
-                            <span className="text-gray-500">
-                              ({rate.exchange?.symbol})
-                            </span>
-                          </td>
-                          <td className="px-4 py-2 text-gray-700 border border-gray-200">
-                            {formatWeekDisplay(new Date(rate.weekStartDate))}
-                          </td>
-                          <td className="px-4 py-2 text-gray-900 font-semibold border border-gray-200">
-                            {formatExchangeRate(rate.price)}
-                          </td>
-                          <td className="px-4 py-2 border border-gray-200">
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                rate.status === "APPROVED"
-                                  ? "bg-green-100 text-green-800"
-                                  : rate.status === "REJECTED"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {rate.status || "PENDING"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-2 text-gray-700 border border-gray-200">
-                            {new Date(rate.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-2 flex gap-2 border border-gray-200">
-                            <button
-                              className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
-                              onClick={() => handleView(rate)}
-                            >
-                              <EyeIcon className="h-4 w-4 mr-1" /> View
-                            </button>
-                            {rate.status === "PENDING" && (
-                              <>
+            {pricesLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                <p className="mt-2 text-sm text-gray-500">Loading rates...</p>
+              </div>
+            ) : (
+              <div className="px-6 py-4">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Exchange
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Week Period
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Rate
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Created
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {(prices || [])
+                        .slice((page - 1) * pageSize, page * pageSize)
+                        .map((rate: any) => (
+                          <tr key={rate.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {rate.exchange?.name}{" "}
+                              <span className="text-gray-500">
+                                ({rate.exchange?.symbol})
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {formatWeekDisplay(new Date(rate.weekStartDate))}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                              {formatExchangeRate(rate.price)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <span
+                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  rate.status === "APPROVED"
+                                    ? "bg-green-100 text-green-800"
+                                    : rate.status === "REJECTED"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                                }`}
+                              >
+                                {rate.status || "PENDING"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(rate.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex justify-end gap-2">
                                 <button
-                                  className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs flex items-center"
-                                  onClick={() => handleApproveClick(rate)}
+                                  className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
+                                  onClick={() => handleView(rate)}
                                 >
-                                  Approve
+                                  <EyeIcon className="h-4 w-4 mr-1" /> View
                                 </button>
-                                <button
-                                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
-                                  onClick={() => handleRejectClick(rate)}
-                                >
-                                  Reject
-                                </button>
-                              </>
-                            )}
-                            {/* <button
+                                {rate.status === "PENDING" && (
+                                  <>
+                                    <button
+                                      className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs flex items-center"
+                                      onClick={() => handleApproveClick(rate)}
+                                    >
+                                      Approve
+                                    </button>
+                                    <button
+                                      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
+                                      onClick={() => handleRejectClick(rate)}
+                                    >
+                                      Reject
+                                    </button>
+                                  </>
+                                )}
+                                {/* <button
                               className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
                               onClick={() => handleEdit(rate)}
                             >
                               <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit
                             </button> */}
-                            <button
-                              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
-                              onClick={() => handleDeleteClick(rate)}
-                            >
-                              <TrashIcon className="h-4 w-4 mr-1" /> Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-              {(!prices || prices.length === 0) && (
-                <div className="text-center py-8">
-                  <p className="text-sm text-gray-500">
-                    No weekly rates found.
-                  </p>
+                                <button
+                                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center"
+                                  onClick={() => handleDeleteClick(rate)}
+                                >
+                                  <TrashIcon className="h-4 w-4 mr-1" /> Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing{" "}
-                      <span className="font-medium">
-                        {(page - 1) * pageSize + 1}
-                      </span>{" "}
-                      to{" "}
-                      <span className="font-medium">
-                        {Math.min(page * pageSize, prices?.length || 0)}
-                      </span>{" "}
-                      of{" "}
-                      <span className="font-medium">{prices?.length || 0}</span>{" "}
-                      results
+                {(!prices || prices.length === 0) && (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-gray-500">
+                      No weekly rates found.
                     </p>
                   </div>
-                  <div>
-                    <nav
-                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                      aria-label="Pagination"
-                    >
-                      <button
-                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={page === 1}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                          page === 1
-                            ? "text-gray-300 cursor-not-allowed"
-                            : "text-gray-500 hover:bg-gray-50"
-                        }`}
+                )}
+                <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 bg-gray-50">
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Showing{" "}
+                        <span className="font-medium">
+                          {(page - 1) * pageSize + 1}
+                        </span>{" "}
+                        to{" "}
+                        <span className="font-medium">
+                          {Math.min(page * pageSize, prices?.length || 0)}
+                        </span>{" "}
+                        of{" "}
+                        <span className="font-medium">
+                          {prices?.length || 0}
+                        </span>{" "}
+                        results
+                      </p>
+                    </div>
+                    <div>
+                      <nav
+                        className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                        aria-label="Pagination"
                       >
-                        Previous
-                      </button>
-                      {Array.from(
-                        {
-                          length: Math.max(
-                            1,
-                            Math.ceil((prices?.length || 0) / pageSize)
-                          ),
-                        },
-                        (_, i) => i + 1
-                      ).map((p) => (
                         <button
-                          key={p}
-                          onClick={() => setPage(p)}
-                          className={`relative inline-flex items-center px-4 py-2 border ${
-                            page === p
-                              ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                          } text-sm font-medium`}
+                          onClick={() =>
+                            setPage((prev) => Math.max(prev - 1, 1))
+                          }
+                          disabled={page === 1}
+                          className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                            page === 1
+                              ? "text-gray-300 cursor-not-allowed"
+                              : "text-gray-500 hover:bg-gray-50"
+                          }`}
                         >
-                          {p}
+                          Previous
                         </button>
-                      ))}
-                      <button
-                        onClick={() =>
-                          setPage((prev) =>
-                            Math.min(
-                              Math.ceil((prices?.length || 0) / pageSize),
-                              prev + 1
+                        {Array.from(
+                          {
+                            length: Math.max(
+                              1,
+                              Math.ceil((prices?.length || 0) / pageSize)
+                            ),
+                          },
+                          (_, i) => i + 1
+                        ).map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setPage(p)}
+                            className={`relative inline-flex items-center px-4 py-2 border ${
+                              page === p
+                                ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                            } text-sm font-medium`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() =>
+                            setPage((prev) =>
+                              Math.min(
+                                Math.ceil((prices?.length || 0) / pageSize),
+                                prev + 1
+                              )
                             )
-                          )
-                        }
-                        disabled={
-                          page >= Math.ceil((prices?.length || 0) / pageSize)
-                        }
-                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                          page >= Math.ceil((prices?.length || 0) / pageSize)
-                            ? "text-gray-300 cursor-not-allowed"
-                            : "text-gray-500 hover:bg-gray-50"
-                        }`}
-                      >
-                        Next
-                      </button>
-                    </nav>
+                          }
+                          disabled={
+                            page >= Math.ceil((prices?.length || 0) / pageSize)
+                          }
+                          className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                            page >= Math.ceil((prices?.length || 0) / pageSize)
+                              ? "text-gray-300 cursor-not-allowed"
+                              : "text-gray-500 hover:bg-gray-50"
+                          }`}
+                        >
+                          Next
+                        </button>
+                      </nav>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
+        {/* View Modal */}
+        {viewModalOpen && viewingPrice && (
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Rate Details
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Exchange
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {viewingPrice.exchange?.name} (
+                    {viewingPrice.exchange?.symbol})
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Rate
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatExchangeRate(viewingPrice.price)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Week Period
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatWeekDisplay(new Date(viewingPrice.weekStartDate))}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Created
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {new Date(viewingPrice.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={closeViewModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteModalOpen && deletingPrice && (
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Delete Rate
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Are you sure you want to delete the rate for{" "}
+                <strong>{deletingPrice.exchange?.name}</strong> for the week of{" "}
+                <strong>
+                  {formatWeekDisplay(new Date(deletingPrice.weekStartDate))}
+                </strong>
+                ? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeDeleteModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+                  disabled={loading}
+                >
+                  {loading ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Approve Confirmation Modal */}
+        {approveModalOpen && approvingPrice && (
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Approve Exchange Rate
+              </h3>
+              <div className="space-y-3 mb-6">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Exchange
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {approvingPrice.exchange?.name} (
+                    {approvingPrice.exchange?.symbol})
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Rate
+                  </label>
+                  <p className="text-sm text-gray-900 font-semibold">
+                    {formatExchangeRate(approvingPrice.price)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Week Period
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatWeekDisplay(new Date(approvingPrice.weekStartDate))}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mb-6">
+                Are you sure you want to approve this exchange rate? Once
+                approved, it will be available for use in assays and invoicing.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setApproveModalOpen(false);
+                    setApprovingPrice(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApproveConfirm}
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700"
+                  disabled={loading}
+                >
+                  {loading ? "Approving..." : "Approve"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reject Confirmation Modal */}
+        {rejectModalOpen && rejectingPrice && (
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Reject Exchange Rate
+              </h3>
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Exchange
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {rejectingPrice.exchange?.name} (
+                    {rejectingPrice.exchange?.symbol})
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Rate
+                  </label>
+                  <p className="text-sm text-gray-900 font-semibold">
+                    {formatExchangeRate(rejectingPrice.price)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Week Period
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatWeekDisplay(new Date(rejectingPrice.weekStartDate))}
+                  </p>
+                </div>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rejection Reason *
+                </label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Please provide a reason for rejecting this rate..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                  rows={3}
+                  required
+                ></textarea>
+              </div>
+              <p className="text-sm text-gray-600 mb-6">
+                Are you sure you want to reject this exchange rate? The
+                submitter will be notified of the rejection reason.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setRejectModalOpen(false);
+                    setRejectingPrice(null);
+                    setRejectionReason("");
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRejectConfirm}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+                  disabled={loading || !rejectionReason.trim()}
+                >
+                  {loading ? "Rejecting..." : "Reject"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* View Modal */}
-      {viewModalOpen && viewingPrice && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Rate Details
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Exchange
-                </label>
-                <p className="text-sm text-gray-900">
-                  {viewingPrice.exchange?.name} ({viewingPrice.exchange?.symbol}
-                  )
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Rate
-                </label>
-                <p className="text-sm text-gray-900">
-                  {formatExchangeRate(viewingPrice.price)}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Week Period
-                </label>
-                <p className="text-sm text-gray-900">
-                  {formatWeekDisplay(new Date(viewingPrice.weekStartDate))}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Created
-                </label>
-                <p className="text-sm text-gray-900">
-                  {new Date(viewingPrice.createdAt).toLocaleString()}
-                </p>
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={closeViewModal}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteModalOpen && deletingPrice && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Delete Rate
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to delete the rate for{" "}
-              <strong>{deletingPrice.exchange?.name}</strong> for the week of{" "}
-              <strong>
-                {formatWeekDisplay(new Date(deletingPrice.weekStartDate))}
-              </strong>
-              ? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={closeDeleteModal}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
-                disabled={loading}
-              >
-                {loading ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Approve Confirmation Modal */}
-      {approveModalOpen && approvingPrice && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Approve Exchange Rate
-            </h3>
-            <div className="space-y-3 mb-6">
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Exchange
-                </label>
-                <p className="text-sm text-gray-900">
-                  {approvingPrice.exchange?.name} (
-                  {approvingPrice.exchange?.symbol})
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Rate
-                </label>
-                <p className="text-sm text-gray-900 font-semibold">
-                  {formatExchangeRate(approvingPrice.price)}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Week Period
-                </label>
-                <p className="text-sm text-gray-900">
-                  {formatWeekDisplay(new Date(approvingPrice.weekStartDate))}
-                </p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to approve this exchange rate? Once
-              approved, it will be available for use in assays and invoicing.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => {
-                  setApproveModalOpen(false);
-                  setApprovingPrice(null);
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleApproveConfirm}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700"
-                disabled={loading}
-              >
-                {loading ? "Approving..." : "Approve"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reject Confirmation Modal */}
-      {rejectModalOpen && rejectingPrice && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Reject Exchange Rate
-            </h3>
-            <div className="space-y-3 mb-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Exchange
-                </label>
-                <p className="text-sm text-gray-900">
-                  {rejectingPrice.exchange?.name} (
-                  {rejectingPrice.exchange?.symbol})
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Rate
-                </label>
-                <p className="text-sm text-gray-900 font-semibold">
-                  {formatExchangeRate(rejectingPrice.price)}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Week Period
-                </label>
-                <p className="text-sm text-gray-900">
-                  {formatWeekDisplay(new Date(rejectingPrice.weekStartDate))}
-                </p>
-              </div>
-            </div>
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rejection Reason *
-              </label>
-              <textarea
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Please provide a reason for rejecting this rate..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
-                rows={3}
-                required
-              />
-            </div>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to reject this exchange rate? The submitter
-              will be notified of the rejection reason.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => {
-                  setRejectModalOpen(false);
-                  setRejectingPrice(null);
-                  setRejectionReason("");
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRejectConfirm}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
-                disabled={loading || !rejectionReason.trim()}
-              >
-                {loading ? "Rejecting..." : "Reject"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

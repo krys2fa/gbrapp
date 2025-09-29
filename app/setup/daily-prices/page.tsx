@@ -240,286 +240,289 @@ export default function DailyPricesPage() {
         icon={<DollarSign className="h-5 w-5" />}
         subtitle="Record and view daily commodity prices."
       />
-      <div className="max-w-5xl py-8 px-4">
-        <div className="mb-6" style={{ width: "100%" }}>
-          <div
-            className="flex"
-            style={{ justifyContent: "flex-start", width: "100%" }}
-          >
-            <BackLink href="/setup" label="Back to Settings" />
-          </div>
-        </div>
+      <div className="my-6 px-4" style={{ width: "100%" }}>
+        <BackLink href="/setup" label="Back to Settings" />
+      </div>
 
-        <div className="px-4 sm:px-6 lg:px-6 py-6">
-          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
-            <form
-              onSubmit={handleCommoditySubmit}
-              className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6"
-            >
-              <h2 className="text-lg font-semibold mb-4">
-                Add Commodity Price
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Commodity
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={commodityId}
-                      onChange={(e) => setCommodityId(e.target.value)}
-                      className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
-                    >
-                      {commodities.map((opt) => (
-                        <option key={opt.id} value={opt.id}>
-                          {capitalizeFirst(opt.name)}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Price
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={commodityPrice}
-                    onChange={(e) => setCommodityPrice(e.target.value)}
-                    className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-                <div className="mt-6 flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={commodityLoading}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
+          <form
+            onSubmit={handleCommoditySubmit}
+            className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6"
+          >
+            <h2 className="text-lg font-semibold mb-4">Add Commodity Price</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Commodity
+                </label>
+                <div className="relative">
+                  <select
+                    value={commodityId}
+                    onChange={(e) => setCommodityId(e.target.value)}
+                    className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
                   >
-                    {commodityLoading && (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    )}
-                    {commodityLoading
-                      ? editingPrice
-                        ? "Updating..."
-                        : "Adding..."
-                      : editingPrice
-                      ? "Update Price"
-                      : "Add Price"}
-                  </button>
+                    {commodities.map((opt) => (
+                      <option key={opt.id} value={opt.id}>
+                        {capitalizeFirst(opt.name)}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                 </div>
               </div>
-            </form>
-
-            {/* Recent Prices (last 3) */}
-            <div className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6">
-              <h2 className="text-lg font-semibold mb-4">Recent Prices</h2>
-              {prices.length === 0 ? (
-                <p className="text-sm text-gray-500">No recent prices.</p>
-              ) : (
-                <ul className="space-y-3">
-                  {prices
-                    .slice()
-                    .sort(
-                      (a: any, b: any) =>
-                        new Date(b.createdAt).getTime() -
-                        new Date(a.createdAt).getTime()
-                    )
-                    .slice(0, 3)
-                    .map((r: any) => {
-                      const isCommodity = r.type === "COMMODITY";
-                      const name = isCommodity
-                        ? r.commodity?.name
-                        : r.exchange?.name;
-                      const symbol = isCommodity
-                        ? r.commodity?.symbol
-                        : r.exchange?.symbol;
-                      return (
-                        <li
-                          key={r.id}
-                          className="flex items-center justify-between"
-                        >
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {name}{" "}
-                              <span className="text-xs text-gray-500">
-                                ({symbol})
-                              </span>
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              {r.createdAt
-                                ? `${new Date(
-                                    r.createdAt
-                                  ).toLocaleDateString()} ${new Date(
-                                    r.createdAt
-                                  ).toLocaleTimeString()}`
-                                : "-"}
-                            </div>
-                          </div>
-                          <div className="text-sm font-semibold text-gray-900">
-                            {r.type === "EXCHANGE"
-                              ? formatExchangeRate(r.price)
-                              : r.price}
-                          </div>
-                        </li>
-                      );
-                    })}
-                </ul>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Price
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={commodityPrice}
+                  onChange={(e) => setCommodityPrice(e.target.value)}
+                  className="mt-1 block w-full border px-3 py-2 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={commodityLoading}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {commodityLoading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  )}
+                  {commodityLoading
+                    ? editingPrice
+                      ? "Updating..."
+                      : "Adding..."
+                    : editingPrice
+                    ? "Update Price"
+                    : "Add Price"}
+                </button>
+              </div>
             </div>
+          </form>
+
+          {/* Recent Prices (last 3) */}
+          <div className="bg-white shadow sm:rounded-md sm:overflow-hidden p-6">
+            <h2 className="text-lg font-semibold mb-4">Recent Prices</h2>
+            {prices.length === 0 ? (
+              <p className="text-sm text-gray-500">No recent prices.</p>
+            ) : (
+              <ul className="space-y-3">
+                {prices
+                  .slice()
+                  .sort(
+                    (a: any, b: any) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                  )
+                  .slice(0, 3)
+                  .map((r: any) => {
+                    const isCommodity = r.type === "COMMODITY";
+                    const name = isCommodity
+                      ? r.commodity?.name
+                      : r.exchange?.name;
+                    const symbol = isCommodity
+                      ? r.commodity?.symbol
+                      : r.exchange?.symbol;
+                    return (
+                      <li
+                        key={r.id}
+                        className="flex items-center justify-between"
+                      >
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {name}{" "}
+                            <span className="text-xs text-gray-500">
+                              ({symbol})
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {r.createdAt
+                              ? `${new Date(
+                                  r.createdAt
+                                ).toLocaleDateString()} ${new Date(
+                                  r.createdAt
+                                ).toLocaleTimeString()}`
+                              : "-"}
+                          </div>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900">
+                          {r.type === "EXCHANGE"
+                            ? formatExchangeRate(r.price)
+                            : r.price}
+                        </div>
+                      </li>
+                    );
+                  })}
+              </ul>
+            )}
           </div>
         </div>
-        <div className="mt-10">
-          <h3 className="text-lg font-semibold mb-4">All Prices</h3>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative w-48">
-              <select
-                value={filterItem}
+      </div>
+      <div className="mt-12">
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold mb-4">Commodity Prices</h3>
+            <div className="flex items-center gap-4">
+              <div className="relative w-48">
+                <select
+                  value={filterItem}
+                  onChange={(e) => {
+                    setFilterItem(e.target.value);
+                    setPage(1);
+                  }}
+                  className="block w-full appearance-none rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                >
+                  <option value="">All Items</option>
+                  {/* derive options from loaded commodities and exchanges */}
+                  {commodities.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {capitalizeFirst(c.name)}
+                    </option>
+                  ))}
+                  {exchanges.map((e) => (
+                    <option key={e.id} value={e.name}>
+                      {capitalizeFirst(e.name)}
+                    </option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                </span>
+              </div>
+              <input
+                type="date"
+                value={filterDate}
                 onChange={(e) => {
-                  setFilterItem(e.target.value);
+                  setFilterDate(e.target.value);
                   setPage(1);
                 }}
-                className="block w-full appearance-none rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 w-32"
+                style={{ minWidth: "auto", maxWidth: "8rem" }}
+              />
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-600 transition-colors"
+                onClick={() => setFilterTrigger(filterTrigger + 1)}
               >
-                <option value="">All Items</option>
-                {/* derive options from loaded commodities and exchanges */}
-                {commodities.map((c) => (
-                  <option key={c.id} value={c.name}>
-                    {capitalizeFirst(c.name)}
-                  </option>
-                ))}
-                {exchanges.map((e) => (
-                  <option key={e.id} value={e.name}>
-                    {capitalizeFirst(e.name)}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              </span>
+                <MagnifyingGlassIcon className="h-4 w-4" />
+                Search
+              </button>
             </div>
-            <input
-              type="date"
-              value={filterDate}
-              onChange={(e) => {
-                setFilterDate(e.target.value);
-                setPage(1);
-              }}
-              className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 w-32"
-              style={{ minWidth: "auto", maxWidth: "8rem" }}
-            />
-            <button
-              className="bg-blue-500 text-white px-4 py-1 rounded flex items-center gap-2"
-              onClick={() => setFilterTrigger(filterTrigger + 1)}
-            >
-              <MagnifyingGlassIcon className="h-4 w-4" />
-              Search
-            </button>
           </div>
           {pricesLoading ? (
             <div className="flex justify-center items-center py-10">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-              <span className="text-gray-500">Loading prices...</span>
+              {/* <span className="text-gray-500">Loading prices...</span> */}
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Name
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Symbol
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Price
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Date
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Time
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {commodityPrices
-                      .slice((page - 1) * pageSize, page * pageSize)
-                      .map((priceObj: any) => {
-                        const isCommodity = priceObj.type === "COMMODITY";
-                        const name = isCommodity
-                          ? priceObj.commodity?.name
-                          : priceObj.exchange?.name;
-                        const symbol = isCommodity
-                          ? priceObj.commodity?.symbol
-                          : priceObj.exchange?.symbol;
-                        return (
-                          <tr key={priceObj.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-2 text-gray-700">{name}</td>
-                            <td className="px-4 py-2 text-gray-700">
-                              {symbol}
-                            </td>
-                            <td className="px-4 py-2 text-gray-700">
-                              {priceObj.type === "EXCHANGE"
-                                ? formatExchangeRate(priceObj.price)
-                                : priceObj.price}
-                            </td>
-                            <td className="px-4 py-2 text-gray-700">
-                              {new Date(
-                                priceObj.createdAt
-                              ).toLocaleDateString()}
-                            </td>
-                            <td className="px-4 py-2 text-gray-700">
-                              {priceObj.createdAt
-                                ? new Date(
-                                    priceObj.createdAt
-                                  ).toLocaleTimeString()
-                                : "-"}
-                            </td>
-                            <td className="px-4 py-2 flex gap-2">
-                              <button
-                                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
-                                onClick={() => handleView(priceObj)}
-                              >
-                                <MagnifyingGlassIcon className="h-4 w-4 mr-1" />{" "}
-                                View
-                              </button>
-                              <button
-                                className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
-                                onClick={() => handleEdit(priceObj)}
-                              >
-                                <PencilSquareIcon className="h-4 w-4 mr-1" />{" "}
-                                Edit
-                              </button>
-                              <button
-                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-                                onClick={() => handleDelete(priceObj.id)}
-                                disabled={deleteLoading === priceObj.id}
-                              >
-                                {deleteLoading === priceObj.id ? (
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                                ) : (
-                                  <TrashIcon className="h-4 w-4 mr-1" />
-                                )}
-                                {deleteLoading === priceObj.id
-                                  ? "Deleting..."
-                                  : "Delete"}
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
+              <div className="px-6 py-4">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Symbol
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Price
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Time
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {commodityPrices
+                        .slice((page - 1) * pageSize, page * pageSize)
+                        .map((priceObj: any) => {
+                          const isCommodity = priceObj.type === "COMMODITY";
+                          const name = isCommodity
+                            ? priceObj.commodity?.name
+                            : priceObj.exchange?.name;
+                          const symbol = isCommodity
+                            ? priceObj.commodity?.symbol
+                            : priceObj.exchange?.symbol;
+                          return (
+                            <tr key={priceObj.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {symbol}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {priceObj.type === "EXCHANGE"
+                                  ? formatExchangeRate(priceObj.price)
+                                  : priceObj.price}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {priceObj.createdAt
+                                  ? new Date(
+                                      priceObj.createdAt
+                                    ).toLocaleDateString()
+                                  : "-"}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {priceObj.createdAt
+                                  ? new Date(
+                                      priceObj.createdAt
+                                    ).toLocaleTimeString()
+                                  : "-"}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs flex items-center"
+                                    onClick={() => handleView(priceObj)}
+                                  >
+                                    <MagnifyingGlassIcon className="h-4 w-4 mr-1" />{" "}
+                                    View
+                                  </button>
+                                  <button
+                                    className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-xs flex items-center"
+                                    onClick={() => handleEdit(priceObj)}
+                                  >
+                                    <PencilSquareIcon className="h-4 w-4 mr-1" />{" "}
+                                    Edit
+                                  </button>
+                                  <button
+                                    className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => handleDelete(priceObj.id)}
+                                    disabled={deleteLoading === priceObj.id}
+                                  >
+                                    {deleteLoading === priceObj.id ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                                    ) : (
+                                      <TrashIcon className="h-4 w-4 mr-1" />
+                                    )}
+                                    {deleteLoading === priceObj.id
+                                      ? "Deleting..."
+                                      : "Delete"}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 bg-gray-50">
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">

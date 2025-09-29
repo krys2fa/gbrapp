@@ -194,11 +194,11 @@ const CreateUserPage = () => {
             <BackLink href="/setup" label="Back to Settings" />
           </div>
         </div>
-        <div className="max-w-xl mt-8">
+        <div className="mt-8">
           <form onSubmit={editingUser ? handleUpdateUser : handleSubmit}>
             <div className="shadow sm:rounded-md sm:overflow-hidden">
               <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label
                       htmlFor="name"
