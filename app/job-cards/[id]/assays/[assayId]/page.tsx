@@ -209,7 +209,7 @@ export default function AssayDetailPage() {
 
           /* Page setup */
           @page {
-            margin: 0.5in;
+            margin: 0.1in 0.5in 0.5in 0.5in;
             @top-center {
               content: none;
             }
@@ -1248,7 +1248,7 @@ export default function AssayDetailPage() {
                 </div>
               </div>
 
-              <div className="bg-white flex justify-end">
+              <div className="bg-white flex justify-end print:hidden">
                 <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
               </div>
             </div>
