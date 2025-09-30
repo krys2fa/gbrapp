@@ -483,6 +483,71 @@ export default function AssayDetailPage() {
             gap: 0.25rem !important;
           }
 
+          /* Landscape print adjustments - ensure signatories are visible */
+          @media print and (orientation: landscape) {
+            /* Allow tables to break across pages if needed */
+            table {
+              page-break-inside: auto !important;
+              break-inside: auto !important;
+            }
+
+            /* But keep table rows together when possible */
+            tr {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+
+            /* Force signatories to stay together and be visible */
+            .mt-12.grid.grid-cols-1.sm\\:grid-cols-4.gap-4 {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              margin-top: 3rem !important;
+              margin-bottom: 0 !important;
+              page-break-before: auto !important;
+              break-before: auto !important;
+            }
+
+            /* If signatories would be cut off, allow them to break to next page */
+            .mt-12.grid.grid-cols-1.sm\\:grid-cols-4.gap-4 {
+              page-break-before: avoid !important;
+              break-before: avoid !important;
+              orphans: 4 !important;
+              widows: 4 !important;
+            }
+
+            /* Ensure signatory names are clearly visible in landscape */
+            .text-xs.text-gray-900.text-center.uppercase.font-bold {
+              font-size: 12px !important;
+              font-weight: bold !important;
+              color: #111827 !important;
+              text-transform: uppercase !important;
+              visibility: visible !important;
+              display: block !important;
+            }
+
+            /* Ensure signatory labels are visible */
+            .text-xs.font-medium.text-gray-500.text-center {
+              font-size: 11px !important;
+              color: #6b7280 !important;
+              visibility: visible !important;
+              display: block !important;
+            }
+
+            /* Prevent page breaks within signatory sections */
+            .mt-12.grid.grid-cols-1.sm\\:grid-cols-4.gap-4 > div {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+
+            /* Ensure the seal container stays with signatories */
+            .bg-white.flex.justify-end {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              page-break-before: avoid !important;
+              break-before: avoid !important;
+            }
+          }
+
           /* Ensure proper page breaks */
           .page-break-avoid {
             page-break-inside: avoid !important;
@@ -667,13 +732,13 @@ export default function AssayDetailPage() {
                     <table className="w-full divide-y divide-gray-200 border border-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase bg-[#d4af37] border border-gray-300">
                             Gross Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase bg-[#d4af37] border border-gray-300">
                             Fineness (%)
                           </th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase bg-[#d4af37] border border-gray-300">
                             Net Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
                         </tr>
@@ -754,13 +819,13 @@ export default function AssayDetailPage() {
                     <table className="w-full divide-y divide-gray-200 border border-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase bg-[#d4af37] border border-gray-300">
                             Gross Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase bg-[#d4af37] border border-gray-300">
                             Fineness (%)
                           </th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase bg-[#d4af37] border border-gray-300">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-700 uppercase bg-[#d4af37] border border-gray-300">
                             Net Weight ({jobCard?.unitOfMeasure || "g"})
                           </th>
                         </tr>

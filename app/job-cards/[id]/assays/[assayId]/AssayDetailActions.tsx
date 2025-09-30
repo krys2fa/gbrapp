@@ -25,6 +25,72 @@ export default function AssayDetailActions({
       // Apply print styles to current page for full print dialog
       const printStyles = document.createElement("style");
       const pageSize = printOrientation === "landscape" ? "A4 landscape" : "A4";
+      const landscapeStyles =
+        printOrientation === "landscape"
+          ? `
+          /* Allow tables to break across pages if needed */
+          table {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+          }
+
+          /* But keep table rows together when possible */
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          /* Force signatories to stay together and be visible */
+          .mt-12.grid.grid-cols-1.sm\\:grid-cols-4.gap-4 {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin-top: 3rem !important;
+            margin-bottom: 0 !important;
+            page-break-before: auto !important;
+            break-before: auto !important;
+          }
+
+          /* If signatories would be cut off, allow them to break to next page */
+          .mt-12.grid.grid-cols-1.sm\\:grid-cols-4.gap-4 {
+            page-break-before: avoid !important;
+            break-before: avoid !important;
+            orphans: 4 !important;
+            widows: 4 !important;
+          }
+
+          /* Ensure signatory names are clearly visible in landscape */
+          .text-xs.text-gray-900.text-center.uppercase.font-bold {
+            font-size: 12px !important;
+            font-weight: bold !important;
+            color: #111827 !important;
+            text-transform: uppercase !important;
+            visibility: visible !important;
+            display: block !important;
+          }
+
+          /* Ensure signatory labels are visible */
+          .text-xs.font-medium.text-gray-500.text-center {
+            font-size: 11px !important;
+            color: #6b7280 !important;
+            visibility: visible !important;
+            display: block !important;
+          }
+
+          /* Prevent page breaks within signatory sections */
+          .mt-12.grid.grid-cols-1.sm\\:grid-cols-4.gap-4 > div {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          /* Ensure the seal container stays with signatories */
+          .bg-white.flex.justify-end {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-before: avoid !important;
+            break-before: avoid !important;
+          }
+      `
+          : "";
       printStyles.innerHTML = `
         @media print {
           @page { size: ${pageSize}; margin: -5mm 20mm 20mm; }
@@ -75,6 +141,7 @@ export default function AssayDetailActions({
           #assay-detail-content th[class*="bg-"] {
             background-color: #d4af37 !important;
           }
+          ${landscapeStyles}
         }
       `;
       document.head.appendChild(printStyles);
