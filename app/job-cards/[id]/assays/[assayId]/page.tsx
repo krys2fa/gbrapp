@@ -210,6 +210,24 @@ export default function AssayDetailPage() {
           /* Page setup */
           @page {
             margin: 0.5in;
+            @top-center {
+              content: none;
+            }
+            @bottom-center {
+              content: none;
+            }
+            @top-left {
+              content: none;
+            }
+            @bottom-left {
+              content: none;
+            }
+            @top-right {
+              content: none;
+            }
+            @bottom-right {
+              content: none;
+            }
           }
 
           /* Hide screen-only elements */
@@ -437,11 +455,25 @@ export default function AssayDetailPage() {
             margin-top: 6rem !important;
           }
 
-          /* Signature lines */
-          .border-b.border-gray-400.mb-2.pt-4 {
-            border-bottom: 1px solid #9ca3af !important;
-            margin-bottom: 0.5rem !important;
-            padding-top: 1rem !important;
+          /* Remove spacing between signatories and seal in print */
+          .mt-8.grid.grid-cols-1.sm\\:grid-cols-4.gap-4 {
+            margin-bottom: 0 !important;
+          }
+
+          .bg-white.flex.justify-end {
+            margin-top: 0 !important;
+            padding: 0 !important;
+            margin-bottom: 0 !important;
+            display: flex !important;
+            justify-content: flex-end !important;
+          }
+
+          /* Show the bottom seal in print and remove spacing */
+          .bg-white.flex.justify-end img[alt="Seal"] {
+            display: block !important;
+            visibility: visible !important;
+            height: 3rem !important;
+            width: auto !important;
           }
 
           /* Signature labels */
@@ -579,9 +611,9 @@ export default function AssayDetailPage() {
             </div>
           </div>
 
-          <div className="px-4 py-3 sm:p-4">
+          <div className="px-4 sm:px-4">
             {/* Top: show exporter and assay date above the measurements table */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between">
               <div className="flex">
                 <dt className="text-sm font-medium text-gray-500">Exporter:</dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
@@ -602,7 +634,7 @@ export default function AssayDetailPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between">
               <div className="flex">
                 <dt className="text-sm font-medium text-gray-500">
                   Destination:
@@ -1037,7 +1069,7 @@ export default function AssayDetailPage() {
                   </div>
                 </div>
 
-                <div>
+                <div className="justify-center flex">
                   <div className="flex items-center gap-2">
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       GOLDBOD Seal No.:
@@ -1048,7 +1080,7 @@ export default function AssayDetailPage() {
                   </div>
                 </div>
 
-                <div>
+                <div className="justify-end flex">
                   <div className="flex items-center gap-2">
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Customs Seal No.:
@@ -1061,7 +1093,7 @@ export default function AssayDetailPage() {
               </div>
 
               {/* Signatories */}
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="mt-12 grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                   <div className="border-b border-gray-400 mb-2 pt-1"></div>
                   <div className="flex flex-col gap-1">
@@ -1216,7 +1248,7 @@ export default function AssayDetailPage() {
                 </div>
               </div>
 
-              <div className="bg-white p-4 flex justify-end print:hidden">
+              <div className="bg-white flex justify-end">
                 <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
               </div>
             </div>
