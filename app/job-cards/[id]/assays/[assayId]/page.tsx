@@ -1061,9 +1061,9 @@ export default function AssayDetailPage() {
               </div>
 
               {/* Signatories */}
-              <div className="mt-16 grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
-                  <div className="border-b border-gray-400 mb-2 pt-4"></div>
+                  <div className="border-b border-gray-400 mb-2 pt-1"></div>
                   <div className="flex flex-col gap-1">
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Exporter Authorized Signatory
@@ -1079,7 +1079,7 @@ export default function AssayDetailPage() {
                 </div>
 
                 <div>
-                  <div className="border-b border-gray-400 mb-2 pt-4"></div>
+                  <div className="border-b border-gray-400 mb-2 pt-1"></div>
                   <div className="flex flex-col gap-1">
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Customs Officer
@@ -1124,7 +1124,7 @@ export default function AssayDetailPage() {
                 </div>
 
                 <div>
-                  <div className="border-b border-gray-400 mb-2 pt-4"></div>
+                  <div className="border-b border-gray-400 mb-2 pt-1"></div>
                   <div className="flex flex-col gap-1">
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Technical Director
@@ -1169,7 +1169,7 @@ export default function AssayDetailPage() {
                 </div>
 
                 <div>
-                  <div className="border-b border-gray-400 mb-2 pt-4"></div>
+                  <div className="border-b border-gray-400 mb-2 pt-1"></div>
                   <div className="flex flex-col gap-1">
                     <dt className="text-xs font-medium text-gray-500 text-center">
                       Assay Officer

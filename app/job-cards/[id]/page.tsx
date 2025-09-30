@@ -7,7 +7,6 @@ import Link from "next/link";
 import {
   PencilIcon,
   TrashIcon,
-  XCircleIcon,
   EyeIcon,
   DocumentTextIcon,
   ChartBarIcon,
@@ -15,6 +14,7 @@ import {
 import BackLink from "@/app/components/ui/BackLink";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { useAuth } from "@/app/context/auth-context";
 
 interface JobCardData {
   id: string;
@@ -65,6 +65,7 @@ interface JobCardData {
 function JobCardDetailPage() {
   const params = useParams();
   const id = (params?.id as string) || "";
+  const { token } = useAuth();
   const [jobCard, setJobCard] = useState<JobCardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -74,7 +75,11 @@ function JobCardDetailPage() {
   useEffect(() => {
     const fetchJobCard = async () => {
       try {
-        const response = await fetch(`/api/job-cards/${id}`);
+        const response = await fetch(`/api/job-cards/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch job card");
         }
@@ -102,6 +107,9 @@ function JobCardDetailPage() {
     try {
       const response = await fetch(`/api/job-cards/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -139,6 +147,7 @@ function JobCardDetailPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           jobCardId: jobCard.id,
@@ -147,7 +156,11 @@ function JobCardDetailPage() {
 
       if (response.ok) {
         // Refresh the job card data to show the new invoice
-        const updatedResponse = await fetch(`/api/job-cards/${id}`);
+        const updatedResponse = await fetch(`/api/job-cards/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (updatedResponse.ok) {
           const updatedData = await updatedResponse.json();
           setJobCard(updatedData);
@@ -1010,8 +1023,7 @@ function JobCardDetailPage() {
   //                 <dt className="text-sm font-medium text-gray-500">
   //                   Source of Gold
   //                 </dt>
-  //                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-  //                   {jobCard?.sourceOfGold || "Not specified"}
+  //                 <dd class
   //                 </dd>
   //               </div>
   //               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

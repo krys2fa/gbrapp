@@ -25,7 +25,7 @@ export default function AssayActions({
       const pageSize = printOrientation === "landscape" ? "A4 landscape" : "A4";
       printStyles.innerHTML = `
         @media print {
-          @page { size: ${pageSize}; margin: 10mm 20mm 20mm 20mm; }
+          @page { size: ${pageSize}; margin: -5mm 20mm 20mm 20mm; }
           body {
             margin: 0;
             padding: 0;
@@ -36,6 +36,7 @@ export default function AssayActions({
             position: static;
             margin: 0;
             padding: 0;
+            margin-top: -10mm;
           }
 
           /* QR Code print styles */
