@@ -25,14 +25,22 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (roles: string[]) => boolean;
+  resetIdleTimer: () => void;
+  getTimeUntilExpiry: () => number;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Idle timeout configuration (30 minutes)
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+const WARNING_TIME_MS = 5 * 60 * 1000; // Show warning 5 minutes before expiry
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
+  const [idleWarningShown, setIdleWarningShown] = useState<boolean>(false);
   const router = useRouter();
 
   // Check for existing token on mount
@@ -82,6 +90,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
+  // Idle timeout management
+  useEffect(() => {
+    if (!user) return;
+
+    const resetIdleTimer = () => {
+      setLastActivity(Date.now());
+      setIdleWarningShown(false);
+    };
+
+    const checkIdleTimeout = () => {
+      const now = Date.now();
+      const timeSinceActivity = now - lastActivity;
+      const timeUntilExpiry = IDLE_TIMEOUT_MS - timeSinceActivity;
+
+      if (timeSinceActivity >= IDLE_TIMEOUT_MS) {
+        // Idle timeout reached - logout
+        toast.error("Session expired due to inactivity");
+        logout();
+        return;
+      }
+
+      if (timeUntilExpiry <= WARNING_TIME_MS && !idleWarningShown) {
+        // Show warning 5 minutes before expiry
+        const minutesLeft = Math.ceil(timeUntilExpiry / (60 * 1000));
+        toast(
+          `Session will expire in ${minutesLeft} minute${
+            minutesLeft !== 1 ? "s" : ""
+          } due to inactivity`,
+          {
+            duration: 5000,
+          }
+        );
+        setIdleWarningShown(true);
+      }
+    };
+
+    // Set up event listeners for user activity
+    const events = [
+      "mousedown",
+      "mousemove",
+      "keypress",
+      "scroll",
+      "touchstart",
+      "click",
+    ];
+    events.forEach((event) => {
+      document.addEventListener(event, resetIdleTimer, true);
+    });
+
+    // Check idle timeout every minute
+    const interval = setInterval(checkIdleTimeout, 60 * 1000);
+
+    // Initial check
+    checkIdleTimeout();
+
+    return () => {
+      events.forEach((event) => {
+        document.removeEventListener(event, resetIdleTimer, true);
+      });
+      clearInterval(interval);
+    };
+  }, [user, lastActivity, idleWarningShown]);
+
   // Login function
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -110,6 +181,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Store in localStorage for persistence
       localStorage.setItem("auth-token", data.token);
       localStorage.setItem("auth-user", JSON.stringify(data.user));
+
+      // Reset idle timer on login
+      setLastActivity(Date.now());
+      setIdleWarningShown(false);
 
       // The cookie is set on the server side in the login API response
       // Client-safe logging: send a non-blocking request to the internal log endpoint
@@ -163,6 +238,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return roles.includes(user.role);
   };
 
+  // Reset idle timer manually
+  const resetIdleTimer = () => {
+    setLastActivity(Date.now());
+    setIdleWarningShown(false);
+  };
+
+  // Get time until session expiry (in milliseconds)
+  const getTimeUntilExpiry = () => {
+    if (!user) return 0;
+    const now = Date.now();
+    const timeSinceActivity = now - lastActivity;
+    return Math.max(0, IDLE_TIMEOUT_MS - timeSinceActivity);
+  };
+
   const value = {
     user,
     token,
@@ -171,6 +260,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     isAuthenticated: !!user,
     hasRole,
+    resetIdleTimer,
+    getTimeUntilExpiry,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
