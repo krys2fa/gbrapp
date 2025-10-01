@@ -121,7 +121,10 @@ function JobCardDetailPage() {
         ?.split("=")[1];
 
       console.log("Cookie token available:", cookieToken ? "Yes" : "No");
-      console.log("Cookie token preview:", cookieToken?.substring(0, 20) + "...");
+      console.log(
+        "Cookie token preview:",
+        cookieToken?.substring(0, 20) + "..."
+      );
 
       const authToken = cookieToken || token;
 
@@ -134,7 +137,10 @@ function JobCardDetailPage() {
       });
 
       console.log("Delete response status:", response.status);
-      console.log("Delete response headers:", Object.fromEntries(response.headers.entries()));
+      console.log(
+        "Delete response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
 
       if (response.ok) {
         toast.dismiss("delete-job-card");
