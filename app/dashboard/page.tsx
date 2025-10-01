@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { withClientAuth } from "@/app/lib/with-client-auth";
 import { useAuth } from "@/app/context/auth-context";
+import ExporterAnalyticsDashboard from "@/app/components/ExporterAnalyticsDashboard";
+import RevenueAnalyticsDashboard from "@/app/components/RevenueAnalyticsDashboard";
 
 interface DashboardData {
   overview: {
@@ -665,6 +667,12 @@ function DashboardPage() {
         <div className="mt-6">
           <DestinationCountriesChart />
         </div>
+
+        {/* Exporter Performance Analytics Dashboard */}
+        <ExporterAnalyticsDashboard />
+
+        {/* Revenue Analytics Dashboard */}
+        <RevenueAnalyticsDashboard />
 
         {/* Quick Actions */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 w-full">
