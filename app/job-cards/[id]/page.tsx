@@ -101,16 +101,40 @@ function JobCardDetailPage() {
   };
 
   const confirmDelete = async () => {
+    // Check if token is available
+    if (!token) {
+      toast.error("Authentication required. Please log in again.");
+      return;
+    }
+
+    console.log("Token available:", token ? "Yes" : "No");
+    console.log("Token preview:", token?.substring(0, 20) + "...");
+
     // Show loading toast
     toast.loading("Deleting job card...", { id: "delete-job-card" });
 
     try {
+      // Try to get token from cookie as well
+      const cookieToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("auth-token="))
+        ?.split("=")[1];
+
+      console.log("Cookie token available:", cookieToken ? "Yes" : "No");
+      console.log("Cookie token preview:", cookieToken?.substring(0, 20) + "...");
+
+      const authToken = cookieToken || token;
+
       const response = await fetch(`/api/job-cards/${id}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${authToken}`,
         },
+        credentials: "include",
       });
+
+      console.log("Delete response status:", response.status);
+      console.log("Delete response headers:", Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
         toast.dismiss("delete-job-card");
@@ -120,6 +144,7 @@ function JobCardDetailPage() {
         window.location.href = "/job-cards";
       } else {
         const errorData = await response.json();
+        console.log("Delete error data:", errorData);
         toast.dismiss("delete-job-card");
         toast.error(
           `Failed to delete job card: ${errorData.error || "Unknown error"}`

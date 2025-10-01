@@ -33,7 +33,19 @@ export function withAuth<H extends AnyRouteHandler>(
     // Extract token from Authorization header
     const authHeader = req.headers.get("authorization");
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    // If no Authorization header, try to get token from cookies
+    let token: string | null = null;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    } else {
+      // Try to get token from cookies as fallback
+      const cookieToken = req.cookies.get("auth-token")?.value;
+      if (cookieToken) {
+        token = cookieToken;
+      }
+    }
+
+    if (!token) {
       return NextResponse.json(
         { error: "Unauthorized - No valid token provided" },
         { status: 401 }
@@ -42,7 +54,6 @@ export function withAuth<H extends AnyRouteHandler>(
 
     try {
       // Verify the token using jose
-      const token = authHeader.substring(7);
       const secret = new TextEncoder().encode(JWT_SECRET);
       const { payload } = await jose.jwtVerify(token, secret);
 

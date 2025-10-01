@@ -851,6 +851,12 @@ async function deleteJobCard(
     }
     deletedRecords.assays = existingJobCard.assays.length;
 
+    // Delete assays
+    const assayDeleteResult = await prisma.assay.deleteMany({
+      where: { jobCardId: id },
+    });
+    deletedRecords.assays = assayDeleteResult.count;
+
     // Delete levies related to invoices
     for (const invoice of existingJobCard.invoices) {
       const levyDeleteResult = await prisma.levy.deleteMany({
