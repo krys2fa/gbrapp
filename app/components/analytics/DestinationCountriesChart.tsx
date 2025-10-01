@@ -92,7 +92,14 @@ export default function DestinationCountriesChart() {
         </div>
       </div>
 
-      {loading && <div className="py-8 text-center">Loading...</div>}
+      {loading && (
+        <div className="py-8 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-2"></div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading destination data...
+          </p>
+        </div>
+      )}
       {error && <div className="py-4 text-red-600">Error: {error}</div>}
 
       {!loading && !error && (
@@ -115,8 +122,18 @@ export default function DestinationCountriesChart() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="largeCount" name="Large-scale" fill="#1f78b4" barSize={10} />
-              <Bar dataKey="smallCount" name="Small-scale" fill="#33a02c" barSize={10} />
+              <Bar
+                dataKey="largeCount"
+                name="Large-scale"
+                fill="#1f78b4"
+                barSize={10}
+              />
+              <Bar
+                dataKey="smallCount"
+                name="Small-scale"
+                fill="#33a02c"
+                barSize={10}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -187,9 +187,10 @@ function DashboardPage() {
         {isLoading && !dashboardData && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mx-auto mb-2" />
+              {/* <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mx-auto mb-2" /> */}
+               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-2"></div>
               <p className="text-gray-600 dark:text-gray-400">
-                Loading dashboard data...
+                Loading dashboard stats...
               </p>
             </div>
           </div>
