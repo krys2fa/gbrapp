@@ -139,13 +139,51 @@ export default function AssayResultsPage() {
 
               {/* QR Code */}
               <div className="flex justify-end mr-4">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
-                    "https://goldbod.gov.gh/"
-                  )}`}
-                  alt="QR Code - Visit GoldBod Website"
-                  className="w-16 h-16"
-                />
+                {(() => {
+                  // Calculate total weight from all assay measurements
+                  const totalWeight = assays.reduce(
+                    (assayAcc: number, assay: any) => {
+                      return (
+                        assayAcc +
+                        (assay.measurements || []).reduce(
+                          (acc: number, m: any) =>
+                            acc + (Number(m.grossWeight) || 0),
+                          0
+                        )
+                      );
+                    },
+                    0
+                  );
+
+                  // Create QR code data with job card information
+                  const qrData = {
+                    destination: jobCard?.destinationCountry || "N/A",
+                    weight:
+                      totalWeight > 0
+                        ? `${totalWeight.toFixed(4)} ${
+                            jobCard?.unitOfMeasure || "g"
+                          }`
+                        : "N/A",
+                    dateOfAnalysis: assays[0]?.assayDate
+                      ? new Date(assays[0].assayDate)
+                          .toISOString()
+                          .split("T")[0]
+                      : "N/A",
+                    exporter: jobCard?.exporter?.name || "N/A",
+                    countryOfOrigin: jobCard?.sourceOfGold || "N/A",
+                    jobCardId: jobCard?.humanReadableId || "N/A",
+                  };
+
+                  return (
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
+                        JSON.stringify(qrData)
+                      )}`}
+                      alt="QR Code - Job Card Information"
+                      className="w-16 h-16"
+                    />
+                  );
+                })()}
               </div>
             </div>
 

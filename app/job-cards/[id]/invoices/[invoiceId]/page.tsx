@@ -187,60 +187,103 @@ export default async function InvoicePage(props: any) {
             </div>
 
             <div className="flex justify-center">
-               <div className="title-section uppercase mx-auto text-center">
+              <div className="title-section uppercase mx-auto text-center">
                 <p className="font-bold text-2xl">ASSAY INVOICE</p>
                 <p className="text-sm">SMALL SCALE OPERATIONS</p>
               </div>
             </div>
 
-          {/* QR Code Section */}
-          <div className="mt-6 flex justify-end">
-            <div className="flex items-center">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                  "https://goldbod.gov.gh/"
-                )}`}
-                alt="QR Code - Visit GoldBod Website"
-                className="w-16 h-16"
-              />
+            {/* QR Code Section */}
+            <div className="mt-6 flex justify-end">
+              <div className="flex items-center">
+                {(() => {
+                  // Calculate total weight from all assay measurements
+                  const totalWeight = (invoice?.assays || []).reduce(
+                    (assayAcc: number, assay: any) => {
+                      return (
+                        assayAcc +
+                        (assay.measurements || []).reduce(
+                          (acc: number, m: any) =>
+                            acc + (Number(m.grossWeight) || 0),
+                          0
+                        )
+                      );
+                    },
+                    0
+                  );
+
+                  // Create QR code data with job card information
+                  const qrData = {
+                    destination: invoice?.jobCard?.destinationCountry || "N/A",
+                    weight:
+                      totalWeight > 0 ? `${totalWeight.toFixed(4)} g` : "N/A",
+                    dateOfAnalysis: invoice?.assays?.[0]?.assayDate
+                      ? new Date(invoice.assays[0].assayDate)
+                          .toISOString()
+                          .split("T")[0]
+                      : "N/A",
+                    exporter: invoice?.jobCard?.exporter?.name || "N/A",
+                    countryOfOrigin: "N/A", // Not available in invoice data
+                    jobCardId: invoice?.jobCard?.referenceNumber || "N/A",
+                    invoiceNumber: invoice?.invoiceNumber || "N/A",
+                  };
+
+                  return (
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                        JSON.stringify(qrData)
+                      )}`}
+                      alt="QR Code - Job Card Information"
+                      className="w-16 h-16"
+                    />
+                  );
+                })()}
+              </div>
             </div>
-          </div>
           </div>
 
-          
-            <div className="flex justify-end mb-6">
-              <p className="text-sm font-medium text-gray-500">Date:</p>
-              <p className="text-sm font-semibold text-gray-900 ml-2">
-                {formatDate(invoice.issueDate || invoice.createdAt)}
-              </p>
-            </div>
+          <div className="flex justify-end mb-6">
+            <p className="text-sm font-medium text-gray-500">Date:</p>
+            <p className="text-sm font-semibold text-gray-900 ml-2">
+              {formatDate(invoice.issueDate || invoice.createdAt)}
+            </p>
+          </div>
 
           <div className="grid grid-cols-2 gap-4 mb-6">
-
             {/* <div className="flex text-right justify-end pr-0 mr-0">
               <p className="text-sm text-gray-500">Assay Number:</p>
               <p className="text-sm ml-1">{assayNumbers}</p>
             </div> */}
             <div className="flex">
               <p className="text-sm font-medium text-gray-500">Exporter:</p>
-              <p className="text-sm font-semibold text-gray-900 ml-2">{exporterName}</p>
+              <p className="text-sm font-semibold text-gray-900 ml-2">
+                {exporterName}
+              </p>
             </div>
 
             <div className="flex text-right pr-0 mr-0 justify-end">
               <p className="text-sm font-medium text-gray-500">Job Card ID:</p>
-              <p className="text-sm font-semibold text-gray-900 ml-1">{referenceNumber}</p>
+              <p className="text-sm font-semibold text-gray-900 ml-1">
+                {referenceNumber}
+              </p>
             </div>
           </div>
 
           <div className="mb-6 grid grid-cols-2 gap-4">
             <div className="flex">
-              <p className="text-sm font-medium text-gray-500">Exchange Rate:</p>
-              <p className="text-sm font-semibold text-gray-900 ml-2">{exchangeRate}</p>
+              <p className="text-sm font-medium text-gray-500">
+                Exchange Rate:
+              </p>
+              <p className="text-sm font-semibold text-gray-900 ml-2">
+                {exchangeRate}
+              </p>
             </div>
 
             <div className="flex text-right pr-0 mr-0 justify-end">
               <p className="text-sm font-medium text-gray-500">Destination:</p>
-              <p className="text-sm font-semibold text-gray-900 ml-1">{destinationCountry}</p>
+              <p className="text-sm font-semibold text-gray-900 ml-1">
+                {destinationCountry}
+              </p>
             </div>
           </div>
 
@@ -342,9 +385,9 @@ export default async function InvoicePage(props: any) {
             </p>
           </div>
 
-           <div className="bg-white py-4 flex justify-end">
-              <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
-            </div>
+          <div className="bg-white py-4 flex justify-end">
+            <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
+          </div>
         </div>
       </div>
     </>

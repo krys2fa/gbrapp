@@ -665,13 +665,40 @@ export default function AssayDetailPage() {
             {/* QR Code Section */}
             <div className="mr-4">
               <div className="flex justify-end">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                    "https://goldbod.gov.gh/"
-                  )}`}
-                  alt="QR Code - Visit GoldBod Website"
-                  className="w-16 h-16"
-                />
+                {(() => {
+                  // Calculate total weight from assay measurements
+                  const totalWeight = (assay?.measurements || []).reduce(
+                    (acc: number, m: any) => acc + (Number(m.grossWeight) || 0),
+                    0
+                  );
+
+                  // Create QR code data with job card information
+                  const qrData = {
+                    destination: jobCard?.destinationCountry || "N/A",
+                    weight:
+                      totalWeight > 0
+                        ? `${totalWeight.toFixed(4)} ${
+                            jobCard?.unitOfMeasure || "g"
+                          }`
+                        : "N/A",
+                    dateOfAnalysis: assay?.assayDate
+                      ? new Date(assay.assayDate).toISOString().split("T")[0]
+                      : "N/A",
+                    exporter: jobCard?.exporter?.name || "N/A",
+                    countryOfOrigin: jobCard?.sourceOfGold || "N/A",
+                    jobCardId: jobCard?.humanReadableId || "N/A",
+                  };
+
+                  return (
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
+                        JSON.stringify(qrData)
+                      )}`}
+                      alt="QR Code - Job Card Information"
+                      className="w-16 h-16"
+                    />
+                  );
+                })()}
               </div>
             </div>
           </div>

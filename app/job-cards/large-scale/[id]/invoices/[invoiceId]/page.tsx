@@ -260,14 +260,56 @@ export default async function LargeScaleInvoicePage(props: any) {
 
             {/* QR Code Section */}
             <div className="flex items-center">
+              {(() => {
+                // Calculate total weight from all assay measurements
+                const totalWeight = (invoice?.largeScaleAssays || []).reduce(
+                  (assayAcc: number, assay: any) => {
+                    return (
+                      assayAcc +
+                      (assay.measurements || []).reduce(
+                        (acc: number, m: any) =>
+                          acc + (Number(m.grossWeight) || 0),
+                        0
+                      )
+                    );
+                  },
+                  0
+                );
+
+                // Create QR code data with job card information
+                const qrData = {
+                  destination:
+                    invoice?.largeScaleJobCard?.destinationCountry || "N/A",
+                  weight:
+                    totalWeight > 0
+                      ? `${totalWeight.toFixed(4)} ${
+                          invoice?.largeScaleJobCard?.unitOfMeasure || "kg"
+                        }`
+                      : "N/A",
+                  dateOfAnalysis: invoice?.largeScaleAssays?.[0]?.dateOfAnalysis
+                    ? new Date(invoice.largeScaleAssays[0].dateOfAnalysis)
+                        .toISOString()
+                        .split("T")[0]
+                    : "N/A",
+                  exporter: invoice?.largeScaleJobCard?.exporter?.name || "N/A",
+                  countryOfOrigin:
+                    invoice?.largeScaleJobCard?.sourceOfGold || "N/A",
+                  jobCardId:
+                    invoice?.largeScaleJobCard?.humanReadableId || "N/A",
+                  invoiceNumber: invoice?.invoiceNumber || "N/A",
+                };
+
+                return (
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(
-                      "https://goldbod.gov.gh/"
+                      JSON.stringify(qrData)
                     )}`}
-                    alt="QR Code - Visit GoldBod Website"
+                    alt="QR Code - Job Card Information"
                     className="w-16 h-16"
                   />
-                </div>
+                );
+              })()}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="flex">
