@@ -73,6 +73,25 @@ export default function CertificateOfAssayPage() {
           #assay-content th[class*="bg-"] {
             background-color: #d4af37 !important;
           }
+
+          /* Position signature and seal at bottom of each printed page */
+          #assay-content .signature-section {
+            page-break-inside: avoid !important;
+            page-break-before: auto !important; /* Allow it to break to next page if needed */
+            margin-top: auto !important; /* Push to bottom if container is flex */
+            clear: both !important; /* Ensure it starts on a new line */
+          }
+
+          /* Ensure the container can accommodate natural flow */
+          #assay-content {
+            position: static !important;
+            min-height: auto !important; /* Remove fixed height to allow natural flow */
+          }
+
+          /* Remove the forced spacing that was causing overlap */
+          #assay-content > *:not(.signature-section):last-of-type {
+            margin-bottom: 0 !important;
+          }
         }
       `;
       document.head.appendChild(printStyles);
@@ -741,14 +760,14 @@ export default function CertificateOfAssayPage() {
                 </div>
               </div>
 
-              <div className="flex justify-between">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="pr-1 sm:pr-2 lg:pr-3 py-2">
                   <div className="flex justify-start">
                     <div className="flex text-center ">
                       <h4 className="text-xs font-medium text-gray-500 uppercase">
                         Customs Seal:
                       </h4>
-                      <div className="ml-2 text-xs text-gray-900">
+                      <div className="ml-2 text-xs font-medium text-gray-900">
                         {jobCard.assays[0]?.customsSealNo || "N/A"}
                       </div>
                     </div>
@@ -756,12 +775,12 @@ export default function CertificateOfAssayPage() {
                 </div>
 
                 <div className="px-1 sm:px-2 lg:px-3 py-2">
-                  <div className="flex justify-start">
+                  <div className="flex justify-center">
                     <div className="flex text-center ">
                       <h4 className="text-xs font-medium text-gray-500 uppercase">
                         GOLDBOD Seal:
                       </h4>
-                      <div className="ml-2 text-xs text-gray-900">
+                      <div className="ml-2 text-xs font-medium text-gray-900">
                         {jobCard.assays[0]?.goldbodSealNo || "N/A"}
                       </div>
                     </div>
@@ -769,7 +788,7 @@ export default function CertificateOfAssayPage() {
                 </div>
 
                 <div className="px-1 sm:px-2 lg:px-3 py-2">
-                  <div className="flex justify-start">
+                  <div className="flex justify-end">
                     <div className="flex">
                       <h4 className="text-xs font-medium text-gray-500 uppercase">
                         Security Seal:
@@ -781,25 +800,25 @@ export default function CertificateOfAssayPage() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Technical Director Signature Section */}
-              <div className="px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex justify-between items-center">
-                  <div className="border-t border-gray-300 pt-4 w-64">
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
-                        Technical Director
-                      </p>
-                      <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
-                        {jobCard?.technicalDirector || "-"}
-                      </p>
-                    </div>
+            {/* Technical Director Signature Section - Moved to bottom */}
+            <div className="px-4 sm:px-6 lg:px-8 py-8 mt-auto signature-section">
+              <div className="flex justify-between items-end">
+                <div className="border-t border-gray-300 pt-4 w-64">
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
+                      Technical Director
+                    </p>
+                    <p className="text-sm font-medium text-gray-700 mb-2 uppercase">
+                      {jobCard?.technicalDirector || "-"}
+                    </p>
                   </div>
+                </div>
 
-                  {/* Official Seal */}
-                  <div className="bg-white py-4 flex justify-end">
-                    <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
-                  </div>
+                {/* Official Seal */}
+                <div className="bg-white py-4 flex justify-end">
+                  <img src="/seal.png" alt="Seal" className="h-20 w-auto" />
                 </div>
               </div>
             </div>

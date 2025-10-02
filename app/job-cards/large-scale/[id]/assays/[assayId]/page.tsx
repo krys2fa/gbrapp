@@ -377,7 +377,7 @@ export default function AssayResultsPage() {
                     Data Sheet Dates:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assay?.dataSheetDates || "N/A"}
+                    {formatDate(assay?.dataSheetDates) || "N/A"}
                   </span>
                 </div>
                 <div className="text-center">
@@ -385,7 +385,7 @@ export default function AssayResultsPage() {
                     Sample Bottle Dates:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assay?.sampleBottleDates || "N/A"}
+                    {formatDate(assay?.sampleBottleDates) || "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-end">
@@ -393,7 +393,7 @@ export default function AssayResultsPage() {
                     Number of Bars:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assay?.numberOfBars || "N/A"}
+                    {jobCard?.numberOfBoxes || "N/A"}
                   </span>
                 </div>
               </div>
