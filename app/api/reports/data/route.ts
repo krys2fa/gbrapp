@@ -34,15 +34,15 @@ export async function POST(request: NextRequest) {
         ));
         break;
       case "weekly-shipment-exporter":
-        if (!exporterId || !weekStart) {
+        if (!exporterId || !monthStart) {
           return NextResponse.json(
-            { error: "Exporter ID and week start required" },
+            { error: "Exporter ID and month required" },
             { status: 400 }
           );
         }
         ({ data, title } = await getWeeklyShipmentExporter(
           exporterId,
-          weekStart
+          monthStart
         ));
         break;
       case "monthly-analysis-exporter":
@@ -313,20 +313,24 @@ async function getMonthlyShipmentGoldExporters(
 
 async function getWeeklyShipmentExporter(
   exporterId: string,
-  weekStart: string
+  monthStart: string
 ) {
-  const startDate = new Date(weekStart);
-  const endDate = new Date(startDate);
-  endDate.setDate(startDate.getDate() + 6);
+  // Parse monthStart
+  const [year, month] = monthStart.split("-").map(Number);
+  const startOfMonth = new Date(year, month - 1, 1);
+  const endOfMonth = new Date(year, month, 0, 23, 59, 59);
+
+  // Build where clause
+  const whereClause: any = {
+    exporterId,
+    createdAt: {
+      gte: startOfMonth,
+      lte: endOfMonth,
+    },
+  };
 
   const jobCards = await prisma.jobCard.findMany({
-    where: {
-      exporterId,
-      createdAt: {
-        gte: startDate,
-        lte: endDate,
-      },
-    },
+    where: whereClause,
     include: {
       exporter: true,
       assays: {
@@ -342,22 +346,53 @@ async function getWeeklyShipmentExporter(
 
   const data = jobCards.map((card) => {
     const assay = card.assays[0];
-    const totalWeight =
-      assay?.measurements?.reduce((sum, m) => sum + (m.netWeight || 0), 0) || 0;
+
+    // Calculate gross weight in kilograms
+    const grossWeightKg =
+      assay?.measurements?.reduce((sum, m) => sum + (m.grossWeight || 0), 0) ||
+      0;
+    const grossWeightKgValue = grossWeightKg / 1000; // Convert grams to kg
+
+    // Get assay values
+    const goldContent = assay?.goldContent || 0; // Au %
+    const silverContent = assay?.silverContent || 0; // Ag %
+
+    // Calculate net weights
+    const netWeightAuKg = (grossWeightKg * goldContent) / 100 / 1000; // Convert to kg
+    const netWeightAgKg = (grossWeightKg * silverContent) / 100 / 1000; // Convert to kg
+
+    // Values
+    const valueUSD = assay?.totalUsdValue || 0;
+    const valueGHS = assay?.totalGhsValue || 0;
 
     return {
-      date: card.createdAt.toLocaleDateString(),
-      referenceNumber: card.referenceNumber,
-      totalWeight: totalWeight.toFixed(2),
-      unit: "grams",
+      dateOfAnalysis: card.createdAt.toLocaleDateString(),
+      shipmentNumber: card.referenceNumber,
+      grossWeightKg: grossWeightKgValue.toFixed(4),
+      finenessAuKg: goldContent.toFixed(2), // Au %
+      netWeightAuKg: netWeightAuKg.toFixed(4),
+      finenessAgPercent: silverContent.toFixed(2), // Ag %
+      netWeightAgKg: netWeightAgKg.toFixed(4),
+      valueUSD: formatCurrency(valueUSD),
+      valueGHS: formatCurrency(valueGHS),
     };
   });
 
+  const exporterName = jobCards[0]?.exporter?.name || "Unknown Exporter";
+
+  let monthText = "";
+  if (monthStart) {
+    const [year, month] = monthStart.split("-").map(Number);
+    const monthDate = new Date(year, month - 1, 1);
+    monthText = monthDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+    });
+  }
+
   return {
     data,
-    title: `Weekly Shipment Report - ${
-      jobCards[0]?.exporter?.name || "Unknown Exporter"
-    } (${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()})`,
+    title: `Weekly Shipment Report - ${exporterName} - ${monthText}`,
   };
 }
 
