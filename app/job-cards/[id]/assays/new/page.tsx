@@ -1187,10 +1187,18 @@ export default function NewAssayPage() {
                           </div>
                           <div>
                             <dt className="text-sm font-medium text-gray-500">
-                              Reference Number
+                              Job ID
                             </dt>
                             <dd className="mt-1 text-sm text-gray-900">
                               {jobCard?.humanReadableId || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Reference Number
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {jobCard?.referenceNumber || "N/A"}
                             </dd>
                           </div>
                           <div>

@@ -210,10 +210,10 @@ export default function AssayResultsPage() {
 
               <div>
                 <span className="text-sm font-medium text-gray-500 mr-2">
-                  Destination:
+                  Reference No.:
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
-                  {jobCard?.destinationCountry || "N/A"}
+                  {jobCard?.referenceNumber || "N/A"}
                 </span>
               </div>
 

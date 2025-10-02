@@ -320,7 +320,7 @@ export default function RevenueAnalyticsDashboard() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                          {stat.lastActivity.toLocaleDateString()}
+                          {new Date(stat.lastActivity).toLocaleDateString()}
                         </td>
                       </tr>
                     );

@@ -262,13 +262,24 @@ export default function CertificateOfAssayPage() {
                   </span>
                 </div>
 
-                <div>
-                  <span className="text-sm text-gray-500 font-medium mr-2">
-                    Reference Number:
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {jobCard?.referenceNumber || "N/A"}
-                  </span>
+                <div className="flex gap-4">
+                  {/* <div>
+                    <span className="text-sm text-gray-500 font-medium mr-2">
+                      Job ID:
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {jobCard?.humanReadableId || "N/A"}
+                    </span>
+                  </div> */}
+
+                  <div>
+                    <span className="text-sm text-gray-500 font-medium mr-2">
+                      Reference Number:
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {jobCard?.referenceNumber || "N/A"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

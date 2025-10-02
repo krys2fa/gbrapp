@@ -287,6 +287,7 @@ async function getMonthlyShipmentGoldExporters(
       const estimatedValueUSD = assay?.totalUsdValue || 0;
 
       return {
+        humanReadableId: card.humanReadableId,
         referenceNumber: card.referenceNumber,
         exporter: card.exporter?.name || "Unknown",
         grossWeightKilos: grossWeightKilos.toFixed(4),
@@ -367,6 +368,7 @@ async function getWeeklyShipmentExporter(
     const valueGHS = assay?.totalGhsValue || 0;
 
     return {
+      humanReadableId: card.humanReadableId,
       referenceNumber: card.referenceNumber,
       dateOfAnalysis: card.createdAt.toLocaleDateString(),
       shipmentNumber: card.referenceNumber,

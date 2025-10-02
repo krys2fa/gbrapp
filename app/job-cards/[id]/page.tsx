@@ -397,15 +397,11 @@ function JobCardDetailPage() {
                 </dd>
               </div>
               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Status</dt>
+                <dt className="text-sm font-medium text-gray-500">
+                  Reference Number
+                </dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
-                      badgeStatus
-                    )}`}
-                  >
-                    {badgeText}
-                  </span>
+                  {jobCard!.referenceNumber}
                 </dd>
               </div>
               {jobCard!.certificateNumber && (
@@ -428,8 +424,8 @@ function JobCardDetailPage() {
             </h3>
           </div>
           <div className="px-4 py-5 sm:p-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Column 1 */}
               <div className="space-y-4">
                 <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">
@@ -459,6 +455,10 @@ function JobCardDetailPage() {
                     </dd>
                   </div>
                 )}
+              </div>
+
+              {/* Column 2 */}
+              <div className="space-y-4">
                 {jobCard!.buyerAddress && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
@@ -469,10 +469,17 @@ function JobCardDetailPage() {
                     </dd>
                   </div>
                 )}
-              </div>
 
-              {/* Right Column */}
-              <div className="space-y-4">
+                {jobCard.teamLeader && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">
+                      Exporter Authorized Signatory
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {jobCard.teamLeader}
+                    </dd>
+                  </div>
+                )}
                 {jobCard!.buyerPhone && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
@@ -483,6 +490,10 @@ function JobCardDetailPage() {
                     </dd>
                   </div>
                 )}
+              </div>
+
+              {/* Column 3 */}
+              <div className="space-y-4">
                 {jobCard!.destinationCountry && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
@@ -490,16 +501,6 @@ function JobCardDetailPage() {
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                       {jobCard!.destinationCountry}
-                    </dd>
-                  </div>
-                )}
-                {jobCard.teamLeader && (
-                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">
-                      Exporter Authorized Signatory
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.teamLeader}
                     </dd>
                   </div>
                 )}
@@ -514,39 +515,50 @@ function JobCardDetailPage() {
             </h3>
           </div>
           <div className="px-4 py-5 sm:p-0">
-            <dl className="sm:divide-y sm:divide-gray-200">
-              {jobCard.commodity && (
-                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    Commodity
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.commodity.name}
-                  </dd>
-                </div>
-              )}
-              {jobCard.sourceOfGold && (
-                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    Source of Commodity
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.sourceOfGold}
-                  </dd>
-                </div>
-              )}
-              {jobCard.numberOfBoxes !== null &&
-                jobCard.numberOfBoxes !== undefined && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Column 1 */}
+              <div className="space-y-4">
+                {jobCard.commodity && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
-                      Number of Boxes
+                      Commodity
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.numberOfBoxes}
+                      {jobCard.commodity.name}
                     </dd>
                   </div>
                 )}
-            </dl>
+              </div>
+
+              {/* Column 2 */}
+              <div className="space-y-4">
+                {jobCard.sourceOfGold && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">
+                      Source of Commodity
+                    </dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {jobCard.sourceOfGold}
+                    </dd>
+                  </div>
+                )}
+              </div>
+
+              {/* Column 3 */}
+              <div className="space-y-4">
+                {jobCard.numberOfBoxes !== null &&
+                  jobCard.numberOfBoxes !== undefined && (
+                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Number of Boxes
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        {jobCard.numberOfBoxes}
+                      </dd>
+                    </div>
+                  )}
+              </div>
+            </div>
           </div>
 
           {/* Measurements & Quality Section */}
@@ -556,56 +568,72 @@ function JobCardDetailPage() {
             </h3>
           </div>
           <div className="px-4 py-5 sm:p-0">
-            <dl className="sm:divide-y sm:divide-gray-200">
-              {jobCard.unitOfMeasure && (
-                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    Unit of Measure
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.unitOfMeasure === "g"
-                      ? "Grams"
-                      : jobCard.unitOfMeasure === "kg"
-                      ? "Kilograms"
-                      : jobCard.unitOfMeasure}
-                  </dd>
-                </div>
-              )}
-              {jobCard.totalGrossWeight !== null &&
-                jobCard.totalGrossWeight !== undefined && (
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Column 1 */}
+              <div className="space-y-4">
+                {jobCard.unitOfMeasure && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
-                      Total Gross Weight
+                      Unit of Measure
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.totalGrossWeight?.toLocaleString()}{" "}
-                      {jobCard.unitOfMeasure || "g"}
+                      {jobCard.unitOfMeasure === "g"
+                        ? "Grams"
+                        : jobCard.unitOfMeasure === "kg"
+                        ? "Kilograms"
+                        : jobCard.unitOfMeasure}
                     </dd>
                   </div>
                 )}
-              {jobCard.fineness !== null && jobCard.fineness !== undefined && (
-                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    % Fineness
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {jobCard.fineness}%
-                  </dd>
-                </div>
-              )}
-              {jobCard.totalNetWeight !== null &&
-                jobCard.totalNetWeight !== undefined && (
-                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">
-                      Total Net Weight
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {jobCard.totalNetWeight?.toLocaleString()}{" "}
-                      {jobCard.unitOfMeasure || "g"}
-                    </dd>
-                  </div>
-                )}
-            </dl>
+              </div>
+
+              {/* Column 2 */}
+              <div className="space-y-4">
+                {jobCard.totalGrossWeight !== null &&
+                  jobCard.totalGrossWeight !== undefined && (
+                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Total Gross Weight
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        {jobCard.totalGrossWeight?.toLocaleString()}{" "}
+                        {jobCard.unitOfMeasure || "g"}
+                      </dd>
+                    </div>
+                  )}
+              </div>
+
+              {/* Column 3 */}
+              <div className="space-y-4">
+                {jobCard.fineness !== null &&
+                  jobCard.fineness !== undefined && (
+                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">
+                        % Fineness
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        {jobCard.fineness}%
+                      </dd>
+                    </div>
+                  )}
+              </div>
+
+              {/* Column 4 */}
+              <div className="space-y-4">
+                {jobCard.totalNetWeight !== null &&
+                  jobCard.totalNetWeight !== undefined && (
+                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Total Net Weight
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        {jobCard.totalNetWeight?.toLocaleString()}{" "}
+                        {jobCard.unitOfMeasure || "g"}
+                      </dd>
+                    </div>
+                  )}
+              </div>
+            </div>
           </div>
 
           {/* Valuation Section */}
@@ -613,53 +641,69 @@ function JobCardDetailPage() {
             <h3 className="text-sm font-medium text-gray-900">Valuation</h3>
           </div>
           <div className="px-4 py-5 sm:p-0">
-            <dl className="sm:divide-y sm:divide-gray-200">
-              {jobCard.numberOfOunces !== null &&
-                jobCard.numberOfOunces !== undefined && (
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Column 1 */}
+              <div className="space-y-4">
+                {jobCard.numberOfOunces !== null &&
+                  jobCard.numberOfOunces !== undefined && (
+                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Number of Ounces
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        {Number(jobCard.numberOfOunces).toFixed(3)}
+                      </dd>
+                    </div>
+                  )}
+              </div>
+
+              {/* Column 2 */}
+              <div className="space-y-4">
+                {jobCard.pricePerOunce !== null &&
+                  jobCard.pricePerOunce !== undefined && (
+                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Price per Ounce (USD)
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        ${jobCard.pricePerOunce?.toLocaleString()}
+                      </dd>
+                    </div>
+                  )}
+              </div>
+
+              {/* Column 3 */}
+              <div className="space-y-4">
+                {jobCard.valueUsd !== null &&
+                  jobCard.valueUsd !== undefined && (
+                    <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                      <dt className="text-sm font-medium text-gray-500">
+                        Exporter Value (USD)
+                      </dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        ${jobCard.valueUsd?.toLocaleString()}
+                      </dd>
+                    </div>
+                  )}
+              </div>
+
+              {/* Column 4 */}
+              <div className="space-y-4">
+                {jobCard.valueGhs && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-gray-500">
-                      Number of Ounces
+                      Exporter Value (GHS)
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {Number(jobCard.numberOfOunces).toFixed(3)}
+                      GHS{" "}
+                      {typeof jobCard.valueGhs === "string"
+                        ? jobCard.valueGhs
+                        : jobCard.valueGhs?.toLocaleString()}
                     </dd>
                   </div>
                 )}
-              {jobCard.pricePerOunce !== null &&
-                jobCard.pricePerOunce !== undefined && (
-                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">
-                      Price per Ounce (USD)
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      ${jobCard.pricePerOunce?.toLocaleString()}
-                    </dd>
-                  </div>
-                )}
-              {jobCard.valueUsd !== null && jobCard.valueUsd !== undefined && (
-                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    Exporter Value (USD)
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    ${jobCard.valueUsd?.toLocaleString()}
-                  </dd>
-                </div>
-              )}
-              {jobCard.valueGhs && (
-                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
-                    Exporter Value (GHS)
-                  </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    GHS{" "}
-                    {typeof jobCard.valueGhs === "string"
-                      ? jobCard.valueGhs
-                      : jobCard.valueGhs?.toLocaleString()}
-                  </dd>
-                </div>
-              )}
-            </dl>
+              </div>
+            </div>
           </div>
 
           {/* Additional Information Section */}

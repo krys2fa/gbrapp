@@ -729,10 +729,10 @@ export default function AssayDetailPage() {
             <div className="flex items-center justify-between">
               <div className="flex">
                 <dt className="text-sm font-medium text-gray-500">
-                  Destination:
+                  Reference No.:
                 </dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
-                  {jobCard?.destinationCountry || "-"}
+                  {jobCard?.referenceNumber || "-"}
                 </dd>
               </div>
 
