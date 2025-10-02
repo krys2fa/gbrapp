@@ -384,36 +384,8 @@ async function createLargeScaleJobCard(req: NextRequest) {
           }
           return parsed;
         })(),
-        sampleBottleDates: (() => {
-          if (!sampleBottleDates) return null;
-          const parsed = new Date(sampleBottleDates);
-          if (isNaN(parsed.getTime())) {
-            void logger.warn(
-              LogCategory.JOB_CARD,
-              "Invalid sampleBottleDates format, using null",
-              {
-                sampleBottleDates,
-              }
-            );
-            return null;
-          }
-          return parsed;
-        })(),
-        dataSheetDates: (() => {
-          if (!dataSheetDates) return null;
-          const parsed = new Date(dataSheetDates);
-          if (isNaN(parsed.getTime())) {
-            void logger.warn(
-              LogCategory.JOB_CARD,
-              "Invalid dataSheetDates format, using null",
-              {
-                dataSheetDates,
-              }
-            );
-            return null;
-          }
-          return parsed;
-        })(),
+        sampleBottleDates: sampleBottleDates || null,
+        dataSheetDates: dataSheetDates || null,
         numberOfSamples: numberOfSamples ? parseInt(numberOfSamples) : 1,
         sampleType: sampleType || "capillary",
         shipmentNumber: shipmentNumber,

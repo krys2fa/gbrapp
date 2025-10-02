@@ -407,9 +407,7 @@ export default function AssayResultsPage() {
                     Data Sheet Dates:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assay?.dataSheetDates
-                      ? formatDate(assay.dataSheetDates)
-                      : "N/A"}
+                    {assay?.dataSheetDates || "N/A"}
                   </span>
                 </div>
                 <div className="text-center">
@@ -417,9 +415,7 @@ export default function AssayResultsPage() {
                     Sample Bottle Dates:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assay?.sampleBottleDates
-                      ? formatDate(assay.sampleBottleDates)
-                      : "N/A"}
+                    {assay?.sampleBottleDates || "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-end">
