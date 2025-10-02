@@ -28,7 +28,10 @@ export async function POST(request: NextRequest) {
         ));
         break;
       case "monthly-shipment-gold-exporters":
-        ({ data, title } = await getMonthlyShipmentGoldExporters());
+        ({ data, title } = await getMonthlyShipmentGoldExporters(
+          monthStart,
+          scale
+        ));
         break;
       case "weekly-shipment-exporter":
         if (!exporterId || !weekStart) {
@@ -206,24 +209,49 @@ async function getMonthlyShipmentAllExporters(
   };
 }
 
-async function getMonthlyShipmentGoldExporters() {
-  const currentDate = new Date();
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
+async function getMonthlyShipmentGoldExporters(
+  monthStart?: string,
+  scale?: string
+) {
+  // Parse monthStart or use current month
+  let startOfMonth: Date;
+  let endOfMonth: Date;
 
-  const startOfMonth = new Date(currentYear, currentMonth, 1);
-  const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+  if (monthStart) {
+    const [year, month] = monthStart.split("-").map(Number);
+    startOfMonth = new Date(year, month - 1, 1);
+    endOfMonth = new Date(year, month, 0, 23, 59, 59);
+  } else {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    startOfMonth = new Date(currentYear, currentMonth, 1);
+    endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+  }
+
+  // Build where clause for filtering by scale
+  const whereClause: any = {
+    createdAt: {
+      gte: startOfMonth,
+      lte: endOfMonth,
+    },
+    commodityId: {
+      not: null,
+    },
+  };
+
+  if (scale === "small-scale") {
+    whereClause.referenceNumber = {
+      startsWith: "SS-",
+    };
+  } else if (scale === "large-scale") {
+    whereClause.referenceNumber = {
+      startsWith: "LS-",
+    };
+  }
 
   const jobCards = await prisma.jobCard.findMany({
-    where: {
-      createdAt: {
-        gte: startOfMonth,
-        lte: endOfMonth,
-      },
-      commodityId: {
-        not: null,
-      },
-    },
+    where: whereClause,
     include: {
       exporter: true,
       commodity: true,
@@ -242,23 +270,44 @@ async function getMonthlyShipmentGoldExporters() {
     .filter((card) => card.commodity?.symbol === "Au")
     .map((card) => {
       const assay = card.assays[0];
-      const totalWeight =
+      const grossWeight =
+        assay?.measurements?.reduce(
+          (sum, m) => sum + (m.grossWeight || 0),
+          0
+        ) || 0;
+      const netWeight =
         assay?.measurements?.reduce((sum, m) => sum + (m.netWeight || 0), 0) ||
         0;
 
+      // Convert grams to kilos for gross weight
+      const grossWeightKilos = grossWeight / 1000;
+      // Convert grams to troy ounces for net weight
+      const netWeightOz = netWeight / GRAMS_PER_TROY_OUNCE;
+      // Get estimated value
+      const estimatedValueUSD = assay?.totalUsdValue || 0;
+
       return {
-        date: card.createdAt.toLocaleDateString(),
         exporter: card.exporter?.name || "Unknown",
-        referenceNumber: card.referenceNumber,
-        commodity: card.commodity?.name || "Unknown",
-        totalWeight: totalWeight.toFixed(2),
-        unit: "grams",
+        grossWeightKilos: grossWeightKilos.toFixed(4),
+        netWeightOz: netWeightOz.toFixed(3),
+        estimatedValueUSD: formatCurrency(estimatedValueUSD),
       };
     });
 
+  const monthName = startOfMonth.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+  });
+  const scaleText =
+    scale === "small-scale"
+      ? "Small Scale"
+      : scale === "large-scale"
+      ? "Large Scale"
+      : "All";
+
   return {
     data,
-    title: `Monthly Shipment Report - Gold Exporters (${startOfMonth.toLocaleDateString()} to ${endOfMonth.toLocaleDateString()})`,
+    title: `Monthly Shipment Report for ${scaleText} Gold Exporters - ${monthName}`,
   };
 }
 

@@ -37,6 +37,7 @@ const reportOptions: ReportOption[] = [
     id: "monthly-shipment-gold-exporters",
     name: "Monthly Shipment Report for Gold Exporters",
     requiresMonth: true,
+    requiresScale: true,
   },
   {
     id: "weekly-shipment-exporter",
@@ -211,30 +212,33 @@ export default function QuickReports() {
           letter-spacing: 0.05em !important;
         }
 
-        /* Remove bottom border from Exporter header */
-        .print-content table th:first-child {
+        /* For gold exporters report - simple header structure */
+        .print-content.gold-exporters table th {
+          border-bottom: 1px solid #000 !important;
+        }
+
+        /* For other reports - complex header structure */
+        .print-content:not(.gold-exporters) table th:first-child {
           border-bottom: none !important;
         }
 
-        /* Remove bottom border from Weight of Bullion header */
-        .print-content table th:nth-child(2) {
+        .print-content:not(.gold-exporters) table th:nth-child(2) {
           border-bottom: none !important;
         }
 
-        /* Remove bottom border from Estimated Value in USD header */
-        .print-content table th:last-child {
+        .print-content:not(.gold-exporters) table th:last-child {
           border-bottom: none !important;
         }
 
-        /* Remove all borders from sub-header row */
-        .print-content table thead tr:nth-child(2) th {
+        /* Remove all borders from sub-header row for complex reports */
+        .print-content:not(.gold-exporters) table thead tr:nth-child(2) th {
           border: none !important;
         }
 
-        /* Add borders back to specific sub-header cells */
-        .print-content table thead tr:nth-child(2) th:nth-child(2),
-        .print-content table thead tr:nth-child(2) th:nth-child(3),
-        .print-content table thead tr:nth-child(2) th:nth-child(4) {
+        /* Add borders back to specific sub-header cells for complex reports */
+        .print-content:not(.gold-exporters) table thead tr:nth-child(2) th:nth-child(2),
+        .print-content:not(.gold-exporters) table thead tr:nth-child(2) th:nth-child(3),
+        .print-content:not(.gold-exporters) table thead tr:nth-child(2) th:nth-child(4) {
           border: 1px solid #000 !important;
         }
 
@@ -527,7 +531,13 @@ export default function QuickReports() {
 
       {/* Report Display */}
       {showReport && reportData && (
-        <div className="bg-white rounded-2xl p-6 border border-gray-200 print-content">
+        <div
+          className={`bg-white rounded-2xl p-6 border border-gray-200 print-content ${
+            selectedReport === "monthly-shipment-gold-exporters"
+              ? "gold-exporters"
+              : ""
+          }`}
+        >
           <h3 className="text-lg text-center font-semibold mb-4">
             {reportData.title}
           </h3>
@@ -540,118 +550,237 @@ export default function QuickReports() {
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
                 <thead className="bg-gray-50">
-                  {/* Combined header row */}
-                  <tr>
-                    <th className="px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider align-bottom border-r border-gray-300">
-                      Exporter
-                    </th>
-                    <th
-                      colSpan={3}
-                      className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-l border-r border-gray-300"
-                    >
-                      Weight of Bullion
-                    </th>
-                    <th className="px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider align-bottom border-l border-gray-300">
-                      Estimated Value in USD
-                    </th>
-                  </tr>
-                  {/* Sub-header row */}
-                  <tr>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
-                      {/* Empty cell under Exporter */}
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-l border-r border-gray-300">
-                      Gross Weight
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
-                      Net Gold Weight in Oz
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
-                      Net Silver Weight in Oz
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-l border-gray-300">
-                      {/* Empty cell under Estimated Value */}
-                    </th>
-                  </tr>
+                  {selectedReport === "monthly-shipment-gold-exporters" ? (
+                    /* Simple header for gold exporters */
+                    <tr>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Exporter
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Gross Weight in Kilos
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Net Weight in Oz
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-l border-gray-300">
+                        Estimated Value in USD
+                      </th>
+                    </tr>
+                  ) : (
+                    <>
+                      {/* Combined header row */}
+                      <tr>
+                        <th className="px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider align-bottom border-r border-gray-300">
+                          Exporter
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-l border-r border-gray-300"
+                        >
+                          Weight of Bullion
+                        </th>
+                        <th className="px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider align-bottom border-l border-gray-300">
+                          Estimated Value in USD
+                        </th>
+                      </tr>
+                      {/* Sub-header row */}
+                      <tr>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                          {/* Empty cell under Exporter */}
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-l border-r border-gray-300">
+                          Gross Weight
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                          Net Gold Weight in Oz
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                          Net Silver Weight in Oz
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-l border-gray-300">
+                          {/* Empty cell under Estimated Value */}
+                        </th>
+                      </tr>
+                    </>
+                  )}
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {reportData.data.map((row, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      {Object.entries(row).map(([key, value], cellIndex) => (
-                        <td
-                          key={cellIndex}
-                          className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 ${
-                            cellIndex > 0 ? "text-right" : ""
-                          }`}
-                        >
-                          {String(value)}
-                        </td>
-                      ))}
+                      {selectedReport === "monthly-shipment-gold-exporters" ? (
+                        // Specific rendering for gold exporters report
+                        <>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                            {row.exporter || row.name || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.grossWeightKilos || row.grossWeight || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.netWeightOz || row.netGoldWeight || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.estimatedValueUSD || row.value || ""}
+                          </td>
+                        </>
+                      ) : (
+                        // Default rendering for other reports
+                        Object.entries(row)
+                          .filter(
+                            ([key]) =>
+                              selectedReport !==
+                                "monthly-shipment-gold-exporters" ||
+                              !key.toLowerCase().includes("silver")
+                          )
+                          .map(([key, value], cellIndex) => (
+                            <td
+                              key={cellIndex}
+                              className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 ${
+                                cellIndex > 0 ? "text-right" : ""
+                              }`}
+                            >
+                              {String(value)}
+                            </td>
+                          ))
+                      )}
                     </tr>
                   ))}
                 </tbody>
                 <tfoot className="bg-gray-50">
                   <tr>
-                    {Object.keys(reportData.data[0] || {}).map((key, index) => {
-                      if (index === 0) {
-                        // First column (Exporter) - show "TOTAL"
-                        return (
-                          <td
-                            key={`total-${key}`}
-                            className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
-                          >
-                            TOTAL
-                          </td>
-                        );
-                      } else {
-                        // Calculate totals for numeric columns
-                        const total = reportData.data.reduce((sum, row) => {
-                          const value = row[key as keyof typeof row];
-                          if (typeof value === "string") {
-                            // Remove currency symbols and commas for calculation
-                            const numericValue = parseFloat(
-                              value.replace(/[$,]/g, "")
-                            );
-                            return (
-                              sum + (isNaN(numericValue) ? 0 : numericValue)
-                            );
-                          }
-                          return sum + (typeof value === "number" ? value : 0);
-                        }, 0);
-
-                        // Format the total based on the column type
-                        let formattedTotal = total.toString();
-                        if (key === "grossWeight") {
-                          formattedTotal = total.toFixed(4);
-                        } else if (
-                          key.toLowerCase().includes("weight") &&
-                          key.toLowerCase().includes("oz")
-                        ) {
-                          formattedTotal = total.toFixed(3);
-                        } else if (
-                          key.toLowerCase().includes("value") ||
-                          key.toLowerCase().includes("usd")
-                        ) {
-                          formattedTotal = new Intl.NumberFormat("en-US", {
+                    {selectedReport === "monthly-shipment-gold-exporters" ? (
+                      // Specific totals for gold exporters report
+                      <>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                          TOTAL
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {reportData.data
+                            .reduce((sum, row) => {
+                              const value =
+                                row.grossWeightKilos || row.grossWeight || 0;
+                              const numericValue =
+                                typeof value === "string"
+                                  ? parseFloat(value.replace(/[$,]/g, ""))
+                                  : typeof value === "number"
+                                  ? value
+                                  : 0;
+                              return (
+                                sum + (isNaN(numericValue) ? 0 : numericValue)
+                              );
+                            }, 0)
+                            .toFixed(4)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {reportData.data
+                            .reduce((sum, row) => {
+                              const value =
+                                row.netWeightOz || row.netGoldWeight || 0;
+                              const numericValue =
+                                typeof value === "string"
+                                  ? parseFloat(value.replace(/[$,]/g, ""))
+                                  : typeof value === "number"
+                                  ? value
+                                  : 0;
+                              return (
+                                sum + (isNaN(numericValue) ? 0 : numericValue)
+                              );
+                            }, 0)
+                            .toFixed(3)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {new Intl.NumberFormat("en-US", {
                             style: "currency",
                             currency: "USD",
-                          }).format(total);
-                        } else if (key.toLowerCase().includes("oz")) {
-                          formattedTotal = total.toFixed(3);
-                        }
+                          }).format(
+                            reportData.data.reduce((sum, row) => {
+                              const value =
+                                row.estimatedValueUSD || row.value || 0;
+                              const numericValue =
+                                typeof value === "string"
+                                  ? parseFloat(value.replace(/[$,]/g, ""))
+                                  : typeof value === "number"
+                                  ? value
+                                  : 0;
+                              return (
+                                sum + (isNaN(numericValue) ? 0 : numericValue)
+                              );
+                            }, 0)
+                          )}
+                        </td>
+                      </>
+                    ) : (
+                      // Default totals for other reports
+                      Object.keys(reportData.data[0] || {})
+                        .filter(
+                          (key) =>
+                            selectedReport !==
+                              "monthly-shipment-gold-exporters" ||
+                            !key.toLowerCase().includes("silver")
+                        )
+                        .map((key, index) => {
+                          if (index === 0) {
+                            // First column (Exporter) - show "TOTAL"
+                            return (
+                              <td
+                                key={`total-${key}`}
+                                className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
+                              >
+                                TOTAL
+                              </td>
+                            );
+                          } else {
+                            // Calculate totals for numeric columns
+                            const total = reportData.data.reduce((sum, row) => {
+                              const value = row[key as keyof typeof row];
+                              if (typeof value === "string") {
+                                // Remove currency symbols and commas for calculation
+                                const numericValue = parseFloat(
+                                  value.replace(/[$,]/g, "")
+                                );
+                                return (
+                                  sum + (isNaN(numericValue) ? 0 : numericValue)
+                                );
+                              }
+                              return (
+                                sum + (typeof value === "number" ? value : 0)
+                              );
+                            }, 0);
 
-                        return (
-                          <td
-                            key={`total-${key}`}
-                            className={`px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 ${
-                              index > 0 ? "text-right" : ""
-                            }`}
-                          >
-                            {formattedTotal}
-                          </td>
-                        );
-                      }
-                    })}
+                            // Format the total based on the column type
+                            let formattedTotal = total.toString();
+                            if (key === "grossWeight") {
+                              formattedTotal = total.toFixed(4);
+                            } else if (
+                              key.toLowerCase().includes("weight") &&
+                              key.toLowerCase().includes("oz")
+                            ) {
+                              formattedTotal = total.toFixed(3);
+                            } else if (
+                              key.toLowerCase().includes("value") ||
+                              key.toLowerCase().includes("usd")
+                            ) {
+                              formattedTotal = new Intl.NumberFormat("en-US", {
+                                style: "currency",
+                                currency: "USD",
+                              }).format(total);
+                            } else if (key.toLowerCase().includes("oz")) {
+                              formattedTotal = total.toFixed(3);
+                            }
+
+                            return (
+                              <td
+                                key={`total-${key}`}
+                                className={`px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 ${
+                                  index > 0 ? "text-right" : ""
+                                }`}
+                              >
+                                {formattedTotal}
+                              </td>
+                            );
+                          }
+                        })
+                    )}
                   </tr>
                 </tfoot>
               </table>
