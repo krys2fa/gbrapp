@@ -31,14 +31,14 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { type, itemId, price } = body;
+  const { type, itemId, price, date } = body;
   if (!type || !itemId || price == null) {
     return NextResponse.json(
       { error: "type, itemId, and price required" },
       { status: 400 }
     );
   }
-  const data: any = { type, price, date: new Date() };
+  const data: any = { type, price, date: date ? new Date(date) : new Date() };
   if (type === "COMMODITY") data.commodityId = itemId;
   if (type === "EXCHANGE") data.exchangeId = itemId;
   const dailyPrice = await prisma.dailyPrice.create({ data });
