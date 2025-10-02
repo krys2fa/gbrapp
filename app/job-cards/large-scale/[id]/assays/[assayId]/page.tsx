@@ -349,8 +349,8 @@ export default function AssayResultsPage() {
 
             {/* Professional Assay Information */}
             <div className="px-4 sm:px-6 lg:px-8 pt-4">
-              {/* Row 1: Exporter (left) - Date of Analysis (right) */}
-              <div className="flex justify-between items-center mb-4">
+              {/* Row 1: Exporter - Reference Number - Date of Analysis */}
+              <div className="grid grid-cols-3 gap-4 items-center mb-4">
                 <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Exporter:
@@ -361,7 +361,15 @@ export default function AssayResultsPage() {
                       : jobCard?.exporter?.name || "N/A"}
                   </span>
                 </div>
-                <div>
+                <div className="text-center">
+                  <span className="text-sm font-medium text-gray-500 mr-2">
+                    Reference No.:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {jobCard?.referenceNumber || "N/A"}
+                  </span>
+                </div>
+                <div className="text-right">
                   <span className="text-sm text-gray-500 mr-2 font-medium">
                     Date of Analysis:
                   </span>

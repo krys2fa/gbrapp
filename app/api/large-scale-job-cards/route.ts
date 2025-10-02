@@ -313,7 +313,10 @@ async function createLargeScaleJobCard(req: NextRequest) {
     const jobCardData: any = {
       referenceNumber: generatedReferenceNumber,
       humanReadableId,
-      certificateNumber: body.certificateNumber || undefined,
+      ...(body.certificateNumber &&
+        body.certificateNumber.trim() && {
+          certificateNumber: body.certificateNumber.trim(),
+        }),
       receivedDate: new Date(receivedDate),
       exporterId,
       unitOfMeasure,

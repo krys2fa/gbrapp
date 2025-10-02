@@ -447,33 +447,26 @@ export default function CertificateOfAssayPage() {
 
               {/* Date and Data Sheet Dates on separate row */}
               <div className="flex justify-between items-center">
-                <div>
-                  <span className="text-sm text-gray-500 font-medium mr-2">
-                    Date:
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {formatDate(jobCard?.dataSheetDate || "-")}
-                  </span>
+                {/* Reference Number*/}
+                <div className="flex justify-start items-center mt-2">
+                  <div>
+                    <span className="text-sm text-gray-500 font-medium mr-2">
+                      Reference No.:
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {jobCard?.referenceNumber || "N/A"}
+                    </span>
+                  </div>
                 </div>
 
                 <div>
                   <span className="text-sm text-gray-500 font-medium mr-2">
-                    Data Sheet Dates:
+                    Date of Analysis:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {assays[0]?.dataSheetDates || "N/A"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Reference Number on separate row */}
-              <div className="flex justify-start items-center mt-2">
-                <div>
-                  <span className="text-sm text-gray-500 font-medium mr-2">
-                    Reference Number:
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {jobCard?.referenceNumber || "N/A"}
+                    {assays[0]?.dateOfAnalysis
+                      ? formatDate(assays[0].dateOfAnalysis)
+                      : "N/A"}
                   </span>
                 </div>
               </div>

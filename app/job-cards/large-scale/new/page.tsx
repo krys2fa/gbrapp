@@ -631,7 +631,8 @@ function NewLargeScaleJobCardPage() {
     // Calculate values
     const totalGoldValue = Number(totalNetGoldWeightOz) * commodityPrice;
     const totalSilverValue = Number(totalNetSilverWeightOz) * pricePerOz;
-    const totalCombinedValue = Number(totalGoldValue.toFixed(2)) + Number(totalSilverValue.toFixed(2));
+    const totalCombinedValue =
+      Number(totalGoldValue.toFixed(2)) + Number(totalSilverValue.toFixed(2));
     const totalValueGhs = totalCombinedValue * exchangeRate;
 
     return {
@@ -933,6 +934,7 @@ function NewLargeScaleJobCardPage() {
         numberOfBars: form.numberOfBars
           ? parseInt(form.numberOfBars)
           : undefined,
+        referenceNumber: form.referenceNumber || undefined,
         // Assay-related fields
         assayMethod: assayMethod,
         authorizedSignatory: authorizedSignatory,
@@ -943,7 +945,10 @@ function NewLargeScaleJobCardPage() {
         numberOfSamples: form.numberOfSamples,
         sampleType: form.sampleType,
         shipmentNumber: form.shipmentNumber,
-        certificateNumber: form.certificateNumber || undefined,
+        ...(form.certificateNumber &&
+          form.certificateNumber.trim() && {
+            certificateNumber: form.certificateNumber.trim(),
+          }),
         goldbodSealNo: form.goldbodSealNo || undefined,
         customsSealNo: form.customsSealNo || undefined,
         securitySealNo: form.securitySealNo || undefined,
@@ -1054,7 +1059,7 @@ function NewLargeScaleJobCardPage() {
                     htmlFor="receivedDate"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Received Date *
+                    Received Date
                   </label>
                   <input
                     type="date"
@@ -1065,10 +1070,10 @@ function NewLargeScaleJobCardPage() {
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  {/* <p className="mt-1 text-xs text-gray-500">
                     Required for pricing calculations. Gold, silver, and
                     exchange rates must be available for this date.
-                  </p>
+                  </p> */}
                 </div>
 
                 <div>
