@@ -58,13 +58,13 @@ export async function POST(request: NextRequest) {
         ));
         break;
       case "monthly-analysis-all-exporters":
-        if (!weekStart) {
+        if (!monthStart) {
           return NextResponse.json(
-            { error: "Week start required" },
+            { error: "Month start required" },
             { status: 400 }
           );
         }
-        ({ data, title } = await getMonthlyAnalysisAllExporters(weekStart));
+        ({ data, title } = await getMonthlyAnalysisAllExporters(monthStart));
         break;
       default:
         return NextResponse.json(
@@ -444,43 +444,107 @@ async function getMonthlyAnalysisExporter(
   };
 }
 
-async function getMonthlyAnalysisAllExporters(weekStart: string) {
-  const startDate = new Date(weekStart);
-  const endDate = new Date(startDate);
-  endDate.setDate(startDate.getDate() + 6);
+async function getMonthlyAnalysisAllExporters(monthStart: string) {
+  const [year, month] = monthStart.split("-").map(Number);
+  const startOfMonth = new Date(year, month - 1, 1);
+  const endOfMonth = new Date(year, month, 0, 23, 59, 59);
 
-  const assays = await prisma.assay.findMany({
+  const jobCards = await prisma.jobCard.findMany({
     where: {
-      assayDate: {
-        gte: startDate,
-        lte: endDate,
+      createdAt: {
+        gte: startOfMonth,
+        lte: endOfMonth,
       },
     },
     include: {
-      jobCard: {
+      exporter: true,
+      assays: {
         include: {
-          exporter: true,
+          measurements: true,
         },
       },
-      measurements: true,
     },
     orderBy: {
-      assayDate: "asc",
+      createdAt: "asc",
     },
   });
 
-  const data = assays.map((assay) => ({
-    date: assay.assayDate.toLocaleDateString(),
-    exporter: assay.jobCard?.exporter?.name || "Unknown",
-    referenceNumber: assay.jobCard?.referenceNumber || "Unknown",
-    goldContent: assay.goldContent?.toFixed(2) || "0.00",
-    silverContent: assay.silverContent?.toFixed(2) || "0.00",
-    fineness: assay.fineness?.toFixed(2) || "0.00",
-    certificateNumber: assay.certificateNumber || "N/A",
+  // Group by exporter and date
+  const groupedData = jobCards.reduce((acc, card) => {
+    const exporterName = card.exporter?.name || "Unknown Exporter";
+    const dateKey = card.createdAt.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+    if (!acc[exporterName]) {
+      acc[exporterName] = {};
+    }
+
+    if (!acc[exporterName][dateKey]) {
+      acc[exporterName][dateKey] = {
+        exporter: exporterName,
+        dateOfAnalysis: card.createdAt.toLocaleDateString(),
+        numberOfSamples: 0,
+        numberOfBars: 0,
+        totalBarWeightShippedKg: 0,
+        finenessAuPercent: 0,
+        finenessAgPercent: 0,
+        netWeightAuKg: 0,
+        netWeightAgKg: 0,
+      };
+    }
+
+    const assay = card.assays[0];
+    if (assay) {
+      acc[exporterName][dateKey].numberOfSamples += 1;
+      acc[exporterName][dateKey].numberOfBars +=
+        assay.measurements?.length || 0;
+
+      // Calculate weights and fineness
+      const goldContent = assay.goldContent || 0;
+      const silverContent = assay.silverContent || 0;
+      const grossWeight = card.totalGrossWeight || 0;
+
+      acc[exporterName][dateKey].totalBarWeightShippedKg += grossWeight;
+      acc[exporterName][dateKey].finenessAuPercent = goldContent;
+      acc[exporterName][dateKey].finenessAgPercent = silverContent;
+      acc[exporterName][dateKey].netWeightAuKg +=
+        (grossWeight * goldContent) / 100;
+      acc[exporterName][dateKey].netWeightAgKg +=
+        (grossWeight * silverContent) / 100;
+    }
+
+    return acc;
+  }, {} as Record<string, Record<string, any>>);
+
+  // Flatten the grouped data
+  const data = Object.values(groupedData).flatMap((exporterData: any) =>
+    Object.values(exporterData)
+  );
+
+  // Format the data
+  const formattedData = data.map((row: any) => ({
+    exporter: row.exporter,
+    dateOfAnalysis: row.dateOfAnalysis,
+    numberOfSamples: row.numberOfSamples,
+    numberOfBars: row.numberOfBars,
+    totalBarWeightShippedKg: row.totalBarWeightShippedKg.toFixed(4),
+    finenessAuPercent: row.finenessAuPercent.toFixed(2),
+    finenessAgPercent: row.finenessAgPercent.toFixed(2),
+    netWeightAuKg: row.netWeightAuKg.toFixed(4),
+    netWeightAgKg: row.netWeightAgKg.toFixed(4),
   }));
 
+  let monthText = "";
+  if (monthStart) {
+    const [year, month] = monthStart.split("-").map(Number);
+    const monthDate = new Date(year, month - 1, 1);
+    monthText = monthDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+    });
+  }
+
   return {
-    data,
-    title: `Monthly Analysis Report - All Exporters (${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()})`,
+    data: formattedData,
+    title: `Monthly Sample Analysis Report - All Exporters - ${monthText}`,
   };
 }

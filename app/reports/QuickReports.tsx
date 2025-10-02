@@ -45,12 +45,12 @@ const reportOptions: ReportOption[] = [
     requiresExporter: true,
     requiresMonth: true,
   },
-  {
-    id: "monthly-analysis-exporter",
-    name: "Monthly Sample Analysis Report per Week for Selected Exporter",
-    requiresExporter: true,
-    requiresMonth: true,
-  },
+  //   {
+  //     id: "monthly-analysis-exporter",
+  //     name: "Monthly Sample Analysis Report per Week for Selected Exporter",
+  //     requiresExporter: true,
+  //     requiresMonth: true,
+  //   },
   {
     id: "monthly-analysis-all-exporters",
     name: "Monthly Sample Analysis Report for All Exporters per Week",
@@ -598,6 +598,37 @@ export default function QuickReports() {
                         Value in GHS
                       </th>
                     </tr>
+                  ) : selectedReport === "monthly-analysis-all-exporters" ? (
+                    /* Header for monthly analysis all exporters report */
+                    <tr>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Exporter
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Date of Analysis
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Number of Samples
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Number of Bars
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Total Bar Weight Shipped in kg
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Fineness Au (%)
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Fineness Ag (%)
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                        Net Weight Au (kg)
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-l border-gray-300">
+                        Net Weight Ag (kg)
+                      </th>
+                    </tr>
                   ) : (
                     <>
                       {/* Combined header row */}
@@ -684,6 +715,38 @@ export default function QuickReports() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
                             {row.valueGHS || ""}
+                          </td>
+                        </>
+                      ) : selectedReport ===
+                        "monthly-analysis-all-exporters" ? (
+                        // Specific rendering for monthly analysis all exporters report
+                        <>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                            {row.exporter || row.name || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                            {row.dateOfAnalysis || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.numberOfSamples || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.numberOfBars || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.totalBarWeightShippedKg || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.finenessAuPercent || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.finenessAgPercent || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.netWeightAuKg || ""}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-right">
+                            {row.netWeightAgKg || ""}
                           </td>
                         </>
                       ) : (
@@ -872,6 +935,98 @@ export default function QuickReports() {
                               );
                             }, 0)
                           )}
+                        </td>
+                      </>
+                    ) : selectedReport === "monthly-analysis-all-exporters" ? (
+                      // Specific totals for monthly analysis all exporters report
+                      <>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                          TOTAL
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200">
+                          {/* Date of Analysis - no total */}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {reportData.data.reduce((sum, row) => {
+                            const value = row.numberOfSamples || 0;
+                            const numericValue =
+                              typeof value === "string"
+                                ? parseFloat(value.replace(/[$,]/g, ""))
+                                : typeof value === "number"
+                                ? value
+                                : 0;
+                            return (
+                              sum + (isNaN(numericValue) ? 0 : numericValue)
+                            );
+                          }, 0)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {reportData.data.reduce((sum, row) => {
+                            const value = row.numberOfBars || 0;
+                            const numericValue =
+                              typeof value === "string"
+                                ? parseFloat(value.replace(/[$,]/g, ""))
+                                : typeof value === "number"
+                                ? value
+                                : 0;
+                            return (
+                              sum + (isNaN(numericValue) ? 0 : numericValue)
+                            );
+                          }, 0)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {reportData.data
+                            .reduce((sum, row) => {
+                              const value = row.totalBarWeightShippedKg || 0;
+                              const numericValue =
+                                typeof value === "string"
+                                  ? parseFloat(value.replace(/[$,]/g, ""))
+                                  : typeof value === "number"
+                                  ? value
+                                  : 0;
+                              return (
+                                sum + (isNaN(numericValue) ? 0 : numericValue)
+                              );
+                            }, 0)
+                            .toFixed(4)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {/* Fineness Au - no total */}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {/* Fineness Ag - no total */}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {reportData.data
+                            .reduce((sum, row) => {
+                              const value = row.netWeightAuKg || 0;
+                              const numericValue =
+                                typeof value === "string"
+                                  ? parseFloat(value.replace(/[$,]/g, ""))
+                                  : typeof value === "number"
+                                  ? value
+                                  : 0;
+                              return (
+                                sum + (isNaN(numericValue) ? 0 : numericValue)
+                              );
+                            }, 0)
+                            .toFixed(4)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 border-r border-gray-200 text-right">
+                          {reportData.data
+                            .reduce((sum, row) => {
+                              const value = row.netWeightAgKg || 0;
+                              const numericValue =
+                                typeof value === "string"
+                                  ? parseFloat(value.replace(/[$,]/g, ""))
+                                  : typeof value === "number"
+                                  ? value
+                                  : 0;
+                              return (
+                                sum + (isNaN(numericValue) ? 0 : numericValue)
+                              );
+                            }, 0)
+                            .toFixed(4)}
                         </td>
                       </>
                     ) : (
