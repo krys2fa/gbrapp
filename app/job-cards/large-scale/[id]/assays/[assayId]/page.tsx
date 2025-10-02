@@ -6,6 +6,7 @@ import { PrinterIcon } from "@heroicons/react/24/outline";
 import BackLink from "@/app/components/ui/BackLink";
 import { formatDate, formatCurrency } from "@/app/lib/utils";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 export default function AssayResultsPage() {
   const params = useParams();
