@@ -745,10 +745,10 @@ export default function CertificateOfAssayPage() {
                 <div className="pr-1 sm:pr-2 lg:pr-3 py-2">
                   <div className="flex justify-start">
                     <div className="flex text-center ">
-                      <h4 className="text-sm font-medium text-gray-500 uppercase">
+                      <h4 className="text-xs font-medium text-gray-500 uppercase">
                         Customs Seal:
                       </h4>
-                      <div className="ml-2 text-sm font-semibold text-gray-900">
+                      <div className="ml-2 text-xs text-gray-900">
                         {jobCard.assays[0]?.customsSealNo || "N/A"}
                       </div>
                     </div>
@@ -758,10 +758,10 @@ export default function CertificateOfAssayPage() {
                 <div className="px-1 sm:px-2 lg:px-3 py-2">
                   <div className="flex justify-start">
                     <div className="flex text-center ">
-                      <h4 className="text-sm font-medium text-gray-500 uppercase">
+                      <h4 className="text-xs font-medium text-gray-500 uppercase">
                         GOLDBOD Seal:
                       </h4>
-                      <div className="ml-2 text-sm font-semibold text-gray-900">
+                      <div className="ml-2 text-xs text-gray-900">
                         {jobCard.assays[0]?.goldbodSealNo || "N/A"}
                       </div>
                     </div>
@@ -771,10 +771,10 @@ export default function CertificateOfAssayPage() {
                 <div className="px-1 sm:px-2 lg:px-3 py-2">
                   <div className="flex justify-start">
                     <div className="flex">
-                      <h4 className="text-sm font-medium text-gray-500 uppercase">
+                      <h4 className="text-xs font-medium text-gray-500 uppercase">
                         Security Seal:
                       </h4>
-                      <div className="ml-2 text-sm font-semibold text-gray-900">
+                      <div className="ml-2 text-xs text-gray-900">
                         {jobCard.assays[0]?.securitySealNo || "N/A"}
                       </div>
                     </div>
