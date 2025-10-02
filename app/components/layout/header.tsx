@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 bg-[#d4af37] border-b border-amber-500/30",
+        "sticky top-0 z-30 bg-[#d4af37] border-b border-amber-500/30 no-print",
         className
       )}
     >

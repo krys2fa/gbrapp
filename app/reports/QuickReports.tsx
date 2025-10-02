@@ -77,23 +77,118 @@ export default function QuickReports() {
       @media print {
         @page {
           size: A4 landscape;
-          margin: 0.5in;
+          margin: 5mm 10mm 10mm 10mm;
         }
-        body * {
-          visibility: hidden;
-        }
-        .print-view, .print-view * {
-          visibility: visible;
-        }
-        .print-view {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
-          height: auto;
-        }
+
+        /* Hide elements with no-print class */
         .no-print {
           display: none !important;
+        }
+
+        /* Make content use full page space when navigation is hidden */
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Remove ALL top spacing from all elements */
+        * {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+
+        /* Specific targeting for common layout elements */
+        html, body, #__next {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+        }
+
+        /* Reset any top margins/padding that accounted for hidden headers */
+        .print-content {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Ensure the main content container uses full height */
+        [class*="lg:flex-1"] {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Remove spacing from layout containers */
+        [class*="pt-16"], [class*="pt-0"], [class*="min-h-screen"] {
+          padding-top: 0 !important;
+          margin-top: 0 !important;
+          min-height: auto !important;
+        }
+
+        /* Show all content exactly as it appears on screen */
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        /* Add header with logo, title, and QR code for print */
+        .print-content::before {
+          content: "${reportData?.title || "Report"}";
+          display: block;
+          text-align: center;
+          font-size: 1.25rem;
+          font-weight: bold;
+          margin-bottom: 1rem;
+          padding-bottom: 1rem;
+          border-bottom: 1px solid #e5e7eb;
+          position: relative;
+          min-height: 60px;
+          padding-top: 10px;
+        }
+
+        /* Add logo background */
+        .print-content::before {
+          background-image: url("${
+            window.location.origin
+          }/goldbod-logo-black.png");
+          background-size: 80px 40px;
+          background-repeat: no-repeat;
+          background-position: left center;
+          padding-left: 90px;
+        }
+
+        /* Add QR code background */
+        .print-content::before {
+          background-image:
+            url("${window.location.origin}/goldbod-logo-black.png"),
+            url("https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://goldbod.gov.gh/");
+          background-size: 80px 40px, 60px 60px;
+          background-repeat: no-repeat;
+          background-position: left center, right center;
+          padding-left: 90px;
+          padding-right: 70px;
+        }
+
+        /* Hide the original title in print */
+        .print-content h3:first-child {
+          display: none !important;
+        }
+
+        /* Ensure table starts at the top */
+        .print-content table {
+          margin-top: 0 !important;
+        }
+
+        /* Remove borders in print view */
+        .print-content {
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+        .print-content table {
+          border: none !important;
+        }
+
+        .print-content table th,
+        .print-content table td {
+          border: none !important;
         }
       }
     `;
@@ -101,7 +196,7 @@ export default function QuickReports() {
     return () => {
       document.head.removeChild(style);
     };
-  }, []);
+  }, [reportData]);
 
   const scaleOptions = [
     { id: "small-scale", name: "Small Scale" },
@@ -179,14 +274,14 @@ export default function QuickReports() {
   };
 
   const downloadPDF = () => {
-    // Directly trigger print functionality on current page content
+    // Simply trigger the browser's print functionality
     window.print();
   };
 
   return (
     <div className="space-y-6">
       {/* Report Generation Form */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-200">
+      <div className="bg-white rounded-2xl p-6 border border-gray-200 no-print">
         {/* <h2 className="text-xl font-semibold mb-4">Quick Reports</h2> */}
 
         <div className="flex flex-wrap gap-4 items-end">
@@ -361,7 +456,7 @@ export default function QuickReports() {
 
       {/* Report Display */}
       {showReport && reportData && (
-        <div className="bg-white rounded-2xl p-6 border border-gray-200">
+        <div className="bg-white rounded-2xl p-6 border border-gray-200 print-content">
           <h3 className="text-lg text-center font-semibold mb-4">
             {reportData.title}
           </h3>

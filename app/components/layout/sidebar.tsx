@@ -261,7 +261,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
   return (
     <div className="lg:flex lg:h-screen lg:overflow-hidden">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-amber-500/20 dark:border-amber-500/10">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-amber-500/20 dark:border-amber-500/10 no-print">
         <div className="flex items-center justify-between px-4 py-3">
           {/* <div className="flex items-center gap-3"> */}
           <div className="bg-[#27562a] flex items-center gap-3 px-6 py-3 rounded-md border border-amber-500/30">
@@ -304,7 +304,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       {/* Sidebar */}
       <div
         className={cn(
-          "lg:flex-shrink-0 lg:h-screen lg:overflow-y-auto bg-[#27562a] dark:bg-[#27562a] border-r border-gray-200 dark:border-gray-700",
+          "lg:flex-shrink-0 lg:h-screen lg:overflow-y-auto bg-[#27562a] dark:bg-[#27562a] border-r border-gray-200 dark:border-gray-700 no-print",
           "lg:relative lg:z-auto lg:translate-x-0",
           "fixed top-0 left-0 z-40 h-full transition-transform duration-300 ease-in-out overflow-y-auto",
           isMobileMenuOpen
@@ -314,7 +314,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         )}
       >
         {/* Desktop Header */}
-        <div className="bg-[#27562a] hidden lg:flex items-center py-3 border-b border-amber-500/30 dark:border-amber-500/20">
+        <div className="bg-[#27562a] hidden lg:flex items-center py-3 border-b border-amber-500/30 dark:border-amber-500/20 no-print">
           {/* <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shadow-lg border border-amber-500/30"></div> */}
           {/* <div> */}
           {/* <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -337,7 +337,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         {/* Navigation */}
         {/* Mobile Menu Logo - Only visible when mobile menu is open */}
         <nav className="p-4 xl:p-6 space-y-2 mt-16 lg:mt-0">
-          <div className="bg-[#27562a] flex justify-center mb-6 lg:hidden p-4 rounded-lg border border-amber-500/30">
+          <div className="bg-[#27562a] flex justify-center mb-6 lg:hidden p-4 rounded-lg border border-amber-500/30 no-print">
             {/* <div> */}
             <div className="relative w-[120px] h-10">
               <Image
@@ -403,7 +403,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </nav>
 
         {/* User Profile Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-amber-500/20">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-amber-500/20 no-print">
           <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2e7030] transition-colors">
             <div className="w-10 h-10 bg-[#27562a] border border-amber-500/40 rounded-full flex items-center justify-center">
               <span className="text-white font-medium text-sm">
