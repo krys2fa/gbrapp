@@ -110,6 +110,7 @@ function NewJobCardPage() {
     pricePerOunce: "",
     numberOfOunces: "",
     certificateNumber: "",
+    referenceNumber: "",
   });
 
   useEffect(() => {
@@ -331,6 +332,19 @@ function NewJobCardPage() {
                           </option>
                         ))}
                       </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Reference Number
+                      </label>
+                      <input
+                        name="referenceNumber"
+                        value={formData.referenceNumber}
+                        onChange={handleChange}
+                        className="mt-1 form-control"
+                        placeholder="Enter reference number"
+                      />
                     </div>
 
                     <div>

@@ -465,6 +465,18 @@ export default function CertificateOfAssayPage() {
                   </span>
                 </div>
               </div>
+
+              {/* Reference Number on separate row */}
+              <div className="flex justify-start items-center mt-2">
+                <div>
+                  <span className="text-sm text-gray-500 font-medium mr-2">
+                    Reference Number:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {jobCard?.referenceNumber || "N/A"}
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Assay Measurements Table */}

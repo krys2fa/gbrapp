@@ -262,16 +262,14 @@ export default function CertificateOfAssayPage() {
                   </span>
                 </div>
 
-                {/* <div>
+                <div>
                   <span className="text-sm text-gray-500 font-medium mr-2">
-                    Job Id:
+                    Reference Number:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
-                    {jobCard?.humanReadableId ||
-                      jobCard?.referenceNumber ||
-                      "N/A"}
+                    {jobCard?.referenceNumber || "N/A"}
                   </span>
-                </div> */}
+                </div>
               </div>
             </div>
 
