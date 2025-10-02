@@ -201,9 +201,41 @@ export default function QuickReports() {
           padding: 8px !important;
         }
 
+        /* Style table headers to match web appearance */
+        .print-content table th {
+          background-color: #f9fafb !important;
+          color: #6b7280 !important;
+          font-weight: 500 !important;
+          font-size: 0.75rem !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.05em !important;
+        }
+
         /* Remove bottom border from Exporter header */
         .print-content table th:first-child {
           border-bottom: none !important;
+        }
+
+        /* Remove bottom border from Weight of Bullion header */
+        .print-content table th:nth-child(2) {
+          border-bottom: none !important;
+        }
+
+        /* Remove bottom border from Estimated Value in USD header */
+        .print-content table th:last-child {
+          border-bottom: none !important;
+        }
+
+        /* Remove all borders from sub-header row */
+        .print-content table thead tr:nth-child(2) th {
+          border: none !important;
+        }
+
+        /* Add borders back to specific sub-header cells */
+        .print-content table thead tr:nth-child(2) th:nth-child(2),
+        .print-content table thead tr:nth-child(2) th:nth-child(3),
+        .print-content table thead tr:nth-child(2) th:nth-child(4) {
+          border: 1px solid #000 !important;
         }
 
         /* Remove border from content container in print view */
