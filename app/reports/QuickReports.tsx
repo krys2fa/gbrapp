@@ -91,25 +91,13 @@ export default function QuickReports() {
           padding: 0 !important;
         }
 
-        /* Remove ALL top spacing from all elements */
-        * {
-          margin-top: 0 !important;
-          padding-top: 0 !important;
-        }
-
-        /* Specific targeting for common layout elements */
+        /* Specific targeting for layout elements only - preserve content spacing */
         html, body, #__next {
           margin-top: 0 !important;
           padding-top: 0 !important;
         }
 
-        /* Reset any top margins/padding that accounted for hidden headers */
-        .print-content {
-          margin: 0 !important;
-          padding: 0 !important;
-        }
-
-        /* Ensure the main content container uses full height */
+        /* Reset margins/padding for layout containers only */
         [class*="lg:flex-1"] {
           margin: 0 !important;
           padding: 0 !important;
@@ -120,6 +108,21 @@ export default function QuickReports() {
           padding-top: 0 !important;
           margin-top: 0 !important;
           min-height: auto !important;
+        }
+
+        /* Preserve normal spacing within report content */
+        .print-content * {
+          margin-top: initial !important;
+          padding-top: initial !important;
+        }
+
+        /* Maintain specific spacing for report elements */
+        .print-content h3 {
+          margin-bottom: 1rem !important;
+        }
+
+        .print-content table {
+          margin-top: 0 !important;
         }
 
         /* Show all content exactly as it appears on screen */
@@ -137,7 +140,6 @@ export default function QuickReports() {
           font-weight: bold;
           margin-bottom: 1rem;
           padding-bottom: 1rem;
-          border-bottom: 1px solid #e5e7eb;
           position: relative;
           min-height: 60px;
           padding-top: 10px;
@@ -176,19 +178,46 @@ export default function QuickReports() {
           margin-top: 0 !important;
         }
 
-        /* Remove borders in print view */
+        /* Add borders and padding to table in print view */
+        .print-content table {
+          border: 1px solid #000 !important;
+          border-collapse: collapse !important;
+          margin-top: 20px !important;
+        }
+
+        .print-content table th,
+        .print-content table td {
+          border: 1px solid #000 !important;
+          padding: 8px !important;
+        }
+
+        /* Remove bottom border from Exporter header */
+        .print-content table th:first-child {
+          border-bottom: none !important;
+        }
+
+        /* Remove border from content container in print view */
         .print-content {
           border: none !important;
           box-shadow: none !important;
         }
 
-        .print-content table {
-          border: none !important;
+        /* Add more space above the signature section */
+        .print-content .mt-24 {
+          margin-top: 120px !important;
         }
 
-        .print-content table th,
-        .print-content table td {
-          border: none !important;
+        /* Style the seal image for print */
+        .print-content .seal-container {
+          position: relative !important;
+        }
+
+        .print-content .seal-container img {
+          width: 80px !important;
+          height: 80px !important;
+          opacity: 1 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
       }
     `;
@@ -588,7 +617,7 @@ export default function QuickReports() {
           )}
 
           {/* Signature Section */}
-          <div className="mt-24 flex justify-start">
+          <div className="mt-24 flex justify-between items-start">
             <div className="text-left">
               <div className="border-b border-gray-400 w-64 mb-2"></div>
 
@@ -602,6 +631,15 @@ export default function QuickReports() {
                 <p className="text-sm font-medium text-gray-700">Date</p>
               </div>
               <div className="border-b border-gray-400 w-32 mt-1 ml-8"></div>
+            </div>
+
+            {/* Seal Image */}
+            <div className="seal-container">
+              <img
+                src="/seal.png"
+                alt="Official Seal"
+                className="w-24 h-24 object-contain opacity-80"
+              />
             </div>
           </div>
         </div>
