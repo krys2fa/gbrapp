@@ -74,6 +74,11 @@ export default function QuickReports() {
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
+      /* Hide print-only elements on screen */
+      .print-only {
+        display: none !important;
+      }
+
       @media print {
         @page {
           size: A4 landscape;
@@ -83,6 +88,11 @@ export default function QuickReports() {
         /* Hide elements with no-print class */
         .no-print {
           display: none !important;
+        }
+
+        /* Show print-only elements in print */
+        .print-only {
+          display: flex !important;
         }
 
         /* Make content use full page space when navigation is hidden */
@@ -617,7 +627,7 @@ export default function QuickReports() {
           )}
 
           {/* Signature Section */}
-          <div className="mt-24 flex justify-between items-start">
+          <div className="mt-24 flex justify-between items-start print-only">
             <div className="text-left">
               <div className="border-b border-gray-400 w-64 mb-2"></div>
 
