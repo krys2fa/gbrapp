@@ -213,6 +213,7 @@ model Assay {
   silverContent       Float?
   comments            String
   assayDate           DateTime
+  dateOfAnalysis      DateTime?
   certificateNumber   String?            @unique
   humanReadableAssayNumber String?       @unique
   remarks             String?

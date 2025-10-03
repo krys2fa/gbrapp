@@ -182,6 +182,8 @@ export default function AssayDetailPage() {
     (a: any) => String(a.id) === String(assayId)
   );
 
+  console.log("Assay object:", assay);
+
   if (!assay) {
     return (
       <div className="px-4 sm:px-6 lg:px-8 py-8">
@@ -681,7 +683,11 @@ export default function AssayDetailPage() {
                             jobCard?.unitOfMeasure || "g"
                           }`
                         : "N/A",
-                    dateOfAnalysis: assay?.assayDate
+                    dateOfAnalysis: assay?.dateOfAnalysis
+                      ? new Date(assay.dateOfAnalysis)
+                          .toISOString()
+                          .split("T")[0]
+                      : assay?.assayDate
                       ? new Date(assay.assayDate).toISOString().split("T")[0]
                       : "N/A",
                     exporter: jobCard?.exporter?.name || "N/A",
@@ -716,10 +722,12 @@ export default function AssayDetailPage() {
               </div>
               <div className="text-right flex">
                 <dt className="text-sm font-medium text-gray-500">
-                  Assay Date:
+                  Date of Analysis:
                 </dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
-                  {assay.assayDate
+                  {assay.dateOfAnalysis
+                    ? formatDate(new Date(assay.dateOfAnalysis))
+                    : assay.assayDate
                     ? formatDate(new Date(assay.assayDate))
                     : formatDate(new Date(assay.createdAt || Date.now()))}
                 </dd>
@@ -748,9 +756,7 @@ export default function AssayDetailPage() {
 
             <div className="flex items-center justify-between">
               <div className="flex">
-                <dt className="text-sm font-medium text-gray-500">
-                  Job Id:
-                </dt>
+                <dt className="text-sm font-medium text-gray-500">Job Id:</dt>
                 <dd className="ml-1 text-sm font-semibold text-gray-900">
                   {jobCard?.humanReadableId || "-"}
                 </dd>

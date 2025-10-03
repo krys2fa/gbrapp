@@ -47,6 +47,7 @@ export default function NewAssayPage() {
     customsSealNo: "",
     customsOfficer: "",
     technicalDirector: "",
+    dateOfAnalysis: new Date().toISOString().split("T")[0], // Default to today
   });
 
   // rows for each piece: grossWeight, waterWeight, fineness (auto), netWeight
@@ -157,59 +158,55 @@ export default function NewAssayPage() {
                 new Date(a.createdAt).getTime()
             )[0];
 
-        // Use job card's received date instead of today's date
-        const jobCardReceivedDate = jobBody?.receivedDate
-          ? String(jobBody.receivedDate).split("T")[0]
-          : date;
+        // Use date of analysis from form instead of job card's received date
+        const analysisDate = form.dateOfAnalysis || date;
 
-        // Calculate the start of the week for the job card's received date (Monday) in UTC
-        const jobCardReceivedDateObj = new Date(
-          jobCardReceivedDate + "T00:00:00.000Z"
+        // Calculate the start of the week for the analysis date (Monday) in UTC
+        const analysisDateObj = new Date(analysisDate + "T00:00:00.000Z");
+        const analysisDayOfWeek = analysisDateObj.getUTCDay();
+        const analysisDiff =
+          analysisDayOfWeek === 0 ? 6 : analysisDayOfWeek - 1;
+        const analysisWeekStart = new Date(analysisDateObj);
+        analysisWeekStart.setUTCDate(
+          analysisDateObj.getUTCDate() - analysisDiff
         );
-        const jobCardDayOfWeek = jobCardReceivedDateObj.getUTCDay();
-        const jobCardDiff = jobCardDayOfWeek === 0 ? 6 : jobCardDayOfWeek - 1;
-        const jobCardWeekStart = new Date(jobCardReceivedDateObj);
-        jobCardWeekStart.setUTCDate(
-          jobCardReceivedDateObj.getUTCDate() - jobCardDiff
-        );
-        jobCardWeekStart.setUTCHours(0, 0, 0, 0);
-        const jobCardWeekStartStr = jobCardWeekStart
+        analysisWeekStart.setUTCHours(0, 0, 0, 0);
+        const analysisWeekStartStr = analysisWeekStart
           .toISOString()
           .split("T")[0];
 
-        const jobCardDateCommodityMatches = (commodityPrices || []).filter(
-          (p: any) =>
-            String(p?.createdAt || "").split("T")[0] === jobCardReceivedDate
+        const analysisDateCommodityMatches = (commodityPrices || []).filter(
+          (p: any) => String(p?.createdAt || "").split("T")[0] === analysisDate
         );
-        const jobCardWeekExchangeMatches = (exchangePrices || []).filter(
+        const analysisWeekExchangeMatches = (exchangePrices || []).filter(
           (p: any) => {
             const priceWeekStart = String(p?.weekStartDate || "").split("T")[0];
-            const matches = priceWeekStart === jobCardWeekStartStr;
+            const matches = priceWeekStart === analysisWeekStartStr;
             return matches;
           }
         );
-        // Get commodity entry only for the job card's received date (no fallback)
+        // Get commodity entry only for the analysis date (no fallback)
         const commodityEntry =
           latestByDate(
-            jobCardDateCommodityMatches.filter(
+            analysisDateCommodityMatches.filter(
               (p: any) => p.type === "COMMODITY"
             )
           ) || null;
 
-        // Only use exchange rates from the job card's received date week - no fallback
+        // Only use exchange rates from the analysis date week - no fallback
         const exchangeEntry =
-          jobCardWeekExchangeMatches.length > 0
+          analysisWeekExchangeMatches.length > 0
             ? latestByDate(
-                jobCardWeekExchangeMatches.filter(
+                analysisWeekExchangeMatches.filter(
                   (p: any) => p.type === "EXCHANGE" && p.status === "APPROVED"
                 )
               )
-            : null; // No approved rate for job card's week
+            : null; // No approved rate for analysis week
 
         setMissingJobCardDateCommodity(
-          jobCardDateCommodityMatches.length === 0
+          analysisDateCommodityMatches.length === 0
         );
-        setMissingJobCardWeekExchange(jobCardWeekExchangeMatches.length === 0);
+        setMissingJobCardWeekExchange(analysisWeekExchangeMatches.length === 0);
 
         setDailyPrice({
           value: commodityEntry ? Number(commodityEntry.price) : null,
@@ -225,7 +222,7 @@ export default function NewAssayPage() {
     };
 
     fetchMeta();
-  }, [id]);
+  }, [id, form.dateOfAnalysis]);
 
   // Auto-populate signatory fields from job card data
   useEffect(() => {
@@ -475,12 +472,12 @@ export default function NewAssayPage() {
         return;
       }
 
-      // If commodity price for job card's received date is missing, show toast and return
+      // If commodity price for analysis date is missing, show toast and return
       if (missingJobCardDateCommodity) {
-        const receivedDate = jobCard?.receivedDate
-          ? new Date(jobCard.receivedDate).toLocaleDateString()
-          : "the job card received date";
-        const msg = `No commodity price set for ${receivedDate}. Cannot perform valuation.`;
+        const analysisDate = form.dateOfAnalysis
+          ? new Date(form.dateOfAnalysis).toLocaleDateString()
+          : "the analysis date";
+        const msg = `No commodity price set for ${analysisDate}. Cannot perform valuation.`;
         toast.dismiss("loading-preview");
         toast.error(msg);
         return;
@@ -488,10 +485,10 @@ export default function NewAssayPage() {
 
       // Block saving if weekly exchange rate is missing - this ensures data integrity
       if (missingJobCardWeekExchange) {
-        const receivedDate = jobCard?.receivedDate
-          ? new Date(jobCard.receivedDate).toLocaleDateString()
-          : "the job card received date";
-        const msg = `Cannot create assay: No exchange rate available for the week of ${receivedDate}. Please add the required exchange rate before proceeding.`;
+        const analysisDate = form.dateOfAnalysis
+          ? new Date(form.dateOfAnalysis).toLocaleDateString()
+          : "the analysis date";
+        const msg = `Cannot create assay: No exchange rate available for the week of ${analysisDate}. Please add the required exchange rate before proceeding.`;
         setError(msg);
         toast.dismiss("loading-preview");
         toast.error(msg);
@@ -525,6 +522,7 @@ export default function NewAssayPage() {
       const newAssay = {
         id: `local-${Date.now()}`,
         certificateNumber: form.certificateNumber || undefined,
+        dateOfAnalysis: form.dateOfAnalysis,
         method: form.method,
         pieces: Number(form.pieces),
         signatory: form.signatory,
@@ -653,9 +651,9 @@ export default function NewAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">
                   Daily Commodity Price (
-                  {jobCard?.receivedDate
-                    ? new Date(jobCard.receivedDate).toLocaleDateString()
-                    : "received date"}
+                  {form.dateOfAnalysis
+                    ? new Date(form.dateOfAnalysis).toLocaleDateString()
+                    : "analysis date"}
                   )
                 </div>
                 <div
@@ -685,11 +683,11 @@ export default function NewAssayPage() {
               <div>
                 <div className="text-xs text-gray-500">
                   Weekly Exchange Price (
-                  {jobCard?.receivedDate
+                  {form.dateOfAnalysis
                     ? `week of ${new Date(
-                        jobCard.receivedDate
+                        form.dateOfAnalysis
                       ).toLocaleDateString()}`
-                    : "received date week"}
+                    : "analysis date week"}
                   )
                 </div>
                 <div
@@ -795,6 +793,20 @@ export default function NewAssayPage() {
             {/* warning is shown via toast; keep warning state for potential future UI needs */}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Date of Analysis
+                </label>
+                <input
+                  name="dateOfAnalysis"
+                  type="date"
+                  value={form.dateOfAnalysis}
+                  onChange={handleFormChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Type of shipment
@@ -1125,9 +1137,9 @@ export default function NewAssayPage() {
             {missingJobCardWeekExchange && (
               <p className="text-sm text-red-600 mt-2">
                 Cannot save: Missing exchange rate for the week of{" "}
-                {jobCard?.receivedDate
-                  ? new Date(jobCard.receivedDate).toLocaleDateString()
-                  : "job card received date"}
+                {form.dateOfAnalysis
+                  ? new Date(form.dateOfAnalysis).toLocaleDateString()
+                  : "analysis date"}
               </p>
             )}
           </div>
@@ -1199,6 +1211,18 @@ export default function NewAssayPage() {
                             </dt>
                             <dd className="mt-1 text-sm text-gray-900">
                               {jobCard?.referenceNumber || "N/A"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-sm font-medium text-gray-500">
+                              Date of Analysis
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {form.dateOfAnalysis
+                                ? new Date(
+                                    form.dateOfAnalysis
+                                  ).toLocaleDateString()
+                                : "N/A"}
                             </dd>
                           </div>
                           <div>

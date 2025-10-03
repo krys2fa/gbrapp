@@ -771,6 +771,10 @@ function JobCardDetailPage() {
           </div>
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200">
+              {(() => {
+                console.log("Assays:", jobCard.assays);
+                return null;
+              })()}
               {jobCard.assays.map((assay: any) => (
                 <li key={assay.id}>
                   <Link href={`/job-cards/${id}/assays/certificate`}>
@@ -791,7 +795,7 @@ function JobCardDetailPage() {
                           <div className="sm:flex">
                             <p className="flex items-center text-sm text-gray-500">
                               Assay Date:{" "}
-                              {formatDate(new Date(assay.assayDate))}
+                              {formatDate(new Date(jobCard.dateOfAnalysis))}
                             </p>
                           </div>
                         </div>

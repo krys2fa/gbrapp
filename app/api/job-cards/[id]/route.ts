@@ -445,6 +445,9 @@ export async function PUT(req: NextRequest) {
               assayDate: assayItem.createdAt
                 ? new Date(assayItem.createdAt)
                 : new Date(),
+              dateOfAnalysis: assayItem.dateOfAnalysis
+                ? new Date(assayItem.dateOfAnalysis)
+                : null,
               goldContent: avgFineness || 0,
               silverContent: 0,
               // certificateNumber must be provided by client at assay/valuation time.
