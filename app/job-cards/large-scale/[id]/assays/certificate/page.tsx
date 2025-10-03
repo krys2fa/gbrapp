@@ -470,6 +470,20 @@ export default function CertificateOfAssayPage() {
                   </span>
                 </div>
               </div>
+
+              <div className="flex justify-between items-center">
+                {/* Reference Number*/}
+                <div className="flex justify-start items-center mt-2">
+                  <div>
+                    <span className="text-sm text-gray-500 font-medium mr-2">
+                      Job Id:
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {jobCard?.humanReadableId || "N/A"}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Assay Measurements Table */}

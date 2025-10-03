@@ -746,6 +746,17 @@ export default function AssayDetailPage() {
               </div>
             </div>
 
+            <div className="flex items-center justify-between">
+              <div className="flex">
+                <dt className="text-sm font-medium text-gray-500">
+                  Job Id:
+                </dt>
+                <dd className="ml-1 text-sm font-semibold text-gray-900">
+                  {jobCard?.humanReadableId || "-"}
+                </dd>
+              </div>
+            </div>
+
             <div className="mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {/* Exporter Values (top left) */}

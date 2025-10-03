@@ -439,14 +439,14 @@ export default function AssayResultsPage() {
 
               {/* Row 4: Job ID */}
               <div className="grid grid-cols-3 gap-4 mb-2">
-                {/* <div>
+                <div>
                   <span className="text-sm font-medium text-gray-500 mr-2">
                     Job ID:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {jobCard?.humanReadableId || "N/A"}
                   </span>
-                </div> */}
+                </div>
                 <div></div>
                 <div></div>
               </div>

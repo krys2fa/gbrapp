@@ -193,7 +193,7 @@ export default function CertificateOfAssayPage() {
                   );
 
                   // Create QR code data with job card information
-                  const qrData = {
+                   const qrData = {
                     destination: jobCard?.destinationCountry || "N/A",
                     weight:
                       totalWeight > 0
@@ -263,15 +263,6 @@ export default function CertificateOfAssayPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  {/* <div>
-                    <span className="text-sm text-gray-500 font-medium mr-2">
-                      Job ID:
-                    </span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {jobCard?.humanReadableId || "N/A"}
-                    </span>
-                  </div> */}
-
                   <div>
                     <span className="text-sm text-gray-500 font-medium mr-2">
                       Reference Number:
@@ -281,7 +272,19 @@ export default function CertificateOfAssayPage() {
                     </span>
                   </div>
                 </div>
+
               </div>
+
+                <div className="flex mt-2">
+                   <div>
+                    <span className="text-sm text-gray-500 font-medium mr-2">
+                      Job ID:
+                    </span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {jobCard?.humanReadableId || "N/A"}
+                    </span>
+                  </div>
+                </div>
             </div>
 
             {/* Assay Results Table for Small Scale */}

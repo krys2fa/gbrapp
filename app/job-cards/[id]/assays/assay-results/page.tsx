@@ -225,6 +225,16 @@ export default function AssayResultsPage() {
                   {assays[0]?.shipmentType.name || "N/A"}
                 </span>
               </div>
+
+              <div className="flex">
+                <span className="text-sm font-medium text-gray-500 mr-2">
+                  Job Id:
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {jobCard?.humanReadableId || "N/A"}
+                </span>
+              </div>
+
             </div>
 
             {/* Assay Measurements Table */}
