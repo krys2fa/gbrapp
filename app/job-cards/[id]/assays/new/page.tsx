@@ -176,7 +176,7 @@ export default function NewAssayPage() {
           .split("T")[0];
 
         const analysisDateCommodityMatches = (commodityPrices || []).filter(
-          (p: any) => String(p?.createdAt || "").split("T")[0] === analysisDate
+          (p: any) => String(p?.date || "").split("T")[0] === analysisDate
         );
         const analysisWeekExchangeMatches = (exchangePrices || []).filter(
           (p: any) => {
